@@ -1,3 +1,4 @@
+import { EnumeratorResult } from "../core/enumeratorResult";
 import { IEnumerator } from "../types/core";
 
 export class SelectEnumerator<T, U> implements IEnumerator<U> {
@@ -13,11 +14,11 @@ export class SelectEnumerator<T, U> implements IEnumerator<U> {
         while (true) {
             const next = this.inner.next();
             if (next.done) {
-                return next;
+                return EnumeratorResult.done();
             }
 
             const value = next.value;
-            return { done: false, value: this.selector(value) };
+            return EnumeratorResult.yield(this.selector(value));
         }
     }
 }

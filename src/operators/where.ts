@@ -1,3 +1,4 @@
+import { EnumeratorResult } from '../core/enumeratorResult';
 import { IEnumerator } from '../types/core';
 
 export class WhereEnumerator<T> implements IEnumerator<T> {
@@ -13,12 +14,12 @@ export class WhereEnumerator<T> implements IEnumerator<T> {
         while (true) {
             const next = this.inner.next();
             if (next.done) {
-                return next;
+                return EnumeratorResult.done();
             }
 
             const value = next.value;
             if (this.predicate(value)) {
-                return { done: false, value };
+                return EnumeratorResult.yield(value);
             }
         }
     }
