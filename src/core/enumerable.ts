@@ -1,4 +1,7 @@
 import { SelectEnumerator } from "../operators/select";
+import { AllOperator } from "../operators/terminal/all";
+import { AnyOperator } from "../operators/terminal/any";
+import { CountOperator } from "../operators/terminal/count";
 import { WhereEnumerator } from "../operators/where";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
 
@@ -11,6 +14,30 @@ export class Enumerable<T> implements IEnumerable<T> {
 
     public toArray(): T[] {
         return Array.from(this);
+    }
+
+    /**
+     * Returns the number of elements in a sequence.
+     * @returns The number of elements in the input sequence.
+     */
+    public count(): number {
+        return new CountOperator<T>(this)
+            .process();
+    }
+
+    /**
+     * Determines whether any element of a sequence satisfies a condition.
+     * @param predicate A function to test each element for a condition.
+     * @returns `true` if any element in the source sequence pass the test in the specified predicate; otherwise, `false`.
+     */
+    public any(predicate: (item: T) => boolean): boolean {
+        return new AnyOperator<T>(this, predicate)
+            .process();
+    }
+
+    public all(predicate: (item: T) => boolean): boolean {
+        return new AllOperator<T>(this, predicate)
+            .process();
     }
 
     public where(predicate: (item: T) => boolean): Enumerable<T> {

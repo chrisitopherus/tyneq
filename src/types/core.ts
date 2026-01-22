@@ -5,6 +5,8 @@ export type IEnumerator<T> = Iterator<T>;
 
 /**
  * An enumerable sequence of T.
+ * 
+ * ~ Iterable<T>.
  */
 export interface IEnumerable<T> extends Iterable<T> {
     /**
