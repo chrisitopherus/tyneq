@@ -1,4 +1,5 @@
 import { SelectEnumerator } from "../operators/select";
+import { SelectManyEnumerator } from "../operators/selectMany";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { CountOperator } from "../operators/terminal/count";
@@ -58,6 +59,16 @@ export class Enumerable<T> implements IEnumerable<T> {
             const inner = source[Symbol.iterator]();
             return new SelectEnumerator<T, U>(inner, selector);
         };
+
+        return new Enumerable<U>(factory);
+    }
+
+    public selectMany<U>(selector: (item: T) => IEnumerable<U>): Enumerable<U> {
+        const source = this;
+        const factory: IteratorFactory<U> = () => {
+            const inner = source[Symbol.iterator]();
+            return new SelectManyEnumerator<T, U>(inner, selector);
+        }
 
         return new Enumerable<U>(factory);
     }
