@@ -13,22 +13,20 @@ export class AppendEnumerator<T> implements IEnumerator<T> {
     }
 
     public next(): IteratorResult<T> {
-        while (true) {
-            if (!this.isSourceDone) {
-                const sourceNext = this.sourceEnumerator.next();
-                if (!sourceNext.done) {
-                    return EnumeratorResult.yield(sourceNext.value);
-                }
-
-                this.isSourceDone = true;
+        if (!this.isSourceDone) {
+            const sourceNext = this.sourceEnumerator.next();
+            if (!sourceNext.done) {
+                return EnumeratorResult.yield(sourceNext.value);
             }
 
-            const nextItem = this.itemsEnumerator.next();
-            if (!nextItem.done) {
-                return EnumeratorResult.yield(nextItem.value);
-            }
-
-            return EnumeratorResult.done<T>();
+            this.isSourceDone = true;
         }
+
+        const nextItem = this.itemsEnumerator.next();
+        if (!nextItem.done) {
+            return EnumeratorResult.yield(nextItem.value);
+        }
+
+        return EnumeratorResult.done<T>();
     }
 }
