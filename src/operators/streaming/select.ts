@@ -1,5 +1,5 @@
-import { EnumeratorResult } from "../core/enumeratorResult";
-import { IEnumerator } from "../types/core";
+import { EnumeratorResult } from "../../core/enumeratorResult";
+import { IEnumerator } from "../../types/core";
 
 export class SelectEnumerator<T, U> implements IEnumerator<U> {
     private readonly sourceEnumerator: IEnumerator<T>;

@@ -1,7 +1,7 @@
-import { Enumerable } from "../core/enumerable";
-import { EnumeratorResult } from "../core/enumeratorResult";
-import { IEnumerable, IEnumerator } from "../types/core";
-import { Nullable } from '../types/utility';
+import { Enumerable } from "../../core/enumerable";
+import { EnumeratorResult } from "../../core/enumeratorResult";
+import { IEnumerable, IEnumerator } from "../../types/core";
+import { Nullable } from '../../types/utility';
 
 export class SelectManyEnumerator<T, U> implements IEnumerator<U> {
     private readonly sourceEnumerator: IEnumerator<T>;

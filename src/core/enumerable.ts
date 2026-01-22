@@ -1,9 +1,9 @@
-import { SelectEnumerator } from "../operators/select";
-import { SelectManyEnumerator } from "../operators/selectMany";
+import { SelectEnumerator } from "../operators/streaming/select";
+import { SelectManyEnumerator } from "../operators/streaming/selectMany";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { CountOperator } from "../operators/terminal/count";
-import { WhereEnumerator } from "../operators/where";
+import { WhereEnumerator } from "../operators/streaming/where";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
 
 export class Enumerable<T> implements IEnumerable<T> {
