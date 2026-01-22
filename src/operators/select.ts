@@ -10,7 +10,7 @@ export class SelectEnumerator<T, U> implements IEnumerator<U> {
         this.selector = selector;
     }
 
-    public next(): IteratorResult<U, any> {
+    public next(): IteratorResult<U> {
         while (true) {
             const next = this.sourceEnumerator.next();
             if (next.done) {

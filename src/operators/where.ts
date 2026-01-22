@@ -10,7 +10,7 @@ export class WhereEnumerator<T> implements IEnumerator<T> {
         this.predicate = predicate;
     }
 
-    public next(): IteratorResult<T, any> {
+    public next(): IteratorResult<T> {
         while (true) {
             const next = this.sourceEnumerator.next();
             if (next.done) {
