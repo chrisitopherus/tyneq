@@ -4,6 +4,7 @@ import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { CountOperator } from "../operators/terminal/count";
 import { WhereEnumerator } from "../operators/streaming/where";
+import { CastEnumerator } from "../operators/conversion/cast";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
 
 export class Enumerable<T> implements IEnumerable<T> {
@@ -69,6 +70,21 @@ export class Enumerable<T> implements IEnumerable<T> {
             const inner = source[Symbol.iterator]();
             return new SelectManyEnumerator<T, U>(inner, selector);
         }
+
+        return new Enumerable<U>(factory);
+    }
+
+    /**
+     * Casts the elements of a sequence to the specified type.
+     * @returns An Enumerable<U> that contains each element of the source sequence cast to the specified type.
+     */
+    public cast<U>(): Enumerable<U> {
+        const source = this;
+
+        const factory: IteratorFactory<U> = () => {
+            const inner = source[Symbol.iterator]();
+            return new CastEnumerator<T, U>(inner);
+        };
 
         return new Enumerable<U>(factory);
     }
