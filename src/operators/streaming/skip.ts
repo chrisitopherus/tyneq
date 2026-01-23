@@ -1,5 +1,5 @@
 import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerable, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class SkipEnumerator<T> implements IEnumerator<T> {
     private readonly sourceEnumerator: IEnumerator<T>;
@@ -8,7 +8,7 @@ export class SkipEnumerator<T> implements IEnumerator<T> {
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         this.sourceEnumerator = sourceEnumerator;
-        this.count = count;
+        this.count = count < 0 ? 0 : count;
     }
 
     public next(): IteratorResult<T> {
