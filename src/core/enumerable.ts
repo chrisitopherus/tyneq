@@ -76,6 +76,11 @@ export class Enumerable<T> implements IEnumerable<T> {
 
     /**
      * Casts the elements of a sequence to the specified type.
+     * 
+     * Note: This performs an unchecked type assertion. It is the caller's responsibility
+     * to ensure the source elements are compatible with the target type.
+     * No runtime type checking is performed (similar to LINQ's Cast in C#).
+     * 
      * @returns An Enumerable<U> that contains each element of the source sequence cast to the specified type.
      */
     public cast<U>(): Enumerable<U> {
