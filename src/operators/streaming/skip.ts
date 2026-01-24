@@ -1,23 +1,22 @@
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerator";
+import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-export class SkipEnumerator<T> implements IEnumerator<T> {
-    private readonly sourceEnumerator: IEnumerator<T>;
+export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private skipped = false;
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
-        this.sourceEnumerator = sourceEnumerator;
+        super(sourceEnumerator);
         this.count = count < 0 ? 0 : count;
     }
 
-    public next(): IteratorResult<T> {
+    protected override handleNext(): EnumeratorResult<T> {
         if (!this.skipped) {
             let skippedCount = 0;
             while (skippedCount < this.count) {
                 const sourceNext = this.sourceEnumerator.next();
                 if (sourceNext.done) {
-                    return EnumeratorResult.done<T>();
+                    return this.complete();
                 }
 
                 skippedCount++;
@@ -28,9 +27,9 @@ export class SkipEnumerator<T> implements IEnumerator<T> {
 
         const sourceNext = this.sourceEnumerator.next();
         if (sourceNext.done) {
-            return EnumeratorResult.done<T>();
+            return this.complete();
         }
 
-        return EnumeratorResult.yield(sourceNext.value);
+        return this.yield(sourceNext.value);
     }
 }

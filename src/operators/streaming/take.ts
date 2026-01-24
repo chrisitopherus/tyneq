@@ -1,28 +1,27 @@
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerator";
+import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-export class TakeEnumerator<T> implements IEnumerator<T> {
-    private readonly sourceEnumerator: IEnumerator<T>;
+export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
 
     private takenCount = 0;
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
-        this.sourceEnumerator = sourceEnumerator;
+        super(sourceEnumerator);
         this.count = count < 0 ? 0 : count;
     }
 
-    public next(): IteratorResult<T> {
+    protected override handleNext(): EnumeratorResult<T> {
         if (this.takenCount >= this.count) {
-            return EnumeratorResult.done();
+            return this.complete();
         }
 
         const result = this.sourceEnumerator.next();
         if (result.done) {
-            return EnumeratorResult.done();
+            return this.complete();
         }
 
         this.takenCount++;
-        return EnumeratorResult.yield(result.value);
+        return this.yield(result.value);
     }
 }

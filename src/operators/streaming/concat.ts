@@ -1,22 +1,21 @@
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerator";
+import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-export class ConcatEnumerator<T> implements IEnumerator<T> {
-    private readonly sourceEnumerator: IEnumerator<T>;
+export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
     private readonly otherEnumerator: IEnumerator<T>;
 
     private isSourceDone = false;
 
     public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<T>) {
-        this.sourceEnumerator = sourceEnumerator;
+        super(sourceEnumerator);
         this.otherEnumerator = otherEnumerator;
     }
 
-    public next(): IteratorResult<T> {
+    protected override handleNext(): EnumeratorResult<T> {
         if (!this.isSourceDone) {
             const next = this.sourceEnumerator.next();
             if (!next.done) {
-                return EnumeratorResult.yield(next.value);
+                return this.yield(next.value);
             }
 
             this.isSourceDone = true;
@@ -24,9 +23,9 @@ export class ConcatEnumerator<T> implements IEnumerator<T> {
 
         const next = this.otherEnumerator.next();
         if (!next.done) {
-            return EnumeratorResult.yield(next.value);
+            return this.yield(next.value);
         }
 
-        return EnumeratorResult.done();
+        return this.complete();
     }
 }

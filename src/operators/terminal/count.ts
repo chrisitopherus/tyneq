@@ -1,6 +1,6 @@
 
+import { TerminalOperator } from "../../core/terminalOperator";
 import { IEnumerable, IEnumerator } from "../../types/core";
-import { TerminalOperator } from "./terminalOperator";
 
 export class CountOperator<T> extends TerminalOperator<T, number> {
     public constructor(source: IEnumerable<T>) {

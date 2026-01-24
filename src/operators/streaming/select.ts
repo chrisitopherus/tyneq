@@ -1,22 +1,21 @@
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerator";
+import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-export class SelectEnumerator<T, U> implements IEnumerator<U> {
-    private readonly sourceEnumerator: IEnumerator<T>;
+export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 
     public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => U) {
-        this.sourceEnumerator = sourceEnumerator;
+        super(sourceEnumerator);
         this.selector = selector;
     }
 
-    public next(): IteratorResult<U> {
+    protected override handleNext(): EnumeratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
-            return EnumeratorResult.done();
+            return this.complete();
         }
 
         const value = next.value;
-        return EnumeratorResult.yield(this.selector(value));
+        return this.yield(this.selector(value));
     }
 }
