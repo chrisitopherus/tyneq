@@ -1,5 +1,5 @@
+import { TerminalOperator } from "../../core/terminalOperator";
 import { IEnumerable } from "../../types/core";
-import { TerminalOperator } from "./terminalOperator";
 
 export class AnyOperator<T> extends TerminalOperator<T, boolean> {
     private readonly predicate: (item: T) => boolean;

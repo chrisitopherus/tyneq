@@ -1,5 +1,5 @@
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerator";
+import { EnumeratorResult, IEnumerator } from "../../types/core";
 
 /**
  * Casts the elements of a sequence to the specified type.
@@ -8,20 +8,18 @@ import { IEnumerator } from "../../types/core";
  * 
  * Note: No runtime type checking is performed.
  */
-export class CastEnumerator<T, U> implements IEnumerator<U> {
-    private readonly sourceEnumerator: IEnumerator<T>;
-
+export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     public constructor(sourceEnumerator: IEnumerator<T>) {
-        this.sourceEnumerator = sourceEnumerator;
+        super(sourceEnumerator);
     }
 
-    public next(): IteratorResult<U> {
+    protected override handleNext(): EnumeratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
-            return EnumeratorResult.done();
+            return this.complete();
         }
 
-        const value = next.value as unknown as U;
-        return EnumeratorResult.yield(value);
+        const castValue = next.value as unknown as U;
+        return this.yield(castValue);
     }
 }

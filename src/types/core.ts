@@ -23,3 +23,22 @@ export interface IEnumerable<T> extends Iterable<T> {
  * This is used to ensure that IEnumerable<T> implementations are re-iterable, because `JS generators` are not.
  */
 export type IteratorFactory<T> = () => IEnumerator<T>;
+
+export enum EnumeratorResultKind {
+    Yield = "yield",
+    Complete = "complete",
+}
+
+export interface EnumeratorYieldResult<TYield> {
+    kind: EnumeratorResultKind.Yield;
+    value: TYield;
+}
+
+export interface EnumeratorCompleteResult<TReturn> {
+    kind: EnumeratorResultKind.Complete;
+    value: TReturn;
+}
+
+export type EnumeratorResult<TYield, TReturn = null> =
+    | EnumeratorYieldResult<TYield>
+    | EnumeratorCompleteResult<TReturn>;

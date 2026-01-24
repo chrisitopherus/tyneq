@@ -1,4 +1,4 @@
-import { IEnumerable, IEnumerator } from "../../types/core";
+import { IEnumerable } from "../types/core";
 
 export abstract class TerminalOperator<T, U> {
     protected readonly source: IEnumerable<T>;
