@@ -9,7 +9,7 @@ export class TakeEnumerator<T> implements IEnumerator<T> {
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         this.sourceEnumerator = sourceEnumerator;
-        this.count = count;
+        this.count = count < 0 ? 0 : count;
     }
 
     public next(): IteratorResult<T> {
