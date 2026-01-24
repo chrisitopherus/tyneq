@@ -6,7 +6,7 @@ import { CountOperator } from "../operators/terminal/count";
 import { WhereEnumerator } from "../operators/streaming/where";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
 
-export class Enumerable<T> implements IEnumerable<T> {
+export class TyneqEnumerable<T> implements IEnumerable<T> {
     public constructor(private readonly iteratorFactory: IteratorFactory<T>) { }
 
     public [Symbol.iterator](): IEnumerator<T> {
@@ -41,7 +41,7 @@ export class Enumerable<T> implements IEnumerable<T> {
             .process();
     }
 
-    public where(predicate: (item: T) => boolean): Enumerable<T> {
+    public where(predicate: (item: T) => boolean): TyneqEnumerable<T> {
         const source = this;
 
         const factory: IteratorFactory<T> = () => {
@@ -49,10 +49,10 @@ export class Enumerable<T> implements IEnumerable<T> {
             return new WhereEnumerator<T>(inner, predicate);
         };
 
-        return new Enumerable<T>(factory);
+        return new TyneqEnumerable<T>(factory);
     }
 
-    public select<U>(selector: (item: T) => U): Enumerable<U> {
+    public select<U>(selector: (item: T) => U): TyneqEnumerable<U> {
         const source = this;
 
         const factory: IteratorFactory<U> = () => {
@@ -60,16 +60,16 @@ export class Enumerable<T> implements IEnumerable<T> {
             return new SelectEnumerator<T, U>(inner, selector);
         };
 
-        return new Enumerable<U>(factory);
+        return new TyneqEnumerable<U>(factory);
     }
 
-    public selectMany<U>(selector: (item: T) => IEnumerable<U>): Enumerable<U> {
+    public selectMany<U>(selector: (item: T) => IEnumerable<U>): TyneqEnumerable<U> {
         const source = this;
         const factory: IteratorFactory<U> = () => {
             const inner = source[Symbol.iterator]();
             return new SelectManyEnumerator<T, U>(inner, selector);
         }
 
-        return new Enumerable<U>(factory);
+        return new TyneqEnumerable<U>(factory);
     }
 }
