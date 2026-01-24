@@ -13,7 +13,7 @@ export class TakeEnumerator<T> implements IEnumerator<T> {
     }
 
     public next(): IteratorResult<T> {
-        if (this.takenCount === this.count) {
+        if (this.takenCount >= this.count) {
             return EnumeratorResult.done();
         }
 
