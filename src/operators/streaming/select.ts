@@ -11,14 +11,12 @@ export class SelectEnumerator<T, U> implements IEnumerator<U> {
     }
 
     public next(): IteratorResult<U> {
-        while (true) {
-            const next = this.sourceEnumerator.next();
-            if (next.done) {
-                return EnumeratorResult.done();
-            }
-
-            const value = next.value;
-            return EnumeratorResult.yield(this.selector(value));
+        const next = this.sourceEnumerator.next();
+        if (next.done) {
+            return EnumeratorResult.done();
         }
+
+        const value = next.value;
+        return EnumeratorResult.yield(this.selector(value));
     }
 }
