@@ -7,8 +7,6 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TerminalOp
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;
     private readonly resultSelector: (accumulate: UAccumulate) => VResult;
 
-    private accumulate: UAccumulate;
-
     public constructor(
         source: IEnumerable<TSource>, seed: UAccumulate,
         func: (accumulate: UAccumulate, item: TSource) => UAccumulate,
@@ -18,20 +16,19 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TerminalOp
         this.seed = seed;
         this.func = func;
         this.resultSelector = resultSelector;
-        this.accumulate = seed;
     }
 
     public process(): VResult {
-        this.accumulate = this.seed;
+        let accumulate = this.seed;
         const enumerator = this.source[Symbol.iterator]();
 
         while (true) {
             const { done, value } = enumerator.next();
             if (done) {
-                return this.resultSelector(this.accumulate);
+                return this.resultSelector(accumulate);
             }
 
-            this.accumulate = this.func(this.accumulate, value);
+            accumulate = this.func(accumulate, value);
         }
     }
 
