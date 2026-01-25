@@ -1,10 +1,10 @@
 import { TyneqEnumerator } from "../../core/enumerator";
 import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-export class OfTypeEnumerator<T, U> extends TyneqEnumerator<T, U> {
-    private readonly guard: (value: T) => boolean;
+export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {
+    private readonly guard: (value: T) => value is U;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, guard: (value: T) => boolean) {
+    public constructor(sourceEnumerator: IEnumerator<T>, guard: (value: T) => value is U) {
         super(sourceEnumerator);
         this.guard = guard;
     }
@@ -17,7 +17,7 @@ export class OfTypeEnumerator<T, U> extends TyneqEnumerator<T, U> {
             }
 
             if (this.guard(value)) {
-                return this.yield(value as unknown as U);
+                return this.yield(value);
             }
         }
     }
