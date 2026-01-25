@@ -11,12 +11,11 @@ export class WhereEnumerator<T> extends TyneqEnumerator<T> {
 
     protected override handleNext(): EnumeratorResult<T> {
         while (true) {
-            const next = this.sourceEnumerator.next();
-            if (next.done) {
+            const { value, done } = this.sourceEnumerator.next();
+            if (done) {
                 return this.complete();
             }
 
-            const value = next.value;
             if (this.predicate(value)) {
                 return this.yield(value);
             }
