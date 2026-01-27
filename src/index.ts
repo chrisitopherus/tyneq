@@ -1,3 +1,3 @@
 export * from "./types/core";
-export * from "./core/enumerable";
-export * from "./core/tyneq";
+export * from "./core/TyneqEnumerable";
+export * from "./core/Tyneq";
