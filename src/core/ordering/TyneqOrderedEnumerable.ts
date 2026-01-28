@@ -8,6 +8,7 @@ import { WhereEnumerator } from "../../enumerators/streaming/where";
 import { WhereOperator } from "../../operators/streaming/where";
 import { ConcatOperator } from "../../operators/streaming/concat";
 import { AppendOperator } from "../../operators/streaming/append";
+import { SelectOperator } from "../../operators/streaming/select";
 
 export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnumerable<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
@@ -76,8 +77,8 @@ export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnume
         return new TyneqEnumerable<TSource>(new WhereOperator<TSource>(this, predicate).getFactory());
     }
 
-    public select<U>(selector: (item: TSource) => U): ITyneqEnumerable<U> {
-        throw new Error("Method not implemented.");
+    public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(new SelectOperator<TSource, TResult>(this, selector).getFactory());
     }
 
     public selectMany<U>(selector: (item: TSource) => IEnumerable<U>): ITyneqEnumerable<U> {

@@ -12,6 +12,7 @@ import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 import { WhereOperator } from "../operators/streaming/where";
 import { AppendOperator } from "../operators/streaming/append";
 import { ConcatOperator } from "../operators/streaming/concat";
+import { SelectOperator } from "../operators/streaming/select";
 
 export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
     public constructor(protected readonly iteratorFactory: IteratorFactory<TSource>) { }
@@ -68,15 +69,8 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
         return new TyneqEnumerable<TSource>(new WhereOperator<TSource>(this, predicate).getFactory());
     }
 
-    public select<U>(selector: (item: TSource) => U): ITyneqEnumerable<U> {
-        const source = this;
-
-        const factory: IteratorFactory<U> = () => {
-            const inner = source[Symbol.iterator]();
-            return new SelectEnumerator<TSource, U>(inner, selector);
-        };
-
-        return new TyneqEnumerable<U>(factory);
+    public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(new SelectOperator<TSource, TResult>(this, selector).getFactory());
     }
 
     public selectMany<U>(selector: (item: TSource) => IEnumerable<U>): ITyneqEnumerable<U> {
