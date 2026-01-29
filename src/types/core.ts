@@ -39,11 +39,12 @@ export interface ITyneqBaseEnumerable<TSource> extends IEnumerable<TSource> {
     all(predicate: (item: TSource) => boolean): boolean;
 
     // stream operators
-    append(element: TSource): ITyneqEnumerable<TSource>;
+    append(item: TSource): ITyneqEnumerable<TSource>;
     concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    prepend(item: TSource): ITyneqEnumerable<TSource>;
     where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
     select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
-    selectMany<U>(selector: (item: TSource) => IEnumerable<U>): ITyneqEnumerable<U>;
+    selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult>;
 
     // buffering operators
     orderBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;

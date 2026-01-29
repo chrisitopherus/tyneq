@@ -13,6 +13,8 @@ import { WhereOperator } from "../operators/streaming/where";
 import { AppendOperator } from "../operators/streaming/append";
 import { ConcatOperator } from "../operators/streaming/concat";
 import { SelectOperator } from "../operators/streaming/select";
+import { PrependOperator } from "../operators/streaming/prepend";
+import { SelectManyOperator } from "../operators/streaming/selectMany";
 
 export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
     public constructor(protected readonly iteratorFactory: IteratorFactory<TSource>) { }
@@ -57,30 +59,40 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
 
     // stream operators
 
-    public append(element: TSource): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new AppendOperator<TSource>(this, element).getFactory());
+    public append(item: TSource): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new AppendOperator<TSource>(this, item).getFactory()
+        );
     }
 
     public concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new ConcatOperator<TSource>(this, other).getFactory());
+        return new TyneqEnumerable<TSource>(
+            new ConcatOperator<TSource>(this, other).getFactory()
+        );
+    }
+
+    public prepend(item: TSource): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new PrependOperator<TSource>(this, item).getFactory()
+        );
     }
 
     public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new WhereOperator<TSource>(this, predicate).getFactory());
+        return new TyneqEnumerable<TSource>(
+            new WhereOperator<TSource>(this, predicate).getFactory()
+        );
     }
 
     public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(new SelectOperator<TSource, TResult>(this, selector).getFactory());
+        return new TyneqEnumerable<TResult>(
+            new SelectOperator<TSource, TResult>(this, selector).getFactory()
+        );
     }
 
-    public selectMany<U>(selector: (item: TSource) => IEnumerable<U>): ITyneqEnumerable<U> {
-        const source = this;
-        const factory: IteratorFactory<U> = () => {
-            const inner = source[Symbol.iterator]();
-            return new SelectManyEnumerator<TSource, U>(inner, selector);
-        }
-
-        return new TyneqEnumerable<U>(factory);
+    public selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(
+            new SelectManyOperator<TSource, TResult>(this, selector).getFactory()
+        );
     }
 
     // buffering operators

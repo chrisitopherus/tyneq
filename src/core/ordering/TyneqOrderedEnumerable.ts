@@ -9,6 +9,8 @@ import { WhereOperator } from "../../operators/streaming/where";
 import { ConcatOperator } from "../../operators/streaming/concat";
 import { AppendOperator } from "../../operators/streaming/append";
 import { SelectOperator } from "../../operators/streaming/select";
+import { PrependOperator } from "../../operators/streaming/prepend";
+import { SelectManyOperator } from "../../operators/streaming/selectMany";
 
 export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnumerable<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
@@ -64,25 +66,41 @@ export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnume
     }
 
     // stream operators
-    
+
     public append(element: TSource): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new AppendOperator<TSource>(this, element).getFactory());
+        return new TyneqEnumerable<TSource>(
+            new AppendOperator<TSource>(this, element).getFactory()
+        );
     }
 
     public concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new ConcatOperator<TSource>(this, other).getFactory());
+        return new TyneqEnumerable<TSource>(
+            new ConcatOperator<TSource>(this, other).getFactory()
+        );
+    }
+
+    public prepend(item: TSource): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new PrependOperator<TSource>(this, item).getFactory()
+        );
     }
 
     public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(new WhereOperator<TSource>(this, predicate).getFactory());
+        return new TyneqEnumerable<TSource>(
+            new WhereOperator<TSource>(this, predicate).getFactory()
+        );
     }
 
     public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(new SelectOperator<TSource, TResult>(this, selector).getFactory());
+        return new TyneqEnumerable<TResult>(
+            new SelectOperator<TSource, TResult>(this, selector).getFactory()
+        );
     }
 
-    public selectMany<U>(selector: (item: TSource) => IEnumerable<U>): ITyneqEnumerable<U> {
-        throw new Error("Method not implemented.");
+    public selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(
+            new SelectManyOperator<TSource, TResult>(this, selector).getFactory()
+        );
     }
 
     public orderBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: ((a: TKey, b: TKey) => number) | undefined): ITyneqOrderedEnumerable<TSource> {
