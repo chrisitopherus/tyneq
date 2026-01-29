@@ -15,6 +15,12 @@ import { ConcatOperator } from "../operators/streaming/concat";
 import { SelectOperator } from "../operators/streaming/select";
 import { PrependOperator } from "../operators/streaming/prepend";
 import { SelectManyOperator } from "../operators/streaming/selectMany";
+import { SkipOperator } from "../operators/streaming/skip";
+import { SkipLastOperator } from "../operators/streaming/skipLast";
+import { SkipWhileOperator } from "../operators/streaming/skipWhile";
+import { TakeOperator } from "../operators/streaming/take";
+import { TakeWhileOperator } from "../operators/streaming/takeWhile";
+import { ZipOperator } from "../operators/streaming/zip";
 
 export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
     public constructor(protected readonly iteratorFactory: IteratorFactory<TSource>) { }
@@ -77,12 +83,6 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
         );
     }
 
-    public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return new TyneqEnumerable<TSource>(
-            new WhereOperator<TSource>(this, predicate).getFactory()
-        );
-    }
-
     public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(
             new SelectOperator<TSource, TResult>(this, selector).getFactory()
@@ -92,6 +92,48 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
     public selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(
             new SelectManyOperator<TSource, TResult>(this, selector).getFactory()
+        );
+    }
+
+    public skip(count: number): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new SkipOperator<TSource>(this, count).getFactory()
+        );
+    }
+
+    public skipLast(count: number): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new SkipLastOperator<TSource>(this, count).getFactory()
+        );
+    }
+
+    public skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new SkipWhileOperator<TSource>(this, predicate).getFactory()
+        );
+    }
+
+    public take(count: number): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new TakeOperator<TSource>(this, count).getFactory()
+        );
+    }
+
+    public takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new TakeWhileOperator<TSource>(this, predicate).getFactory()
+        );
+    }
+
+    public zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(
+            new ZipOperator<TSource, TOther, TResult>(this, other, selector).getFactory()
+        );
+    }
+
+    public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new WhereOperator<TSource>(this, predicate).getFactory()
         );
     }
 

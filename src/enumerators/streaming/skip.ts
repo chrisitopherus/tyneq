@@ -7,6 +7,8 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
+        
+        // instead prob better to throw/validate here
         this.count = count < 0 ? 0 : count;
     }
 
