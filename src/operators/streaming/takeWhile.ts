@@ -1,24 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TakeWhileEnumerator } from "../../enumerators/streaming/takeWhile";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly predicate: (value: T) => boolean;
+export class TakeWhileOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly predicate: (item: TSource) => boolean;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (value: T) => boolean) {
-        super(sourceEnumerator);
+    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
+        super(source);
         this.predicate = predicate;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        const result = this.sourceEnumerator.next();
-        if (result.done) {
-            return this.complete();
-        }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const predicate = this.predicate;
 
-        if (this.predicate(result.value)) {
-            return this.yield(result.value);
+        return () => {
+            return new TakeWhileEnumerator<TSource>(source[Symbol.iterator](), predicate);
         }
-
-        return this.complete();
     }
 }

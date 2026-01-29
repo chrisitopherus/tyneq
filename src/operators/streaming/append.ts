@@ -1,33 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { AppendEnumerator } from "../../enumerators/streaming/append";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
+export class AppendOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly item: TSource;
 
-export class AppendEnumerator<T> extends TyneqEnumerator<T> {
-    private isSourceDone = false;
-    private appended = false;
-
-    private readonly item: T;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, item: T) {
-        super(sourceEnumerator);
+    public constructor(source: IEnumerable<TSource>, item: TSource) {
+        super(source);
         this.item = item;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (!this.isSourceDone) {
-            const sourceNext = this.sourceEnumerator.next();
-            if (!sourceNext.done) {
-                return this.yield(sourceNext.value);
-            }
-
-            this.isSourceDone = true;
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const item = this.item;
+        
+        return () => {
+            return new AppendEnumerator<TSource>(source[Symbol.iterator](), item);
         }
-
-        if (!this.appended) {
-            this.appended = true;
-            return this.yield(this.item);
-        }
-
-        return this.complete();
     }
 }

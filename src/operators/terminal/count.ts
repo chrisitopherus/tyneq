@@ -1,8 +1,8 @@
 
-import { TerminalOperator } from "../../core/terminalOperator";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable, IEnumerator } from "../../types/core";
 
-export class CountOperator<T> extends TerminalOperator<T, number> {
+export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     public constructor(source: IEnumerable<T>) {
         super(source);
     }

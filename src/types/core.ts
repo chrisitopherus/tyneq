@@ -1,3 +1,6 @@
+import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
+import { Nullable } from "./utility";
+
 /**
  * An enumerator that iterates over a sequence of T.
  */
@@ -23,6 +26,51 @@ export interface IEnumerable<T> extends Iterable<T> {
  * This is used to ensure that IEnumerable<T> implementations are re-iterable, because `JS generators` are not.
  */
 export type IteratorFactory<T> = () => IEnumerator<T>;
+
+export interface ITyneqBaseEnumerable<TSource> extends IEnumerable<TSource> {
+
+    // conversion operators
+
+
+    // terminal operators
+    toArray(): TSource[];
+    count(): number;
+    any(predicate: (item: TSource) => boolean): boolean;
+    all(predicate: (item: TSource) => boolean): boolean;
+
+    // stream operators
+    append(item: TSource): ITyneqEnumerable<TSource>;
+    concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    prepend(item: TSource): ITyneqEnumerable<TSource>;
+    select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult>;
+    skip(count: number): ITyneqEnumerable<TSource>;
+    skipLast(count: number): ITyneqEnumerable<TSource>;
+    skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    take(count: number): ITyneqEnumerable<TSource>;
+    takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
+
+    // buffering operators
+    orderBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    orderByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+}
+
+export interface ITyneqEnumerable<TSource> extends ITyneqBaseEnumerable<TSource> {
+    // may be extended later
+}
+
+export interface ITyneqOrderedEnumerable<TSource> extends ITyneqBaseEnumerable<TSource> {
+    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+}
+
+export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
+    source: ITyneqBaseEnumerable<TSource>;
+    parent: Nullable<IOrderedEnumerable<TSource>>;
+    getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource>;
+}
 
 export enum EnumeratorResultKind {
     Yield = "yield",

@@ -1,26 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { PrependEnumerator } from "../../enumerators/streaming/prepend";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class PrependEnumerator<T> extends TyneqEnumerator<T> {
-    private prepended = false;
-    private readonly item: T;
+export class PrependOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly item: TSource;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, item: T) {
-        super(sourceEnumerator);
+    public constructor(source: IEnumerable<TSource>, item: TSource) {
+        super(source);
         this.item = item;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (!this.prepended) {
-            this.prepended = true;
-            return this.yield(this.item);
-        }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const item = this.item;
 
-        const nextItem = this.sourceEnumerator.next();
-        if (!nextItem.done) {
-            return this.yield(nextItem.value);
+        return () => {
+            return new PrependEnumerator<TSource>(source[Symbol.iterator](), item);
         }
-
-        return this.complete();
     }
 }

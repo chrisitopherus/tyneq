@@ -1,27 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { SkipWhileEnumerator } from "../../enumerators/streaming/skipWhile";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly predicate: (item: T) => boolean;
+export class SkipWhileOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly predicate: (item: TSource) => boolean;
 
-    private isSkipping = true;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
-        super(sourceEnumerator);
+    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
+        super(source);
         this.predicate = predicate;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        while (true) {
-            const next = this.sourceEnumerator.next();
-            if (next.done) {
-                return this.complete();
-            }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const predicate = this.predicate;
 
-            this.isSkipping = this.isSkipping && this.predicate(next.value);
-            if (!this.isSkipping) {
-                return this.yield(next.value);
-            }
+        return () => {
+            return new SkipWhileEnumerator<TSource>(source[Symbol.iterator](), predicate);
         }
     }
 }

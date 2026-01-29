@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerator";
+import { TyneqEnumerator } from "../../core/TyneqEnumerator";
 import { EnumeratorResult, IEnumerator } from "../../types/core";
 
 /**

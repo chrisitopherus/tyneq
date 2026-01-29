@@ -1,5 +1,5 @@
 import { EnumeratorResult, EnumeratorResultKind, EnumeratorCompleteResult, EnumeratorYieldResult, IEnumerator } from '../types/core';
-import { TyneqIteratorResult } from './iteratorResult';
+import { TyneqIteratorResult } from './TyneqIteratorResult';
 
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
     private completed = false;

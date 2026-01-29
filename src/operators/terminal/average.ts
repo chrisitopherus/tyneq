@@ -1,7 +1,7 @@
-import { TerminalOperator } from "../../core/terminalOperator";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable, IEnumerator } from "../../types/core";
 
-export class AverageOperator<T> extends TerminalOperator<T, number> {
+export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 
     public constructor(source: IEnumerable<T>, selector: (item: T) => number) {

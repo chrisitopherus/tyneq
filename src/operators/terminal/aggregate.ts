@@ -1,8 +1,8 @@
 
-import { TerminalOperator } from "../../core/terminalOperator";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable } from "../../types/core";
 
-export class AggregateOperator<TSource, UAccumulate, VResult> extends TerminalOperator<TSource, VResult> {
+export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     private readonly seed: UAccumulate;
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;
     private readonly resultSelector: (accumulate: UAccumulate) => VResult;

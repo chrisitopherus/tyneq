@@ -1,45 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { SkipLastEnumerator } from "../../enumerators/streaming/skipLast";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
+export class SkipLastOperator<TSource> extends TyneqOperator<TSource> {
     private readonly count: number;
-    private readonly buffer: T[];
-    private writeIndex: number = 0;
-    private filledCount: number = 0;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
-        super(sourceEnumerator);
-        this.count = count < 0 ? 0 : count;
-        this.buffer = new Array<T>(count);
+    public constructor(source: IEnumerable<TSource>, count: number) {
+        super(source);
+        this.count = count;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (this.count === 0) {
-            const current = this.sourceEnumerator.next();
-            if (current.done) {
-                return this.complete();
-            } else {
-                return this.yield(current.value);
-            }
-        }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const count = this.count;
 
-        while (true) {
-            const current = this.sourceEnumerator.next();
-            if (current.done) {
-                return this.complete();
-            }
-
-            if (this.filledCount < this.count) {
-                this.buffer[this.writeIndex] = current.value;
-                this.writeIndex = (this.writeIndex + 1) % this.count;
-                this.filledCount++;
-                continue;
-            }
-
-            const oldest = this.buffer[this.writeIndex];
-            this.buffer[this.writeIndex] = current.value;
-            this.writeIndex = (this.writeIndex + 1) % this.count;
-            return this.yield(oldest);
+        return () => {
+            return new SkipLastEnumerator<TSource>(source[Symbol.iterator](), count);
         }
     }
 }

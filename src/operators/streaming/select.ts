@@ -1,21 +1,22 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerable, IteratorFactory } from "../..";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { SelectEnumerator } from "../../enumerators/streaming/select";
 
-export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
-    private readonly selector: (item: T) => U;
+export class SelectOperator<TSource, TResult> extends TyneqOperator<TSource, TResult> {
+    private readonly selector: (item: TSource) => TResult
 
-    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => U) {
-        super(sourceEnumerator);
+    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => TResult) {
+        super(source);
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<U> {
-        const next = this.sourceEnumerator.next();
-        if (next.done) {
-            return this.complete();
-        }
+    public getFactory(): IteratorFactory<TResult> {
+        const source = this.source;
+        const selector = this.selector;
 
-        const value = next.value;
-        return this.yield(this.selector(value));
+        return () => {
+            return new SelectEnumerator<TSource, TResult>(source[Symbol.iterator](), selector);
+        }
     }
+
 }

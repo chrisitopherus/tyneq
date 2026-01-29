@@ -1,27 +1,26 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerable, IteratorFactory } from "../..";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { WhereEnumerator } from "../../enumerators/streaming/where";
+import { ZipEnumerator } from "../../enumerators/streaming/zip";
 
-export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
-    private readonly otherEnumerator: IEnumerator<U>;
-    private readonly selector: (first: T, second: U) => V;
+export class ZipOperator<TSource, TOther, TResult> extends TyneqOperator<TSource, TResult> {
+    private readonly other: IEnumerable<TOther>;
+    private readonly selector: (first: TSource, second: TOther) => TResult;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<U>, selector: (first: T, second: U) => V) {
-        super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
+    public constructor(source: IEnumerable<TSource>, other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult) {
+        super(source);
+        this.other = other;
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<V> {
-        const first = this.sourceEnumerator.next();
-        if (first.done) {
-            return this.complete();
-        }
+    public getFactory(): IteratorFactory<TResult> {
+        const source = this.source;
+        const other = this.other;
+        const selector = this.selector;
 
-        const second = this.otherEnumerator.next();
-        if (second.done) {
-            return this.complete();
+        return () => {
+            return new ZipEnumerator<TSource, TOther, TResult>(source[Symbol.iterator](), other[Symbol.iterator](), selector);
         }
-
-        return this.yield(this.selector(first.value, second.value));
     }
+
 }

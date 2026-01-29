@@ -1,7 +1,7 @@
-import { TerminalOperator } from "../../core/terminalOperator";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable } from "../../types/core";
 
-export class AnyOperator<T> extends TerminalOperator<T, boolean> {
+export class AnyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     private readonly predicate: (item: T) => boolean;
 
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {

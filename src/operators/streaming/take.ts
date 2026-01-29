@@ -1,27 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TakeEnumerator } from "../../enumerators/streaming/take";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class TakeEnumerator<T> extends TyneqEnumerator<T> {
+export class TakeOperator<TSource> extends TyneqOperator<TSource> {
     private readonly count: number;
 
-    private takenCount = 0;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
-        super(sourceEnumerator);
-        this.count = count < 0 ? 0 : count;
+    public constructor(source: IEnumerable<TSource>, count: number) {
+        super(source);
+        this.count = count;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (this.takenCount >= this.count) {
-            return this.complete();
-        }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const count = this.count;
 
-        const result = this.sourceEnumerator.next();
-        if (result.done) {
-            return this.complete();
+        return () => {
+            return new TakeEnumerator<TSource>(source[Symbol.iterator](), count);
         }
-
-        this.takenCount++;
-        return this.yield(result.value);
     }
 }

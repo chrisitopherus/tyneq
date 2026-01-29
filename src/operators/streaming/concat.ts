@@ -1,31 +1,21 @@
-import { TyneqEnumerator } from "../../core/enumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { ConcatEnumerator } from "../../enumerators/streaming/concat";
+import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly otherEnumerator: IEnumerator<T>;
+export class ConcatOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly other: IEnumerable<TSource>;
 
-    private isSourceDone = false;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<T>) {
-        super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
+    public constructor(source: IEnumerable<TSource>, other: IEnumerable<TSource>) {
+        super(source);
+        this.other = other;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (!this.isSourceDone) {
-            const next = this.sourceEnumerator.next();
-            if (!next.done) {
-                return this.yield(next.value);
-            }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const other = this.other;
 
-            this.isSourceDone = true;
+        return () => {
+            return new ConcatEnumerator<TSource>(source[Symbol.iterator](), other[Symbol.iterator]());
         }
-
-        const next = this.otherEnumerator.next();
-        if (!next.done) {
-            return this.yield(next.value);
-        }
-
-        return this.complete();
     }
 }
