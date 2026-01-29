@@ -30,6 +30,8 @@ import { ReverseOperator } from "../../operators/buffer/reverse";
 import { AllOperator } from "../../operators/terminal/all";
 import { AnyOperator } from "../../operators/terminal/any";
 import { CountOperator } from "../../operators/terminal/count";
+import { ContainsOperator } from "../../operators/terminal/contains";
+import { DefaultIfEmptyOperator } from "../../operators/terminal/defaultIfEmpty";
 
 export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnumerable<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
@@ -70,19 +72,6 @@ export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnume
 
     // terminal operators
 
-    public toArray(): TSource[] {
-        return Array.from(this);
-    }
-
-    /**
-     * Returns the number of elements in a sequence.
-     * @returns The number of elements in the input sequence.
-     */
-    public count(): number {
-        return new CountOperator<TSource>(this)
-            .process();
-    }
-
     /**
      * Determines whether any element of a sequence satisfies a condition.
      * @param predicate A function to test each element for a condition.
@@ -96,6 +85,29 @@ export class TyneqOrderedEnumerable<TSource, TKey> implements ITyneqOrderedEnume
     public all(predicate: (item: TSource) => boolean): boolean {
         return new AllOperator<TSource>(this, predicate)
             .process();
+    }
+
+    public contains(value: TSource): boolean {
+        return new ContainsOperator<TSource>(this, value)
+            .process();
+    }
+
+    /**
+     * Returns the number of elements in a sequence.
+     * @returns The number of elements in the input sequence.
+     */
+    public count(): number {
+        return new CountOperator<TSource>(this)
+            .process();
+    }
+
+    public defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource> {
+        return new DefaultIfEmptyOperator<TSource>(this, defaultValue)
+            .process();
+    }
+
+    public toArray(): TSource[] {
+        return Array.from(this);
     }
 
     // stream operators

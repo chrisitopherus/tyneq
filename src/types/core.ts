@@ -32,13 +32,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
 
     // terminal operators
-    toArray(): TSource[];
-
-    count(): number;
-
     any(predicate: (item: TSource) => boolean): boolean;
 
     all(predicate: (item: TSource) => boolean): boolean;
+
+    contains(value: TSource): boolean;
+
+    count(): number;
+
+    defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
+
+    toArray(): TSource[];
 
     // stream operators
 
