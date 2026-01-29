@@ -1,5 +1,3 @@
-import { SelectEnumerator } from "../enumerators/streaming/select";
-import { SelectManyEnumerator } from "../enumerators/streaming/selectMany";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { CountOperator } from "../operators/terminal/count";
@@ -21,6 +19,17 @@ import { SkipWhileOperator } from "../operators/streaming/skipWhile";
 import { TakeOperator } from "../operators/streaming/take";
 import { TakeWhileOperator } from "../operators/streaming/takeWhile";
 import { ZipOperator } from "../operators/streaming/zip";
+import { DistinctOperator } from "../operators/buffer/distinct";
+import { DistinctByOperator } from "../operators/buffer/distinctBy";
+import { ExceptOperator } from "../operators/buffer/except";
+import { ExceptByOperator } from "../operators/buffer/exceptBy";
+import { IntersectOperator } from "../operators/buffer/intersect";
+import { IntersectByOperator } from "../operators/buffer/intersectBy";
+import { GroupByOperator } from "../operators/buffer/groupBy";
+import { ReverseOperator } from "../operators/buffer/reverse";
+import { UnionEnumerator } from "../enumerators/buffer/union";
+import { UnionOperator } from "../operators/buffer/union";
+import { UnionByOperator } from "../operators/buffer/unionBy";
 
 export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
     public constructor(protected readonly iteratorFactory: IteratorFactory<TSource>) { }
@@ -139,48 +148,55 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
 
     // buffering operators
 
-    public reverse(): TyneqEnumerable<TSource> {
-        const source = this;
-        const factory: IteratorFactory<TSource> = () => {
-            const inner = source[Symbol.iterator]();
-            return new ReverseEnumerator<TSource>(inner);
-        };
-
-        return new TyneqEnumerable<TSource>(factory);
-    }
-
     public distinct(): TyneqEnumerable<TSource> {
-        const source = this;
-        const factory: IteratorFactory<TSource> = () => {
-            const inner = source[Symbol.iterator]();
-            return new DistinctEnumerator<TSource>(inner);
-        };
-
-        return new TyneqEnumerable<TSource>(factory);
+        return new TyneqEnumerable<TSource>(
+            new DistinctOperator<TSource>(this).getFactory()
+        );
     }
 
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqEnumerable<TSource> {
-        const source = this;
-        const factory: IteratorFactory<TSource> = () => {
-            const inner = source[Symbol.iterator]();
-            return new DistinctByEnumerator<TSource, TKey>(inner, keySelector);
-        };
+        return new TyneqEnumerable<TSource>(
+            new DistinctByOperator<TSource, TKey>(this, keySelector).getFactory()
+        );
+    }
 
-        return new TyneqEnumerable<TSource>(factory);
+    public except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new ExceptOperator<TSource>(this, excludedValues).getFactory()
+        );
+    }
+
+    public exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new ExceptByOperator<TSource, TKey>(this, excludedKeys, keySelector).getFactory()
+        );
     }
 
     public groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
         valueSelector: (item: TSource) => TValue,
-        resultSelector: (key: TKey, values: TyneqEnumerable<TValue>) => TResult
-    ): TyneqEnumerable<TResult> {
-        const source = this;
-        const factory: IteratorFactory<TResult> = () => {
-            const inner = source[Symbol.iterator]();
-            return new GroupByEnumerator(inner, keySelector, valueSelector, resultSelector);
-        };
+        resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
+    ): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(
+            new GroupByOperator<TSource, TKey, TValue, TResult>(
+                this,
+                keySelector,
+                valueSelector,
+                resultSelector
+            ).getFactory()
+        );
+    }
 
-        return new TyneqEnumerable<TResult>(factory);
+    public intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new IntersectOperator<TSource>(this, intersectedValues).getFactory()
+        );
+    }
+
+    public intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new IntersectByOperator<TSource, TKey>(this, intersectedKeys, keySelector).getFactory()
+        );
     }
 
     public orderBy<TKey>(
@@ -192,13 +208,36 @@ export class TyneqEnumerable<TSource> implements ITyneqEnumerable<TSource> {
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
             false
-        )
+        );
     }
 
     public orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        throw new Error("Method not implemented.");
+        return new TyneqOrderedEnumerable<TSource, TKey>(
+            this,
+            keySelector,
+            comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+            true
+        )
+    }
+
+    public reverse(): TyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new ReverseOperator<TSource>(this).getFactory()
+        );
+    }
+
+    public union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new UnionOperator<TSource>(this, otherValues).getFactory()
+        );
+    }
+
+    public unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+        return new TyneqEnumerable<TSource>(
+            new UnionByOperator<TSource, TKey>(this, otherValues, keySelector).getFactory()
+        );
     }
 }
