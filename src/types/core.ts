@@ -27,47 +27,89 @@ export interface IEnumerable<T> extends Iterable<T> {
  */
 export type IteratorFactory<T> = () => IEnumerator<T>;
 
-export interface ITyneqBaseEnumerable<TSource> extends IEnumerable<TSource> {
-
+export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // conversion operators
 
 
     // terminal operators
     toArray(): TSource[];
+
     count(): number;
+
     any(predicate: (item: TSource) => boolean): boolean;
+
     all(predicate: (item: TSource) => boolean): boolean;
 
     // stream operators
+
     append(item: TSource): ITyneqEnumerable<TSource>;
+
     concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+
     prepend(item: TSource): ITyneqEnumerable<TSource>;
+
     select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
+
     selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult>;
+
     skip(count: number): ITyneqEnumerable<TSource>;
+
     skipLast(count: number): ITyneqEnumerable<TSource>;
+
     skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+
     take(count: number): ITyneqEnumerable<TSource>;
+
     takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+
     where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+
     zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
 
     // buffering operators
-    orderBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
-    orderByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+
+    distinct(): ITyneqEnumerable<TSource>;
+
+    distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+
+    except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+
+    exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+
+    groupBy<TKey, TValue, TResult>(
+        keySelector: (item: TSource) => TKey,
+        valueSelector: (item: TSource) => TValue,
+        resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
+    ): ITyneqEnumerable<TResult>;
+
+    intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+
+    intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+
+    orderBy<TKey>(
+        keySelector: (item: TSource) => TKey,
+        comparer?: (a: TKey, b: TKey) => number
+    ): ITyneqOrderedEnumerable<TSource>;
+
+    orderByDescending<TKey>(
+        keySelector: (item: TSource) => TKey,
+        comparer?: (a: TKey, b: TKey) => number
+    ): ITyneqOrderedEnumerable<TSource>;
+
+    reverse(): ITyneqEnumerable<TSource>;
+
+    union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+
+    unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 }
 
-export interface ITyneqEnumerable<TSource> extends ITyneqBaseEnumerable<TSource> {
-    // may be extended later
-}
-
-export interface ITyneqOrderedEnumerable<TSource> extends ITyneqBaseEnumerable<TSource> {
+export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
     thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
 }
 
 export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
-    source: ITyneqBaseEnumerable<TSource>;
+    source: ITyneqEnumerable<TSource>;
     parent: Nullable<IOrderedEnumerable<TSource>>;
     getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource>;
 }

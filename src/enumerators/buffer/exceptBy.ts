@@ -2,20 +2,20 @@ import { TyneqEnumerator } from "../../core/TyneqEnumerator";
 import { EnumeratorResult, IEnumerable, IEnumerator } from '../../types/core';
 
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
-    private readonly excludedValues: IEnumerable<TKey>;
+    private readonly excludedKeys: IEnumerable<TKey>;
     private excludeSet = new Set<TKey>();
     private initialized = false;
     private readonly keySelector: (item: TSource) => TKey;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedValues: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
-        this.excludedValues = excludedValues;
+        this.excludedKeys = excludedKeys;
         this.keySelector = keySelector;
     }
 
     protected override handleNext(): EnumeratorResult<TSource> {
         if (!this.initialized) {
-            this.excludeSet = new Set<TKey>(this.excludedValues);
+            this.excludeSet = new Set<TKey>(this.excludedKeys);
             this.initialized = true;
         }
 

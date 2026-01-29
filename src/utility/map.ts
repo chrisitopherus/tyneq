@@ -13,8 +13,13 @@ export class TyneqMap<TKey, TValue> extends Map<TKey, TValue> {
         return value;
     }
 
-    public setOrUpdate(key: TKey, updateValue: (currentValue: Undefinedable<TValue>) => TValue): void {
+    public setOrUpdate(key: TKey, updateValue: (currentValue: TValue) => TValue, initValue: TValue): void {
         const currentValue = this.get(key);
+        if (currentValue === undefined) {
+            this.set(key, initValue);
+            return;
+        }
+        
         const newValue = updateValue(currentValue);
         this.set(key, newValue);
     }
