@@ -105,6 +105,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
     unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+
+    // extension/plugin
+    custom<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult>;
 }
 
 export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
