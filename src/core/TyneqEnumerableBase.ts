@@ -5,6 +5,7 @@ import { ExceptByOperator } from "../operators/buffer/exceptBy";
 import { GroupByOperator } from "../operators/buffer/groupBy";
 import { IntersectOperator } from "../operators/buffer/intersect";
 import { IntersectByOperator } from "../operators/buffer/intersectBy";
+import { JoinOperator } from "../operators/buffer/join";
 import { ReverseOperator } from "../operators/buffer/reverse";
 import { UnionOperator } from "../operators/buffer/union";
 import { UnionByOperator } from "../operators/buffer/unionBy";
@@ -305,6 +306,17 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new IntersectByOperator<TSource, TKey>(this, intersectedKeys, keySelector).getFactory()
+        );
+    }
+
+    public join<TInner, TKey, TResult>(
+        inner: IEnumerable<TInner>,
+        outerKeySelector: (outer: TSource) => TKey,
+        innerKeySelector: (inner: TInner) => TKey,
+        resultSelector: (outer: TSource, inner: TInner) => TResult
+    ): ITyneqEnumerable<TResult> {
+        return this.createEnumerable(
+            new JoinOperator<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector).getFactory()
         );
     }
 
