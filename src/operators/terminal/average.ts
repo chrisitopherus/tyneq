@@ -1,11 +1,15 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable, IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
 
 export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 
     public constructor(source: IEnumerable<T>, selector: (item: T) => number) {
         super(source);
+        ArgumentUtility.checkNotOptional(selector, nameof({ selector }));
+        
         this.selector = selector;
     }
 

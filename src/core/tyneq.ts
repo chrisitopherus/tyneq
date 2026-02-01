@@ -1,5 +1,7 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
 import { IteratorFactory } from "../types/core";
+import { ArgumentUtility } from "../utility/argumentUtility";
+import { nameof } from "../utility/nameof";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 
 /**
@@ -35,6 +37,8 @@ export class Tyneq {
      * ```
      */
     public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
+        ArgumentUtility.checkNotOptional(source, nameof({ source }));
+
         const factory: IteratorFactory<TSource> = () => source[Symbol.iterator]();
         return new TyneqEnumerable<TSource>(factory);
     }
@@ -54,6 +58,9 @@ export class Tyneq {
      * ```
      */
     public static range(start: number, count: number): TyneqEnumerable<number> {
+        ArgumentUtility.checkNonNegative(start, nameof({ start }));
+        ArgumentUtility.checkNonNegative(count, nameof({ count }));
+
         const arr = new Array<number>(count);
         const factory: IteratorFactory<number> = () => {
             const source = arr[Symbol.iterator]();

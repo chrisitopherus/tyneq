@@ -25,6 +25,12 @@ import { AnyOperator } from "../operators/terminal/any";
 import { ContainsOperator } from "../operators/terminal/contains";
 import { CountOperator } from "../operators/terminal/count";
 import { DefaultIfEmptyOperator } from "../operators/terminal/defaultIfEmpty";
+import { ElementAtOperator } from "../operators/terminal/elementAt";
+import { ElementAtOrDefaultOperator } from "../operators/terminal/elementAtOrDefault";
+import { FirstOperator } from "../operators/terminal/first";
+import { FirstOrDefaultOperator } from "../operators/terminal/firstOrDefault";
+import { LastOperator } from "../operators/terminal/last";
+import { LastOrDefaultOperator } from "../operators/terminal/lastOrDefault";
 import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../types/core";
 
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
@@ -68,6 +74,36 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     public defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource> {
         return new DefaultIfEmptyOperator<TSource>(this, defaultValue)
+            .process();
+    }
+
+    public elementAt(index: number): TSource {
+        return new ElementAtOperator<TSource>(this, index)
+            .process();
+    }
+
+    public elementAtOrDefault(index: number, defaultValue: TSource): TSource {
+        return new ElementAtOrDefaultOperator<TSource>(this, index, defaultValue)
+            .process();
+    }
+
+    public first(predicate: (item: TSource) => boolean): TSource {
+        return new FirstOperator<TSource>(this, predicate)
+            .process();
+    }
+
+    public firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
+        return new FirstOrDefaultOperator<TSource>(this, predicate, defaultValue)
+            .process();
+    }
+
+    public last(predicate: (item: TSource) => boolean): TSource {
+        return new LastOperator<TSource>(this, predicate)
+            .process();
+    }
+
+    public lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
+        return new LastOrDefaultOperator<TSource>(this, predicate, defaultValue)
             .process();
     }
 

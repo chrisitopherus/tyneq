@@ -42,6 +42,18 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
 
+    elementAt(index: number): TSource;
+
+    elementAtOrDefault(index: number, defaultValue: TSource): TSource;
+
+    first(predicate: (item: TSource) => boolean): TSource;
+
+    firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+
+    last(predicate: (item: TSource) => boolean): TSource;
+
+    lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+
     toArray(): TSource[];
 
     // stream operators

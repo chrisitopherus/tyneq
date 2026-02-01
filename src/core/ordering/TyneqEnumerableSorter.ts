@@ -1,4 +1,6 @@
 import { Nullable } from "../../types/utility";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 
 export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<TSource> {
@@ -10,6 +12,9 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
 
     public constructor(keySelector: (item: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean, next?: BaseEnumerableSorter<TSource>) {
         super();
+        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
+        ArgumentUtility.checkNotOptional(comparer, nameof({ comparer }));
+        
         this.keySelector = keySelector;
         this.comparer = comparer;
         this.descending = descending ? -1 : 1;

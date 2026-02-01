@@ -1,6 +1,8 @@
 
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
 
 export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     private readonly seed: UAccumulate;
@@ -14,6 +16,9 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTermi
         resultSelector: (accumulate: UAccumulate) => VResult
     ) {
         super(source);
+        ArgumentUtility.checkNotOptional(func, nameof({ func }));
+        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
+        
         this.seed = seed;
         this.func = func;
         this.resultSelector = resultSelector;
