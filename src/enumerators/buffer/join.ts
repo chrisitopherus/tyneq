@@ -1,5 +1,7 @@
+import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
 import { EnumeratorResult, IEnumerator, IEnumerable } from '../../types/core';
+import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 import { nameof } from "../../utility/nameof";
@@ -12,6 +14,10 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
 
     private isInitialized = false;
     private innerLookup = new TyneqMap<TKey, TInner[]>();
+    
+    private pendingOuter!: TOuter;
+    private pendingMatches: Nullable<TInner[]> = null;
+    private pendingIndex = 0;
 
     public constructor(
         sourceEnumerator: IEnumerator<TOuter>,
@@ -33,30 +39,47 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
     }
 
     protected handleNext(): EnumeratorResult<TResult> {
-        if (!this.isInitialized) {
-            for (const innerItem of this.innerSource) {
-                const key = this.innerKeySelector(innerItem);
-                const bucket = this.innerLookup.getOrInit(key, () => []);
-                bucket.push(innerItem);
-            }
-
-            this.isInitialized = true;
-        }
+        this.ensureInitialized();
 
         while (true) {
-            const { done, value: outerItem } = this.sourceEnumerator.next();
-            if (done) {
+
+
+            if (this.pendingMatches !== null) {
+                if (this.pendingIndex < this.pendingMatches.length) {
+                    return this.yield(this.resultSelector(this.pendingOuter, this.pendingMatches[this.pendingIndex++]));
+                }
+
+                this.pendingMatches = null;
+            }
+
+            const nextOuter = this.sourceEnumerator.next();
+            if (nextOuter.done) {
                 return this.complete();
             }
 
+            const outerItem = nextOuter.value;
             const outerKey = this.outerKeySelector(outerItem);
             const innerItems = this.innerLookup.get(outerKey);
-            if (innerItems === undefined) continue;
 
-            for (const innerItem of innerItems) {
-                const resultItem = this.resultSelector(outerItem, innerItem);
-                return this.yield(resultItem);
+            if (innerItems === undefined || innerItems.length === 0) {
+                continue;
             }
+
+            this.pendingOuter = outerItem;
+            this.pendingMatches = innerItems;
+            this.pendingIndex = 0;
         }
+    }
+
+    private ensureInitialized(): void {
+        if (this.isInitialized) return;
+
+        for (const innerItem of this.innerSource) {
+            const key = this.innerKeySelector(innerItem);
+            const bucket = this.innerLookup.getOrInit(key, () => []);
+            bucket.push(innerItem);
+        }
+
+        this.isInitialized = true;
     }
 }

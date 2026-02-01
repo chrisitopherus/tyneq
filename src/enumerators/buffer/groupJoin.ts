@@ -51,8 +51,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
             }
 
             const outerKey = this.outerKeySelector(outerItem);
-            const innerItems = this.innerLookup.get(outerKey);
-            if (innerItems === undefined) continue;
+            const innerItems = this.innerLookup.get(outerKey) ?? [];
 
             const resultItem = this.resultSelector(outerItem, Tyneq.from(innerItems));
             return this.yield(resultItem);
