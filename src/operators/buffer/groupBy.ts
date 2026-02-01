@@ -1,6 +1,8 @@
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
 import { GroupByEnumerator } from "../../enumerators/buffer/groupBy";
 import { IEnumerable, IteratorFactory, ITyneqEnumerable } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
 
 export class GroupByOperator<TSource, TKey, TValue, TResult> extends TyneqOperator<TSource, TResult> {
     private readonly keySelector: (item: TSource) => TKey;
@@ -14,6 +16,10 @@ export class GroupByOperator<TSource, TKey, TValue, TResult> extends TyneqOperat
         resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
     ) {
         super(source);
+        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
+        ArgumentUtility.checkNotOptional(valueSelector, nameof({ valueSelector }));
+        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
+
         this.keySelector = keySelector;
         this.valueSelector = valueSelector;
         this.resultSelector = resultSelector;

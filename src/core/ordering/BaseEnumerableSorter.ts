@@ -1,4 +1,4 @@
-import { Tyneq } from "../..";
+import { Tyneq } from "../../core/tyneq";
 
 export abstract class BaseEnumerableSorter<TSource> {
     public abstract computeKeys(source: TSource[], count: number): void;

@@ -1,4 +1,6 @@
 import { EnumeratorResult, EnumeratorResultKind, EnumeratorCompleteResult, EnumeratorYieldResult, IEnumerator } from '../types/core';
+import { ArgumentUtility } from '../utility/argumentUtility';
+import { nameof } from '../utility/nameof';
 import { TyneqIteratorResult } from './TyneqIteratorResult';
 
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
@@ -6,6 +8,8 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnum
     protected readonly sourceEnumerator: IEnumerator<TInput>;
 
     public constructor(sourceEnumerator: IEnumerator<TInput>) {
+        ArgumentUtility.checkNotOptional(sourceEnumerator, nameof({ sourceEnumerator }));
+        
         this.sourceEnumerator = sourceEnumerator;
     }
 
