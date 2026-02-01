@@ -69,4 +69,8 @@ export class Tyneq {
 
         return new TyneqEnumerable<number>(factory);
     }
+
+    public static empty<TSource>(): TyneqEnumerable<TSource> {
+        return this.from<TSource>([]);
+    }
 }
