@@ -46,6 +46,8 @@ import { ToMapOperator } from "../operators/terminal/toMap";
 import { ToRecordOperator } from "../operators/terminal/toRecord";
 import { ToSetOperator } from "../operators/terminal/toSet";
 import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
+import { ArgumentUtility } from "../utility/argumentUtility";
+import { nameof } from "../utility/nameof";
 
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
 
@@ -363,6 +365,8 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     // extensions
 
     public pipe<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult> {
+        ArgumentUtility.checkNotOptional(factory, nameof({ factory }));
+        
         return this.createEnumerable(
             () => factory(this.getSource())
         );

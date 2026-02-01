@@ -17,7 +17,7 @@ export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<
 
     public process(): Map<TKey, TValue> {
         return new Map<TKey, TValue>(Tyneq.from(this.source).select((item) => {
-            const pair: Nullable<KeyValuePair<TKey, TValue>> = this.selector(item);
+            const pair: KeyValuePair<TKey, TValue> = this.selector(item);
             return this.transformPairToTuple(pair);
         }));
     }

@@ -58,8 +58,8 @@ export class Tyneq {
      * ```
      */
     public static range(start: number, count: number): TyneqEnumerable<number> {
-        ArgumentUtility.checkNonNegative(start, nameof({ start }));
         ArgumentUtility.checkNonNegative(count, nameof({ count }));
+        ArgumentUtility.checkInteger(count, nameof({ count }));
 
         const arr = new Array<number>(count);
         const factory: IteratorFactory<number> = () => {

@@ -1,5 +1,5 @@
-import { Tyneq } from "../..";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { Tyneq } from "../../core/tyneq";
 import { IEnumerator, ITyneqEnumerable } from "../../types/core";
 
 export class DefaultIfEmptyOperator<TSource> extends TyneqTerminalOperator<TSource, ITyneqEnumerable<TSource>> {
