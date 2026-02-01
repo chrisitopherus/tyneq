@@ -122,6 +122,13 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
     ): ITyneqEnumerable<TResult>;
 
+    groupJoin<TInner, TKey, TResult>(
+        inner: IEnumerable<TInner>,
+        outerKeySelector: (outer: TSource) => TKey,
+        innerKeySelector: (inner: TInner) => TKey,
+        resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
+    ): ITyneqEnumerable<TResult>;
+
     intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
     intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;

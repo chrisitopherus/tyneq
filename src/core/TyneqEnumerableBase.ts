@@ -3,6 +3,7 @@ import { DistinctByOperator } from "../operators/buffer/distinctBy";
 import { ExceptOperator } from "../operators/buffer/except";
 import { ExceptByOperator } from "../operators/buffer/exceptBy";
 import { GroupByOperator } from "../operators/buffer/groupBy";
+import { GroupJoinOperator } from "../operators/buffer/groupJoin";
 import { IntersectOperator } from "../operators/buffer/intersect";
 import { IntersectByOperator } from "../operators/buffer/intersectBy";
 import { JoinOperator } from "../operators/buffer/join";
@@ -296,6 +297,17 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     ): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
             new GroupByOperator<TSource, TKey, TValue, TResult>(this, keySelector, valueSelector, resultSelector).getFactory()
+        );
+    }
+
+    public groupJoin<TInner, TKey, TResult>(
+        inner: IEnumerable<TInner>,
+        outerKeySelector: (outer: TSource) => TKey,
+        innerKeySelector: (inner: TInner) => TKey,
+        resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
+    ): ITyneqEnumerable<TResult> {
+        return this.createEnumerable(
+            new GroupJoinOperator<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector).getFactory()
         );
     }
 
