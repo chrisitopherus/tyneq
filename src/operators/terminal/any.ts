@@ -14,14 +14,8 @@ export class AnyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     }
 
     public process(): boolean {
-        const enumerator = this.source[Symbol.iterator]();
-        while (true) {
-            const next = enumerator.next();
-            if (next.done) {
-                break;
-            }
-
-            if (this.predicate(next.value)) {
+        for (const item of this.source) {
+            if (this.predicate(item)) {
                 return true;
             }
         }

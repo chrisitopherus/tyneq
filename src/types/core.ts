@@ -54,11 +54,35 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
+    max(comparer?: (a: TSource, b: TSource) => number): TSource;
+
+    maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
+
+    min(comparer?: (a: TSource, b: TSource) => number): TSource;
+
+    minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
+
+    sequenceEqual(other: IEnumerable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean): boolean;
+
+    single(predicate: (item: TSource) => boolean): TSource;
+
+    singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+
+    sum(selector: (item: TSource) => number): number;
+
     toArray(): TSource[];
+
+    toMap<TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Map<TKey, TValue>;
+
+    toRecord<TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Record<TKey, TValue>;
+
+    toSet(): Set<TSource>;
 
     // stream operators
 
     append(item: TSource): ITyneqEnumerable<TSource>;
+
+    chunk(size: number): ITyneqEnumerable<TSource[]>;
 
     concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
@@ -119,7 +143,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     // extension/plugin
-    custom<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult>;
+    pipe<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult>;
 }
 
 export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
@@ -151,3 +175,8 @@ export interface EnumeratorCompleteResult<TReturn> {
 export type EnumeratorResult<TYield, TReturn = null> =
     | EnumeratorYieldResult<TYield>
     | EnumeratorCompleteResult<TReturn>;
+
+export type KeyValuePair<TKey, TValue> = {
+    key: TKey;
+    value: TValue;
+};

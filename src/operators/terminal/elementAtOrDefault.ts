@@ -1,4 +1,3 @@
-import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";

@@ -9,24 +9,17 @@ export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
         super(source);
         ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
-        
+
         this.predicate = predicate;
     }
 
     public process(): boolean {
-        const enumerator = this.source[Symbol.iterator]();
-        while (true) {
-            const next = enumerator.next();
-            if (next.done) {
-                break;
-            }
-
-            if (!this.predicate(next.value)) {
+        for (const item of this.source) {
+            if (!this.predicate(item)) {
                 return false;
             }
         }
 
         return true;
     }
-
 }

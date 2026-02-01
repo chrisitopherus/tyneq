@@ -1,4 +1,3 @@
-
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -26,16 +25,11 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTermi
 
     public process(): VResult {
         let accumulate = this.seed;
-        const enumerator = this.source[Symbol.iterator]();
-
-        while (true) {
-            const { done, value } = enumerator.next();
-            if (done) {
-                return this.resultSelector(accumulate);
-            }
-
-            accumulate = this.func(accumulate, value);
+        for (const item of this.source) {
+            accumulate = this.func(accumulate, item);
         }
+
+        return this.resultSelector(accumulate);
     }
 
 }

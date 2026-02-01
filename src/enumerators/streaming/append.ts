@@ -1,7 +1,6 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
 import { EnumeratorResult, IEnumerator } from "../../types/core";
 
-
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     private isSourceDone = false;
     private appended = false;

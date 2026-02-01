@@ -9,6 +9,7 @@ import { ReverseOperator } from "../operators/buffer/reverse";
 import { UnionOperator } from "../operators/buffer/union";
 import { UnionByOperator } from "../operators/buffer/unionBy";
 import { AppendOperator } from "../operators/streaming/append";
+import { ChunkOperator } from "../operators/streaming/chunk";
 import { ConcatOperator } from "../operators/streaming/concat";
 import { PrependOperator } from "../operators/streaming/prepend";
 import { SelectOperator } from "../operators/streaming/select";
@@ -31,7 +32,19 @@ import { FirstOperator } from "../operators/terminal/first";
 import { FirstOrDefaultOperator } from "../operators/terminal/firstOrDefault";
 import { LastOperator } from "../operators/terminal/last";
 import { LastOrDefaultOperator } from "../operators/terminal/lastOrDefault";
-import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../types/core";
+import { MaxOperator } from "../operators/terminal/max";
+import { MaxByOperator } from "../operators/terminal/maxBy";
+import { MinOperator } from "../operators/terminal/min";
+import { MinByOperator } from "../operators/terminal/minBy";
+import { SequenceEqualOperator } from "../operators/terminal/sequenceEqual";
+import { SingleOperator } from "../operators/terminal/single";
+import { SingleOrDefaultOperator } from "../operators/terminal/singleOrDefault";
+import { SumOperator } from "../operators/terminal/sum";
+import { ToArrayOperator } from "../operators/terminal/toArray";
+import { ToMapOperator } from "../operators/terminal/toMap";
+import { ToRecordOperator } from "../operators/terminal/toRecord";
+import { ToSetOperator } from "../operators/terminal/toSet";
+import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
 
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
 
@@ -107,8 +120,64 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
             .process();
     }
 
+    public max(comparer?: ((a: TSource, b: TSource) => number) | undefined): TSource {
+        return new MaxOperator<TSource>(this, comparer)
+            .process();
+    }
+
+    public maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: ((a: TKey, b: TKey) => number) | undefined): TSource {
+        return new MaxByOperator<TSource, TKey>(this, keySelector, comparer)
+            .process();
+    }
+
+    public min(comparer?: ((a: TSource, b: TSource) => number) | undefined): TSource {
+        return new MinOperator<TSource>(this, comparer)
+            .process();
+    }
+
+    public minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: ((a: TKey, b: TKey) => number) | undefined): TSource {
+        return new MinByOperator<TSource, TKey>(this, keySelector, comparer)
+            .process();
+    }
+
+    public sequenceEqual(other: IEnumerable<TSource>, equalityComparer?: ((a: TSource, b: TSource) => boolean) | undefined): boolean {
+        return new SequenceEqualOperator<TSource>(this, other, equalityComparer)
+            .process();
+    }
+
+    public single(predicate: (item: TSource) => boolean): TSource {
+        return new SingleOperator<TSource>(this, predicate)
+            .process();
+    }
+
+    public singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
+        return new SingleOrDefaultOperator<TSource>(this, predicate, defaultValue)
+            .process();
+    }
+
+    public sum(selector: (item: TSource) => number): number {
+        return new SumOperator<TSource>(this, selector)
+            .process();
+    }
+
     public toArray(): TSource[] {
-        return Array.from(this);
+        return new ToArrayOperator<TSource>(this)
+            .process();
+    }
+
+    public toMap<TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Map<TKey, TValue> {
+        return new ToMapOperator<TSource, TKey, TValue>(this, selector)
+            .process();
+    }
+
+    public toRecord<TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Record<TKey, TValue> {
+        return new ToRecordOperator<TSource, TKey, TValue>(this, selector)
+            .process();
+    }
+
+    public toSet(): Set<TSource> {
+        return new ToSetOperator<TSource>(this)
+            .process();
     }
 
     // stream operators
@@ -116,6 +185,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public append(item: TSource): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new AppendOperator<TSource>(this, item).getFactory()
+        );
+    }
+
+    public chunk(size: number): ITyneqEnumerable<TSource[]> {
+        return this.createEnumerable(
+            new ChunkOperator<TSource>(this, size).getFactory()
         );
     }
 
@@ -273,7 +348,9 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         );
     }
 
-    public custom<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult> {
+    // extensions
+
+    public pipe<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
             () => factory(this.getSource())
         );
