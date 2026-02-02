@@ -1,26 +1,22 @@
-import { EnumeratorResult } from '../../core/enumeratorResult';
-import { IEnumerator } from '../../types/core';
+import { IEnumerable, IteratorFactory } from "../..";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { WhereEnumerator } from "../../enumerators/streaming/where";
 
-export class WhereEnumerator<T> implements IEnumerator<T> {
-    private readonly sourceEnumerator: IEnumerator<T>;
-    private readonly predicate: (item: T) => boolean;
+export class WhereOperator<TSource> extends TyneqOperator<TSource> {
+    private readonly predicate: (item: TSource) => boolean;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
-        this.sourceEnumerator = sourceEnumerator;
+    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
+        super(source);
         this.predicate = predicate;
     }
 
-    public next(): IteratorResult<T> {
-        while (true) {
-            const next = this.sourceEnumerator.next();
-            if (next.done) {
-                return EnumeratorResult.done();
-            }
-
-            const value = next.value;
-            if (this.predicate(value)) {
-                return EnumeratorResult.yield(value);
-            }
+    public getFactory(): IteratorFactory<TSource> {
+        const source = this.source;
+        const predicate = this.predicate;
+        
+        return () => {
+            return new WhereEnumerator<TSource>(source[Symbol.iterator](), predicate);
         }
     }
+
 }

@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "debug": "node --inspect-brk --enable-source-maps ./node_modules/tsx/dist/cli.mjs src/dev.ts",
     "prepublishOnly": "npm run build"
   },
   "repository": {

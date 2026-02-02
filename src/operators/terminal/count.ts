@@ -1,8 +1,8 @@
 
-import { IEnumerable, IEnumerator } from "../../types/core";
-import { TerminalOperator } from "./terminalOperator";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { IEnumerable } from "../../types/core";
 
-export class CountOperator<T> extends TerminalOperator<T, number> {
+export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     public constructor(source: IEnumerable<T>) {
         super(source);
     }
@@ -13,13 +13,7 @@ export class CountOperator<T> extends TerminalOperator<T, number> {
         }
 
         let count = 0;
-        const enumerator: IEnumerator<T> = this.source[Symbol.iterator]();
-        while (true) {
-            const next = enumerator.next();
-            if (next.done) {
-                break;
-            }
-
+        for (const _ of this.source) {
             count++;
         }
 

@@ -1,36 +1,22 @@
-import { Enumerable } from "../../core/enumerable";
-import { EnumeratorResult } from "../../core/enumeratorResult";
-import { IEnumerable, IEnumerator } from "../../types/core";
-import { Nullable } from '../../types/utility';
+import { IEnumerable, IteratorFactory } from "../..";
+import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { SelectManyEnumerator } from "../../enumerators/streaming/selectMany";
 
-export class SelectManyEnumerator<T, U> implements IEnumerator<U> {
-    private readonly sourceEnumerator: IEnumerator<T>;
-    private readonly selector: (item: T) => IEnumerable<U>;
+export class SelectManyOperator<TSource, TResult> extends TyneqOperator<TSource, TResult> {
+    private readonly selector: (item: TSource) => IEnumerable<TResult>;
 
-    private innerEnumerator: Nullable<IEnumerator<U>> = null;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => IEnumerable<U>) {
-        this.sourceEnumerator = sourceEnumerator;
+    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => IEnumerable<TResult>) {
+        super(source);
         this.selector = selector;
     }
 
-    public next(): IteratorResult<U> {
-        while (true) {
-            if (this.innerEnumerator !== null) {
-                const innerNext = this.innerEnumerator.next();
-                if (!innerNext.done) {
-                    return EnumeratorResult.yield(innerNext.value);
-                }
+    public getFactory(): IteratorFactory<TResult> {
+        const source = this.source;
+        const selector = this.selector;
 
-                this.innerEnumerator = null;
-            }
-
-            const sourceNext = this.sourceEnumerator.next();
-            if (sourceNext.done) {
-                return EnumeratorResult.done<U>();
-            }
-
-            this.innerEnumerator = this.selector(sourceNext.value)[Symbol.iterator]();
+        return () => {
+            return new SelectManyEnumerator<TSource, TResult>(source[Symbol.iterator](), selector);
         }
     }
+
 }
