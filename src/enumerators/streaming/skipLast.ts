@@ -10,7 +10,7 @@ export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count < 0 ? 0 : count;
-        this.buffer = new Array<T>(count);
+        this.buffer = new Array<T>(this.count);
     }
 
     protected override handleNext(): EnumeratorResult<T> {

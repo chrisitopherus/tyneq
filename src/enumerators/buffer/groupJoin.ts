@@ -44,17 +44,15 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
             this.isInitialized = true;
         }
 
-        while (true) {
-            const { done, value: outerItem } = this.sourceEnumerator.next();
-            if (done) {
-                return this.complete();
-            }
-
-            const outerKey = this.outerKeySelector(outerItem);
-            const innerItems = this.innerLookup.get(outerKey) ?? [];
-
-            const resultItem = this.resultSelector(outerItem, Tyneq.from(innerItems));
-            return this.yield(resultItem);
+        const { done, value: outerItem } = this.sourceEnumerator.next();
+        if (done) {
+            return this.complete();
         }
+
+        const outerKey = this.outerKeySelector(outerItem);
+        const innerItems = this.innerLookup.get(outerKey) ?? [];
+
+        const resultItem = this.resultSelector(outerItem, Tyneq.from(innerItems));
+        return this.yield(resultItem);
     }
 }

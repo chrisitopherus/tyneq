@@ -11,7 +11,6 @@ export class MinOperator<TSource> extends TyneqTerminalOperator<TSource, TSource
 
     public constructor(source: ITyneqEnumerable<TSource>, comparer?: (a: TSource, b: TSource) => number) {
         super(source);
-        ArgumentUtility.checkNotNull(comparer, nameof({ comparer }));
 
         this.comparer = comparer ?? TyneqComparer.defaultComparer;
     }

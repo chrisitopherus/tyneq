@@ -1,5 +1,7 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
 import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
 
 export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
@@ -7,9 +9,9 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
 
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
-        
-        // instead prob better to throw/validate here
-        this.count = count < 0 ? 0 : count;
+        ArgumentUtility.checkNonNegative(count, nameof({ count }));
+
+        this.count = count;
     }
 
     protected override handleNext(): EnumeratorResult<T> {

@@ -1,5 +1,4 @@
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
-import { ExceptByEnumerator } from "../../enumerators/buffer/exceptBy";
 import { UnionByEnumerator } from "../../enumerators/buffer/unionBy";
 import { IEnumerable, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
