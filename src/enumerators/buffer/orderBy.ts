@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator, IOrderedEnumerable } from '../../types/core';
+import { EnumeratorResult, IEnumerator, IOrderedEnumerable } from '../../types/core';
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
 

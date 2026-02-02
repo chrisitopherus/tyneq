@@ -1,7 +1,6 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { Tyneq } from "../../core/tyneq";
 import { ITyneqEnumerable, KeyValuePair } from "../../types/core";
-import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 

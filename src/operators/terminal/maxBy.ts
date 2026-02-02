@@ -12,7 +12,6 @@ export class MaxByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource,
 
     public constructor(source: ITyneqEnumerable<TSource>, keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number) {
         super(source);
-        ArgumentUtility.checkNotNull(comparer, nameof({ comparer }));
         ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.comparer = comparer ?? TyneqComparer.defaultComparer;

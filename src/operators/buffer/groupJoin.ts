@@ -1,8 +1,5 @@
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
-import { GroupByEnumerator } from "../../enumerators/buffer/groupBy";
 import { GroupJoinEnumerator } from "../../enumerators/buffer/groupJoin";
-import { IntersectByEnumerator } from "../../enumerators/buffer/intersectBy";
-import { JoinEnumerator } from "../../enumerators/buffer/join";
 import { IEnumerable, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";

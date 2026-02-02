@@ -3,15 +3,12 @@ import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 
     public constructor(source: ITyneqEnumerable<TSource>, comparer?: (a: TSource, b: TSource) => number) {
         super(source);
-        ArgumentUtility.checkNotNull(comparer, nameof({ comparer }));
 
         this.comparer = comparer ?? TyneqComparer.defaultComparer;
     }

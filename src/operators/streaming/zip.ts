@@ -1,6 +1,5 @@
 import { IEnumerable, IteratorFactory } from "../..";
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
-import { WhereEnumerator } from "../../enumerators/streaming/where";
 import { ZipEnumerator } from "../../enumerators/streaming/zip";
 
 export class ZipOperator<TSource, TOther, TResult> extends TyneqOperator<TSource, TResult> {

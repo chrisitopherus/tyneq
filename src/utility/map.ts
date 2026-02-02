@@ -1,5 +1,3 @@
-import { Undefinedable } from "../types/utility";
-
 export class TyneqMap<TKey, TValue> extends Map<TKey, TValue> {
 
     public getOrInit(key: TKey, initValue: () => TValue): TValue {
