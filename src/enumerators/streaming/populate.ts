@@ -1,22 +1,22 @@
 import { TyneqEnumerator } from '../../core/TyneqEnumerator';
-import { EnumeratorResult, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
 
 export class PopulateEnumerator<TSource, TValue> extends TyneqEnumerator<TSource, TValue> {
-    private readonly generator: (item: TSource) => TValue;
+    private readonly value: TValue;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, generator: (item: TSource) => TValue) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, value: TValue) {
         super(sourceEnumerator);
-        this.generator = generator;
+        this.value = value;
     }
 
-    protected override handleNext(): EnumeratorResult<TValue> {
+    protected override handleNext(): IteratorResult<TValue> {
         while (true) {
-            const { value, done } = this.sourceEnumerator.next();
+            const { done } = this.sourceEnumerator.next();
             if (done) {
                 return this.complete();
             }
 
-            return this.yield(this.generator(value));
+            return this.yield(this.value);
         }
     }
 }

@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
@@ -14,7 +14,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
         this.count = count;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (!this.skipped) {
             let skippedCount = 0;
             while (skippedCount < this.count) {

@@ -13,7 +13,7 @@ export class TyneqIteratorResult<T> {
         return new TyneqIteratorResult(value, false) as IteratorResult<T>;
     }
 
-    public static complete<T = null>(): IteratorResult<T> {
-        return new TyneqIteratorResult(null, true) as IteratorResult<T>;
+    public static complete<T = undefined>(): IteratorResult<T> {
+        return new TyneqIteratorResult(undefined, true) as IteratorResult<T>;
     }
 }

@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerable, IEnumerator } from '../../types/core';
 
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly excludedValues: IEnumerable<TSource>;
@@ -11,7 +11,7 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.excludedValues = excludedValues;
     }
 
-    protected override handleNext(): EnumeratorResult<TSource> {
+    protected override handleNext(): IteratorResult<TSource> {
         if (!this.initialized) {
             this.excludeSet = new Set<TSource>(this.excludedValues);
             this.initialized = true;

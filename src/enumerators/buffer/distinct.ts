@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
@@ -8,7 +8,7 @@ export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
         super(sourceEnumerator);
     }
 
-    protected override handleNext(): EnumeratorResult<TSource> {
+    protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {

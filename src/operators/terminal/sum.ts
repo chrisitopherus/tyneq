@@ -22,5 +22,4 @@ export class SumOperator<T> extends TyneqTerminalOperator<T, number> {
 
         return sum;
     }
-
 }

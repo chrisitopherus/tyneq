@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     private isSourceDone = false;
@@ -12,7 +12,7 @@ export class AppendEnumerator<T> extends TyneqEnumerator<T> {
         this.item = item;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (!this.isSourceDone) {
             const sourceNext = this.sourceEnumerator.next();
             if (!sourceNext.done) {

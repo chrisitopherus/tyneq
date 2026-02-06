@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
@@ -10,7 +10,7 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
         super(sourceEnumerator);
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (!this.isDoneBuffering) {
             while (true) {
                 const { done, value } = this.sourceEnumerator.next();

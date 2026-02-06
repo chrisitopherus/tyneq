@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     private readonly otherEnumerator: IEnumerator<U>;
@@ -11,7 +11,7 @@ export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<V> {
+    protected override handleNext(): IteratorResult<V> {
         const first = this.sourceEnumerator.next();
         if (first.done) {
             return this.complete();

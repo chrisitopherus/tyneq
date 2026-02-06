@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class PrependEnumerator<T> extends TyneqEnumerator<T> {
     private prepended = false;
@@ -10,7 +10,7 @@ export class PrependEnumerator<T> extends TyneqEnumerator<T> {
         this.item = item;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (!this.prepended) {
             this.prepended = true;
             return this.yield(this.item);

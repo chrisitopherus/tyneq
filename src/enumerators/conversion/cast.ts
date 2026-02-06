@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 /**
  * Casts the elements of a sequence to the specified type.
@@ -13,7 +13,7 @@ export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
         super(sourceEnumerator);
     }
 
-    protected override handleNext(): EnumeratorResult<U> {
+    protected override handleNext(): IteratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
             return this.complete();

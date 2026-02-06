@@ -1,6 +1,6 @@
 import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator, IEnumerable, ITyneqEnumerable } from '../../types/core';
+import { IEnumerator, IEnumerable, ITyneqEnumerable } from '../../types/core';
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 import { nameof } from "../../utility/nameof";
@@ -33,7 +33,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
         this.resultSelector = resultSelector;
     }
 
-    protected handleNext(): EnumeratorResult<TResult> {
+    protected handleNext(): IteratorResult<TResult> {
         if (!this.isInitialized) {
             for (const innerItem of this.innerSource) {
                 const key = this.innerKeySelector(innerItem);

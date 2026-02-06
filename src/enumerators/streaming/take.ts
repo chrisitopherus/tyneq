@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
@@ -11,7 +11,7 @@ export class TakeEnumerator<T> extends TyneqEnumerator<T> {
         this.count = count < 0 ? 0 : count;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (this.takenCount >= this.count) {
             return this.complete();
         }

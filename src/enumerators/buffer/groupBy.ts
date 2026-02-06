@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
 import { TyneqMap } from "../../utility/map";
 import { TyneqEnumerable } from '../../core/TyneqEnumerable';
 import { Tyneq } from "../..";
@@ -25,7 +25,7 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
         this.resultSelector = resultSelector;
     }
 
-    protected override handleNext(): EnumeratorResult<TResult> {
+    protected override handleNext(): IteratorResult<TResult> {
         if (!this.initialized) {
             while (true) {
                 const { done, value } = this.sourceEnumerator.next();

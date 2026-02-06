@@ -8,6 +8,7 @@ import { IntersectOperator } from "../operators/buffer/intersect";
 import { IntersectByOperator } from "../operators/buffer/intersectBy";
 import { JoinOperator } from "../operators/buffer/join";
 import { ReverseOperator } from "../operators/buffer/reverse";
+import { ShuffleOperator } from "../operators/buffer/shuffle";
 import { UnionOperator } from "../operators/buffer/union";
 import { UnionByOperator } from "../operators/buffer/unionBy";
 import { AppendOperator } from "../operators/streaming/append";
@@ -19,6 +20,7 @@ import { SelectManyOperator } from "../operators/streaming/selectMany";
 import { SkipOperator } from "../operators/streaming/skip";
 import { SkipLastOperator } from "../operators/streaming/skipLast";
 import { SkipWhileOperator } from "../operators/streaming/skipWhile";
+import { SplitOperator } from "../operators/streaming/split";
 import { TakeOperator } from "../operators/streaming/take";
 import { TakeWhileOperator } from "../operators/streaming/takeWhile";
 import { WhereOperator } from "../operators/streaming/where";
@@ -41,6 +43,7 @@ import { MinByOperator } from "../operators/terminal/minBy";
 import { SequenceEqualOperator } from "../operators/terminal/sequenceEqual";
 import { SingleOperator } from "../operators/terminal/single";
 import { SingleOrDefaultOperator } from "../operators/terminal/singleOrDefault";
+import { StartsWithOperator } from "../operators/terminal/startsWith";
 import { SumOperator } from "../operators/terminal/sum";
 import { ToArrayOperator } from "../operators/terminal/toArray";
 import { ToMapOperator } from "../operators/terminal/toMap";
@@ -159,6 +162,11 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
             .process();
     }
 
+    public startsWith(sequence: IEnumerable<TSource>): boolean {
+        return new StartsWithOperator<TSource>(this, sequence)
+            .process();
+    }
+
     public sum(selector: (item: TSource) => number): number {
         return new SumOperator<TSource>(this, selector)
             .process();
@@ -237,6 +245,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new SkipWhileOperator<TSource>(this, predicate).getFactory()
+        );
+    }
+
+    public split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]> {
+        return this.createEnumerable(
+            new SplitOperator<TSource>(this, splitOn).getFactory()
         );
     }
 
@@ -362,6 +376,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         );
     }
 
+    public shuffle(): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new ShuffleOperator<TSource>(this).getFactory()
+        );
+    }
+
     public union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new UnionOperator<TSource>(this, otherValues).getFactory()
@@ -376,11 +396,11 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     // extensions
 
-    public pipe<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult> {
+    public pipe<TResult>(factory: (source: IEnumerable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
         ArgumentUtility.checkNotOptional(factory, nameof({ factory }));
-        
+        const self = this;
         return this.createEnumerable(
-            () => factory(this.getSource())
+            () => factory(self)
         );
     }
 

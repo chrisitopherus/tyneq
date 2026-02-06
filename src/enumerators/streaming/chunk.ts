@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
@@ -14,7 +14,7 @@ export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
         this.size = size;
     }
 
-    protected override handleNext(): EnumeratorResult<T[]> {
+    protected override handleNext(): IteratorResult<T[]> {
         while (this.currentChunk.length < this.size) {
             const next = this.sourceEnumerator.next();
             if (next.done) break;

@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from '../../core/TyneqEnumerator';
-import { EnumeratorResult, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
 
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
@@ -9,7 +9,7 @@ export class WhereEnumerator<T> extends TyneqEnumerator<T> {
         this.predicate = predicate;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         while (true) {
             const { value, done } = this.sourceEnumerator.next();
             if (done) {

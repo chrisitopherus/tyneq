@@ -1,6 +1,5 @@
-import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator, IEnumerable } from '../../types/core';
+import { IEnumerator, IEnumerable } from '../../types/core';
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
@@ -38,7 +37,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
         this.resultSelector = resultSelector;
     }
 
-    protected handleNext(): EnumeratorResult<TResult> {
+    protected handleNext(): IteratorResult<TResult> {
         this.ensureInitialized();
 
         while (true) {

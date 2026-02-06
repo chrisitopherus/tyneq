@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => U;
@@ -9,7 +9,7 @@ export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<U> {
+    protected override handleNext(): IteratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
             return this.complete();

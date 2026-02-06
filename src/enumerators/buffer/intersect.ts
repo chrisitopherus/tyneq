@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerable, IEnumerator } from '../../types/core';
 
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly otherValues: IEnumerable<TSource>;
@@ -12,7 +12,7 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.otherValues = otherValues;
     }
 
-    protected override handleNext(): EnumeratorResult<TSource> {
+    protected override handleNext(): IteratorResult<TSource> {
         if (!this.initialized) {
             this.intersectionValues = new Set<TSource>(this.otherValues);
             this.initialized = true;

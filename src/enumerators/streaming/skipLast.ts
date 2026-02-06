@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 
 export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
@@ -13,7 +13,7 @@ export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
         this.buffer = new Array<T>(this.count);
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (this.count === 0) {
             const current = this.sourceEnumerator.next();
             if (current.done) {

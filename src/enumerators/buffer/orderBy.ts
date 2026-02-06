@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator, IOrderedEnumerable } from '../../types/core';
+import { IEnumerator, IOrderedEnumerable } from '../../types/core';
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
 
@@ -15,7 +15,7 @@ export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
         this.orderedEnumerable = orderedEnumerable;
     }
 
-    protected handleNext(): EnumeratorResult<TSource> {
+    protected handleNext(): IteratorResult<TSource> {
         if (!this.isInitialized) {
             this.buffer = Array.from(this.orderedEnumerable.source);
             const sorter = this.getSorter(this.orderedEnumerable);

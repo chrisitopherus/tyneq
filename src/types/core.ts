@@ -68,6 +68,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
+    startsWith(sequence: IEnumerable<TSource>): boolean;
+
     sum(selector: (item: TSource) => number): number;
 
     toArray(): TSource[];
@@ -97,6 +99,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     skipLast(count: number): ITyneqEnumerable<TSource>;
 
     skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+
+    split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]>;
 
     take(count: number): ITyneqEnumerable<TSource>;
 
@@ -152,12 +156,14 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     reverse(): ITyneqEnumerable<TSource>;
 
+    shuffle(): ITyneqEnumerable<TSource>;
+
     union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
     unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     // extension/plugin
-    pipe<TResult>(factory: (source: IEnumerator<TSource>) => IEnumerator<TResult>): ITyneqEnumerable<TResult>;
+    pipe<TResult>(factory: (source: IEnumerable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
 }
 
 export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
@@ -170,25 +176,6 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
     parent: Nullable<IOrderedEnumerable<TSource>>;
     getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource>;
 }
-
-export enum EnumeratorResultKind {
-    Yield = "yield",
-    Complete = "complete",
-}
-
-export interface EnumeratorYieldResult<TYield> {
-    kind: EnumeratorResultKind.Yield;
-    value: TYield;
-}
-
-export interface EnumeratorCompleteResult<TReturn> {
-    kind: EnumeratorResultKind.Complete;
-    value: TReturn;
-}
-
-export type EnumeratorResult<TYield, TReturn = null> =
-    | EnumeratorYieldResult<TYield>
-    | EnumeratorCompleteResult<TReturn>;
 
 export type KeyValuePair<TKey, TValue> = {
     key: TKey;
