@@ -35,6 +35,7 @@ import { ElementAtOperator } from "../operators/terminal/elementAt";
 import { ElementAtOrDefaultOperator } from "../operators/terminal/elementAtOrDefault";
 import { FirstOperator } from "../operators/terminal/first";
 import { FirstOrDefaultOperator } from "../operators/terminal/firstOrDefault";
+import { IndexOfOperator } from "../operators/terminal/indexOf";
 import { LastOperator } from "../operators/terminal/last";
 import { LastOrDefaultOperator } from "../operators/terminal/lastOrDefault";
 import { MaxOperator } from "../operators/terminal/max";
@@ -57,10 +58,10 @@ import { nameof } from "../utility/nameof";
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
 
     public [Symbol.iterator](): IEnumerator<TSource> {
-        return this.getSource();
+        return this.getEnumerator();
     }
 
-    public abstract getSource(): IEnumerator<TSource>;
+    public abstract getEnumerator(): IEnumerator<TSource>;
 
     // terminal operators
 
@@ -115,6 +116,11 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     public firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
         return new FirstOrDefaultOperator<TSource>(this, predicate, defaultValue)
+            .process();
+    }
+
+    public indexOf(predicate: (item: TSource) => boolean, startIndex: number = 0): number {
+        return new IndexOfOperator<TSource>(this, predicate, startIndex)
             .process();
     }
 

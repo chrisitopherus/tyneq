@@ -35,7 +35,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         this.parent = parent ?? null;
     }
 
-    public override getSource(): IEnumerator<TSource> {
+    public override getEnumerator(): IEnumerator<TSource> {
         return new OrderByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this);
     }
 

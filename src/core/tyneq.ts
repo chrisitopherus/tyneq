@@ -1,5 +1,5 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
-import { IteratorFactory } from "../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { TyneqEnumerable } from './TyneqEnumerable';
@@ -70,5 +70,10 @@ export class Tyneq {
 
     public static empty<TSource>(): TyneqEnumerable<TSource> {
         return this.from<TSource>([]);
+    }
+
+    public static enumerate<TSource>(source: Iterable<TSource>): IEnumerable<[number, TSource]> {
+        let index = 0;
+        return this.from(source).select(item => [index++, item] as [number, TSource]);
     }
 }

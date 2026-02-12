@@ -33,6 +33,7 @@ export type IteratorFactory<T> = () => IEnumerator<T>;
 export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
+    getEnumerator(): IEnumerator<TSource>;
     // conversion operators
 
 
@@ -54,6 +55,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     first(predicate: (item: TSource) => boolean): TSource;
 
     firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+
+    indexOf(predicate: (item: TSource) => boolean, startIndex?: number): number;
 
     last(predicate: (item: TSource) => boolean): TSource;
 

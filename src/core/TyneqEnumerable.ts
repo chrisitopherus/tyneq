@@ -13,7 +13,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
         this.iteratorFactory = iteratorFactory;
     }
 
-    public override getSource(): IEnumerator<TSource> {
+    public override getEnumerator(): IEnumerator<TSource> {
         return this.iteratorFactory();
     }
 
