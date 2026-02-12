@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -22,7 +22,7 @@ export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
         }
 
         if (this.currentChunk.length === 0) {
-            return this.complete();
+            return this.done();
         }
 
         const chunk = this.currentChunk;

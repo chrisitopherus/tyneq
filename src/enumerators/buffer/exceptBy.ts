@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from '../../types/core';
 
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
@@ -22,7 +22,7 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
-                return this.complete();
+                return this.done();
             }
 
             const key = this.keySelector(value);

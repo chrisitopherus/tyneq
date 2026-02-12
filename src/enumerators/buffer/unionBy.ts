@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from '../../types/core';
 
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
@@ -21,7 +21,7 @@ export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
             const { done, value } = this.currentEnumerator.next();
             if (done) {
                 if (this.isSourceDone) {
-                    return this.complete();
+                    return this.done();
                 }
 
                 this.isSourceDone = true;

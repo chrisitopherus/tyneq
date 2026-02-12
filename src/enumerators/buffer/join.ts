@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator, IEnumerable } from '../../types/core';
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -53,7 +53,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
 
             const nextOuter = this.sourceEnumerator.next();
             if (nextOuter.done) {
-                return this.complete();
+                return this.done();
             }
 
             const outerItem = nextOuter.value;

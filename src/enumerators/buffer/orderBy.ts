@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator, IOrderedEnumerable } from '../../types/core';
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
@@ -24,7 +24,7 @@ export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
         }
 
         if (this.currentIndex >= this.indexMap.length) {
-            return this.complete();
+            return this.done();
         }
 
         const index = this.indexMap[this.currentIndex++]!;

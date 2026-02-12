@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
@@ -15,7 +15,7 @@ export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
         while (true) {
             const next = this.sourceEnumerator.next();
             if (next.done) {
-                return this.complete();
+                return this.done();
             }
 
             this.isSkipping = this.isSkipping && this.predicate(next.value);

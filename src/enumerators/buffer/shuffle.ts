@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
@@ -19,7 +19,7 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
         }
 
         if (this.buffer.length <= this.currentIndex) {
-            return this.complete();
+            return this.done();
         }
 
         const result = this.buffer[this.currentIndex];

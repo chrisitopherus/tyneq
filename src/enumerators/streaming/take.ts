@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class TakeEnumerator<T> extends TyneqEnumerator<T> {
@@ -13,12 +13,12 @@ export class TakeEnumerator<T> extends TyneqEnumerator<T> {
 
     protected override handleNext(): IteratorResult<T> {
         if (this.takenCount >= this.count) {
-            return this.complete();
+            return this.earlyComplete();
         }
 
         const result = this.sourceEnumerator.next();
         if (result.done) {
-            return this.complete();
+            return this.done();
         }
 
         this.takenCount++;

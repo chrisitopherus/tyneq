@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from '../../types/core';
 
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
@@ -23,7 +23,7 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
-                return this.complete();
+                return this.done();
             }
 
             const key = this.keySelector(value);

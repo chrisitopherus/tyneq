@@ -1,10 +1,13 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
-import { Nullable } from "./utility";
+import { Assume, GenericFunction, Nullable } from "./utility";
 
 /**
  * An enumerator that iterates over a sequence of T.
  */
-export type IEnumerator<T> = Iterator<T>;
+export interface IEnumerator<T> extends Iterator<T> {
+    return?(value?: unknown): IteratorResult<T>;
+    throw?(e?: unknown): IteratorResult<T>;
+}
 
 /**
  * An enumerable sequence of T.
@@ -26,6 +29,8 @@ export interface IEnumerable<T> extends Iterable<T> {
  * This is used to ensure that IEnumerable<T> implementations are re-iterable, because `JS generators` are not.
  */
 export type IteratorFactory<T> = () => IEnumerator<T>;
+
+export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // conversion operators
@@ -87,6 +92,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     chunk(size: number): ITyneqEnumerable<TSource[]>;
 
     concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+
+    forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
 
     prepend(item: TSource): ITyneqEnumerable<TSource>;
 

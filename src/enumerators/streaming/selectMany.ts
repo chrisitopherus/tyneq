@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from "../../types/core";
 import { Nullable } from '../../types/utility';
 
@@ -25,7 +25,7 @@ export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
 
             const sourceNext = this.sourceEnumerator.next();
             if (sourceNext.done) {
-                return this.complete();
+                return this.done();
             }
 
             this.innerEnumerator = this.selector(sourceNext.value)[Symbol.iterator]();

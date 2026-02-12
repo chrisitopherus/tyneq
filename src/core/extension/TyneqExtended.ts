@@ -1,23 +1,10 @@
-import { RangeEnumerator } from "../enumerators/streaming/range";
-import { IteratorFactory } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
-import { nameof } from "../utility/nameof";
-import { TyneqEnumerable } from './TyneqEnumerable';
+import { RangeEnumerator } from "../../enumerators/streaming/range";
+import { IteratorFactory, ITyneqEnumerable, TyneqEnumerableFactory } from '../../types/core';
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
+import { TyneqEnumerable } from "../TyneqEnumerable";
 
-/**
- * Tyneq is the public entry point for creating typed enumerable sequences.
- *
- * Use for example `Tyneq.from` to wrap an existing iterable. Returned values are `TyneqEnumerable` which
- * expose the full set of streaming and terminal operators implemented in
- * the library.
- *
- * Examples:
- * ```ts
- * const nums = Tyneq.from([1, 2, 3]);
- * const range = Tyneq.range(0, 5);
- * ```
- */
-export class Tyneq {
+export class TyneqExtended {
     /**
      * Create a `TyneqEnumerable` from any iterable source.
      *
@@ -36,11 +23,11 @@ export class Tyneq {
      * const list = seq.toList(); // using terminal operator
      * ```
      */
-    public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
+    public static from<TSource, TEnumerable extends TyneqEnumerable<TSource>>(source: Iterable<TSource>, enumerableFactory: TyneqEnumerableFactory<TSource, TEnumerable>): TEnumerable {
         ArgumentUtility.checkNotOptional(source, nameof({ source }));
 
         const factory: IteratorFactory<TSource> = () => source[Symbol.iterator]();
-        return new TyneqEnumerable<TSource>(factory);
+        return enumerableFactory(factory);
     }
 
     /**
@@ -57,18 +44,20 @@ export class Tyneq {
      * const r = Tyneq.range(0, 3); // yields 0,1,2
      * ```
      */
-    public static range(start: number, count: number): TyneqEnumerable<number> {
+    public static range<TEnumerable extends TyneqEnumerable<number>>(start: number, count: number, enumerableFactory: TyneqEnumerableFactory<number, TEnumerable>): TEnumerable {
         ArgumentUtility.checkNonNegative(count, nameof({ count }));
         ArgumentUtility.checkInteger(count, nameof({ count }));
 
+        const arr = new Array<number>(count);
         const factory: IteratorFactory<number> = () => {
-            return new RangeEnumerator(start, start + count - 1);
+            const source = arr[Symbol.iterator]();
+            return new RangeEnumerator(source, start);
         }
 
-        return new TyneqEnumerable<number>(factory);
+        return enumerableFactory(factory);
     }
 
-    public static empty<TSource>(): TyneqEnumerable<TSource> {
-        return this.from<TSource>([]);
+    public static empty<TSource, TEnumerable extends TyneqEnumerable<TSource>>(enumerableFactory: TyneqEnumerableFactory<TSource, TEnumerable>): TEnumerable {
+        return this.from<TSource, TEnumerable>([], enumerableFactory);
     }
 }

@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from '../../core/TyneqEnumerator';
+import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { IEnumerator } from '../../types/core';
 
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {
@@ -13,7 +13,7 @@ export class WhereEnumerator<T> extends TyneqEnumerator<T> {
         while (true) {
             const { value, done } = this.sourceEnumerator.next();
             if (done) {
-                return this.complete();
+                return this.done();
             }
 
             if (this.predicate(value)) {

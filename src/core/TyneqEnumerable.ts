@@ -5,16 +5,19 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
-    public constructor(protected readonly iteratorFactory: IteratorFactory<TSource>) {
+    protected readonly iteratorFactory: IteratorFactory<TSource>;
+    
+    public constructor(iteratorFactory: IteratorFactory<TSource>) {
         super();
         ArgumentUtility.checkNotOptional(iteratorFactory, nameof({ iteratorFactory }));
+        this.iteratorFactory = iteratorFactory;
     }
 
     public override getSource(): IEnumerator<TSource> {
         return this.iteratorFactory();
     }
 
-    protected override createEnumerable<TResult>(factory: IteratorFactory<TResult>): ITyneqEnumerable<TResult> {
+    protected override createEnumerable<TResult>(factory: IteratorFactory<TResult>): TyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(factory);
     }
 

@@ -12,8 +12,10 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     private readonly keySelector: (item: TSource) => TKey;
     private readonly comparer: (a: TKey, b: TKey) => number;
     private readonly descending: boolean;
-    public parent: Nullable<IOrderedEnumerable<TSource>>;
+
+    public readonly parent: Nullable<IOrderedEnumerable<TSource>>;
     public readonly source: ITyneqEnumerable<TSource>;
+
     public constructor(
         source: ITyneqEnumerable<TSource>,
         keySelector: (item: TSource) => TKey,

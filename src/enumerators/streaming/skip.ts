@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -20,7 +20,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
             while (skippedCount < this.count) {
                 const sourceNext = this.sourceEnumerator.next();
                 if (sourceNext.done) {
-                    return this.complete();
+                    return this.done();
                 }
 
                 skippedCount++;
@@ -31,7 +31,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
 
         const sourceNext = this.sourceEnumerator.next();
         if (sourceNext.done) {
-            return this.complete();
+            return this.done();
         }
 
         return this.yield(sourceNext.value);

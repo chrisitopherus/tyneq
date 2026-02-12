@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from '../../types/core';
 import { TyneqMap } from "../../utility/map";
 import { TyneqEnumerable } from '../../core/TyneqEnumerable';
@@ -45,12 +45,12 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
 
         // May throw if not initialized
         if (this.lookupEnumerator === undefined) {
-            return this.complete();
+            return this.done();
         }
 
         const { done, value } = this.lookupEnumerator.next();
         if (done) {
-            return this.complete();
+            return this.done();
         }
 
         const [key, values] = value;

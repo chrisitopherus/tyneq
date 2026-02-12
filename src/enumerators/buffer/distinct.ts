@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
@@ -12,7 +12,7 @@ export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
-                return this.complete();
+                return this.done();
             }
 
             if (!this.seenValues.has(value)) {

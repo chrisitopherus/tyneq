@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -20,10 +20,10 @@ export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]
             const { value, done } = this.sourceEnumerator.next();
             if (done) {
                 if (currentSplit.length > 0) {
-                    return this.yield(currentSplit);
+                    return this.doneWithYield(currentSplit);
                 }
 
-                return this.complete();
+                return this.done();
             }
 
             if (this.splitOn(value)) {

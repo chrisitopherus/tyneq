@@ -1,5 +1,5 @@
 import { Tyneq } from "../../core/tyneq";
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator, IEnumerable, ITyneqEnumerable } from '../../types/core';
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
@@ -46,7 +46,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
 
         const { done, value: outerItem } = this.sourceEnumerator.next();
         if (done) {
-            return this.complete();
+            return this.done();
         }
 
         const outerKey = this.outerKeySelector(outerItem);

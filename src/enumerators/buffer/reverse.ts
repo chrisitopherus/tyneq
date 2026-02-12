@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
@@ -25,7 +25,7 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
         }
 
         if (this.index < 0) {
-            return this.complete();
+            return this.done();
         }
 
         return this.yield(this.buffer[this.index--]);

@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
@@ -27,6 +27,6 @@ export class AppendEnumerator<T> extends TyneqEnumerator<T> {
             return this.yield(this.item);
         }
 
-        return this.complete();
+        return this.done();
     }
 }

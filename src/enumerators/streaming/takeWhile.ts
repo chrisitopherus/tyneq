@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
@@ -12,13 +12,13 @@ export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     protected override handleNext(): IteratorResult<T> {
         const result = this.sourceEnumerator.next();
         if (result.done) {
-            return this.complete();
+            return this.done();
         }
 
         if (this.predicate(result.value)) {
             return this.yield(result.value);
         }
 
-        return this.complete();
+        return this.earlyComplete();
     }
 }

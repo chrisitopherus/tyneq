@@ -14,6 +14,7 @@ import { UnionByOperator } from "../operators/buffer/unionBy";
 import { AppendOperator } from "../operators/streaming/append";
 import { ChunkOperator } from "../operators/streaming/chunk";
 import { ConcatOperator } from "../operators/streaming/concat";
+import { ForEachOperator } from "../operators/streaming/forEach";
 import { PrependOperator } from "../operators/streaming/prepend";
 import { SelectOperator } from "../operators/streaming/select";
 import { SelectManyOperator } from "../operators/streaming/selectMany";
@@ -209,6 +210,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ConcatOperator<TSource>(this, other).getFactory()
+        );
+    }
+
+    public forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new ForEachOperator<TSource>(this, action).getFactory()
         );
     }
 

@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 
 /**
@@ -16,7 +16,7 @@ export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     protected override handleNext(): IteratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
-            return this.complete();
+            return this.done();
         }
 
         const castValue = next.value as unknown as U;
