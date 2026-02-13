@@ -98,6 +98,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
 
+    forEachIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
+
     prepend(item: TSource): ITyneqEnumerable<TSource>;
 
     select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;

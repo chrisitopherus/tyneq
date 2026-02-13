@@ -15,6 +15,7 @@ import { AppendOperator } from "../operators/streaming/append";
 import { ChunkOperator } from "../operators/streaming/chunk";
 import { ConcatOperator } from "../operators/streaming/concat";
 import { ForEachOperator } from "../operators/streaming/forEach";
+import { ForEachIfOperator } from "../operators/streaming/forEachIf";
 import { PrependOperator } from "../operators/streaming/prepend";
 import { SelectOperator } from "../operators/streaming/select";
 import { SelectManyOperator } from "../operators/streaming/selectMany";
@@ -222,6 +223,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ForEachOperator<TSource>(this, action).getFactory()
+        );
+    }
+
+    public forEachIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new ForEachIfOperator<TSource>(this, action, predicate).getFactory()
         );
     }
 
