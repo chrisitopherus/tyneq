@@ -1,5 +1,6 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../types/core";
+import { RangeOperator } from "../operators/streaming/range";
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { TyneqEnumerable } from './TyneqEnumerable';
@@ -39,8 +40,13 @@ export class Tyneq {
     public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
         ArgumentUtility.checkNotOptional(source, nameof({ source }));
 
-        const factory: IteratorFactory<TSource> = () => source[Symbol.iterator]();
-        return new TyneqEnumerable<TSource>(factory);
+        const wrapper: IEnumeratorFactory<TSource> = {
+            getEnumerator() {
+                return source[Symbol.iterator]();
+            }
+        } 
+
+        return new TyneqEnumerable<TSource>(wrapper);
     }
 
     /**
@@ -61,11 +67,9 @@ export class Tyneq {
         ArgumentUtility.checkNonNegative(count, nameof({ count }));
         ArgumentUtility.checkInteger(count, nameof({ count }));
 
-        const factory: IteratorFactory<number> = () => {
-            return new RangeEnumerator(start, start + count - 1);
-        }
+        const operator = new RangeOperator(start, start + count);
 
-        return new TyneqEnumerable<number>(factory);
+        return new TyneqEnumerable<number>(operator);
     }
 
     public static empty<TSource>(): TyneqEnumerable<TSource> {

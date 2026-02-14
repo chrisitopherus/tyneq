@@ -1,32 +1,32 @@
-import { DistinctOperator } from "../operators/buffer/distinct";
-import { DistinctByOperator } from "../operators/buffer/distinctBy";
-import { ExceptOperator } from "../operators/buffer/except";
-import { ExceptByOperator } from "../operators/buffer/exceptBy";
-import { GroupByOperator } from "../operators/buffer/groupBy";
-import { GroupJoinOperator } from "../operators/buffer/groupJoin";
-import { IntersectOperator } from "../operators/buffer/intersect";
-import { IntersectByOperator } from "../operators/buffer/intersectBy";
-import { JoinOperator } from "../operators/buffer/join";
-import { ReverseOperator } from "../operators/buffer/reverse";
-import { ShuffleOperator } from "../operators/buffer/shuffle";
-import { UnionOperator } from "../operators/buffer/union";
-import { UnionByOperator } from "../operators/buffer/unionBy";
-import { AppendOperator } from "../operators/streaming/append";
-import { ChunkOperator } from "../operators/streaming/chunk";
-import { ConcatOperator } from "../operators/streaming/concat";
-import { TapOperator } from "../operators/streaming/tap";
-import { TapIfOperator } from "../operators/streaming/tapIf";
-import { PrependOperator } from "../operators/streaming/prepend";
-import { SelectOperator } from "../operators/streaming/select";
-import { SelectManyOperator } from "../operators/streaming/selectMany";
-import { SkipOperator } from "../operators/streaming/skip";
-import { SkipLastOperator } from "../operators/streaming/skipLast";
-import { SkipWhileOperator } from "../operators/streaming/skipWhile";
-import { SplitOperator } from "../operators/streaming/split";
-import { TakeOperator } from "../operators/streaming/take";
-import { TakeWhileOperator } from "../operators/streaming/takeWhile";
-import { WhereOperator } from "../operators/streaming/where";
-import { ZipOperator } from "../operators/streaming/zip";
+import { DistinctOperatorEnumerable } from "../operators/buffer/distinct";
+import { DistinctByOperatorEnumerable } from "../operators/buffer/distinctBy";
+import { ExceptOperatorEnumerable } from "../operators/buffer/except";
+import { ExceptByOperatorEnumerable } from "../operators/buffer/exceptBy";
+import { GroupByOperatorEnumerable } from "../operators/buffer/groupBy";
+import { GroupJoinOperatorEnumerable } from "../operators/buffer/groupJoin";
+import { IntersectOperatorEnumerable } from "../operators/buffer/intersect";
+import { IntersectByOperatorEnumerable } from "../operators/buffer/intersectBy";
+import { JoinOperatorEnumerable } from "../operators/buffer/join";
+import { ReverseOperatorEnumerable } from "../operators/buffer/reverse";
+import { ShuffleOperatorEnumerable } from "../operators/buffer/shuffle";
+import { UnionOperatorEnumerable } from "../operators/buffer/union";
+import { UnionByOperatorEnumerable } from "../operators/buffer/unionBy";
+import { AppendOperatorEnumerable } from "../operators/streaming/append";
+import { ChunkOperatorEnumerable } from "../operators/streaming/chunk";
+import { ConcatOperatorEnumerable } from "../operators/streaming/concat";
+import { PrependOperatorEnumerable } from "../operators/streaming/prepend";
+import { SelectOperatorEnumerable } from "../operators/streaming/select";
+import { SelectManyOperatorEnumerable } from "../operators/streaming/selectMany";
+import { SkipOperatorEnumerable } from "../operators/streaming/skip";
+import { SkipLastOperatorEnumerable } from "../operators/streaming/skipLast";
+import { SkipWhileOperatorEnumerable } from "../operators/streaming/skipWhile";
+import { SplitOperatorEnumerable } from "../operators/streaming/split";
+import { TakeOperatorEnumerable } from "../operators/streaming/take";
+import { TakeWhileOperatorEnumerable } from "../operators/streaming/takeWhile";
+import { TapOperatorEnumerable } from "../operators/streaming/tap";
+import { TapIfOperatorEnumerable } from "../operators/streaming/tapIf";
+import { WhereOperatorEnumerable } from "../operators/streaming/where";
+import { ZipOperatorEnumerable } from "../operators/streaming/zip";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { ContainsOperator } from "../operators/terminal/contains";
@@ -52,7 +52,7 @@ import { ToArrayOperator } from "../operators/terminal/toArray";
 import { ToMapOperator } from "../operators/terminal/toMap";
 import { ToRecordOperator } from "../operators/terminal/toRecord";
 import { ToSetOperator } from "../operators/terminal/toSet";
-import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -204,97 +204,97 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     public append(item: TSource): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new AppendOperator<TSource>(this, item).getFactory()
+            new AppendOperatorEnumerable<TSource>(this, item)
         );
     }
 
     public chunk(size: number): ITyneqEnumerable<TSource[]> {
         return this.createEnumerable(
-            new ChunkOperator<TSource>(this, size).getFactory()
+            new ChunkOperatorEnumerable<TSource>(this, size)
         );
     }
 
     public concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new ConcatOperator<TSource>(this, other).getFactory()
+            new ConcatOperatorEnumerable<TSource>(this, other)
         );
     }
 
     public prepend(item: TSource): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new PrependOperator<TSource>(this, item).getFactory()
+            new PrependOperatorEnumerable<TSource>(this, item)
         );
     }
 
     public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
-            new SelectOperator<TSource, TResult>(this, selector).getFactory()
+            new SelectOperatorEnumerable<TSource, TResult>(this, selector)
         );
     }
 
     public selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
-            new SelectManyOperator<TSource, TResult>(this, selector).getFactory()
+            new SelectManyOperatorEnumerable<TSource, TResult>(this, selector)
         );
     }
 
     public skip(count: number): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new SkipOperator<TSource>(this, count).getFactory()
+            new SkipOperatorEnumerable<TSource>(this, count)
         );
     }
 
     public skipLast(count: number): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new SkipLastOperator<TSource>(this, count).getFactory()
+            new SkipLastOperatorEnumerable<TSource>(this, count)
         );
     }
 
     public skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new SkipWhileOperator<TSource>(this, predicate).getFactory()
+            new SkipWhileOperatorEnumerable<TSource>(this, predicate)
         );
     }
 
     public split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]> {
         return this.createEnumerable(
-            new SplitOperator<TSource>(this, splitOn).getFactory()
+            new SplitOperatorEnumerable<TSource>(this, splitOn)
         );
     }
 
     public take(count: number): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new TakeOperator<TSource>(this, count).getFactory()
+            new TakeOperatorEnumerable<TSource>(this, count)
         );
     }
 
     public takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new TakeWhileOperator<TSource>(this, predicate).getFactory()
+            new TakeWhileOperatorEnumerable<TSource>(this, predicate)
         );
     }
 
     public tap(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new TapOperator<TSource>(this, action).getFactory()
+            new TapOperatorEnumerable<TSource>(this, action)
         );
     }
 
     public tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new TapIfOperator<TSource>(this, action, predicate).getFactory()
-        );
-    }
-
-    public zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
-        return this.createEnumerable(
-            new ZipOperator<TSource, TOther, TResult>(this, other, selector).getFactory()
+            new TapIfOperatorEnumerable<TSource>(this, action, predicate)
         );
     }
 
     public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new WhereOperator<TSource>(this, predicate).getFactory()
+            new WhereOperatorEnumerable<TSource>(this, predicate)
+        );
+    }
+
+    public zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
+        return this.createEnumerable(
+            new ZipOperatorEnumerable<TSource, TOther, TResult>(this, other, selector)
         );
     }
 
@@ -302,25 +302,25 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     public distinct(): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new DistinctOperator<TSource>(this).getFactory()
+            new DistinctOperatorEnumerable<TSource>(this)
         );
     }
 
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new DistinctByOperator<TSource, TKey>(this, keySelector).getFactory()
+            new DistinctByOperatorEnumerable<TSource, TKey>(this, keySelector)
         );
     }
 
     public except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new ExceptOperator<TSource>(this, excludedValues).getFactory()
+            new ExceptOperatorEnumerable<TSource>(this, excludedValues)
         );
     }
-
+    
     public exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new ExceptByOperator<TSource, TKey>(this, excludedKeys, keySelector).getFactory()
+            new ExceptByOperatorEnumerable<TSource, TKey>(this, excludedKeys, keySelector)
         );
     }
 
@@ -330,7 +330,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
     ): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
-            new GroupByOperator<TSource, TKey, TValue, TResult>(this, keySelector, valueSelector, resultSelector).getFactory()
+            new GroupByOperatorEnumerable<TSource, TKey, TValue, TResult>(this, keySelector, valueSelector, resultSelector)
         );
     }
 
@@ -341,19 +341,19 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
     ): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
-            new GroupJoinOperator<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector).getFactory()
+            new GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector)
         );
     }
 
     public intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new IntersectOperator<TSource>(this, intersectedValues).getFactory()
+            new IntersectOperatorEnumerable<TSource>(this, intersectedValues)
         )
     }
 
     public intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new IntersectByOperator<TSource, TKey>(this, intersectedKeys, keySelector).getFactory()
+            new IntersectByOperatorEnumerable<TSource, TKey>(this, intersectedKeys, keySelector)
         );
     }
 
@@ -364,7 +364,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         resultSelector: (outer: TSource, inner: TInner) => TResult
     ): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
-            new JoinOperator<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector).getFactory()
+            new JoinOperatorEnumerable<TSource, TInner, TKey, TResult>(this, inner, outerKeySelector, innerKeySelector, resultSelector)
         );
     }
 
@@ -392,25 +392,25 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
 
     public reverse(): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new ReverseOperator<TSource>(this).getFactory()
+            new ReverseOperatorEnumerable<TSource>(this)
         );
     }
 
     public shuffle(): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new ShuffleOperator<TSource>(this).getFactory()
+            new ShuffleOperatorEnumerable<TSource>(this)
         );
     }
 
     public union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new UnionOperator<TSource>(this, otherValues).getFactory()
+            new UnionOperatorEnumerable<TSource>(this, otherValues)
         );
     }
 
     public unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
-            new UnionByOperator<TSource, TKey>(this, otherValues, keySelector).getFactory()
+            new UnionByOperatorEnumerable<TSource, TKey>(this, otherValues, keySelector)
         );
     }
 
@@ -419,12 +419,14 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public pipe<TResult>(factory: (source: IEnumerable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
         ArgumentUtility.checkNotOptional(factory, nameof({ factory }));
         const self = this;
-        return this.createEnumerable(
-            () => factory(self)
-        );
+        return this.createEnumerable({
+            getEnumerator() {
+                return factory(self);
+            },
+        } satisfies IEnumeratorFactory<TResult>);
     }
 
-    protected abstract createEnumerable<TResult>(factory: IteratorFactory<TResult>): ITyneqEnumerable<TResult>;
+    protected abstract createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult>;
 
     protected abstract createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,

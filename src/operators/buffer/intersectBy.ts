@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { IntersectByEnumerator } from "../../enumerators/buffer/intersectBy";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class IntersectByOperator<TSource, TKey> extends TyneqOperator<TSource> {
+export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly intersectedKeys: IEnumerable<TKey>;
 
@@ -24,5 +24,13 @@ export class IntersectByOperator<TSource, TKey> extends TyneqOperator<TSource> {
         return () => {
             return new IntersectByEnumerator<TSource, TKey>(source[Symbol.iterator](), intersectedKeys, keySelector);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new IntersectByEnumerator<TSource, TKey>(
+            this.source[Symbol.iterator](),
+            this.intersectedKeys,
+            this.keySelector
+        );
     }
 }

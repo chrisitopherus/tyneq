@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ReverseEnumerator } from "../../enumerators/buffer/reverse";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class ReverseOperator<TSource> extends TyneqOperator<TSource> {
+export class ReverseOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     public constructor(source: IEnumerable<TSource>) {
         super(source);
     }
@@ -12,5 +12,9 @@ export class ReverseOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new ReverseEnumerator<TSource>(source[Symbol.iterator]());
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new ReverseEnumerator<TSource>(this.source[Symbol.iterator]());
     }
 }

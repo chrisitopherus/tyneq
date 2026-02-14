@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { SplitEnumerator } from "../../enumerators/streaming/split";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class SplitOperator<TSource> extends TyneqOperator<TSource, TSource[]> {
+export class SplitOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource, TSource[]> {
     private readonly predicate: (item: TSource) => boolean;
 
     public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
@@ -17,5 +17,9 @@ export class SplitOperator<TSource> extends TyneqOperator<TSource, TSource[]> {
         return () => {
             return new SplitEnumerator<TSource>(source[Symbol.iterator](), predicate);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource[]> {
+        return new SplitEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
     }
 }

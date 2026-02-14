@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { GroupJoinEnumerator } from "../../enumerators/buffer/groupJoin";
-import { IEnumerable, IteratorFactory, ITyneqEnumerable } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class GroupJoinOperator<TSource, TInner, TKey, TResult> extends TyneqOperator<TSource, TResult> {
+export class GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     private readonly inner: IEnumerable<TInner>;
     private readonly outerKeySelector: (outer: TSource) => TKey
     private readonly innerKeySelector: (inner: TInner) => TKey;
@@ -38,5 +38,15 @@ export class GroupJoinOperator<TSource, TInner, TKey, TResult> extends TyneqOper
         return () => {
             return new GroupJoinEnumerator<TSource, TInner, TKey, TResult>(source[Symbol.iterator](), innerSource, outerKeySelector, innerKeySelector, resultSelector);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TResult> {
+        return new GroupJoinEnumerator<TSource, TInner, TKey, TResult>(
+            this.source[Symbol.iterator](),
+            this.inner,
+            this.outerKeySelector,
+            this.innerKeySelector,
+            this.resultSelector
+        );
     }
 }

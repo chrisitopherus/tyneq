@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ChunkEnumerator } from "../../enumerators/streaming/chunk";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class ChunkOperator<TSource> extends TyneqOperator<TSource, TSource[]> {
+export class ChunkOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource, TSource[]> {
     private readonly size: number;
 
     public constructor(source: IEnumerable<TSource>, size: number) {
@@ -17,5 +17,9 @@ export class ChunkOperator<TSource> extends TyneqOperator<TSource, TSource[]> {
         return () => {
             return new ChunkEnumerator<TSource>(source[Symbol.iterator](), size);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource[]> {
+        return new ChunkEnumerator<TSource>(this.source[Symbol.iterator](), this.size);
     }
 }

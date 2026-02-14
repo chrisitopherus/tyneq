@@ -1,23 +1,23 @@
-import { IEnumerator, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
-    protected readonly iteratorFactory: IteratorFactory<TSource>;
+    protected readonly enumeratorFactory: IEnumeratorFactory<TSource>;
     
-    public constructor(iteratorFactory: IteratorFactory<TSource>) {
+    public constructor(enumeratorFactory: IEnumeratorFactory<TSource>) {
         super();
-        ArgumentUtility.checkNotOptional(iteratorFactory, nameof({ iteratorFactory }));
-        this.iteratorFactory = iteratorFactory;
+        ArgumentUtility.checkNotOptional(enumeratorFactory, nameof({ enumeratorFactory }));
+        this.enumeratorFactory = enumeratorFactory;
     }
 
     public override getEnumerator(): IEnumerator<TSource> {
-        return this.iteratorFactory();
+        return this.enumeratorFactory.getEnumerator();
     }
 
-    protected override createEnumerable<TResult>(factory: IteratorFactory<TResult>): TyneqEnumerable<TResult> {
+    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(factory);
     }
 

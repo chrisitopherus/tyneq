@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { DistinctEnumerator } from "../../enumerators/buffer/distinct";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class DistinctOperator<TSource> extends TyneqOperator<TSource> {
+export class DistinctOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     public constructor(source: IEnumerable<TSource>) {
         super(source);
     }
@@ -12,5 +12,9 @@ export class DistinctOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new DistinctEnumerator<TSource>(source[Symbol.iterator]());
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new DistinctEnumerator<TSource>(this.source[Symbol.iterator]());
     }
 }

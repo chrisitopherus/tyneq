@@ -1,14 +1,12 @@
-import { IEnumerable, IteratorFactory } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { IEnumerable, IEnumerator } from "../../types/core";
 
-export abstract class TyneqOperator<TSource, TResult = TSource> {
-    protected readonly source: IEnumerable<TSource>;
+export abstract class TyneqOperator<TSource, TResult = TSource> implements IEnumerable<TResult> {
 
-    public constructor(source: IEnumerable<TSource>) {
-        ArgumentUtility.checkNotOptional(source, nameof({ source }));
-        this.source = source;
+    public constructor() { }
+
+    [Symbol.iterator](): IEnumerator<TResult> {
+        return this.getEnumerator();
     }
 
-    public abstract getFactory(): IteratorFactory<TResult>;
+    public abstract getEnumerator(): IEnumerator<TResult>;
 }

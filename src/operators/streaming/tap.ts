@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { TapEnumerator } from "../../enumerators/streaming/tap";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class TapOperator<TSource> extends TyneqOperator<TSource> {
+export class TapOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly action: (item: TSource) => void;
 
     public constructor(source: IEnumerable<TSource>, action: (item: TSource) => void) {
@@ -17,5 +17,9 @@ export class TapOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new TapEnumerator<TSource>(source[Symbol.iterator](), action);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new TapEnumerator<TSource>(this.source[Symbol.iterator](), this.action);
     }
 }

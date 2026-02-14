@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { TapIfEnumerator } from "../../enumerators/streaming/tapIf";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class TapIfOperator<TSource> extends TyneqOperator<TSource> {
+export class TapIfOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly action: (item: TSource) => void;
     private readonly predicate: () => boolean;
 
@@ -19,5 +19,9 @@ export class TapIfOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new TapIfEnumerator<TSource>(source[Symbol.iterator](), action, predicate);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new TapIfEnumerator<TSource>(this.source[Symbol.iterator](), this.action, this.predicate);
     }
 }

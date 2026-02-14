@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { GroupByEnumerator } from "../../enumerators/buffer/groupBy";
-import { IEnumerable, IteratorFactory, ITyneqEnumerable } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class GroupByOperator<TSource, TKey, TValue, TResult> extends TyneqOperator<TSource, TResult> {
+export class GroupByOperatorEnumerable<TSource, TKey, TValue, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly valueSelector: (item: TSource) => TValue;
     private readonly resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult;
@@ -39,5 +39,14 @@ export class GroupByOperator<TSource, TKey, TValue, TResult> extends TyneqOperat
                 resultSelector
             );
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TResult> {
+        return new GroupByEnumerator<TSource, TKey, TValue, TResult>(
+            this.source[Symbol.iterator](),
+            this.keySelector,
+            this.valueSelector,
+            this.resultSelector
+        );
     }
 }

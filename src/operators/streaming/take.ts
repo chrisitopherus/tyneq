@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { TakeEnumerator } from "../../enumerators/streaming/take";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class TakeOperator<TSource> extends TyneqOperator<TSource> {
+export class TakeOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly count: number;
 
     public constructor(source: IEnumerable<TSource>, count: number) {
@@ -17,5 +17,9 @@ export class TakeOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new TakeEnumerator<TSource>(source[Symbol.iterator](), count);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new TakeEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
     }
 }

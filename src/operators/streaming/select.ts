@@ -1,8 +1,8 @@
-import { IEnumerable, IteratorFactory } from "../..";
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { SelectEnumerator } from "../../enumerators/streaming/select";
 
-export class SelectOperator<TSource, TResult> extends TyneqOperator<TSource, TResult> {
+export class SelectOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     private readonly selector: (item: TSource) => TResult
 
     public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => TResult) {
@@ -19,4 +19,7 @@ export class SelectOperator<TSource, TResult> extends TyneqOperator<TSource, TRe
         }
     }
 
+    public override getEnumerator(): IEnumerator<TResult> {
+        return new SelectEnumerator<TSource, TResult>(this.source[Symbol.iterator](), this.selector);
+    }
 }

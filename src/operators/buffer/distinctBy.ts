@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { DistinctByEnumerator } from "../../enumerators/buffer/distinctBy";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class DistinctByOperator<TSource, TKey> extends TyneqOperator<TSource> {
+export class DistinctByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
 
     public constructor(source: IEnumerable<TSource>, keySelector: (item: TSource) => TKey) {
@@ -20,5 +20,9 @@ export class DistinctByOperator<TSource, TKey> extends TyneqOperator<TSource> {
         return () => {
             return new DistinctByEnumerator<TSource, TKey>(source[Symbol.iterator](), keySelector);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new DistinctByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this.keySelector);
     }
 }

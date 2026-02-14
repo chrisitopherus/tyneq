@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ShuffleEnumerator } from "../../enumerators/buffer/shuffle";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class ShuffleOperator<TSource> extends TyneqOperator<TSource> {
+export class ShuffleOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     public constructor(source: IEnumerable<TSource>) {
         super(source);
     }
@@ -12,5 +12,9 @@ export class ShuffleOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new ShuffleEnumerator<TSource>(source[Symbol.iterator]());
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new ShuffleEnumerator<TSource>(this.source[Symbol.iterator]());
     }
 }

@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { PrependEnumerator } from "../../enumerators/streaming/prepend";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class PrependOperator<TSource> extends TyneqOperator<TSource> {
+export class PrependOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly item: TSource;
 
     public constructor(source: IEnumerable<TSource>, item: TSource) {
@@ -17,5 +17,9 @@ export class PrependOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new PrependEnumerator<TSource>(source[Symbol.iterator](), item);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new PrependEnumerator<TSource>(this.source[Symbol.iterator](), this.item);
     }
 }

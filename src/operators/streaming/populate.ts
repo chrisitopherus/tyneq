@@ -1,22 +1,25 @@
-import { IEnumerable, IteratorFactory } from "../..";
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { PopulateEnumerator } from "../../enumerators/streaming/populate";
 
-export class PopulateOperator<TSource, TValue> extends TyneqOperator<TSource, TValue> {
-    private readonly generator: (item: TSource) => TValue;
+export class PopulateOperatorEnumerable<TSource, TValue> extends TyneqOperatorEnumerable<TSource, TValue> {
+    private readonly value: TValue;
 
-    public constructor(source: IEnumerable<TSource>, generator: (item: TSource) => TValue) {
+    public constructor(source: IEnumerable<TSource>, value: TValue) {
         super(source);
-        this.generator = generator;
+        this.value = value;
     }
 
     public getFactory(): IteratorFactory<TValue> {
         const source = this.source;
-        const generator = this.generator;
+        const value = this.value;
         
         return () => {
-            return new PopulateEnumerator<TSource, TValue>(source[Symbol.iterator](), generator);
+            return new PopulateEnumerator<TSource, TValue>(source[Symbol.iterator](), value);
         }
     }
 
+    public override getEnumerator(): IEnumerator<TValue> {
+        return new PopulateEnumerator<TSource, TValue>(this.source[Symbol.iterator](), this.value);
+    }
 }

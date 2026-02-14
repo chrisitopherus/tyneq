@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { SkipEnumerator } from "../../enumerators/streaming/skip";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class SkipOperator<TSource> extends TyneqOperator<TSource> {
+export class SkipOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly count: number;
 
     public constructor(source: IEnumerable<TSource>, count: number) {
@@ -17,5 +17,9 @@ export class SkipOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new SkipEnumerator<TSource>(source[Symbol.iterator](), count);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new SkipEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
     }
 }

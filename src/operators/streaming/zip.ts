@@ -1,8 +1,8 @@
-import { IEnumerable, IteratorFactory } from "../..";
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ZipEnumerator } from "../../enumerators/streaming/zip";
 
-export class ZipOperator<TSource, TOther, TResult> extends TyneqOperator<TSource, TResult> {
+export class ZipOperatorEnumerable<TSource, TOther, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     private readonly other: IEnumerable<TOther>;
     private readonly selector: (first: TSource, second: TOther) => TResult;
 
@@ -22,4 +22,7 @@ export class ZipOperator<TSource, TOther, TResult> extends TyneqOperator<TSource
         }
     }
 
+    public override getEnumerator(): IEnumerator<TResult> {
+        return new ZipEnumerator<TSource, TOther, TResult>(this.source[Symbol.iterator](), this.other[Symbol.iterator](), this.selector);
+    }
 }

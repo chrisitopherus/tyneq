@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { UnionEnumerator } from "../../enumerators/buffer/union";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class UnionOperator<TSource> extends TyneqOperator<TSource> {
+export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly otherValues: IEnumerable<TSource>;
     public constructor(source: IEnumerable<TSource>, otherValues: IEnumerable<TSource>) {
         super(source);
@@ -19,5 +19,9 @@ export class UnionOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new UnionEnumerator<TSource>(source[Symbol.iterator](), otherValues);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new UnionEnumerator<TSource>(this.source[Symbol.iterator](), this.otherValues);
     }
 }

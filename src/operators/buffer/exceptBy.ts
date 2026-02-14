@@ -1,10 +1,10 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ExceptByEnumerator } from "../../enumerators/buffer/exceptBy";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-export class ExceptByOperator<TSource, TKey> extends TyneqOperator<TSource> {
+export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     private readonly excludedKeys: IEnumerable<TKey>;
     private readonly keySelector: (item: TSource) => TKey;
 
@@ -25,5 +25,9 @@ export class ExceptByOperator<TSource, TKey> extends TyneqOperator<TSource> {
         return () => {
             return new ExceptByEnumerator<TSource, TKey>(source[Symbol.iterator](), excludedKeys, keySelector);
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new ExceptByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this.excludedKeys, this.keySelector);
     }
 }

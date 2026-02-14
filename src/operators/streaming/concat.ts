@@ -1,8 +1,8 @@
-import { TyneqOperator } from "../../core/operator/TyneqOperator";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ConcatEnumerator } from "../../enumerators/streaming/concat";
-import { IEnumerable, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 
-export class ConcatOperator<TSource> extends TyneqOperator<TSource> {
+export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly other: IEnumerable<TSource>;
 
     public constructor(source: IEnumerable<TSource>, other: IEnumerable<TSource>) {
@@ -17,5 +17,9 @@ export class ConcatOperator<TSource> extends TyneqOperator<TSource> {
         return () => {
             return new ConcatEnumerator<TSource>(source[Symbol.iterator](), other[Symbol.iterator]());
         }
+    }
+
+    public override getEnumerator(): IEnumerator<TSource> {
+        return new ConcatEnumerator<TSource>(this.source[Symbol.iterator](), this.other[Symbol.iterator]());
     }
 }

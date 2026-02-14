@@ -9,12 +9,16 @@ export interface IEnumerator<T> extends Iterator<T> {
     throw?(e?: unknown): IteratorResult<T>;
 }
 
+export interface IEnumeratorFactory<T> {
+    getEnumerator(): IEnumerator<T>;
+}
+
 /**
  * An enumerable sequence of T.
  * 
  * ~ Iterable<T>.
  */
-export interface IEnumerable<T> extends Iterable<T> {
+export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
     /**
      * Returns an enumerator that iterates through the collection.
      * 
@@ -33,7 +37,6 @@ export type IteratorFactory<T> = () => IEnumerator<T>;
 export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
-    getEnumerator(): IEnumerator<TSource>;
     // conversion operators
 
 
