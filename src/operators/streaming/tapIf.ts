@@ -1,8 +1,8 @@
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
-import { ForEachIfEnumerator } from "../../enumerators/streaming/forEachIf";
+import { TapIfEnumerator } from "../../enumerators/streaming/tapIf";
 import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class ForEachIfOperator<TSource> extends TyneqOperator<TSource> {
+export class TapIfOperator<TSource> extends TyneqOperator<TSource> {
     private readonly action: (item: TSource) => void;
     private readonly predicate: () => boolean;
 
@@ -17,7 +17,7 @@ export class ForEachIfOperator<TSource> extends TyneqOperator<TSource> {
         const action = this.action;
         const predicate = this.predicate;
         return () => {
-            return new ForEachIfEnumerator<TSource>(source, action, predicate);
+            return new TapIfEnumerator<TSource>(source[Symbol.iterator](), action, predicate);
         }
     }
 }

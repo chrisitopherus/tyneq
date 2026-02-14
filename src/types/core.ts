@@ -96,10 +96,6 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
-    forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
-
-    forEachIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
-
     prepend(item: TSource): ITyneqEnumerable<TSource>;
 
     select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
@@ -117,6 +113,10 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     take(count: number): ITyneqEnumerable<TSource>;
 
     takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+
+    tap(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
+
+    tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
 
     where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
 

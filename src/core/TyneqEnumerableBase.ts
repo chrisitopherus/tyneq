@@ -14,8 +14,8 @@ import { UnionByOperator } from "../operators/buffer/unionBy";
 import { AppendOperator } from "../operators/streaming/append";
 import { ChunkOperator } from "../operators/streaming/chunk";
 import { ConcatOperator } from "../operators/streaming/concat";
-import { ForEachOperator } from "../operators/streaming/forEach";
-import { ForEachIfOperator } from "../operators/streaming/forEachIf";
+import { TapOperator } from "../operators/streaming/tap";
+import { TapIfOperator } from "../operators/streaming/tapIf";
 import { PrependOperator } from "../operators/streaming/prepend";
 import { SelectOperator } from "../operators/streaming/select";
 import { SelectManyOperator } from "../operators/streaming/selectMany";
@@ -220,18 +220,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         );
     }
 
-    public forEach(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new ForEachOperator<TSource>(this, action).getFactory()
-        );
-    }
-
-    public forEachIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new ForEachIfOperator<TSource>(this, action, predicate).getFactory()
-        );
-    }
-
     public prepend(item: TSource): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new PrependOperator<TSource>(this, item).getFactory()
@@ -283,6 +271,18 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new TakeWhileOperator<TSource>(this, predicate).getFactory()
+        );
+    }
+
+    public tap(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new TapOperator<TSource>(this, action).getFactory()
+        );
+    }
+
+    public tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new TapIfOperator<TSource>(this, action, predicate).getFactory()
         );
     }
 

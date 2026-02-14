@@ -1,8 +1,8 @@
 import { TyneqOperator } from "../../core/operator/TyneqOperator";
-import { ForEachEnumerator } from "../../enumerators/streaming/forEach";
+import { TapEnumerator } from "../../enumerators/streaming/tap";
 import { IEnumerable, IteratorFactory } from "../../types/core";
 
-export class ForEachOperator<TSource> extends TyneqOperator<TSource> {
+export class TapOperator<TSource> extends TyneqOperator<TSource> {
     private readonly action: (item: TSource) => void;
 
     public constructor(source: IEnumerable<TSource>, action: (item: TSource) => void) {
@@ -15,7 +15,7 @@ export class ForEachOperator<TSource> extends TyneqOperator<TSource> {
         const action = this.action;
 
         return () => {
-            return new ForEachEnumerator<TSource>(source, action);
+            return new TapEnumerator<TSource>(source[Symbol.iterator](), action);
         }
     }
 }
