@@ -1,6 +1,5 @@
 import { TyneqGeneratorEnumerator } from "../../core/enumerators/TyneqGeneratorEnumerator";
 import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
-import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 
