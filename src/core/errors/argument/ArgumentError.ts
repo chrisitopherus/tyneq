@@ -9,14 +9,15 @@ import { TyneqError } from "../TyneqError";
  * parameter caused the validation failure.
  * 
  * All Tyneq methods validate their arguments using the {@link ArgumentUtility} class, which throws
- * `ArgumentError` or its subclasses ({@link ArgumentNullError}, {@link ArgumentOutOfRangeError})
- * when validation fails.
+ * `ArgumentError` or its subclasses ({@link ArgumentNullError}, {@link ArgumentOutOfRangeError},
+ * {@link ArgumentTypeError}) when validation fails.
  * 
  * Common validation checks include:
  * - Null/undefined checks
  * - Empty collection checks
  * - Numeric range and sign checks
  * - String whitespace checks
+ * - Type validation (function, instanceof, etc.)
  * - Custom predicate-based validation
  * 
  * The `paramName` property helps identify which parameter caused the error, improving debugging experience.
@@ -40,6 +41,7 @@ import { TyneqError } from "../TyneqError";
  * 
  * @see {@link ArgumentNullError} for null argument errors.
  * @see {@link ArgumentOutOfRangeError} for out-of-range argument errors.
+ * @see {@link ArgumentTypeError} for type mismatch errors.
  * @see {@link ArgumentUtility} for validation utilities.
  */
 export class ArgumentError extends TyneqError {
