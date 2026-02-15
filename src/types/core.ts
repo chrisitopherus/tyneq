@@ -231,27 +231,6 @@ export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable
  * 
  * @typeParam TSource - The type of elements in the sequence.
  * 
- * @example
- * ```typescript
- * import { Tyneq } from 'tyneq';
- * 
- * const numbers = Tyneq.range(1, 100);
- * 
- * // Build a query (lazy, not executed yet)
- * const query = numbers
- *     .where(n => n % 2 === 0)      // Filter even numbers
- *     .select(n => n * n)            // Square them
- *     .take(5);                      // Take first 5
- * 
- * // Execute by materializing
- * const result = query.toArray();    // [4, 16, 36, 64, 100]
- * 
- * // Or by iterating
- * for (const value of query) {
- *     console.log(value);
- * }
- * ```
- * 
  * @see {@link IEnumerable} for the base iterable interface.
  * @see {@link ITyneqOrderedEnumerable} for ordered sequences with additional sorting operators.
  */
@@ -264,23 +243,23 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Determines whether any element satisfies a condition.
      * 
-     * @param predicate - A function to test each element.
-     * @returns `true` if any element satisfies the condition; otherwise, `false`.
+     * @param predicate - Function that returns `true` if the element matches.
+     * @returns `true` if at least one element matches the condition; otherwise, `false`.
      */
     any(predicate: (item: TSource) => boolean): boolean;
 
     /**
      * Determines whether all elements satisfy a condition.
      * 
-     * @param predicate - A function to test each element.
-     * @returns `true` if all elements satisfy the condition or sequence is empty; otherwise, `false`.
+     * @param predicate - Function that returns `true` if the element matches.
+     * @returns `true` if all elements match (or sequence is empty); otherwise, `false`.
      */
     all(predicate: (item: TSource) => boolean): boolean;
 
     /**
      * Determines whether the sequence contains a specific value.
      * 
-     * @param value - The value to locate in the sequence.
+     * @param value - The value to search for.
      * @returns `true` if the value is found; otherwise, `false`.
      */
     contains(value: TSource): boolean;
@@ -288,7 +267,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Returns the number of elements in the sequence.
      * 
-     * @returns The count of elements.
+     * @returns The number of elements in the sequence.
      */
     count(): number;
 
@@ -305,33 +284,33 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * 
      * @param index - The zero-based index of the element to retrieve.
      * @returns The element at the specified index.
-     * @throws When the index is out of range.
+     * @throws {InvalidOperationError} when the index is out of range.
      */
     elementAt(index: number): TSource;
 
     /**
-     * Returns the element at a specified index or a default value if out of range.
+     * Returns the element at a specified index, or a default value if the index is out of range.
      * 
      * @param index - The zero-based index of the element to retrieve.
      * @param defaultValue - The value to return if the index is out of range.
-     * @returns The element at the specified index, or `defaultValue` if not found.
+     * @returns The element at the specified index, or `defaultValue` if the index is negative or beyond the sequence length.
      */
     elementAtOrDefault(index: number, defaultValue: TSource): TSource;
 
     /**
      * Returns the first element that satisfies a condition.
      * 
-     * @param predicate - A function to test each element.
-     * @returns The first element that satisfies the condition.
-     * @throws When no element satisfies the condition.
+     * @param predicate - Function that returns `true` if the element matches.
+     * @returns The first matching element.
+     * @throws {InvalidOperationError} when no element matches the condition.
      */
     first(predicate: (item: TSource) => boolean): TSource;
 
     /**
      * Returns the first element that satisfies a condition, or a default value if none found.
      * 
-     * @param predicate - A function to test each element.
-     * @param defaultValue - The value to return if no element satisfies the condition.
+     * @param predicate - Function that returns `true` if the element matches.
+     * @param defaultValue - The value to return if no element matches.
      * @returns The first matching element, or `defaultValue` if none found.
      */
     firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
@@ -339,27 +318,31 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Returns the zero-based index of the first element that satisfies a condition.
      * 
-     * @param predicate - A function to test each element.
-     * @param startIndex - The zero-based index at which to begin searching.
-     * @returns The index of the first matching element, or -1 if not found.
+     * @param predicate - Function to test each element. Cannot be null or undefined.
+     * @param startIndex - The zero-based index at which to begin searching. Defaults to 0.
+     * @returns The zero-based index of the first matching element, or -1 if not found.
+     * @throws {ArgumentNullError} when `predicate` is null.
+     * @throws {ArgumentError} when `predicate` is undefined.
      */
     indexOf(predicate: (item: TSource) => boolean, startIndex?: number): number;
 
     /**
      * Returns the last element that satisfies a condition.
      * 
-     * @param predicate - A function to test each element.
-     * @returns The last element that satisfies the condition.
-     * @throws When no element satisfies the condition.
+     * @param predicate - Function that returns `true` if the element matches.
+     * @returns The last matching element.
+     * @throws {InvalidOperationError} when no element matches the condition.
      */
     last(predicate: (item: TSource) => boolean): TSource;
 
     /**
      * Returns the last element that satisfies a condition, or a default value if none found.
      * 
-     * @param predicate - A function to test each element.
+     * @param predicate - Function to test each element. Cannot be null or undefined.
      * @param defaultValue - The value to return if no element satisfies the condition.
      * @returns The last matching element, or `defaultValue` if none found.
+     * @throws {ArgumentNullError} when `predicate` is null.
+     * @throws {ArgumentError} when `predicate` is undefined.
      */
     lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
@@ -368,7 +351,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * 
      * @param comparer - Optional comparison function. If omitted, uses default comparison.
      * @returns The maximum element.
-     * @throws When the sequence is empty.
+     * @throws {InvalidOperationError} when the sequence is empty.
      */
     max(comparer?: (a: TSource, b: TSource) => number): TSource;
 
@@ -388,7 +371,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * 
      * @param comparer - Optional comparison function. If omitted, uses default comparison.
      * @returns The minimum element.
-     * @throws When the sequence is empty.
+     * @throws {InvalidOperationError} when the sequence is empty.
      */
     min(comparer?: (a: TSource, b: TSource) => number): TSource;
 
@@ -442,15 +425,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Computes the sum of values obtained by invoking a selector on each element.
      * 
-     * @param selector - A function to extract a numeric value from each element.
-     * @returns The sum of all selected values.
+     * @param selector - Function to extract a numeric value from each element. Cannot be null or undefined.
+     * @returns The sum of all selected values. Returns 0 for empty sequences.
+     * @throws {ArgumentNullError} when `selector` is null.
+     * @throws {ArgumentError} when `selector` is undefined.
      */
     sum(selector: (item: TSource) => number): number;
 
     /**
-     * Creates an array from the sequence.
+     * Materializes the sequence into an array.
      * 
-     * @returns An array containing all elements from the sequence.
+     * @returns A new array containing all elements from the sequence.
      */
     toArray(): TSource[];
 
@@ -520,11 +505,12 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     prepend(item: TSource): ITyneqEnumerable<TSource>;
 
     /**
-     * Projects each element into a new form.
+     * Projects each element into a new form using a transform function.
      * 
      * @typeParam TResult - The type of elements in the result sequence.
-     * @param selector - A transform function to apply to each element.
-     * @returns A sequence whose elements are the result of invoking the selector on each source element.
+     * @param selector - A function to apply to each element to transform it.
+     * @returns A new sequence containing the transformed elements.
+     * @throws {ArgumentNullError} when `selector` is null.
      */
     select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
 
@@ -532,23 +518,25 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Projects each element to a sequence and flattens the resulting sequences into one.
      * 
      * @typeParam TResult - The type of elements in the result sequence.
-     * @param selector - A transform function that returns a sequence for each source element.
-     * @returns A sequence containing all elements from all projected sequences.
+     * @param selector - A function to transform each source element into an enumerable sequence. Cannot be null or undefined.
+     * @returns A sequence containing all elements from all projected inner sequences, flattened into a single sequence.
+     * @throws {ArgumentNullError} when `selector` is null.
+     * @throws {ArgumentError} when `selector` is undefined.
      */
     selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult>;
 
     /**
      * Bypasses a specified number of elements and returns the remaining elements.
      * 
-     * @param count - The number of elements to skip.
-     * @returns A sequence containing elements after the specified position.
+     * @param count - The number of elements to skip. Can be 0 or negative (skips nothing).
+     * @returns A new sequence containing elements after the specified position.
      */
     skip(count: number): ITyneqEnumerable<TSource>;
 
     /**
      * Bypasses a specified number of elements from the end and returns the remaining elements.
      * 
-     * @param count - The number of elements to skip from the end.
+     * @param count - The number of elements to skip from the end. Can be 0 or negative (skips nothing).
      * @returns A sequence containing all elements except the last `count` elements.
      */
     skipLast(count: number): ITyneqEnumerable<TSource>;
@@ -556,57 +544,66 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Bypasses elements while a condition is true and returns the remaining elements.
      * 
-     * @param predicate - A function to test each element.
-     * @returns A sequence containing elements starting from the first element that does not satisfy the condition.
+     * @param predicate - A function to test each element. Cannot be null or undefined.
+     * @returns A sequence containing elements starting from the first element that does not satisfy the condition, plus all subsequent elements.
+     * @throws {ArgumentNullError} when `predicate` is null.
+     * @throws {ArgumentError} when `predicate` is undefined.
      */
     skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
 
     /**
      * Splits the sequence into sub-sequences based on a predicate.
      * 
-     * @param splitOn - A function that identifies split points. Elements matching this are excluded from results.
-     * @returns A sequence of arrays, where each array is a segment between split points.
+     * @param splitOn - A function that identifies elements to use as split points. Cannot be null or undefined. Elements where this returns true are excluded.
+     * @returns A sequence of arrays, where each array contains consecutive elements between split points.
+     * @throws {ArgumentNullError} when `splitOn` is null.
+     * @throws {ArgumentError} when `splitOn` is undefined.
      */
     split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]>;
 
     /**
      * Returns a specified number of contiguous elements from the start of a sequence.
      * 
-     * @param count - The number of elements to return.
-     * @returns A sequence containing the first `count` elements.
+     * @param count - The number of elements to return. Can be 0 or negative (returns empty).
+     * @returns A new sequence containing the first `count` elements.
      */
     take(count: number): ITyneqEnumerable<TSource>;
 
     /**
      * Returns elements while a condition is true and skips the remaining elements.
      * 
-     * @param predicate - A function to test each element.
-     * @returns A sequence containing elements up to and excluding the first element that does not satisfy the condition.
+     * @param predicate - A function to test each element. Cannot be null or undefined.
+     * @returns A sequence containing elements starting from the beginning while the predicate returns true, stopping at the first element that doesn't satisfy the condition.
+     * @throws {ArgumentNullError} when `predicate` is null.
+     * @throws {ArgumentError} when `predicate` is undefined.
      */
     takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
 
     /**
      * Performs a side effect on each element without modifying the sequence.
      * 
-     * @param action - An action to perform on each element.
-     * @returns The original sequence unchanged, with the action executed during enumeration.
+     * @param action - A function to invoke on each element (may perform side effects).
+     * @returns The original sequence, unchanged.
+     * @throws {ArgumentNullError} when `action` is null.
      */
     tap(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
 
     /**
      * Conditionally performs a side effect on each element without modifying the sequence.
      * 
-     * @param action - An action to perform on each element if the predicate is true.
-     * @param predicate - A function evaluated once to determine if the action should execute.
-     * @returns The original sequence unchanged, with the action conditionally executed during enumeration.
+     * @param action - A function to invoke on each element if the condition is met.
+     * @param predicate - A function that returns `true` if the action should execute, `false` otherwise.
+     * @returns The original sequence, unchanged.
+     * @throws {ArgumentNullError} when `action` or `predicate` is null.
      */
     tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
 
     /**
-     * Filters the sequence based on a predicate.
+     * Filters the sequence based on a predicate function.
      * 
-     * @param predicate - A function to test each element for a condition.
-     * @returns A sequence containing only elements that satisfy the condition.
+     * @param predicate - A function to test each element for a condition. Returns `true` to include the element, `false` to exclude it.
+     * @returns A new sequence containing only elements that satisfy the condition.
+     * @throws {ArgumentNullError} when `predicate` is null.
      */
     where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
 
@@ -630,7 +627,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Returns distinct elements from the sequence.
      * 
-     * @returns A sequence containing only unique elements.
+     * @returns A sequence containing only unique elements, preserving order of first occurrence.
      */
     distinct(): ITyneqEnumerable<TSource>;
 
@@ -638,16 +635,18 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Returns distinct elements from the sequence based on a key selector.
      * 
      * @typeParam TKey - The type of key used for uniqueness comparison.
-     * @param keySelector - A function to extract keys for comparison.
-     * @returns A sequence containing elements with unique keys.
+     * @param keySelector - A function to extract comparison keys from elements. Cannot be null or undefined. Elements with equal keys are considered duplicates.
+     * @returns A sequence containing elements with unique keys, in order of first occurrence.
+     * @throws {ArgumentNullError} when `keySelector` is null.
+     * @throws {ArgumentError} when `keySelector` is undefined.
      */
     distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set difference of two sequences.
      * 
-     * @param excludedValues - A sequence whose elements to exclude from the result.
-     * @returns A sequence containing elements from this sequence that do not appear in `excludedValues`.
+     * @param excludedValues - A sequence whose elements to exclude from the result. Cannot be null.
+     * @returns A sequence containing distinct elements from this sequence that do not appear in `excludedValues`.
      */
     except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
@@ -655,22 +654,24 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Produces the set difference of two sequences based on a key selector.
      * 
      * @typeParam TKey - The type of key used for comparison.
-     * @param excludedKeys - A sequence of keys to exclude.
-     * @param keySelector - A function to extract keys from elements.
-     * @returns A sequence containing elements whose keys do not appear in `excludedKeys`.
+     * @param excludedKeys - A sequence of keys to exclude. Cannot be null or undefined.
+     * @param keySelector - A function to extract keys from elements of this sequence. Cannot be null or undefined.
+     * @returns A sequence containing elements whose extracted keys do not appear in `excludedKeys`.
      */
     exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     /**
      * Groups elements by key and projects the results.
      * 
-     * @typeParam TKey - The type of key.
+     * @typeParam TKey - The type of grouping key.
      * @typeParam TValue - The type of projected element values.
-     * @typeParam TResult - The type of result elements.
-     * @param keySelector - A function to extract the grouping key.
-     * @param valueSelector - A function to project element values within each group.
-     * @param resultSelector - A function to create a result from each group.
-     * @returns A sequence of grouped and projected results.
+     * @typeParam TResult - The type of result elements (returned by resultSelector).
+     * @param keySelector - Function to extract the grouping key from each element. Cannot be null or undefined.
+     * @param valueSelector - Function to project each element before adding to its group. Cannot be null or undefined.
+     * @param resultSelector - Function called once per group. Receives the key and an enumerable of values for that group. Returns the result for the group. Cannot be null or undefined.
+     * @returns A sequence of result elements, one per group.
+     * @throws {ArgumentNullError} when any parameter is null.
+     * @throws {ArgumentError} when any parameter is undefined.
      */
     groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
@@ -700,17 +701,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Produces the set intersection of two sequences.
      * 
-     * @param intersectedValues - A sequence whose elements also appear in this sequence.
-     * @returns A sequence containing elements that appear in both sequences.
+     * @param intersectedValues - A sequence to intersect with this sequence. Cannot be null.
+     * @returns A sequence containing distinct elements that appear in both sequences.
      */
     intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set intersection of two sequences based on a key selector.
      * 
-     * @typeParam TKey - The type of key used for comparison.
-     * @param intersectedKeys - A sequence of keys to intersect with.
-     * @param keySelector - A function to extract keys from elements.
+     * @typeParam TKey - The type of key used for intersection.
+     * @param intersectedKeys - A sequence of keys to intersect with. Cannot be null or undefined.
+     * @param keySelector - A function to extract keys from elements of this sequence. Cannot be null or undefined.
      * @returns A sequence containing elements whose keys appear in `intersectedKeys`.
      */
     intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
@@ -718,14 +719,16 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Correlates elements of two sequences based on matching keys.
      * 
-     * @typeParam TInner - The type of elements in the inner sequence.
-     * @typeParam TKey - The type of key used for correlation.
+     * @typeParam TInner - The type of elements in the inner (right) sequence.
+     * @typeParam TKey - The type of key used for matching.
      * @typeParam TResult - The type of result elements.
-     * @param inner - The inner sequence to join.
-     * @param outerKeySelector - A function to extract keys from outer elements.
-     * @param innerKeySelector - A function to extract keys from inner elements.
-     * @param resultSelector - A function to create a result from matching outer and inner elements.
-     * @returns A sequence of join results for each pair of elements with matching keys.
+     * @param inner - The inner sequence to join with. Cannot be null.
+     * @param outerKeySelector - Function to extract keys from this sequence elements. Cannot be null or undefined.
+     * @param innerKeySelector - Function to extract keys from inner sequence elements. Cannot be null or undefined.
+     * @param resultSelector - Function called for each outer-inner match. Returns the result. Cannot be null or undefined.
+     * @returns A sequence of joined results. Only includes pairs where both outer element and at least one inner element with matching keys exist.
+     * @throws {ArgumentNullError} when any function parameter is null.
+     * @throws {ArgumentError} when any function parameter is undefined.
      */
     join<TInner, TKey, TResult>(
         inner: IEnumerable<TInner>,
@@ -738,9 +741,11 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Sorts elements in ascending order according to a key.
      * 
      * @typeParam TKey - The type of key used for sorting.
-     * @param keySelector - A function to extract the sort key from each element.
-     * @param comparer - Optional comparison function for keys. If omitted, uses default comparison.
-     * @returns An ordered sequence sorted by the specified key.
+     * @param keySelector - Function to extract the sort key from each element. Cannot be null or undefined.
+     * @param comparer - Optional comparison function returning negative (a < b), zero (a === b), or positive (a > b). If omitted, uses default comparison.
+     * @returns An ordered sequence sorted by the specified key in ascending order. Can be further sorted with `thenBy()` or `thenByDescending()`.
+     * @throws {ArgumentNullError} when `keySelector` is null.
+     * @throws {ArgumentError} when `keySelector` is undefined.
      */
     orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
@@ -751,9 +756,11 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Sorts elements in descending order according to a key.
      * 
      * @typeParam TKey - The type of key used for sorting.
-     * @param keySelector - A function to extract the sort key from each element.
-     * @param comparer - Optional comparison function for keys. If omitted, uses default comparison.
-     * @returns An ordered sequence sorted by the specified key in descending order.
+     * @param keySelector - Function to extract the sort key from each element. Cannot be null or undefined.
+     * @param comparer - Optional comparison function returning negative (a < b), zero (a === b), or positive (a > b). If omitted, uses default comparison.
+     * @returns An ordered sequence sorted by the specified key in descending order. Can be further sorted with `thenBy()` or `thenByDescending()`.
+     * @throws {ArgumentNullError} when `keySelector` is null.
+     * @throws {ArgumentError} when `keySelector` is undefined.
      */
     orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
@@ -763,21 +770,21 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Inverts the order of elements in the sequence.
      * 
-     * @returns A sequence with elements in reverse order.
+     * @returns A new sequence with elements in reverse order.
      */
     reverse(): ITyneqEnumerable<TSource>;
 
     /**
      * Returns the elements in a random order.
      * 
-     * @returns A sequence containing all elements in a randomized order.
+     * @returns A new sequence containing all elements in a randomized order.
      */
     shuffle(): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set union of two sequences.
      * 
-     * @param otherValues - The second sequence.
+     * @param otherValues - The second sequence to union with this sequence. Cannot be null.
      * @returns A sequence containing unique elements from both sequences.
      */
     union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
@@ -786,9 +793,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Produces the set union of two sequences based on a key selector.
      * 
      * @typeParam TKey - The type of key used for equality comparison.
-     * @param otherValues - The second sequence.
-     * @param keySelector - A function to extract keys for comparison.
-     * @returns A sequence containing unique elements from both sequences based on their keys.
+     * @param otherValues - The second sequence to union with this sequence. Cannot be null.
+     * @param keySelector - A function to extract keys from elements. Cannot be null or undefined.
+     * @returns A sequence containing elements with unique keys from both sequences.
      */
     unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
@@ -799,11 +806,6 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     /**
      * Allows custom transformation by providing a factory function.
-     * 
-     * @remarks
-     * This method enables extending the query pipeline with custom operators
-     * not provided by the library. The factory receives the current sequence
-     * and returns an enumerator or iterable iterator for the transformed sequence.
      * 
      * @typeParam TResult - The type of elements in the result sequence.
      * @param factory - A function that receives the source and returns an enumerator.
@@ -829,18 +831,6 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
  * 
  * @typeParam TSource - The type of elements in the sequence.
  * 
- * @example
- * ```typescript
- * interface Person { name: string; age: number; city: string; }
- * 
- * const people: Person[] = [...]
- * const sorted = Tyneq.from(people)
- *     .orderBy(p => p.city)              // Primary: by city
- *     .thenByDescending(p => p.age)      // Secondary: by age descending
- *     .thenBy(p => p.name)               // Tertiary: by name
- *     .toArray();
- * ```
- * 
  * @see {@link ITyneqEnumerable} for the base enumerable interface.
  * @see {@link IOrderedEnumerable} for the internal ordering contract.
  */
@@ -848,20 +838,20 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
     /**
      * Performs a subsequent ordering in ascending order.
      * 
-     * @typeParam TKey - The type of key used for ordering.
-     * @param keySelector - A function to extract the sort key.
+     * @typeParam TKey - The type of the sort key.
+     * @param keySelector - A function to extract the sort key from each element. Cannot be null or undefined.
      * @param comparer - Optional comparison function. If omitted, uses default comparison.
-     * @returns An ordered sequence with an additional sort criterion.
+     * @returns A new ordered enumerable with the additional sort criterion.
      */
     thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
     
     /**
      * Performs a subsequent ordering in descending order.
      * 
-     * @typeParam TKey - The type of key used for ordering.
-     * @param keySelector - A function to extract the sort key.
+     * @typeParam TKey - The type of the sort key.
+     * @param keySelector - A function to extract the sort key from each element. Cannot be null or undefined.
      * @param comparer - Optional comparison function. If omitted, uses default comparison.
-     * @returns An ordered sequence with an additional sort criterion.
+     * @returns A new ordered enumerable with the additional descending sort criterion.
      */
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
 }
@@ -916,23 +906,6 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
  * 
  * @typeParam TKey - The type of the key.
  * @typeParam TValue - The type of the value.
- * 
- * @example
- * ```typescript
- * interface User { id: number; name: string; }
- * const users: User[] = [
- *     { id: 1, name: 'Alice' },
- *     { id: 2, name: 'Bob' }
- * ];
- * 
- * const userMap = Tyneq.from(users)
- *     .toMap(u => ({ key: u.id, value: u.name }));
- * // Map<number, string> { 1 => 'Alice', 2 => 'Bob' }
- * 
- * const userRecord = Tyneq.from(users)
- *     .toRecord(u => ({ key: `user_${u.id}`, value: u }));
- * // { user_1: { id: 1, name: 'Alice' }, user_2: { id: 2, name: 'Bob' } }
- * ```
  * 
  * @see {@link ITyneqEnumerable.toMap}
  * @see {@link ITyneqEnumerable.toRecord}
