@@ -5,15 +5,50 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 import { nameof } from "../../utility/nameof";
 
+/**
+ * Enumerator implementation for correlating outer elements with inner groups via keys.
+ * 
+ * @remarks
+ * This enumerator performs a left outer join where each outer element is paired with all
+ * matching inner elements (grouped by key). Lazily builds a lookup from the inner sequence
+ * on first iteration, then joins each outer element with its matching inner group.
+ * 
+ * **Implementation**: Buffers entire inner sequence into a key-to-values lookup on first call.
+ * 
+ * **Performance**: O(m) space where m is size of inner sequence. O(m) time for initial
+ * inner sequence consumption, then O(1) per outer element.
+ * 
+ * @typeParam TOuter - The type of elements in the outer (source) sequence.
+ * @typeParam TInner - The type of elements in the inner sequence.
+ * @typeParam TKey - The type of the join key.
+ * @typeParam TResult - The type of the result after applying result selector.
+ * 
+ * @see {@link GroupJoinOperatorEnumerable} for the operator that uses this enumerator.
+ */
 export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
+    /** The inner sequence to join against. */
     private readonly innerSource: IEnumerable<TInner>;
+    /** Function to extract key from outer elements. */
     private readonly outerKeySelector: (outer: TOuter) => TKey;
+    /** Function to extract key from inner elements. */
     private readonly innerKeySelector: (inner: TInner) => TKey;
+    /** Function to combine outer element with matching inner group. */
     private readonly resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult;
-
+    /** Whether the inner lookup has been built. */
     private isInitialized = false;
+    /** Map from keys to arrays of matching inner elements. */
     private innerLookup = new TyneqMap<TKey, TInner[]>();
 
+    /**
+     * Creates a new groupJoin enumerator.
+     * 
+     * @param sourceEnumerator - The outer sequence enumerator.
+     * @param innerSource - The inner sequence to join against.
+     * @param outerKeySelector - Function to extract key from outer elements.
+     * @param innerKeySelector - Function to extract key from inner elements.
+     * @param resultSelector - Function to combine outer element with matching inner group.
+     * @throws {ArgumentError} If any required parameter is null or undefined.
+     */
     public constructor(
         sourceEnumerator: IEnumerator<TOuter>,
         innerSource: IEnumerable<TInner>,
@@ -33,6 +68,12 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
         this.resultSelector = resultSelector;
     }
 
+    /**
+     * Gets the next joined result by combining outer element with matching inner group.
+     * On first call, consumes entire inner sequence to build lookup.
+     * 
+     * @returns Iterator result containing the next joined result, or done if exhausted.
+     */
     protected handleNext(): IteratorResult<TResult> {
         if (!this.isInitialized) {
             for (const innerItem of this.innerSource) {

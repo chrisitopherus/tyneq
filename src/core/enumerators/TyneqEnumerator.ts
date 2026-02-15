@@ -1,3 +1,5 @@
+import { TyneqGeneratorEnumerator } from './TyneqGeneratorEnumerator';
+import { TyneqEnumerableEnumerator } from './TyneqEnumerableEnumerator';
 import { IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
@@ -47,7 +49,7 @@ import { nameof } from '../../utility/nameof';
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
     private sourceDisposed = false;
     private completed = false;
-    
+
     /**
      * The source enumerator from which elements are obtained.
      * This enumerator must be disposed when iteration ends or is cut short.
