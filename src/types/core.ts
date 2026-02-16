@@ -24,6 +24,8 @@ import { Nullable } from "./utility";
  * @see {@link IEnumerable} for re-iterable sequences.
  */
 export interface IEnumerator<T> extends Iterator<T> {
+    next(): IteratorResult<T>;
+
     /**
      * Signals early termination of iteration.
      * 
@@ -31,7 +33,7 @@ export interface IEnumerator<T> extends Iterator<T> {
      * @returns An iterator result indicating completion.
      */
     return?(value?: unknown): IteratorResult<T>;
-    
+
     /**
      * Throws an exception into the iterator.
      * 
@@ -737,6 +739,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         resultSelector: (outer: TSource, inner: TInner) => TResult
     ): ITyneqEnumerable<TResult>;
 
+    memoize(): ITyneqCachedEnumerable<TSource>;
+
     /**
      * Sorts elements in ascending order according to a key.
      * 
@@ -844,7 +848,7 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
      * @returns A new ordered enumerable with the additional sort criterion.
      */
     thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
-    
+
     /**
      * Performs a subsequent ordering in descending order.
      * 
@@ -859,6 +863,12 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
 export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
     rememoize(): ITyneqCachedEnumerable<TSource>;
 }
+
+export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
+    tryGetAtFromCache(index: number): CacheResult<TSource>;
+}
+
+export type CacheResult<TSource> = { has: true, value: TSource } | { has: false };
 
 /**
  * Internal interface for ordered enumerable implementations.
@@ -883,12 +893,12 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
      * The source sequence being ordered.
      */
     source: ITyneqEnumerable<TSource>;
-    
+
     /**
      * The parent ordering in a multi-level sort chain, or null for primary ordering.
      */
     parent: Nullable<IOrderedEnumerable<TSource>>;
-    
+
     /**
      * Creates a sorter that applies this ordering and all parent orderings.
      * 
@@ -897,6 +907,8 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
      */
     getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource>;
 }
+
+
 
 /**
  * Represents a key-value pair.
@@ -919,7 +931,7 @@ export type KeyValuePair<TKey, TValue> = {
      * The key of the pair.
      */
     key: TKey;
-    
+
     /**
      * The value of the pair.
      */

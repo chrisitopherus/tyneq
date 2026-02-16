@@ -1576,6 +1576,10 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         );
     }
 
+    public memoize(): ITyneqCachedEnumerable<TSource> {
+        return this.createCachedEnumerable(this);
+    }
+
     /**
      * Reverses the order of elements in the sequence.
      * 
@@ -1760,5 +1764,5 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         descending: boolean
     ): ITyneqOrderedEnumerable<TSource>;
 
-    protected abstract createCachedEnumerable(): ITyneqCachedEnumerable<TSource>;
+    protected abstract createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource>;
 }

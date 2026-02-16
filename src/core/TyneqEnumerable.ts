@@ -197,7 +197,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
         );
     }
 
-    protected createCachedEnumerable(): ITyneqCachedEnumerable<TSource> {
-        return new TyneqCachedEnumerable<TSource>();
+    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>(source);
     }
 }

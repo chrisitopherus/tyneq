@@ -61,7 +61,7 @@ export abstract class TyneqGeneratorEnumerator<TOutput> implements IEnumerator<T
         if (result.done) {
             this.completed = true;
         }
-
+        
         return result;
     }
 
