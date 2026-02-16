@@ -856,6 +856,10 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
 }
 
+export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+    rememoize(): ITyneqCachedEnumerable<TSource>;
+}
+
 /**
  * Internal interface for ordered enumerable implementations.
  * 

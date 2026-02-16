@@ -52,7 +52,7 @@ import { ToArrayOperator } from "../operators/terminal/toArray";
 import { ToMapOperator } from "../operators/terminal/toMap";
 import { ToRecordOperator } from "../operators/terminal/toRecord";
 import { ToSetOperator } from "../operators/terminal/toSet";
-import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -1759,4 +1759,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         comparer: (a: TKey, b: TKey) => number,
         descending: boolean
     ): ITyneqOrderedEnumerable<TSource>;
+
+    protected abstract createCachedEnumerable(): ITyneqCachedEnumerable<TSource>;
 }

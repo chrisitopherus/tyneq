@@ -1,8 +1,9 @@
-import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
-import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
+import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
+import { TyneqCachedEnumerable } from './cache/TyneqCachedEnumerable';
+import { TyneqOrderedEnumerable } from './ordering/TyneqOrderedEnumerable';
 
 /**
  * Standard implementation of a queryable enumerable sequence.
@@ -98,7 +99,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      * Ensures independent iteration state for each enumeration.
      */
     protected readonly enumeratorFactory: IEnumeratorFactory<TSource>;
-    
+
     /**
      * Creates a new enumerable sequence from an enumerator factory.
      * 
@@ -194,5 +195,9 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
             comparer,
             descending
         );
+    }
+
+    protected createCachedEnumerable(): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>();
     }
 }

@@ -1,12 +1,13 @@
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 import { TyneqEnumerableSorter } from "./TyneqEnumerableSorter";
-import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, IteratorFactory, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../../types/core';
+import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../../types/core';
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { TyneqCachedEnumerable } from "../cache/TyneqCachedEnumerable";
 
 /**
  * Represents an ordered (sorted) enumerable sequence with support for chained sorting.
@@ -380,5 +381,9 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
             descending,
             this
         );
+    }
+
+    protected createCachedEnumerable(): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>();
     }
 }
