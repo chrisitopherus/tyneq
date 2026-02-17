@@ -1,9 +1,9 @@
-import { TyneqGeneratorEnumerator } from './TyneqGeneratorEnumerator';
 import { TyneqEnumerableEnumerator } from './TyneqEnumerableEnumerator';
 import { IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
 import { nameof } from '../../utility/nameof';
+import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
 
 /**
  * Base class for enumerators that transform elements from a source enumerator.
@@ -43,13 +43,9 @@ import { nameof } from '../../utility/nameof';
  * @typeParam TOutput - The type of elements yielded by this enumerator (may equal TInput).
  * 
  * @see {@link TyneqEnumerableEnumerator} for working with enumerables
- * @see {@link TyneqGeneratorEnumerator} for generation without source dependency
  * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism
  */
-export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
-    private sourceDisposed = false;
-    private completed = false;
-
+export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
     /**
      * The source enumerator from which elements are obtained.
      * This enumerator must be disposed when iteration ends or is cut short.
@@ -66,109 +62,10 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnum
      * @throws {@link ArgumentError} if `sourceEnumerator` is undefined.
      */
     public constructor(sourceEnumerator: IEnumerator<TInput>) {
+        super();
         ArgumentUtility.checkNotOptional(sourceEnumerator, nameof({ sourceEnumerator }));
 
         this.sourceEnumerator = sourceEnumerator;
-    }
-
-    /**
-     * Advances the iterator to the next element.
-     * 
-     * @remarks
-     * - Returns `{ done: false, value: TOutput }` when a value is yielded.
-     * - Returns `{ done: true, value: undefined }` when iteration completes or after completion.
-     * - Once completion is reached, all subsequent calls return immediately without processing.
-     * 
-     * @returns An iterator result containing the next value or completion state.
-     */
-    public next(): IteratorResult<TOutput> {
-        if (this.completed) return this.done();
-
-        const result = this.handleNext();
-
-        if (result.done) {
-            this.completed = true;
-            return this.done();
-        }
-
-        return result;
-    }
-
-    /**
-     * Terminates iteration and releases resources.
-     * 
-     * @remarks
-     * This method is called when iteration is cut short (e.g., break from a for-of loop).
-     * It triggers cleanup through {@link dispose}, marking the enumerator as completed.
-     * The source enumerator is safely disposed via {@link EnumeratorUtility.tryDispose}.
-     * Cannot be undone; subsequent calls to `next()` will return completion.
-     * 
-     * @param value - Optional value associated with the early termination.
-     * @returns `{ done: true, value: undefined }`
-     */
-    public return(value?: unknown): IteratorResult<TOutput> {
-        this.dispose(value);
-        this.completed = true;
-        return this.done();
-    }
-
-    /**
-     * Yields a value to the caller.
-     * 
-     * @remarks
-     * Helper method for subclasses to return a value continuation.
-     * Used within `handleNext()` implementations to signal an element is available.
-     * 
-     * @param value - The element to yield.
-     * @returns `{ done: false, value }`
-     */
-    protected yield(value: TOutput): IteratorResult<TOutput> {
-        return { done: false, value };
-    }
-
-    /**
-     * Signals completion of iteration.
-     * 
-     * @remarks
-     * Helper method indicating the end of the sequence.
-     * Used to terminate iteration without producing a final value.
-     * 
-     * @returns `{ done: true, value: undefined }`
-     */
-    protected done(): IteratorResult<TOutput> {
-        return { done: true, value: undefined };
-    }
-
-    /**
-     * Yields a final value and completes iteration.
-     * 
-     * @remarks
-     * Convenience method for the pattern of returning a value and then ending.
-     * After calling this, subsequent `next()` calls will return completion.
-     * 
-     * @param value - The final element to yield.
-     * @returns `{ done: false, value }`
-     */
-    protected doneWithYield(value: TOutput): IteratorResult<TOutput> {
-        this.completed = true;
-        return this.yield(value);
-    }
-
-    /**
-     * Terminates iteration early and triggers resource cleanup.
-     * 
-     * @remarks
-     * Used when subclass logic determines early completion is necessary
-     * (e.g., a predicate is satisfied and no further elements are needed).
-     * Automatically disposes resources and the source enumerator via {@link dispose}.
-     * 
-     * @param reason - Optional reason or context for early completion.
-     * @returns `{ done: true, value: undefined }`
-     */
-    protected earlyComplete(reason?: unknown): IteratorResult<TOutput> {
-        this.dispose(reason);
-        this.completed = true;
-        return this.done();
     }
 
     /**
@@ -181,7 +78,7 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnum
      * 
      * @param value - Optional context passed through cleanup phases.
      */
-    protected dispose(value?: unknown): void {
+    protected override dispose(value?: unknown): void {
         this.disposeSource();
         this.disposeAdditional(value);
     }
@@ -198,38 +95,10 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> implements IEnum
      * This ensures that resources held by the source are released even if the
      * source's `return()` method throws an exception.
      */
-    protected disposeSource(): void {
+    protected override disposeSource(): void {
         if (this.sourceDisposed) return;
 
         this.sourceDisposed = true;
         EnumeratorUtility.tryDispose(this.sourceEnumerator);
     }
-
-    /**
-     * Disposes additional resources specific to this enumerator.
-     * 
-     * @remarks
-     * Override this method in subclasses to release custom resources (buffers, timers, etc.).
-     * Called after {@link disposeSource} during cleanup.
-     * Default implementation does nothing.
-     * 
-     * @param value - Optional context from the disposal trigger.
-     */
-    protected disposeAdditional(value?: unknown): void { }
-
-    /**
-     * Retrieves the next element from the source and produces the output.
-     * 
-     * @remarks
-     * Subclasses must implement this method to define transformation/filtering logic.
-     * This method is called by `next()` and should:
-     * - Return `{ done: false, value }` to yield an element
-     * - Return `{ done: true, value: undefined }` when source is exhausted
-     * 
-     * Side effects (like disposal) are handled by `next()`, not this method.
-     * 
-     * @returns An iterator result containing either the next transformed value or completion.
-     */
-    protected abstract handleNext(): IteratorResult<TOutput>;
-
 }

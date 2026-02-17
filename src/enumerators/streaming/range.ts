@@ -1,4 +1,4 @@
-import { TyneqGeneratorEnumerator } from "../../core/enumerators/TyneqGeneratorEnumerator";
+import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
 import { nameof } from "../../utility/nameof";
 
@@ -15,7 +15,7 @@ import { nameof } from "../../utility/nameof";
  * 
  * @see {@link RangeOperator} for the operator that uses this enumerator.
  */
-export class RangeEnumerator extends TyneqGeneratorEnumerator<number> {
+export class RangeEnumerator extends TyneqBaseEnumerator<number> {
     /** Current value in the range. */
     private current: number;
     /** Last value in the range (inclusive). */
@@ -38,6 +38,15 @@ export class RangeEnumerator extends TyneqGeneratorEnumerator<number> {
         this.end = end;
     }
 
+    protected dispose(value?: unknown): void {
+        this.disposeSource();
+        this.disposeAdditional(value);
+    }
+    protected disposeSource(): void {
+        if (this.sourceDisposed) return;
+        this.sourceDisposed = true;
+    }
+
     /**
      * Generates the next integer in the range.
      * 
@@ -45,7 +54,7 @@ export class RangeEnumerator extends TyneqGeneratorEnumerator<number> {
      */
     protected override handleNext(): IteratorResult<number> {
         if (this.current > this.end) {
-            return this.complete();
+            return this.done();
         }
 
         return this.yield(this.current++);

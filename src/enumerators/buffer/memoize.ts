@@ -1,26 +1,31 @@
 import { TyneqCachedEnumerable } from "../../core/cache/TyneqCachedEnumerable";
-import { IEnumerator } from '../../types/core';
+import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 
-export class MemoizeEnumerator<TSource> implements IEnumerator<TSource> {
+export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;
 
     public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>) {
+        super();
         this.cachedEnumerable = cachedEnumerable;
     }
 
-    public next(): IteratorResult<TSource> {
+    protected override dispose(value?: unknown): void {
+        // noop - no resources to dispose
+    }
+
+    protected override disposeSource(): void {
+        // noop - no source enumerator to dispose
+    }
+
+    protected override handleNext(): IteratorResult<TSource, any> {
         const result = this.cachedEnumerable.tryGetAtFromCache(this.index);
 
         if (!result.has) {
-            return { done: true, value: undefined };
+            return this.done();
         }
 
         this.index++;
-        return { done: false, value: result.value };
-    }
-
-    public return(value?: unknown): IteratorResult<TSource> {
-        return { done: true, value: undefined };
+        return this.yield(result.value);
     }
 }
