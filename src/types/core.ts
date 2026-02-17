@@ -861,7 +861,7 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
 }
 
 export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
-    rememoize(): ITyneqCachedEnumerable<TSource>;
+    refresh(): ITyneqCachedEnumerable<TSource>;
 }
 
 export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {

@@ -20,8 +20,12 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return new MemoizeEnumerator(this);
     }
 
-    public rememoize(): ITyneqCachedEnumerable<TSource> {
-        throw new Error("Method not implemented.");
+    public refresh(): ITyneqCachedEnumerable<TSource> {
+        this.cache = [];
+        this.done = false;
+        this.sourceEnumerator?.return?.();
+        this.sourceEnumerator = null;
+        return this;
     }
 
     public tryGetAtFromCache(index: number): CacheResult<TSource> {

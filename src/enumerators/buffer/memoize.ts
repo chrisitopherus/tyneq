@@ -4,7 +4,6 @@ import { IEnumerator } from '../../types/core';
 export class MemoizeEnumerator<TSource> implements IEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;
-    public current?: TSource;
 
     public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>) {
         this.cachedEnumerable = cachedEnumerable;
@@ -18,7 +17,6 @@ export class MemoizeEnumerator<TSource> implements IEnumerator<TSource> {
         }
 
         this.index++;
-        this.current = result.value;
         return { done: false, value: result.value };
     }
 
