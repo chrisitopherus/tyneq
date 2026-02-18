@@ -600,6 +600,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      */
     tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
 
+    throttle(count: number): ITyneqEnumerable<TSource>;
+
     /**
      * Filters the sequence based on a predicate function.
      * 

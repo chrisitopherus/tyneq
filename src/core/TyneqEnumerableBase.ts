@@ -25,6 +25,7 @@ import { TakeOperatorEnumerable } from "../operators/streaming/take";
 import { TakeWhileOperatorEnumerable } from "../operators/streaming/takeWhile";
 import { TapOperatorEnumerable } from "../operators/streaming/tap";
 import { TapIfOperatorEnumerable } from "../operators/streaming/tapIf";
+import { ThrottleOperatorEnumerable } from "../operators/streaming/throttle";
 import { WhereOperatorEnumerable } from "../operators/streaming/where";
 import { ZipOperatorEnumerable } from "../operators/streaming/zip";
 import { AllOperator } from "../operators/terminal/all";
@@ -1175,6 +1176,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new TapIfOperatorEnumerable<TSource>(this, action, predicate)
+        );
+    }
+
+    public throttle(count: number): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new ThrottleOperatorEnumerable<TSource>(this, count)
         );
     }
 
