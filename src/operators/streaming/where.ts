@@ -34,15 +34,6 @@ export class WhereOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TS
         this.predicate = predicate;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const predicate = this.predicate;
-        
-        return () => {
-            return new WhereEnumerator<TSource>(source[Symbol.iterator](), predicate);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new WhereEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
     }

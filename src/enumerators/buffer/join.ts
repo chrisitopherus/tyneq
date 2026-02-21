@@ -29,7 +29,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     /** The inner sequence to join against. */
-    private readonly innerSource: IEnumerable<TInner>;
+    private readonly innerSource: Iterable<TInner>;
     /** Function to extract key from outer elements. */
     private readonly outerKeySelector: (outer: TOuter) => TKey;
     /** Function to extract key from inner elements. */
@@ -59,7 +59,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
      */
     public constructor(
         sourceEnumerator: IEnumerator<TOuter>,
-        innerSource: IEnumerable<TInner>,
+        innerSource: Iterable<TInner>,
         outerKeySelector: (outer: TOuter) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TOuter, inner: TInner) => TResult

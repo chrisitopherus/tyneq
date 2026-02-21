@@ -20,7 +20,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** The sequence of values to exclude. */
-    private readonly excludedValues: IEnumerable<TSource>;
+    private readonly excludedValues: Iterable<TSource>;
     /** Set of values to exclude (includes both excluded values and already-yielded values). */
     private excludeSet = new Set<TSource>();
     /** Whether the exclude set has been initialized. */
@@ -32,7 +32,7 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * @param sourceEnumerator - The source enumerator.
      * @param excludedValues - The sequence of values to exclude from the result.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedValues: IEnumerable<TSource>) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.excludedValues = excludedValues;
     }

@@ -25,7 +25,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     /** Sequence of keys to exclude. */
-    private readonly excludedKeys: IEnumerable<TKey>;
+    private readonly excludedKeys: Iterable<TKey>;
     /** Function to extract keys from source elements. */
     private readonly keySelector: (item: TSource) => TKey;
 
@@ -39,9 +39,10 @@ export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnum
      * @throws {@link ArgumentError} when `excludedKeys` or `keySelector` is undefined.
      * @throws {@link ArgumentNullError} when `excludedKeys` or `keySelector` is null.
      */
-    public constructor(source: IEnumerable<TSource>, excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
+    public constructor(source: IEnumerable<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(source);
         ArgumentUtility.checkNotOptional(excludedKeys, nameof({ excludedKeys }));
+        ArgumentUtility.checkIterable(excludedKeys, nameof({ excludedKeys }));
         ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.excludedKeys = excludedKeys;

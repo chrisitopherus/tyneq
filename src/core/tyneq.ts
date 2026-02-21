@@ -3,6 +3,7 @@ import { RangeOperator } from "../operators/streaming/range";
 import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
+import { EnumerableAdapter } from "./adapter/EnumerableAdapter";
 import { TyneqEnumerable } from './TyneqEnumerable';
 
 /**
@@ -86,13 +87,8 @@ export class Tyneq {
     public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
         ArgumentUtility.checkNotOptional(source, nameof({ source }));
 
-        const wrapper: IEnumeratorFactory<TSource> = {
-            getEnumerator() {
-                return source[Symbol.iterator]();
-            }
-        } 
-
-        return new TyneqEnumerable<TSource>(wrapper);
+        const adapter = new EnumerableAdapter(source);
+        return new TyneqEnumerable<TSource>(adapter);
     }
 
     /**
@@ -147,7 +143,11 @@ export class Tyneq {
         ArgumentUtility.checkNonNegative(count, nameof({ count }));
         ArgumentUtility.checkInteger(count, nameof({ count }));
 
-        const operator = new RangeOperator(start, start + count);
+        if (count === 0) {
+            return this.empty<number>();
+        }
+
+        const operator = new RangeOperator(start, start + count - 1);
 
         return new TyneqEnumerable<number>(operator);
     }

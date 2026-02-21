@@ -24,7 +24,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class ExceptOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** Sequence of values to exclude from the result. */
-    private readonly excludedValues: IEnumerable<TSource>;
+    private readonly excludedValues: Iterable<TSource>;
 
     /**
      * Creates a new set difference operator.
@@ -35,7 +35,7 @@ export class ExceptOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<T
      * @throws {@link ArgumentError} when `excludedValues` is undefined.
      * @throws {@link ArgumentNullError} when `excludedValues` is null.
      */
-    public constructor(source: IEnumerable<TSource>, excludedValues: IEnumerable<TSource>) {
+    public constructor(source: IEnumerable<TSource>, excludedValues: Iterable<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional(excludedValues, nameof({ excludedValues }));
 

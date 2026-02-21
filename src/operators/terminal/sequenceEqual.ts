@@ -23,7 +23,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     /** The sequence to compare against. */
-    private readonly other: IEnumerable<TSource>;
+    private readonly other: Iterable<TSource>;
     /** Function to compare elements for equality. */
     private readonly equalityComparer: (a: TSource, b: TSource) => boolean;
 
@@ -35,7 +35,7 @@ export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSourc
      * @param equalityComparer - Optional function to compare elements for equality.
      * @throws {ArgumentError} If other is null or undefined.
      */
-    public constructor(source: ITyneqEnumerable<TSource>, other: IEnumerable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
+    public constructor(source: ITyneqEnumerable<TSource>, other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
         super(source);
         ArgumentUtility.checkNotOptional(other, nameof({ other }));
         ArgumentUtility.checkNotNull(equalityComparer, nameof({ equalityComparer }));

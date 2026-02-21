@@ -22,7 +22,7 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  */
 export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to concatenate. */
-    private readonly other: IEnumerable<TSource>;
+    private readonly other: Iterable<TSource>;
 
     /**
      * Creates a new concat operator.
@@ -30,7 +30,7 @@ export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<T
      * @param source - The first sequence.
      * @param other - The second sequence to append.
      */
-    public constructor(source: IEnumerable<TSource>, other: IEnumerable<TSource>) {
+    public constructor(source: IEnumerable<TSource>, other: Iterable<TSource>) {
         super(source);
         this.other = other;
     }

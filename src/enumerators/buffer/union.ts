@@ -20,7 +20,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** The second sequence to union with. */
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     /** Set of values already yielded (for uniqueness). */
     private bufferedValues = new Set<TSource>();
     /** Current enumerator (starts with source, switches to other). */
@@ -34,7 +34,7 @@ export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * @param sourceEnumerator - The source enumerator.
      * @param otherValues - The second sequence to union with.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TSource>) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
         this.currentEnumerator = this.sourceEnumerator;

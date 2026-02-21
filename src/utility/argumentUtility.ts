@@ -2,7 +2,9 @@ import { ArgumentError } from '../core/errors/argument/ArgumentError';
 import { ArgumentNullError } from '../core/errors/argument/ArgumentNullError';
 import { ArgumentOutOfRangeError } from '../core/errors/argument/ArgumentOutOfRangeError';
 import { ArgumentTypeError } from '../core/errors/argument/ArgumentTypeError';
+import type { IEnumerable, IEnumerator } from '../types/core';
 import { HasLength, Nullable, Optional, Undefinedable } from "../types/utility";
+import { TypeGuardUtility } from './typeGuardUtility';
 
 /**
  * Utility class providing comprehensive argument validation methods for the Tyneq library.
@@ -22,7 +24,7 @@ import { HasLength, Nullable, Optional, Undefinedable } from "../types/utility";
  * - Numeric validation (range, sign, integer, finiteness)
  * - String validation (whitespace, emptiness)
  * - Generic predicate-based validation
- * - Type checking for functions and instances
+ * - Type checking for functions, iterables, iterators, enumerables, enumerators, and instances
  * 
  * **Usage Pattern:**
  * Methods are designed to be called at the start of functions to validate inputs before processing.
@@ -632,6 +634,78 @@ export class ArgumentUtility {
     public static checkFunction(value: unknown, paramName: string): asserts value is Function {
         if (typeof value !== 'function') {
             throw new ArgumentTypeError(paramName, 'function', typeof value);
+        }
+    }
+
+    /**
+     * Validates that a value is iterable (has a callable `[Symbol.iterator]()` method).
+     *
+     * @remarks
+     * This method asserts that the provided value conforms to the JavaScript iterable protocol.
+     *
+     * @typeParam T - The expected item type produced by the iterable
+     * @param value - The value to validate
+     * @param paramName - The name of the parameter being validated (for error messages)
+     * @throws {ArgumentTypeError} If value is not iterable
+     */
+    public static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
+        if (!TypeGuardUtility.isIterable<T>(value)) {
+            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
+            throw new ArgumentTypeError(paramName, 'iterable', actualType);
+        }
+    }
+
+    /**
+     * Validates that a value is an iterator (has a callable `next()` method).
+     *
+     * @remarks
+     * This method asserts that the provided value conforms to the JavaScript iterator protocol.
+     *
+     * @typeParam T - The expected item type produced by the iterator
+     * @param value - The value to validate
+     * @param paramName - The name of the parameter being validated (for error messages)
+     * @throws {ArgumentTypeError} If value is not an iterator
+     */
+    public static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
+        if (!TypeGuardUtility.isIterator<T>(value)) {
+            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
+            throw new ArgumentTypeError(paramName, 'iterator', actualType);
+        }
+    }
+
+    /**
+     * Validates that a value is a Tyneq enumerable (implements iterable protocol and `getEnumerator()`).
+     *
+     * @remarks
+     * This method asserts that the provided value conforms to the Tyneq `IEnumerable<T>` contract.
+     *
+     * @typeParam T - The expected item type produced by the enumerable
+     * @param value - The value to validate
+     * @param paramName - The name of the parameter being validated (for error messages)
+     * @throws {ArgumentTypeError} If value is not an enumerable
+     */
+    public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
+        if (!TypeGuardUtility.isEnumerable<T>(value)) {
+            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
+            throw new ArgumentTypeError(paramName, 'IEnumerable', actualType);
+        }
+    }
+
+    /**
+     * Validates that a value is a Tyneq enumerator (implements iterator protocol with optional return/throw).
+     *
+     * @remarks
+     * This method asserts that the provided value conforms to the Tyneq `IEnumerator<T>` contract.
+     *
+     * @typeParam T - The expected item type produced by the enumerator
+     * @param value - The value to validate
+     * @param paramName - The name of the parameter being validated (for error messages)
+     * @throws {ArgumentTypeError} If value is not an enumerator
+     */
+    public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
+        if (!TypeGuardUtility.isEnumerator<T>(value)) {
+            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
+            throw new ArgumentTypeError(paramName, 'IEnumerator', actualType);
         }
     }
 

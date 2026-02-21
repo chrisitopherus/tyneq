@@ -21,7 +21,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to exclude. */
-    private readonly excludedKeys: IEnumerable<TKey>;
+    private readonly excludedKeys: Iterable<TKey>;
     /** Set of keys to exclude (includes both excluded keys and already-yielded keys). */
     private excludeSet = new Set<TKey>();
     /** Whether the exclude set has been initialized. */
@@ -36,7 +36,7 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
      * @param excludedKeys - The sequence of keys to exclude from the result.
      * @param keySelector - Function to extract comparison key from each element.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.excludedKeys = excludedKeys;
         this.keySelector = keySelector;

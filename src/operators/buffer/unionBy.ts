@@ -25,7 +25,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class UnionByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to union with the source. */
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     /** Function to extract comparison keys from elements. */
     private readonly keySelector: (item: TSource) => TKey;
 
@@ -39,23 +39,14 @@ export class UnionByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnume
      * @throws {@link ArgumentError} when `otherValues` or `keySelector` is undefined.
      * @throws {@link ArgumentNullError} when `otherValues` or `keySelector` is null.
      */
-    public constructor(source: IEnumerable<TSource>, otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey) {
+    public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
         super(source);
         ArgumentUtility.checkNotOptional(otherValues, nameof({ otherValues }));
+        ArgumentUtility.checkIterable(otherValues, nameof({ otherValues }));
         ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.otherValues = otherValues;
         this.keySelector = keySelector;
-    }
-
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const otherValues = this.otherValues;
-        const keySelector = this.keySelector;
-
-        return () => {
-            return new UnionByEnumerator<TSource, TKey>(source[Symbol.iterator](), otherValues, keySelector);
-        }
     }
 
     public override getEnumerator(): IEnumerator<TSource> {

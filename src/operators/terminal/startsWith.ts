@@ -22,7 +22,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
     /** The prefix sequence to check for. */
-    private readonly sequence: IEnumerable<T>;
+    private readonly sequence: Iterable<T>;
 
     /**
      * Creates a new startsWith operator.
@@ -31,9 +31,10 @@ export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
      * @param sequence - The prefix sequence to check for.
      * @throws {ArgumentError} If sequence is null or undefined.
      */
-    public constructor(source: IEnumerable<T>, sequence: IEnumerable<T>) {
+    public constructor(source: IEnumerable<T>, sequence: Iterable<T>) {
         super(source);
         ArgumentUtility.checkNotOptional(sequence, nameof({ sequence }));
+        ArgumentUtility.checkIterable(sequence, nameof({ sequence }));
 
         this.sequence = sequence;
     }

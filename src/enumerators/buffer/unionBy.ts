@@ -22,7 +22,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The second sequence to union with. */
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     /** Set of keys already yielded (for uniqueness). */
     private readonly bufferedKeys = new Set<TKey>();
     /** Function to extract comparison key from each element. */
@@ -39,7 +39,7 @@ export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
      * @param otherValues - The second sequence to union with.
      * @param keySelector - Function to extract comparison key from each element.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
         this.currentEnumerator = this.sourceEnumerator;

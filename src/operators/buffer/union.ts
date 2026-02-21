@@ -24,7 +24,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to union with the source. */
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
 
     /**
      * Creates a new set union operator.
@@ -35,9 +35,10 @@ export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TS
      * @throws {@link ArgumentError} when `otherValues` is undefined.
      * @throws {@link ArgumentNullError} when `otherValues` is null.
      */
-    public constructor(source: IEnumerable<TSource>, otherValues: IEnumerable<TSource>) {
+    public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional(otherValues, nameof({ otherValues }));
+        ArgumentUtility.checkIterable(otherValues, nameof({ otherValues }));
 
         this.otherValues = otherValues;
     }

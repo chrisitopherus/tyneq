@@ -27,7 +27,7 @@ export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorE
     /** Function to extract keys from source elements. */
     private readonly keySelector: (item: TSource) => TKey;
     /** Sequence of keys that must be matched. */
-    private readonly intersectedKeys: IEnumerable<TKey>;
+    private readonly intersectedKeys: Iterable<TKey>;
 
     /**
      * Creates a new set intersection by key operator.
@@ -39,22 +39,14 @@ export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorE
      * @throws {@link ArgumentError} when `intersectedKeys` or `keySelector` is undefined.
      * @throws {@link ArgumentNullError} when `intersectedKeys` or `keySelector` is null.
      */
-    public constructor(source: IEnumerable<TSource>, intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
+    public constructor(source: IEnumerable<TSource>, intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(source);
         ArgumentUtility.checkNotOptional(intersectedKeys, nameof({ intersectedKeys }));
+        ArgumentUtility.checkIterable(intersectedKeys, nameof({ intersectedKeys }));
         ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.intersectedKeys = intersectedKeys;
         this.keySelector = keySelector;
-    }
-
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const intersectedKeys = this.intersectedKeys;
-        const keySelector = this.keySelector;
-        return () => {
-            return new IntersectByEnumerator<TSource, TKey>(source[Symbol.iterator](), intersectedKeys, keySelector);
-        }
     }
 
     public override getEnumerator(): IEnumerator<TSource> {

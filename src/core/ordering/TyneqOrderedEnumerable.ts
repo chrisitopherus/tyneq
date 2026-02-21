@@ -383,7 +383,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    protected createCachedEnumerable(): ITyneqCachedEnumerable<TSource> {
-        return new TyneqCachedEnumerable<TSource>();
+    protected override createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>(source);
     }
 }

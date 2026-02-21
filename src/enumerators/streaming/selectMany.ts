@@ -23,7 +23,7 @@ import { Nullable } from '../../types/utility';
  */
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /** Function to project each element to a nested sequence. */
-    private readonly selector: (item: T) => IEnumerable<U>;
+    private readonly selector: (item: T) => Iterable<U>;
     /** Current nested sequence enumerator (null when between nested sequences). */
     private innerEnumerator: Nullable<IEnumerator<U>> = null;
 
@@ -33,7 +33,7 @@ export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
      * @param sourceEnumerator - The source enumerator.
      * @param selector - Function to project each element to a nested sequence.
      */
-    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => IEnumerable<U>) {
+    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => Iterable<U>) {
         super(sourceEnumerator);
         this.selector = selector;
     }

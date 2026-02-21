@@ -24,7 +24,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class IntersectOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** Sequence of values that must appear in the result. */
-    private readonly intersectedValues: IEnumerable<TSource>;
+    private readonly intersectedValues: Iterable<TSource>;
 
     /**
      * Creates a new set intersection operator.
@@ -35,9 +35,10 @@ export class IntersectOperatorEnumerable<TSource> extends TyneqOperatorEnumerabl
      * @throws {@link ArgumentError} when `intersectedValues` is undefined.
      * @throws {@link ArgumentNullError} when `intersectedValues` is null.
      */
-    public constructor(source: IEnumerable<TSource>, intersectedValues: IEnumerable<TSource>) {
+    public constructor(source: IEnumerable<TSource>, intersectedValues: Iterable<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional(intersectedValues, nameof({ intersectedValues }));
+        ArgumentUtility.checkIterable(intersectedValues, nameof({ intersectedValues }));
         
         this.intersectedValues = intersectedValues;
     }

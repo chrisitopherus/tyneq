@@ -27,7 +27,7 @@ import { nameof } from "../../utility/nameof";
  */
 export class GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** The inner sequence to join with. */
-    private readonly inner: IEnumerable<TInner>;
+    private readonly inner: Iterable<TInner>;
     /** Function to extract keys from outer elements. */
     private readonly outerKeySelector: (outer: TSource) => TKey
     /** Function to extract keys from inner elements. */
@@ -49,13 +49,14 @@ export class GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends
      */
     public constructor(
         source: IEnumerable<TSource>,
-        inner: IEnumerable<TInner>,
+        inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
     ) {
         super(source);
         ArgumentUtility.checkNotOptional(inner, nameof({ inner }));
+        ArgumentUtility.checkIterable(inner, nameof({ inner }));
         ArgumentUtility.checkNotOptional(outerKeySelector, nameof({ outerKeySelector }));
         ArgumentUtility.checkNotOptional(innerKeySelector, nameof({ innerKeySelector }));
         ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));

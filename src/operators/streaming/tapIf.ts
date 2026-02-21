@@ -38,15 +38,6 @@ export class TapIfOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TS
         this.predicate = predicate;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const action = this.action;
-        const predicate = this.predicate;
-        return () => {
-            return new TapIfEnumerator<TSource>(source[Symbol.iterator](), action, predicate);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new TapIfEnumerator<TSource>(this.source[Symbol.iterator](), this.action, this.predicate);
     }

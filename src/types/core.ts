@@ -395,7 +395,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param equalityComparer - Optional equality comparison function. If omitted, uses default equality.
      * @returns `true` if sequences have the same length and corresponding elements are equal; otherwise, `false`.
      */
-    sequenceEqual(other: IEnumerable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean): boolean;
+    sequenceEqual(other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean): boolean;
 
     /**
      * Returns the only element that satisfies a condition.
@@ -422,7 +422,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param sequence - The sequence to compare.
      * @returns `true` if this sequence starts with all elements of the specified sequence; otherwise, `false`.
      */
-    startsWith(sequence: IEnumerable<TSource>): boolean;
+    startsWith(sequence: Iterable<TSource>): boolean;
 
     /**
      * Computes the sum of values obtained by invoking a selector on each element.
@@ -496,7 +496,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param other - The sequence to concatenate to the end of this sequence.
      * @returns A sequence containing all elements from both sequences.
      */
-    concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Prepends a single element to the beginning of the sequence.
@@ -525,7 +525,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} when `selector` is null.
      * @throws {ArgumentError} when `selector` is undefined.
      */
-    selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult>;
+    selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): ITyneqEnumerable<TResult>;
 
     /**
      * Bypasses a specified number of elements and returns the remaining elements.
@@ -620,7 +620,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param selector - A function that combines paired elements.
      * @returns A sequence of combined elements. Stops when either sequence is exhausted.
      */
-    zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
+    zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
 
     // ========================================================================
     // BUFFERING OPERATORS
@@ -652,7 +652,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param excludedValues - A sequence whose elements to exclude from the result. Cannot be null.
      * @returns A sequence containing distinct elements from this sequence that do not appear in `excludedValues`.
      */
-    except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    except(excludedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set difference of two sequences based on a key selector.
@@ -662,7 +662,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param keySelector - A function to extract keys from elements of this sequence. Cannot be null or undefined.
      * @returns A sequence containing elements whose extracted keys do not appear in `excludedKeys`.
      */
-    exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     /**
      * Groups elements by key and projects the results.
@@ -696,7 +696,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A sequence of join results where each outer element is paired with all matching inner elements.
      */
     groupJoin<TInner, TKey, TResult>(
-        inner: IEnumerable<TInner>,
+        inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
@@ -708,7 +708,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param intersectedValues - A sequence to intersect with this sequence. Cannot be null.
      * @returns A sequence containing distinct elements that appear in both sequences.
      */
-    intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    intersect(intersectedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set intersection of two sequences based on a key selector.
@@ -718,7 +718,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param keySelector - A function to extract keys from elements of this sequence. Cannot be null or undefined.
      * @returns A sequence containing elements whose keys appear in `intersectedKeys`.
      */
-    intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     /**
      * Correlates elements of two sequences based on matching keys.
@@ -735,7 +735,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentError} when any function parameter is undefined.
      */
     join<TInner, TKey, TResult>(
-        inner: IEnumerable<TInner>,
+        inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, inner: TInner) => TResult
@@ -793,7 +793,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param otherValues - The second sequence to union with this sequence. Cannot be null.
      * @returns A sequence containing unique elements from both sequences.
      */
-    union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource>;
+    union(otherValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set union of two sequences based on a key selector.
@@ -803,7 +803,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param keySelector - A function to extract keys from elements. Cannot be null or undefined.
      * @returns A sequence containing elements with unique keys from both sequences.
      */
-    unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
 
     // ========================================================================
     // EXTENSION / PLUGIN
@@ -817,7 +817,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @param factory - A function that receives the source and returns an enumerator.
      * @returns A new queryable sequence of the transformed elements.
      */
-    pipe<TResult>(factory: (source: IEnumerable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
+    pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
 }
 
 /**

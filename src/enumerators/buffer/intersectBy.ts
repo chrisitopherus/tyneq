@@ -21,7 +21,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to intersect with. */
-    private readonly otherValues: IEnumerable<TKey>;
+    private readonly otherValues: Iterable<TKey>;
     /** Function to extract comparison key from each element. */
     private readonly keySelector: (item: TSource) => TKey;
     /** Set of keys from the other sequence (for membership testing). */
@@ -38,7 +38,7 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
      * @param otherValues - The sequence of keys to intersect with.
      * @param keySelector - Function to extract comparison key from each element.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TKey>, keySelector: (item: TSource) => TKey) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
         this.keySelector = keySelector;

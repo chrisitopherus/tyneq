@@ -20,7 +20,7 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  */
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** The sequence to intersect with. */
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     /** Set of values from the other sequence (for membership testing). */
     private intersectionValues = new Set<TSource>();
     /** Set of values already yielded (for uniqueness). */
@@ -34,7 +34,7 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * @param sourceEnumerator - The source enumerator.
      * @param otherValues - The sequence to intersect with.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TSource>) {
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
     }

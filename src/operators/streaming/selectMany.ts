@@ -24,7 +24,7 @@ import { SelectManyEnumerator } from "../../enumerators/streaming/selectMany";
  */
 export class SelectManyOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** Function to project each element to a nested sequence. */
-    private readonly selector: (item: TSource) => IEnumerable<TResult>;
+    private readonly selector: (item: TSource) => Iterable<TResult>;
 
     /**
      * Creates a new selectMany (flatMap) operator.
@@ -32,7 +32,7 @@ export class SelectManyOperatorEnumerable<TSource, TResult> extends TyneqOperato
      * @param source - The source sequence.
      * @param selector - Function to project each element to a nested sequence.
      */
-    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => IEnumerable<TResult>) {
+    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => Iterable<TResult>) {
         super(source);
         this.selector = selector;
     }

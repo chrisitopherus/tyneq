@@ -53,7 +53,7 @@ import { ToArrayOperator } from "../operators/terminal/toArray";
 import { ToMapOperator } from "../operators/terminal/toMap";
 import { ToRecordOperator } from "../operators/terminal/toRecord";
 import { ToSetOperator } from "../operators/terminal/toSet";
-import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
+import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -590,7 +590,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @see {@link contains} - To check if one element exists.
      */
-    public sequenceEqual(other: IEnumerable<TSource>, equalityComparer?: ((a: TSource, b: TSource) => boolean) | undefined): boolean {
+    public sequenceEqual(other: Iterable<TSource>, equalityComparer?: ((a: TSource, b: TSource) => boolean) | undefined): boolean {
         return new SequenceEqualOperator<TSource>(this, other, equalityComparer)
             .process();
     }
@@ -680,7 +680,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @see {@link concat} - To combine sequences.
      */
-    public startsWith(sequence: IEnumerable<TSource>): boolean {
+    public startsWith(sequence: Iterable<TSource>): boolean {
         return new StartsWithOperator<TSource>(this, sequence)
             .process();
     }
@@ -875,7 +875,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @returns A sequence containing all elements from both sequences in order.
      */
-    public concat(other: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+    public concat(other: Iterable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ConcatOperatorEnumerable<TSource>(this, other)
         );
@@ -966,7 +966,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @throws {@link ArgumentNullError} when `selector` is null.
      * @throws {@link ArgumentError} when `selector` is undefined.
      */
-    public selectMany<TResult>(selector: (item: TSource) => IEnumerable<TResult>): ITyneqEnumerable<TResult> {
+    public selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
             new SelectManyOperatorEnumerable<TSource, TResult>(this, selector)
         );
@@ -1242,7 +1242,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @returns A sequence of combined elements from both sequences.
      */
-    public zip<TOther, TResult>(other: IEnumerable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
+    public zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
         return this.createEnumerable(
             new ZipOperatorEnumerable<TSource, TOther, TResult>(this, other, selector)
         );
@@ -1320,7 +1320,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @returns A sequence containing distinct elements from this sequence that do not
      *   appear in `excludedValues`.
      */
-    public except(excludedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+    public except(excludedValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ExceptOperatorEnumerable<TSource>(this, excludedValues)
         );
@@ -1352,7 +1352,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @returns A sequence containing elements whose extracted keys do not appear in
      *   `excludedKeys`.
      */
-    public exceptBy<TKey>(excludedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+    public exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ExceptByOperatorEnumerable<TSource, TKey>(this, excludedKeys, keySelector)
         );
@@ -1390,7 +1390,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * O(m) space to index the inner sequence keys.
      */
     public groupJoin<TInner, TKey, TResult>(
-        inner: IEnumerable<TInner>,
+        inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
@@ -1423,7 +1423,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @see {@link intersectBy} - To intersect based on a key selector.
      * @see {@link except} - To find elements only in this sequence.
      */
-    public intersect(intersectedValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+    public intersect(intersectedValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new IntersectOperatorEnumerable<TSource>(this, intersectedValues)
         )
@@ -1454,7 +1454,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @returns A sequence containing elements whose keys appear in `intersectedKeys`.
      */
-    public intersectBy<TKey>(intersectedKeys: IEnumerable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+    public intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new IntersectByOperatorEnumerable<TSource, TKey>(this, intersectedKeys, keySelector)
         );
@@ -1491,7 +1491,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @see {@link groupJoin} - For left outer join semantics with grouping.
      */
     public join<TInner, TKey, TResult>(
-        inner: IEnumerable<TInner>,
+        inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, inner: TInner) => TResult
@@ -1649,7 +1649,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @returns A sequence containing unique elements from both sequences.
      */
-    public union(otherValues: IEnumerable<TSource>): ITyneqEnumerable<TSource> {
+    public union(otherValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new UnionOperatorEnumerable<TSource>(this, otherValues)
         );
@@ -1681,7 +1681,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * 
      * @returns A sequence containing elements with unique keys from both sequences.
      */
-    public unionBy<TKey>(otherValues: IEnumerable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+    public unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new UnionByOperatorEnumerable<TSource, TKey>(this, otherValues, keySelector)
         );
@@ -1717,7 +1717,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @throws {@link ArgumentNullError} when `factory` is null.
      * @throws {@link ArgumentError} when `factory` is undefined.
      */
-    public pipe<TResult>(factory: (source: IEnumerable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
+    public pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
         ArgumentUtility.checkNotOptional(factory, nameof({ factory }));
         const self = this;
         return this.createEnumerable({
