@@ -16,6 +16,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "debug": "node --inspect-brk --enable-source-maps ./node_modules/tsx/dist/cli.mjs src/dev.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -31,8 +34,10 @@
   },
   "homepage": "https://github.com/chrisitopherus/tyneq#readme",
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
