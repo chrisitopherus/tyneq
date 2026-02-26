@@ -3,9 +3,32 @@ import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
+/**
+ * Terminal operator implementation for computing the arithmetic mean of numeric values.
+ * 
+ * @remarks
+ * This is a terminal operator that computes the average of numeric values extracted by
+ * a selector function. Returns 0 for empty sequences. Must enumerate all elements.
+ * 
+ * **Performance**: O(1) space. O(n) time (must enumerate all elements).
+ * 
+ * **Operator Category**: Terminal - forces evaluation and returns a number.
+ * 
+ * @typeParam T - The type of elements in the source sequence.
+ * 
+ * @see {@link ITyneqEnumerable.average} for the public API.
+ */
 export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
+    /** Function to extract numeric value from each element. */
     private readonly selector: (item: T) => number;
 
+    /**
+     * Creates a new average operator.
+     * 
+     * @param source - The source sequence.
+     * @param selector - Function to extract numeric value from each element.
+     * @throws {ArgumentError} If selector is null or undefined.
+     */
     public constructor(source: IEnumerable<T>, selector: (item: T) => number) {
         super(source);
         ArgumentUtility.checkNotOptional(selector, nameof({ selector }));

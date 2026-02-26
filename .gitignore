@@ -101,11 +101,11 @@ dist
 # Sveltekit cache directory
 .svelte-kit/
 
-# vitepress build output
-**/.vitepress/dist
-
 # vitepress cache directory
 **/.vitepress/cache
+
+# generated API docs (TypeDoc)
+docs/api/reference
 
 # Docusaurus cache and generated files
 .docusaurus
