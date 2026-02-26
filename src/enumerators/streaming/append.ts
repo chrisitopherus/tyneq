@@ -1,4 +1,4 @@
-import { AppendOperatorEnumerable } from '../../operators/streaming/append';
+import type{ AppendOperatorEnumerable } from '../../operators/streaming/append';
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 

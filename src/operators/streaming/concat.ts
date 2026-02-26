@@ -1,6 +1,6 @@
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ConcatEnumerator } from "../../enumerators/streaming/concat";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import type { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 
 /**
  * Operator implementation for concatenating two sequences.
@@ -18,7 +18,7 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * @typeParam TSource - The type of elements in both sequences.
  * 
  * @see {@link ConcatEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumer able.concat} for the public API.
+ * @see {@link ITyneqEnumerable.concat} for the public API.
  */
 export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to concatenate. */

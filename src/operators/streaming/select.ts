@@ -3,7 +3,7 @@ import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumer
 import { SelectEnumerator } from "../../enumerators/streaming/select";
 
 /**
- * Operator implementation for projecting each element using aselector function.
+ * Operator implementation for projecting each element using a selector function.
  * 
  * @remarks
  * This is a streaming operator that applies a transformation function to each element,
@@ -33,15 +33,6 @@ export class SelectOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnu
     public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => TResult) {
         super(source);
         this.selector = selector;
-    }
-
-    public getFactory(): IteratorFactory<TResult> {
-        const source = this.source;
-        const selector = this.selector;
-
-        return () => {
-            return new SelectEnumerator<TSource, TResult>(source[Symbol.iterator](), selector);
-        }
     }
 
     public override getEnumerator(): IEnumerator<TResult> {

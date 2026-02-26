@@ -1,14 +1,17 @@
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
+import { nameof } from '../../utility/nameof';
 
 export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
+        ArgumentUtility.checkSafeInteger(count, nameof({ count }));
+        ArgumentUtility.checkPositive(count, nameof({ count }));
         this.count = count;
     }
-
 
     protected override handleNext(): IteratorResult<T> {
         while (true) {

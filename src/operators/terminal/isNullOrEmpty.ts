@@ -1,5 +1,6 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { IEnumerable } from "../../types/core";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>) {
@@ -13,6 +14,8 @@ export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> 
 
         const iterator = this.source[Symbol.iterator]();
         const first = iterator.next();
+        
+        EnumeratorUtility.tryDispose(iterator);
         return first.done === true;
     }
 }

@@ -57,13 +57,9 @@ export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     /**
      * Creates a new terminal operator.
      * 
-     * @param source - The source enumerable to operate on. Must not be null or undefined.
-     * 
-     * @throws {@link ArgumentError} when `source` is undefined.
-     * @throws {@link ArgumentNullError} when `source` is null.
+     * @param source - The source enumerable to operate on.
      */
     public constructor(source: IEnumerable<TSource>) {
-        ArgumentUtility.checkNotOptional(source, nameof({ source }));
         this.source = source;
     }
 
