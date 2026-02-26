@@ -1,5 +1,6 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
-import { RangeOperator } from "../operators/streaming/range";
+import { RandomOperatorEnumerable } from "../operators/streaming/random";
+import { RangeOperatorEnumerable } from "../operators/streaming/range";
 import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
@@ -91,6 +92,24 @@ export class Tyneq {
         return new TyneqEnumerable<TSource>(adapter);
     }
 
+    public static random<TSource>(count: number, randomizer: () => TSource): TyneqEnumerable<TSource> {
+        if (count === 0) {
+            return this.empty<TSource>();
+        }
+
+        const operator = new RandomOperatorEnumerable<TSource>(count, randomizer);
+
+        return new TyneqEnumerable<TSource>(operator);
+    }
+
+    public static isNullOrEmpty<TSource>(source: Iterable<TSource> | null | undefined): boolean {
+        if (source === null || source === undefined) {
+            return true;
+        }
+
+        return this.from(source).isNullOrEmpty();
+    }
+
     /**
      * Generates a sequence of integers within a specified range.
      * 
@@ -147,7 +166,7 @@ export class Tyneq {
             return this.empty<number>();
         }
 
-        const operator = new RangeOperator(start, start + count - 1);
+        const operator = new RangeOperatorEnumerable(start, start + count - 1);
 
         return new TyneqEnumerable<number>(operator);
     }

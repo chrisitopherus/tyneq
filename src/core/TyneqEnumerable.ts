@@ -39,14 +39,14 @@ import { TyneqOrderedEnumerable } from './ordering/TyneqOrderedEnumerable';
  * - **Buffering operators**: orderBy, reverse, distinct, groupBy, etc.
  * - **Terminal operators**: toArray, count, first, sum, etc.
  * 
- * When operators return new sequences, they call {@link createEnumerable} to wrap
- * the result in a fresh `TyneqEnumerable` instance.
+ * When operators return new sequences, they use an internal enumerable factory method
+ * to wrap the result in a fresh `TyneqEnumerable` instance.
  * 
  * ## Ordered Sequences
  * 
  * When `orderBy()` or `orderByDescending()` is called, the result is a
  * {@link TyneqOrderedEnumerable}, which supports multi-level sorting via `thenBy()`
- * and `thenByDescending()`. The {@link createOrderedEnumerable} method constructs
+ * and `thenByDescending()`. An internal ordered-enumerable factory method constructs
  * these specialized instances.
  * 
  * @typeParam TSource - The type of elements in the sequence.
@@ -128,7 +128,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      * Obtains a fresh iterator for this sequence.
      * 
      * @remarks
-     * Delegates to the {@link enumeratorFactory} to produce a new iterator.
+    * Delegates to the internal enumerator factory to produce a new iterator.
      * Each call returns an independent iterator with its own iteration state,
      * allowing the sequence to be enumerated multiple times concurrently.
      * 

@@ -274,6 +274,26 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     count(): number;
 
     /**
+     * Returns the number of elements that satisfy a condition.
+     *
+     * @param predicate - Function that returns `true` when an element should be counted.
+     * @returns The number of elements that satisfy the predicate.
+     */
+    countBy(predicate: (item: TSource) => boolean): number;
+
+    /**
+     * Forces immediate evaluation by fully consuming the sequence.
+     */
+    consume(): void;
+
+    /**
+     * Determines whether the sequence contains no elements.
+     *
+     * @returns `true` if the sequence is empty; otherwise, `false`.
+     */
+    isNullOrEmpty(): boolean;
+
+    /**
      * Returns the sequence or a default sequence containing a single element if empty.
      * 
      * @param defaultValue - The value to return if the sequence is empty.
@@ -497,6 +517,13 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A sequence containing all elements from both sequences.
      */
     concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
+
+    /**
+     * Returns adjacent element pairs as tuples of [previous, current].
+     *
+     * @returns A sequence of tuples from adjacent elements.
+     */
+    pairwise(): ITyneqEnumerable<[TSource, TSource]>;
 
     /**
      * Prepends a single element to the beginning of the sequence.
@@ -786,6 +813,15 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A new sequence containing all elements in a randomized order.
      */
     shuffle(): ITyneqEnumerable<TSource>;
+
+    /**
+     * Inserts another sequence using an index counted from the end.
+     *
+     * @param index - Back index where 0 represents the last position.
+     * @param other - Sequence to insert.
+     * @returns A sequence with `other` inserted from the end-based index.
+     */
+    backsert(index: number, other: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Produces the set union of two sequences.

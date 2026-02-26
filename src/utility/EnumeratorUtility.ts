@@ -14,4 +14,10 @@ export class EnumeratorUtility {
             // swallow
         }
     }
+
+    public static toIterable<TSource>(enumerator: IEnumerator<TSource>): Iterable<TSource> {
+        return {
+            [Symbol.iterator]: () => enumerator
+        };
+    }
 }

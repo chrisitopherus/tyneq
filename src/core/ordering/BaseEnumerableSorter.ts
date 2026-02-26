@@ -16,12 +16,11 @@ import { Tyneq } from "../../core/tyneq";
  * positions. This allows the actual elements to be reordered without unnecessary copying.
  * 
  * **Stability**: The implementation preserves stable sorting. When two elements have equal keys
- * at all sort levels, their original order is preserved via {@link stabilityCompare} in
- * {@link TyneqEnumerableSorter}.
+ * at all sort levels, their original order is preserved by the concrete sorter implementation.
  * 
  * ## Subclasses and Composition
  * 
- * Typically, a single {@link TyneqEnumerableSorter} instance handles one sort criterion.
+ * Typically, a single concrete sorter instance handles one sort criterion.
  * For multi-level sorts, instances are linked via the `next` parameter, forming a chain.
  * The {@link sort} method coordinates this chain by calling `computeKeys()` at each level
  * and delegating comparisons through {@link compareKeys}.
@@ -88,8 +87,7 @@ export abstract class BaseEnumerableSorter<TSource> {
      * @returns A negative number if element `i` should come before `j`,
      *          zero if they are equal, or positive if `i` should come after `j`.
      * 
-     * @remarks
-     * The return value follows JavaScript's sort comparator convention, where:
+    * The return value follows JavaScript's sort comparator convention, where:
      * - Negative indicates `i < j`
      * - Zero indicates `i == j`
      * - Positive indicates `i > j`
@@ -148,7 +146,7 @@ export abstract class BaseEnumerableSorter<TSource> {
      * // Result: ['apple', 'mango', 'zebra']
      * ```
      * 
-     * @see {@link TyneqEnumerableSorter} for the standard implementation.
+    * @see {@link BaseEnumerableSorter} for the sorter contract used by ordered sequences.
      */
     public sort(source: TSource[], count: number): number[] {
         this.computeKeys([...source], count);

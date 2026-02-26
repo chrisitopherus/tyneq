@@ -15,7 +15,7 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * 
  * @see {@link RangeEnumerator} for the enumeration implementation.
  */
-export class RangeOperator extends TyneqOperator<number> {
+export class RangeOperatorEnumerable extends TyneqOperator<number> {
     /** The first number in the range. */
     private readonly start: number;
     /** The last number in the range (inclusive). */
@@ -32,13 +32,6 @@ export class RangeOperator extends TyneqOperator<number> {
 
         this.start = start;
         this.max = max;
-    }
-
-    public getFactory(): IteratorFactory<number> {
-        
-        return () => {
-            return new RangeEnumerator(this.start, this.max);
-        }
     }
 
     public override getEnumerator(): IEnumerator<number> {

@@ -7,6 +7,7 @@ import { GroupJoinOperatorEnumerable } from "../operators/buffer/groupJoin";
 import { IntersectOperatorEnumerable } from "../operators/buffer/intersect";
 import { IntersectByOperatorEnumerable } from "../operators/buffer/intersectBy";
 import { JoinOperatorEnumerable } from "../operators/buffer/join";
+import { BacksertOperatorEnumerable } from "../operators/buffer/backsert";
 import { ReverseOperatorEnumerable } from "../operators/buffer/reverse";
 import { ShuffleOperatorEnumerable } from "../operators/buffer/shuffle";
 import { UnionOperatorEnumerable } from "../operators/buffer/union";
@@ -14,6 +15,7 @@ import { UnionByOperatorEnumerable } from "../operators/buffer/unionBy";
 import { AppendOperatorEnumerable } from "../operators/streaming/append";
 import { ChunkOperatorEnumerable } from "../operators/streaming/chunk";
 import { ConcatOperatorEnumerable } from "../operators/streaming/concat";
+import { PairwiseOperatorEnumerable } from "../operators/streaming/pairwise";
 import { PrependOperatorEnumerable } from "../operators/streaming/prepend";
 import { SelectOperatorEnumerable } from "../operators/streaming/select";
 import { SelectManyOperatorEnumerable } from "../operators/streaming/selectMany";
@@ -31,7 +33,9 @@ import { ZipOperatorEnumerable } from "../operators/streaming/zip";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { ContainsOperator } from "../operators/terminal/contains";
+import { ConsumeOperator } from "../operators/terminal/consume";
 import { CountOperator } from "../operators/terminal/count";
+import { CountByOperator } from "../operators/terminal/countBy";
 import { DefaultIfEmptyOperator } from "../operators/terminal/defaultIfEmpty";
 import { ElementAtOperator } from "../operators/terminal/elementAt";
 import { ElementAtOrDefaultOperator } from "../operators/terminal/elementAtOrDefault";
@@ -44,6 +48,7 @@ import { MaxOperator } from "../operators/terminal/max";
 import { MaxByOperator } from "../operators/terminal/maxBy";
 import { MinOperator } from "../operators/terminal/min";
 import { MinByOperator } from "../operators/terminal/minBy";
+import { IsNullOrEmptyOperator } from "../operators/terminal/isNullOrEmpty";
 import { SequenceEqualOperator } from "../operators/terminal/sequenceEqual";
 import { SingleOperator } from "../operators/terminal/single";
 import { SingleOrDefaultOperator } from "../operators/terminal/singleOrDefault";
@@ -99,8 +104,7 @@ import { nameof } from "../utility/nameof";
  * 
  * Derived classes must implement:
  * - {@link getEnumerator}: Produces fresh iterators for each enumeration
- * - {@link createEnumerable}: Factory method for wrapping operators as new sequences
- * - {@link createOrderedEnumerable}: Factory method for ordered sequence support
+ * - internal factory methods for wrapping operators and ordered sequences
  * 
  * The {@link pipe} method provides an escape hatch for custom transformations
  * not covered by built-in operators.
@@ -167,7 +171,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * - `next()`: Returns `{ value: T, done: false }` or `{ value: undefined, done: true }`
      * - Optional `return()`: Cleanup method for early termination
      * 
-     * This method is called automatically by {@link [Symbol.iterator]} and does not
+    * This method is called automatically by the iterable `Symbol.iterator` method and does not
      * need to be invoked directly in typical usage.
      * 
      * @returns A fresh iterator positioned before the first element.
@@ -262,6 +266,21 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      */
     public count(): number {
         return new CountOperator<TSource>(this)
+            .process();
+    }
+
+    public countBy(predicate: (item: TSource) => boolean): number {
+        return new CountByOperator<TSource>(this, predicate)
+            .process();
+    }
+
+    public consume(): void {
+        return new ConsumeOperator<TSource>(this)
+            .process();
+    }
+
+    public isNullOrEmpty(): boolean {
+        return new IsNullOrEmptyOperator<TSource>(this)
             .process();
     }
 
@@ -708,8 +727,8 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @throws {ArgumentNullError} when `selector` is null.
      * @throws {ArgumentError} when `selector` is undefined.
      * 
-     * @see {@link count} - To count the number of elements.
-     * @see {@link average} - To compute average value (if available).
+    * @see {@link count} - To count the number of elements.
+    * To compute an average, divide `sum(...)` by `count()` when the sequence is not empty.
      */
     public sum(selector: (item: TSource) => number): number {
         return new SumOperator<TSource>(this, selector)
@@ -878,6 +897,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public concat(other: Iterable<TSource>): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ConcatOperatorEnumerable<TSource>(this, other)
+        );
+    }
+
+    public pairwise(): ITyneqEnumerable<[TSource, TSource]> {
+        return this.createEnumerable(
+            new PairwiseOperatorEnumerable<TSource>(this)
         );
     }
 
@@ -1624,6 +1649,12 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public shuffle(): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new ShuffleOperatorEnumerable<TSource>(this)
+        );
+    }
+
+    public backsert(index: number, other: Iterable<TSource>): ITyneqEnumerable<TSource> {
+        return this.createEnumerable(
+            new BacksertOperatorEnumerable<TSource>(this, other, index)
         );
     }
 

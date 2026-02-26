@@ -187,7 +187,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * Returns an enumerator that iterates through the sorted sequence.
      * 
      * @remarks
-     * Creates an {@link OrderByEnumerator} that:
+    * Creates an internal order-by enumerator that:
      * 1. Buffers all elements from the source into an array
      * 2. Creates a composite sorter using {@link getSorter} and the parent chain
      * 3. Sorts the buffered elements according to all sort criteria
@@ -199,7 +199,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * **Performance**: O(n log n) time for sorting, O(n) space for buffering.
      * Each enumeration performs a fresh sort operation.
      * 
-     * @returns A new {@link OrderByEnumerator} positioned before the first element.
+    * @returns A new iterator positioned before the first element.
      */
     public override getEnumerator(): IEnumerator<TSource> {
         return new OrderByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this);
@@ -209,8 +209,8 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * Creates a sorter for this sort criterion and chains it to the next.
      * 
      * @remarks
-     * This method is called by {@link OrderByEnumerator} to build the composite sorter.
-     * It creates a {@link TyneqEnumerableSorter} for this level and attaches the next
+    * This method is called during ordered enumeration to build the composite sorter.
+    * It creates a sorter for this level and attaches the next
      * sorter, enabling multi-level comparisons.
      * 
      * During sorting, comparisons flow through the sorter chain:
@@ -220,9 +220,8 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * 
      * @param next - The next sorter in the chain (from a parent ordering), or null if last.
      *               Usually provided by the parent's {@link getSorter} call.
-     * @returns A new {@link TyneqEnumerableSorter} for this criterion, linked to `next`.
-     * 
-     * @remarks
+    * @returns A new sorter for this criterion, linked to `next`.
+    *
      * Implementation detail: This method is part of the internal {@link IOrderedEnumerable}
      * interface. It's not intended to be called directly by library consumers.
      * 
