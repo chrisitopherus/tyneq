@@ -24,8 +24,6 @@ import { Tyneq } from "../..";
  * @see {@link GroupByOperatorEnumerable} for the operator that uses this enumerator.
  */
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
-    /** Whether source has been consumed and grouped. */
-    private initialized = false;
     /** Function to extract grouping key from each element. */
     private readonly keySelector: (item: TSource) => TKey;
     /** Function to transform each element into group value. */
@@ -57,6 +55,22 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
         this.resultSelector = resultSelector;
     }
 
+    protected override initialize(): void {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                break;
+            }
+
+            const key = this.keySelector(value);
+            const val = this.valueSelector(value);
+            const group = this.lookup.getOrInit(key, () => []);
+            group.push(val);
+        }
+
+        this.lookupEnumerator = this.lookup.entries();
+    }
+
     /**
      * Gets the next group from the lookup table.
      * On first call, consumes entire source to build groups.
@@ -64,23 +78,6 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
      * @returns Iterator result containing the next transformed group, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TResult> {
-        if (!this.initialized) {
-            while (true) {
-                const { done, value } = this.sourceEnumerator.next();
-                if (done) {
-                    break;
-                }
-
-                const key = this.keySelector(value);
-                const val = this.valueSelector(value);
-                const group = this.lookup.getOrInit(key, () => []);
-                group.push(val);
-            }
-
-            this.initialized = true;
-            this.lookupEnumerator = this.lookup.entries();
-        }
-
         // May throw if not initialized
         if (this.lookupEnumerator === undefined) {
             return this.done();

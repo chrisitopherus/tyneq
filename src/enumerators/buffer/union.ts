@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
 
 /**
  * Enumerator implementation for producing set union (unique elements from both sequences).

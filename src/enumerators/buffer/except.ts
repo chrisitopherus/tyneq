@@ -23,8 +23,6 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
     /** Set of values to exclude (includes both excluded values and already-yielded values). */
     private excludeSet = new Set<TSource>();
-    /** Whether the exclude set has been initialized. */
-    private initialized = false;
 
     /**
      * Creates a new except enumerator.
@@ -37,17 +35,16 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.excludedValues = excludedValues;
     }
 
+    protected override initialize(): void {
+        this.excludeSet = new Set<TSource>(this.excludedValues);
+    }
+
     /**
      * Gets the next unique element that is not in the excluded set.
      * 
      * @returns Iterator result containing the next unique non-excluded element, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TSource> {
-        if (!this.initialized) {
-            this.excludeSet = new Set<TSource>(this.excludedValues);
-            this.initialized = true;
-        }
-
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {

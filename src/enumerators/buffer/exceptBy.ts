@@ -24,8 +24,6 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
     private readonly excludedKeys: Iterable<TKey>;
     /** Set of keys to exclude (includes both excluded keys and already-yielded keys). */
     private excludeSet = new Set<TKey>();
-    /** Whether the exclude set has been initialized. */
-    private initialized = false;
     /** Function to extract comparison key from each element. */
     private readonly keySelector: (item: TSource) => TKey;
 
@@ -42,17 +40,16 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
         this.keySelector = keySelector;
     }
 
+    protected override initialize(): void {
+        this.excludeSet = new Set<TKey>(this.excludedKeys);
+    }
+
     /**
      * Gets the next element whose key is not in the excluded set.
      * 
      * @returns Iterator result containing the next element with non-excluded key, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TSource> {
-        if (!this.initialized) {
-            this.excludeSet = new Set<TKey>(this.excludedKeys);
-            this.initialized = true;
-        }
-
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
