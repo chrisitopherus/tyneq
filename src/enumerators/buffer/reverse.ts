@@ -22,8 +22,6 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     /** Current index (counts down from end). */
     private index: number = -1;
-    /** Whether source has been consumed. */
-    private isDoneBuffering = false;
 
     /**
      * Creates a new reverse enumerator.
@@ -34,6 +32,18 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
         super(sourceEnumerator);
     }
 
+    protected override initialize(): void {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                this.index = this.buffer.length - 1;
+                break;
+            }
+
+            this.buffer.push(value);
+        }
+    }
+
     /**
      * Gets the next element in reverse order.
      * On first call, consumes entire source into buffer.
@@ -41,19 +51,6 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
      * @returns Iterator result containing the next element from the end, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<T> {
-        if (!this.isDoneBuffering) {
-            while (true) {
-                const { done, value } = this.sourceEnumerator.next();
-                if (done) {
-                    this.index = this.buffer.length - 1;
-                    this.isDoneBuffering = true;
-                    break;
-                }
-
-                this.buffer.push(value);
-            }
-        }
-
         if (this.index < 0) {
             return this.done();
         }

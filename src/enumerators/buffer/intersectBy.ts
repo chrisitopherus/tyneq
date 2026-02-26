@@ -28,8 +28,6 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
     private intersectionKeys = new Set<TKey>();
     /** Set of keys already yielded (for uniqueness). */
     private bufferedKeys = new Set<TKey>();
-    /** Whether the intersection set has been initialized. */
-    private initialized = false;
 
     /**
      * Creates a new intersectBy enumerator.
@@ -44,6 +42,10 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
         this.keySelector = keySelector;
     }
 
+    protected override initialize(): void {
+        this.intersectionKeys = new Set<TKey>(this.otherValues);
+    }
+
     /**
      * Gets the next element whose key exists in the other key sequence.
      * On first call, buffers other keys into a set.
@@ -51,11 +53,6 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
      * @returns Iterator result containing the next intersecting element, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TSource> {
-        if (!this.initialized) {
-            this.intersectionKeys = new Set<TKey>(this.otherValues);
-            this.initialized = true;
-        }
-
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {

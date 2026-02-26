@@ -1,6 +1,6 @@
 import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator, IEnumerable, ITyneqEnumerable } from '../../types/core';
+import { IEnumerator, ITyneqEnumerable } from '../../types/core';
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 import { nameof } from "../../utility/nameof";
@@ -34,8 +34,6 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
     private readonly innerKeySelector: (inner: TInner) => TKey;
     /** Function to combine outer element with matching inner group. */
     private readonly resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult;
-    /** Whether the inner lookup has been built. */
-    private isInitialized = false;
     /** Map from keys to arrays of matching inner elements. */
     private innerLookup = new TyneqMap<TKey, TInner[]>();
 
@@ -69,23 +67,21 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
         this.resultSelector = resultSelector;
     }
 
+    protected override initialize(): void {
+        for (const innerItem of this.innerSource) {
+            const key = this.innerKeySelector(innerItem);
+            const bucket = this.innerLookup.getOrInit(key, () => []);
+            bucket.push(innerItem);
+        }
+    }
+
     /**
      * Gets the next joined result by combining outer element with matching inner group.
      * On first call, consumes entire inner sequence to build lookup.
      * 
      * @returns Iterator result containing the next joined result, or done if exhausted.
      */
-    protected handleNext(): IteratorResult<TResult> {
-        if (!this.isInitialized) {
-            for (const innerItem of this.innerSource) {
-                const key = this.innerKeySelector(innerItem);
-                const bucket = this.innerLookup.getOrInit(key, () => []);
-                bucket.push(innerItem);
-            }
-
-            this.isInitialized = true;
-        }
-
+    protected override handleNext(): IteratorResult<TResult> {
         const { done, value: outerItem } = this.sourceEnumerator.next();
         if (done) {
             return this.done();

@@ -18,8 +18,6 @@ import { IEnumerator } from "../../types/core";
  * @see {@link ShuffleOperatorEnumerable} for the operator that uses this enumerator.
  */
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** Whether shuffling has been performed. */
-    private isShuffled = false;
     /** Array containing all source elements in shuffled order. */
     private buffer: TSource[] = [];
     /** Current position in the shuffled buffer. */
@@ -34,6 +32,12 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
         super(sourceEnumerator);
     }
 
+    protected override initialize(): void {
+        const buffer = Array.from(this.toIterable(this.sourceEnumerator));
+        this.shuffle(buffer);
+        this.buffer = buffer;
+    }
+
     /**
      * Gets the next element in shuffled order.
      * On first call, consumes entire source and shuffles.
@@ -41,13 +45,6 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * @returns Iterator result containing the next shuffled element, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TSource> {
-        if (!this.isShuffled) {
-            const buffer = Array.from(this.toIterable(this.sourceEnumerator));
-            this.shuffle(buffer);
-            this.buffer = buffer;
-            this.isShuffled = true;
-        }
-
         if (this.buffer.length <= this.currentIndex) {
             return this.done();
         }

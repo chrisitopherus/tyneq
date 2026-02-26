@@ -2,6 +2,7 @@ import { IEnumerator } from '../../types/core';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
 
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
+    private initialized = false;
     protected sourceDisposed = false;
     protected completed = false;
 
@@ -9,6 +10,11 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
 
     public next(): IteratorResult<TOutput> {
         if (this.completed) return this.done();
+
+        if (!this.initialized) {
+            this.initialize();
+            this.initialized = true;
+        }
 
         const result = this.handleNext();
 
@@ -25,6 +31,16 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
         this.completed = true;
         return this.done();
     }
+
+    /**
+     * Initializes the enumerator before iteration begins.
+     * 
+     * @remarks
+     * Called by `next()` on the first invocation to perform any necessary setup.
+     * Subclasses can override this method to initialize state, buffers, or resources.
+     * Default implementation does nothing.
+     */
+    protected initialize(): void { }
 
     /**
      * Yields a value to the caller.

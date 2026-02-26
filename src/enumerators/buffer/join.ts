@@ -36,8 +36,6 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
     private readonly innerKeySelector: (inner: TInner) => TKey;
     /** Function to combine outer and inner elements. */
     private readonly resultSelector: (outer: TOuter, inner: TInner) => TResult;
-    /** Whether the inner lookup has been built. */
-    private isInitialized = false;
     /** Map from keys to arrays of matching inner elements. */
     private innerLookup = new TyneqMap<TKey, TInner[]>();
     /** Current outer element being processed for multiple inner matches. */
@@ -76,18 +74,22 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
         this.resultSelector = resultSelector;
     }
 
+    protected override initialize(): void {
+        for (const innerItem of this.innerSource) {
+            const key = this.innerKeySelector(innerItem);
+            const bucket = this.innerLookup.getOrInit(key, () => []);
+            bucket.push(innerItem);
+        }
+    }
+
     /**
      * Gets the next joined result by combining outer and inner elements with matching keys.
      * On first call, consumes entire inner sequence to build lookup.
      * 
      * @returns Iterator result containing the next joined result, or done if exhausted.
      */
-    protected handleNext(): IteratorResult<TResult> {
-        this.ensureInitialized();
-
+    protected override handleNext(): IteratorResult<TResult> {
         while (true) {
-
-
             if (this.pendingMatches !== null) {
                 if (this.pendingIndex < this.pendingMatches.length) {
                     return this.yield(this.resultSelector(this.pendingOuter, this.pendingMatches[this.pendingIndex++]));
@@ -113,17 +115,5 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
             this.pendingMatches = innerItems;
             this.pendingIndex = 0;
         }
-    }
-
-    private ensureInitialized(): void {
-        if (this.isInitialized) return;
-
-        for (const innerItem of this.innerSource) {
-            const key = this.innerKeySelector(innerItem);
-            const bucket = this.innerLookup.getOrInit(key, () => []);
-            bucket.push(innerItem);
-        }
-
-        this.isInitialized = true;
     }
 }

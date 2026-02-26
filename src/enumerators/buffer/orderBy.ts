@@ -22,8 +22,6 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
  * @see {@link OrderByOperatorEnumerable} for the operator that uses this enumerator.
  */
 export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
-    /** Whether source has been consumed and sorted. */
-    private isInitialized = false;
     /** Array containing all source elements. */
     private buffer: TSource[] = [];
     /** Sorted indices into the buffer array. */
@@ -44,25 +42,24 @@ export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
         this.orderedEnumerable = orderedEnumerable;
     }
 
+    protected override initialize(): void {
+        this.buffer = Array.from(this.orderedEnumerable.source);
+        const sorter = this.getSorter(this.orderedEnumerable);
+        this.indexMap = sorter.sort(this.buffer, this.buffer.length);
+    }
+
     /**
      * Gets the next element in sorted order.
      * On first call, consumes entire source and sorts.
      * 
      * @returns Iterator result containing the next sorted element, or done if exhausted.
      */
-    protected handleNext(): IteratorResult<TSource> {
-        if (!this.isInitialized) {
-            this.buffer = Array.from(this.orderedEnumerable.source);
-            const sorter = this.getSorter(this.orderedEnumerable);
-            this.indexMap = sorter.sort(this.buffer, this.buffer.length);
-            this.isInitialized = true;
-        }
-
+    protected override handleNext(): IteratorResult<TSource> {
         if (this.currentIndex >= this.indexMap.length) {
             return this.done();
         }
 
-        const index = this.indexMap[this.currentIndex++]!;
+        const index = this.indexMap[this.currentIndex++];
         return this.yield(this.buffer[index]);
     }
 

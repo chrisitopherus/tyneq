@@ -25,8 +25,6 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private intersectionValues = new Set<TSource>();
     /** Set of values already yielded (for uniqueness). */
     private bufferedValues = new Set<TSource>();
-    /** Whether the intersection set has been initialized. */
-    private initialized = false;
 
     /**
      * Creates a new intersect enumerator.
@@ -39,6 +37,10 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.otherValues = otherValues;
     }
 
+    protected override initialize(): void {
+        this.intersectionValues = new Set<TSource>(this.otherValues);
+    }
+
     /**
      * Gets the next unique element that exists in both sequences.
      * On first call, buffers other sequence into a set.
@@ -46,11 +48,6 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * @returns Iterator result containing the next intersecting element, or done if exhausted.
      */
     protected override handleNext(): IteratorResult<TSource> {
-        if (!this.initialized) {
-            this.intersectionValues = new Set<TSource>(this.otherValues);
-            this.initialized = true;
-        }
-
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
