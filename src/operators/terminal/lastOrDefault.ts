@@ -36,7 +36,7 @@ export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSourc
      */
     public constructor(source: ITyneqEnumerable<TSource>, predicate: (item: TSource) => boolean, defaultValue: TSource) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ predicate });
 
         this.predicate = predicate;
         this.defaultValue = defaultValue;
@@ -52,7 +52,7 @@ export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSourc
                 found = true;
             }
         }
-        
+
         if (!found) {
             return this.defaultValue;
         }

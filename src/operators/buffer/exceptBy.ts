@@ -41,9 +41,6 @@ export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnum
      */
     public constructor(source: IEnumerable<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(source);
-        ArgumentUtility.checkNotOptional(excludedKeys, nameof({ excludedKeys }));
-        ArgumentUtility.checkIterable(excludedKeys, nameof({ excludedKeys }));
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.excludedKeys = excludedKeys;
         this.keySelector = keySelector;

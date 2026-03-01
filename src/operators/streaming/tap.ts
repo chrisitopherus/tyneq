@@ -34,15 +34,6 @@ export class TapOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSou
         this.action = action;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const action = this.action;
-
-        return () => {
-            return new TapEnumerator<TSource>(source[Symbol.iterator](), action);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new TapEnumerator<TSource>(this.source[Symbol.iterator](), this.action);
     }

@@ -33,15 +33,6 @@ export class AppendOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<T
         this.item = item;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const item = this.item;
-        
-        return () => {
-            return new AppendEnumerator<TSource>(source[Symbol.iterator](), item);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new AppendEnumerator<TSource>(this.source[Symbol.iterator](), this.item);
     }

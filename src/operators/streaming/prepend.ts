@@ -33,15 +33,6 @@ export class PrependOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<
         this.item = item;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const item = this.item;
-
-        return () => {
-            return new PrependEnumerator<TSource>(source[Symbol.iterator](), item);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new PrependEnumerator<TSource>(this.source[Symbol.iterator](), this.item);
     }

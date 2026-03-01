@@ -10,10 +10,7 @@ export class BacksertOperatorEnumerable<TSource> extends TyneqOperatorEnumerable
 
     public constructor(source: IEnumerable<TSource>, other: Iterable<TSource>, index: number) {
         super(source);
-        ArgumentUtility.checkNotOptional(other, nameof({ other }));
-        ArgumentUtility.checkNonNegative(index, nameof({ index }));
-        ArgumentUtility.checkInteger(index, nameof({ index }));
-
+        
         this.other = other;
         this.index = index;
     }

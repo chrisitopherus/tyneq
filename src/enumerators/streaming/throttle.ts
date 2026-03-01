@@ -8,8 +8,8 @@ export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private index: number = -1;
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkSafeInteger(count, nameof({ count }));
-        ArgumentUtility.checkPositive(count, nameof({ count }));
+        ArgumentUtility.checkSafeInteger({ count });
+        ArgumentUtility.checkPositive({ count });
         this.count = count;
     }
 

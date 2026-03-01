@@ -37,15 +37,6 @@ export class SelectManyOperatorEnumerable<TSource, TResult> extends TyneqOperato
         this.selector = selector;
     }
 
-    public getFactory(): IteratorFactory<TResult> {
-        const source = this.source;
-        const selector = this.selector;
-
-        return () => {
-            return new SelectManyEnumerator<TSource, TResult>(source[Symbol.iterator](), selector);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TResult> {
         return new SelectManyEnumerator<TSource, TResult>(this.source[Symbol.iterator](), this.selector);
     }

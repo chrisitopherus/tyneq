@@ -33,8 +33,8 @@ export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
      */
     public constructor(source: IEnumerable<T>, sequence: Iterable<T>) {
         super(source);
-        ArgumentUtility.checkNotOptional(sequence, nameof({ sequence }));
-        ArgumentUtility.checkIterable(sequence, nameof({ sequence }));
+        ArgumentUtility.checkNotOptional({ sequence });
+        ArgumentUtility.checkIterable({ sequence });
 
         this.sequence = sequence;
     }

@@ -34,7 +34,7 @@ export class LastOperator<TSource> extends TyneqTerminalOperator<TSource, TSourc
      */
     public constructor(source: ITyneqEnumerable<TSource>, predicate: (item: TSource) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ predicate });
 
         this.predicate = predicate;
     }
@@ -49,7 +49,7 @@ export class LastOperator<TSource> extends TyneqTerminalOperator<TSource, TSourc
                 found = true;
             }
         }
-        
+
         if (!found) {
             throw new InvalidOperationError("Sequence contains no matching element");
         }

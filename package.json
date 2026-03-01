@@ -1,6 +1,6 @@
 {
   "name": "tyneq",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "Typed Enumerable Queries for TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

@@ -45,9 +45,9 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTermi
         resultSelector: (accumulate: UAccumulate) => VResult
     ) {
         super(source);
-        ArgumentUtility.checkNotOptional(func, nameof({ func }));
-        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
-        
+        ArgumentUtility.checkNotOptional({ func });
+        ArgumentUtility.checkNotOptional({ resultSelector });
+
         this.seed = seed;
         this.func = func;
         this.resultSelector = resultSelector;

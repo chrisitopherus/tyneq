@@ -31,7 +31,7 @@ export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
      */
     public constructor(source: IEnumerable<T>, selector: (item: T) => number) {
         super(source);
-        ArgumentUtility.checkNotOptional(selector, nameof({ selector }));
+        ArgumentUtility.checkNotOptional({ selector });
 
         this.selector = selector;
     }

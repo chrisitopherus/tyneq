@@ -37,8 +37,8 @@ export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSourc
      */
     public constructor(source: ITyneqEnumerable<TSource>, other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional(other, nameof({ other }));
-        ArgumentUtility.checkNotNull(equalityComparer, nameof({ equalityComparer }));
+        ArgumentUtility.checkNotOptional({ other });
+        ArgumentUtility.checkNotNull({ equalityComparer });
 
         this.equalityComparer = equalityComparer ?? TyneqComparer.defaultEqualityComparer;
         this.other = other;

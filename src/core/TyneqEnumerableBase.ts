@@ -1350,7 +1350,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
             new ExceptOperatorEnumerable<TSource>(this, excludedValues)
         );
     }
-    
+
     /**
      * Produces the set difference of two sequences based on a key selector.
      * 
@@ -1749,7 +1749,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * @throws {@link ArgumentError} when `factory` is undefined.
      */
     public pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
-        ArgumentUtility.checkNotOptional(factory, nameof({ factory }));
+        ArgumentUtility.checkNotOptional({ factory });
         const self = this;
         return this.createEnumerable({
             getEnumerator() {

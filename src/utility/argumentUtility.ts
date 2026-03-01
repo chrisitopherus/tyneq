@@ -2,8 +2,9 @@ import { ArgumentError } from '../core/errors/argument/ArgumentError';
 import { ArgumentNullError } from '../core/errors/argument/ArgumentNullError';
 import { ArgumentOutOfRangeError } from '../core/errors/argument/ArgumentOutOfRangeError';
 import { ArgumentTypeError } from '../core/errors/argument/ArgumentTypeError';
-import type { IEnumerable, IEnumerator } from '../types/core';
+import type { IEnumerable, IEnumerator, KeyValuePair } from '../types/core';
 import { HasLength, Nullable, Optional, Undefinedable } from "../types/utility";
+import { nameof } from './nameof';
 import { TypeGuardUtility } from './typeGuardUtility';
 
 /**
@@ -29,6 +30,9 @@ import { TypeGuardUtility } from './typeGuardUtility';
  * **Usage Pattern:**
  * Methods are designed to be called at the start of functions to validate inputs before processing.
  * The `asserts` return type means that TypeScript knows the value is valid after the check passes.
+ * Validation methods support two invocation styles:
+ * 1) explicit value + parameter name (e.g. `checkNotNull(value, 'value')`)
+ * 2) object shorthand for automatic name inference (e.g. `checkNotNull({ value })`)
  * 
  * @example
  * ```typescript
@@ -60,6 +64,7 @@ export class ArgumentUtility {
      * @remarks
      * This is a type assertion method that narrows the type from `Nullable<T>` to `T` upon success.
      * It checks only for `null`, not `undefined`. For checking both, use {@link checkNotOptional}.
+     * Supports both invocation styles: `checkNotNull(value, 'value')` and `checkNotNull({ value })`.
      * 
      * The method uses TypeScript's `asserts` keyword, meaning that after this call, TypeScript
      * knows the value is definitely not null.
@@ -78,9 +83,12 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkNotNull<T>(value: Nullable<T>, paramName: string): asserts value is T {
+    public static checkNotNull<T>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
+    public static checkNotNull<T>(param: Nullable<T>, paramName: string): asserts param is T;
+    public static checkNotNull<T>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (value === null) {
-            throw new ArgumentNullError(paramName);
+            throw new ArgumentNullError(extractedParamName);
         }
     }
 
@@ -90,6 +98,7 @@ export class ArgumentUtility {
      * @remarks
      * This is a type assertion method that narrows the type from `Undefinedable<T>` to `T` upon success.
      * It checks only for `undefined`, not `null`. For checking both, use {@link checkNotOptional}.
+     * Supports both invocation styles: `checkNotUndefined(value, 'value')` and `checkNotUndefined({ value })`.
      * 
      * @typeParam T - The type of the value being validated
      * @param value - The value to check for undefined
@@ -105,9 +114,12 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkNotUndefined<T>(value: Undefinedable<T>, paramName: string): asserts value is T {
+    public static checkNotUndefined<T>(param: Record<string, Undefinedable<T>>): asserts param is Record<string, T>;
+    public static checkNotUndefined<T>(param: Undefinedable<T>, paramName: string): asserts param is T;
+    public static checkNotUndefined<T>(param: Record<string, Undefinedable<T>> | Undefinedable<T>, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (value === undefined) {
-            throw new ArgumentError(`'${paramName}' cannot be undefined.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' cannot be undefined.`, extractedParamName);
         }
     }
 
@@ -117,6 +129,7 @@ export class ArgumentUtility {
      * @remarks
      * This is a type assertion method that narrows the type from `Optional<T>` (which is `T | null | undefined`)
      * to `T` upon success. It's a convenience method that combines {@link checkNotNull} and {@link checkNotUndefined}.
+     * Supports both invocation styles: `checkNotOptional(value, 'value')` and `checkNotOptional({ value })`.
      * 
      * Use this for parameters that must have a definite value and where both null and undefined are invalid.
      * 
@@ -136,9 +149,12 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkNotOptional<T>(value: Optional<T>, paramName: string): asserts value is T {
-        this.checkNotNull(value, paramName);
-        this.checkNotUndefined(value, paramName);
+    public static checkNotOptional<T>(param: Record<string, Optional<T>>): asserts param is Record<string, T>;
+    public static checkNotOptional<T>(param: Optional<T>, paramName: string): asserts param is T;
+    public static checkNotOptional<T>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
+        const {key: extractedParamName, value} = this.extractParameter(param, paramName);
+        this.checkNotNull(value, extractedParamName);
+        this.checkNotUndefined(value, extractedParamName);
     }
 
     /**
@@ -147,6 +163,7 @@ export class ArgumentUtility {
      * @remarks
      * This method checks that a value is not null and has a `length` property greater than 0.
      * It works with arrays, strings, and any object with a numeric `length` property.
+     * Supports both invocation styles: `checkNotNullOrEmpty(value, 'value')` and `checkNotNullOrEmpty({ value })`.
      * 
      * This does not check for `undefined`. For that, use {@link checkNotOptionalOrEmpty}.
      * 
@@ -165,11 +182,14 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkNotNullOrEmpty<T extends HasLength>(value: Nullable<T>, paramName: string): asserts value is T {
-        this.checkNotNull(value, paramName);
+    public static checkNotNullOrEmpty<T extends HasLength>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
+    public static checkNotNullOrEmpty<T extends HasLength>(param: Nullable<T>, paramName: string): asserts param is T;
+    public static checkNotNullOrEmpty<T extends HasLength>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
+        this.checkNotNull(value, extractedParamName);
 
         if (value.length === 0) {
-            throw new ArgumentError(`'${paramName}' cannot be empty.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' cannot be empty.`, extractedParamName);
         }
     }
 
@@ -179,6 +199,7 @@ export class ArgumentUtility {
      * @remarks
      * This method combines null/undefined checking with emptiness validation for values with a `length` property.
      * It ensures the value is defined and contains at least one element/character.
+     * Supports both invocation styles: `checkNotOptionalOrEmpty(value, 'value')` and `checkNotOptionalOrEmpty({ value })`.
      * 
      * @typeParam T - The type of the value, must have a `length` property
      * @param value - The value to check for null, undefined, and emptiness
@@ -195,11 +216,14 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkNotOptionalOrEmpty<T extends HasLength>(value: Optional<T>, paramName: string): asserts value is T {
-        this.checkNotOptional(value, paramName);
+    public static checkNotOptionalOrEmpty<T extends HasLength>(param: Record<string, Optional<T>>): asserts param is Record<string, T>;
+    public static checkNotOptionalOrEmpty<T extends HasLength>(param: Optional<T>, paramName: string): asserts param is T;
+    public static checkNotOptionalOrEmpty<T extends HasLength>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
+        this.checkNotOptional(value, extractedParamName);
 
         if (value.length === 0) {
-            throw new ArgumentError(`'${paramName}' cannot be empty.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' cannot be empty.`, extractedParamName);
         }
     }
 
@@ -211,6 +235,7 @@ export class ArgumentUtility {
      * 1. Is not null
      * 2. Is not undefined
      * 3. After trimming whitespace, has non-zero length
+     * Supports both invocation styles: `checkNotNullOrWhiteSpace(value, 'value')` and `checkNotNullOrWhiteSpace({ value })`.
      * 
      * Whitespace-only strings (spaces, tabs, newlines) are considered invalid.
      * 
@@ -232,10 +257,14 @@ export class ArgumentUtility {
      * greet('');       // Throws: 'name' cannot be empty or whitespace
      * ```
      */
-    public static checkNotNullOrWhiteSpace(value: Optional<string>, paramName: string): asserts value is string {
-        this.checkNotOptional(value, paramName);
+    public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>>): asserts param is Record<string, string>;
+    public static checkNotNullOrWhiteSpace(param: Optional<string>, paramName: string): asserts param is string;
+    public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>> | Optional<string>, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
+        this.checkNotOptional(value, extractedParamName);
+
         if (value.trim().length === 0) {
-            throw new ArgumentError(`'${paramName}' cannot be empty or whitespace.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' cannot be empty or whitespace.`, extractedParamName);
         }
     }
 
@@ -246,6 +275,7 @@ export class ArgumentUtility {
      * This method checks that a numeric value:
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is greater than or equal to 0
+     * Supports both invocation styles: `checkNonNegative(value, 'value')` and `checkNonNegative({ value })`.
      * 
      * Commonly used for count, length, and index parameters where negative values are meaningless.
      * 
@@ -266,9 +296,12 @@ export class ArgumentUtility {
      * allocate(NaN);  // Throws: 'size' must be a non-negative number
      * ```
      */
-    public static checkNonNegative(value: number, paramName: string): void {
+    public static checkNonNegative(param: Record<string, number>): void;
+    public static checkNonNegative(param: number, paramName: string): void;
+    public static checkNonNegative(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || value < 0) {
-            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-negative number.`);
+            throw new ArgumentOutOfRangeError(extractedParamName, `'${extractedParamName}' must be a non-negative number.`);
         }
     }
 
@@ -279,6 +312,7 @@ export class ArgumentUtility {
      * This method checks that a numeric value:
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is strictly greater than 0
+     * Supports both invocation styles: `checkPositive(value, 'value')` and `checkPositive({ value })`.
      * 
      * Use this for parameters where zero is invalid (e.g., divisors, timeouts, batch sizes).
      * For parameters where zero is acceptable, use {@link checkNonNegative} instead.
@@ -299,9 +333,12 @@ export class ArgumentUtility {
      * divide(10, -5);  // Throws: 'divisor' must be a positive number
      * ```
      */
-    public static checkPositive(value: number, paramName: string): void {
+    public static checkPositive(param: Record<string, number>): void;
+    public static checkPositive(param: number, paramName: string): void;
+    public static checkPositive(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || value <= 0) {
-            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a positive number.`);
+            throw new ArgumentOutOfRangeError(extractedParamName, `'${extractedParamName}' must be a positive number.`);
         }
     }
 
@@ -313,6 +350,7 @@ export class ArgumentUtility {
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is greater than or equal to `min`
      * 3. Is less than or equal to `max`
+     * Supports both invocation styles: `checkInRange(value, min, max, 'value')` and `checkInRange({ value }, min, max)`.
      * 
      * The range is inclusive on both ends: [min, max].
      * 
@@ -335,9 +373,12 @@ export class ArgumentUtility {
      * setVolume(101);  // Throws: 'level' must be in range [0, 100]
      * ```
      */
-    public static checkInRange(value: number, min: number, max: number, paramName: string): void {
+    public static checkInRange(param: Record<string, number>, min: number, max: number): void;
+    public static checkInRange(param: number, min: number, max: number, paramName: string): void;
+    public static checkInRange(param: Record<string, number> | number, min: number, max: number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || value < min || value > max) {
-            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be in range [${min}, ${max}].`);
+            throw new ArgumentOutOfRangeError(extractedParamName, `'${extractedParamName}' must be in range [${min}, ${max}].`);
         }
     }
 
@@ -348,6 +389,7 @@ export class ArgumentUtility {
      * This method checks that a numeric value:
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is an integer as determined by `Number.isInteger()`
+     * Supports both invocation styles: `checkInteger(value, 'value')` and `checkInteger({ value })`.
      * 
      * Use this for parameters representing counts, indices, or other discrete values.
      * 
@@ -368,9 +410,12 @@ export class ArgumentUtility {
      * getElement(5.5);   // Throws: 'index' must be an integer
      * ```
      */
-    public static checkInteger(value: number, paramName: string): void {
+    public static checkInteger(param: Record<string, number>): void;
+    public static checkInteger(param: number, paramName: string): void;
+    public static checkInteger(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || !Number.isInteger(value)) {
-            throw new ArgumentError(`'${paramName}' must be an integer.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' must be an integer.`, extractedParamName);
         }
     }
 
@@ -380,6 +425,7 @@ export class ArgumentUtility {
      * @remarks
      * This is a generic validation method that allows custom validation logic via a predicate function.
      * If the predicate returns `false`, an {@link ArgumentError} is thrown with the provided message.
+     * Supports both invocation styles: `check(value, 'value', predicate, message)` and `check({ value }, predicate, message)`.
      * 
      * Use this for complex or domain-specific validation that doesn't fit the standard validation methods.
      * 
@@ -403,13 +449,32 @@ export class ArgumentUtility {
      * ```
      */
     public static check<T>(
-        value: T,
+        param: Record<string, T>,
+        predicate: (v: T) => boolean,
+        message: string
+    ): void;
+    public static check<T>(
+        param: T,
         paramName: string,
         predicate: (v: T) => boolean,
         message: string
+    ): void;
+    public static check<T>(
+        param: Record<string, T> | T,
+        paramNameOrPredicate: string | ((v: T) => boolean),
+        predicateOrMessage: ((v: T) => boolean) | string,
+        message?: string
     ): void {
+        const hasExplicitParamName = typeof paramNameOrPredicate === 'string';
+        const predicate = (hasExplicitParamName ? predicateOrMessage : paramNameOrPredicate) as (v: T) => boolean;
+        const validationMessage = (hasExplicitParamName ? message : predicateOrMessage) as string;
+        const extracted = hasExplicitParamName
+            ? this.extractParameter(param as T, paramNameOrPredicate)
+            : this.extractParameter(param as Record<string, T>);
+
+        const { key: extractedParamName, value } = extracted;
         if (!predicate(value)) {
-            throw new ArgumentError(message, paramName);
+            throw new ArgumentError(validationMessage, extractedParamName);
         }
     }
 
@@ -419,6 +484,7 @@ export class ArgumentUtility {
      * @remarks
      * This method checks that a numeric value is finite using `Number.isFinite()`.
      * Rejects `Infinity`, `-Infinity`, and `NaN`.
+     * Supports both invocation styles: `checkFinite(value, 'value')` and `checkFinite({ value })`.
      * 
      * @param value - The numeric value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
@@ -436,9 +502,12 @@ export class ArgumentUtility {
      * calculate(NaN);       // Throws: 'x' must be a finite number
      * ```
      */
-    public static checkFinite(value: number, paramName: string): void {
+    public static checkFinite(param: Record<string, number>): void;
+    public static checkFinite(param: number, paramName: string): void;
+    public static checkFinite(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value)) {
-            throw new ArgumentError(`'${paramName}' must be a finite number.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' must be a finite number.`, extractedParamName);
         }
     }
 
@@ -448,6 +517,7 @@ export class ArgumentUtility {
      * @remarks
      * This method explicitly checks for NaN values. Unlike {@link checkFinite}, this allows
      * `Infinity` and `-Infinity` but rejects only `NaN`.
+     * Supports both invocation styles: `checkNotNaN(value, 'value')` and `checkNotNaN({ value })`.
      * 
      * @param value - The numeric value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
@@ -466,9 +536,12 @@ export class ArgumentUtility {
      * multiply(5, Infinity); // OK: Infinity (NaN check allows Infinity)
      * ```
      */
-    public static checkNotNaN(value: number, paramName: string): void {
+    public static checkNotNaN(param: Record<string, number>): void;
+    public static checkNotNaN(param: number, paramName: string): void;
+    public static checkNotNaN(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (Number.isNaN(value)) {
-            throw new ArgumentError(`'${paramName}' cannot be NaN.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' cannot be NaN.`, extractedParamName);
         }
     }
 
@@ -478,6 +551,7 @@ export class ArgumentUtility {
      * @remarks
      * This method checks that a numeric value is a safe integer using `Number.isSafeInteger()`.
      * Safe integers are those in the range [-(2^53 - 1), 2^53 - 1], inclusive.
+     * Supports both invocation styles: `checkSafeInteger(value, 'value')` and `checkSafeInteger({ value })`.
      * 
      * Beyond this range, JavaScript cannot accurately represent all integers due to floating-point
      * precision limitations. Use this for values that must maintain exact integer precision.
@@ -499,9 +573,12 @@ export class ArgumentUtility {
      * processId(3.14);                         // Throws: 'id' must be a safe integer
      * ```
      */
-    public static checkSafeInteger(value: number, paramName: string): void {
+    public static checkSafeInteger(param: Record<string, number>): void;
+    public static checkSafeInteger(param: number, paramName: string): void;
+    public static checkSafeInteger(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isSafeInteger(value)) {
-            throw new ArgumentError(`'${paramName}' must be a safe integer.`, paramName);
+            throw new ArgumentError(`'${extractedParamName}' must be a safe integer.`, extractedParamName);
         }
     }
 
@@ -513,6 +590,7 @@ export class ArgumentUtility {
      * 1. Is a safe integer
      * 2. Is non-negative
      * 3. Is less than the specified array length (or maximum length if not provided)
+     * Supports both invocation styles: `checkArrayIndex(value, 'value', arrayLength)` and `checkArrayIndex({ value }, arrayLength)`.
      * 
      * @param value - The numeric value to validate as an array index
      * @param paramName - The name of the parameter being validated (for error messages)
@@ -532,14 +610,28 @@ export class ArgumentUtility {
      * getItem([1, 2, 3], -1);  // Throws: 'index' must be in range [0, 3)
      * ```
      */
-    public static checkArrayIndex(value: number, paramName: string, arrayLength?: number): void {
-        this.checkSafeInteger(value, paramName);
-        const maxLength = arrayLength ?? Number.MAX_SAFE_INTEGER;
-        
+    public static checkArrayIndex(param: Record<string, number>, arrayLength?: number): void;
+    public static checkArrayIndex(param: number, paramName: string, arrayLength?: number): void;
+    public static checkArrayIndex(
+        param: Record<string, number> | number,
+        paramNameOrArrayLength?: string | number,
+        arrayLength?: number
+    ): void {
+        const hasExplicitParamName = typeof paramNameOrArrayLength === 'string';
+        const extracted = hasExplicitParamName
+            ? this.extractParameter(param as number, paramNameOrArrayLength)
+            : this.extractParameter(param as Record<string, number>);
+
+        const { key: extractedParamName, value } = extracted;
+        this.checkSafeInteger(value, extractedParamName);
+
+        const resolvedArrayLength = hasExplicitParamName ? arrayLength : paramNameOrArrayLength;
+        const maxLength = resolvedArrayLength ?? Number.MAX_SAFE_INTEGER;
+
         if (value < 0 || value >= maxLength) {
             throw new ArgumentOutOfRangeError(
-                paramName,
-                `'${paramName}' must be in range [0, ${maxLength}).`,
+                extractedParamName,
+                `'${extractedParamName}' must be in range [0, ${maxLength}).`,
                 value
             );
         }
@@ -552,6 +644,7 @@ export class ArgumentUtility {
      * This method checks that a numeric value:
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is strictly less than 0
+     * Supports both invocation styles: `checkNegative(value, 'value')` and `checkNegative({ value })`.
      * 
      * This is the complement to {@link checkPositive}. For allowing zero, use {@link checkNonPositive}.
      * 
@@ -571,9 +664,12 @@ export class ArgumentUtility {
      * processDebt(50);    // Throws: 'amount' must be a negative number
      * ```
      */
-    public static checkNegative(value: number, paramName: string): void {
+    public static checkNegative(param: Record<string, number>): void;
+    public static checkNegative(param: number, paramName: string): void;
+    public static checkNegative(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || value >= 0) {
-            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a negative number.`, value);
+            throw new ArgumentOutOfRangeError(extractedParamName, `'${extractedParamName}' must be a negative number.`, value);
         }
     }
 
@@ -584,6 +680,7 @@ export class ArgumentUtility {
      * This method checks that a numeric value:
      * 1. Is finite (not Infinity, -Infinity, or NaN)
      * 2. Is less than or equal to 0
+     * Supports both invocation styles: `checkNonPositive(value, 'value')` and `checkNonPositive({ value })`.
      * 
      * This is the complement to {@link checkNonNegative}. Zero is accepted.
      * 
@@ -603,9 +700,12 @@ export class ArgumentUtility {
      * processBalance(50);    // Throws: 'balance' must be a non-positive number
      * ```
      */
-    public static checkNonPositive(value: number, paramName: string): void {
+    public static checkNonPositive(param: Record<string, number>): void;
+    public static checkNonPositive(param: number, paramName: string): void;
+    public static checkNonPositive(param: Record<string, number> | number, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!Number.isFinite(value) || value > 0) {
-            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-positive number.`, value);
+            throw new ArgumentOutOfRangeError(extractedParamName, `'${extractedParamName}' must be a non-positive number.`, value);
         }
     }
 
@@ -615,6 +715,7 @@ export class ArgumentUtility {
      * @remarks
      * This method checks that a value has type 'function'. This is useful for validating
      * callback parameters, predicates, selectors, and other function arguments.
+     * Supports both invocation styles: `checkFunction(value, 'value')` and `checkFunction({ value })`.
      * 
      * The type assertion narrows the type to `Function` upon success.
      * 
@@ -631,9 +732,12 @@ export class ArgumentUtility {
      * }
      * ```
      */
-    public static checkFunction(value: unknown, paramName: string): asserts value is Function {
+    public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, Function>;
+    public static checkFunction(param: unknown, paramName: string): asserts param is Function;
+    public static checkFunction(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (typeof value !== 'function') {
-            throw new ArgumentTypeError(paramName, 'function', typeof value);
+            throw new ArgumentTypeError(extractedParamName, 'function', typeof value);
         }
     }
 
@@ -642,16 +746,20 @@ export class ArgumentUtility {
      *
      * @remarks
      * This method asserts that the provided value conforms to the JavaScript iterable protocol.
+     * Supports both invocation styles: `checkIterable(value, 'value')` and `checkIterable({ value })`.
      *
      * @typeParam T - The expected item type produced by the iterable
      * @param value - The value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
      * @throws {ArgumentTypeError} If value is not iterable
      */
-    public static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
+    public static checkIterable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterable<T>>;
+    public static checkIterable<T = unknown>(param: unknown, paramName: string): asserts param is Iterable<T>;
+    public static checkIterable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!TypeGuardUtility.isIterable<T>(value)) {
             const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'iterable', actualType);
+            throw new ArgumentTypeError(extractedParamName, 'iterable', actualType);
         }
     }
 
@@ -660,16 +768,20 @@ export class ArgumentUtility {
      *
      * @remarks
      * This method asserts that the provided value conforms to the JavaScript iterator protocol.
+     * Supports both invocation styles: `checkIterator(value, 'value')` and `checkIterator({ value })`.
      *
      * @typeParam T - The expected item type produced by the iterator
      * @param value - The value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
      * @throws {ArgumentTypeError} If value is not an iterator
      */
-    public static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
+    public static checkIterator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterator<T>>;
+    public static checkIterator<T = unknown>(param: unknown, paramName: string): asserts param is Iterator<T>;
+    public static checkIterator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!TypeGuardUtility.isIterator<T>(value)) {
             const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'iterator', actualType);
+            throw new ArgumentTypeError(extractedParamName, 'iterator', actualType);
         }
     }
 
@@ -678,16 +790,20 @@ export class ArgumentUtility {
      *
      * @remarks
      * This method asserts that the provided value conforms to the Tyneq `IEnumerable<T>` contract.
+     * Supports both invocation styles: `checkEnumerable(value, 'value')` and `checkEnumerable({ value })`.
      *
      * @typeParam T - The expected item type produced by the enumerable
      * @param value - The value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
      * @throws {ArgumentTypeError} If value is not an enumerable
      */
-    public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
+    public static checkEnumerable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, IEnumerable<T>>;
+    public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerable<T>;
+    public static checkEnumerable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
             const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'IEnumerable', actualType);
+            throw new ArgumentTypeError(extractedParamName, 'IEnumerable', actualType);
         }
     }
 
@@ -696,16 +812,20 @@ export class ArgumentUtility {
      *
      * @remarks
      * This method asserts that the provided value conforms to the Tyneq `IEnumerator<T>` contract.
+     * Supports both invocation styles: `checkEnumerator(value, 'value')` and `checkEnumerator({ value })`.
      *
      * @typeParam T - The expected item type produced by the enumerator
      * @param value - The value to validate
      * @param paramName - The name of the parameter being validated (for error messages)
      * @throws {ArgumentTypeError} If value is not an enumerator
      */
-    public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
+    public static checkEnumerator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, IEnumerator<T>>;
+    public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerator<T>;
+    public static checkEnumerator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
             const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'IEnumerator', actualType);
+            throw new ArgumentTypeError(extractedParamName, 'IEnumerator', actualType);
         }
     }
 
@@ -715,6 +835,7 @@ export class ArgumentUtility {
      * @remarks
      * This method uses the `instanceof` operator to verify that a value is an instance of
      * the specified constructor function. This provides runtime type checking for class instances.
+     * Supports both invocation styles: `checkInstanceOf(value, Constructor, 'value')` and `checkInstanceOf({ value }, Constructor)`.
      * 
      * The type assertion narrows the type to `T` upon success.
      * 
@@ -737,14 +858,24 @@ export class ArgumentUtility {
      * ```
      */
     public static checkInstanceOf<T>(
-        value: unknown,
+        param: Record<string, unknown>,
+        constructor: new (...args: any[]) => T
+    ): asserts param is Record<string, T>;
+    public static checkInstanceOf<T>(
+        param: unknown,
         constructor: new (...args: any[]) => T,
         paramName: string
-    ): asserts value is T {
+    ): asserts param is T;
+    public static checkInstanceOf<T>(
+        param: Record<string, unknown> | unknown,
+        constructor: new (...args: any[]) => T,
+        paramName?: string
+    ): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (!(value instanceof constructor)) {
             const constructorName = constructor.name || 'unknown';
             const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, constructorName, actualType);
+            throw new ArgumentTypeError(extractedParamName, constructorName, actualType);
         }
     }
 
@@ -755,6 +886,7 @@ export class ArgumentUtility {
      * This method checks that a value has a `length` property of type 'number'.
      * This is useful for validating array-like objects such as arrays, strings, typed arrays,
      * and custom collections that implement the length property.
+     * Supports both invocation styles: `checkHasLength(value, 'value')` and `checkHasLength({ value })`.
      * 
      * @param value - The value to check for a length property
      * @param paramName - The name of the parameter being validated (for error messages)
@@ -774,9 +906,23 @@ export class ArgumentUtility {
      * getCount({});               // Throws: 'collection' must have a numeric length property
      * ```
      */
-    public static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
+    public static checkHasLength(param: Record<string, unknown>): asserts param is Record<string, HasLength>;
+    public static checkHasLength(param: unknown, paramName: string): asserts param is HasLength;
+    public static checkHasLength(param: Record<string, unknown> | unknown, paramName?: string): void {
+        const { key: extractedParamName, value } = this.extractParameter(param, paramName);
         if (typeof value !== 'object' || value === null || typeof (value as any).length !== 'number') {
-            throw new ArgumentTypeError(paramName, 'object with numeric length property', typeof value);
+            throw new ArgumentTypeError(extractedParamName, 'object with numeric length property', typeof value);
+        }
+    }
+
+    public static extractParameter<T>(param: Record<string, T>): KeyValuePair<string, T>;
+    public static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;
+    public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T>;
+    public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T> {
+        const [extractedParamName, value] = paramName ? [paramName, param as T] : nameof(param as Record<string, T>);
+        return {
+            key: extractedParamName,
+            value: value
         }
     }
 }

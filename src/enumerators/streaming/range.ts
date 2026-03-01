@@ -31,7 +31,7 @@ export class RangeEnumerator extends TyneqBaseEnumerator<number> {
     public constructor(start: number, end: number) {
         super();
         if (start > end) {
-            throw new ArgumentOutOfRangeError(nameof({ start }), `Expected ${nameof({ start })} to be less than or equal to ${nameof({ end })}.`);
+            throw new ArgumentOutOfRangeError(nameof({ start })[0], `Expected ${nameof({ start })[0]} to be less than or equal to ${nameof({ end })[0]}.`);
         }
         
         this.current = start;

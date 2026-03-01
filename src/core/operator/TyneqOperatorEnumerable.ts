@@ -76,7 +76,7 @@ export abstract class TyneqOperatorEnumerable<TSource, TResult = TSource> implem
      * @throws {@link ArgumentNullError} when `source` is null.
      */
     public constructor(source: IEnumerable<TSource>) {
-        ArgumentUtility.checkNotOptional(source, nameof({ source }));
+        ArgumentUtility.checkNotOptional({ source });
         this.source = source;
     }
 

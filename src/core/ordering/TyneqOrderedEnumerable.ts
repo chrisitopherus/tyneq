@@ -172,9 +172,9 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         parent?: IOrderedEnumerable<TSource>
     ) {
         super();
-        ArgumentUtility.checkNotOptional(source, nameof({ source }));
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
-        ArgumentUtility.checkNotOptional(comparer, nameof({ comparer }));
+        ArgumentUtility.checkNotOptional({ source });
+        ArgumentUtility.checkNotOptional({ keySelector });
+        ArgumentUtility.checkNotOptional({ comparer });
 
         this.source = source;
         this.keySelector = keySelector;

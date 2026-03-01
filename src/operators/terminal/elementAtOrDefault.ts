@@ -34,7 +34,7 @@ export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<T
      */
     public constructor(source: ITyneqEnumerable<TSource>, index: number, defaultValue: TSource) {
         super(source);
-        ArgumentUtility.checkNonNegative(index, nameof({ index }));
+        ArgumentUtility.checkNonNegative({ index });
 
         this.index = index;
         this.defaultValue = defaultValue;

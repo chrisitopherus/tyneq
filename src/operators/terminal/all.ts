@@ -32,7 +32,7 @@ export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
      */
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ predicate });
 
         this.predicate = predicate;
     }

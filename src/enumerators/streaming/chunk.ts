@@ -34,7 +34,7 @@ export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
      */
     public constructor(sourceEnumerator: IEnumerator<T>, size: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkPositive(size, nameof({ size }));
+        ArgumentUtility.checkPositive({ size });
 
         this.size = size;
     }

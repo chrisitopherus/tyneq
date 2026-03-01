@@ -32,7 +32,7 @@ export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, T
      */
     public constructor(source: ITyneqEnumerable<TSource>, index: number) {
         super(source);
-        ArgumentUtility.checkNonNegative(index, nameof({ index }));
+        ArgumentUtility.checkNonNegative({ index });
 
         this.index = index;
     }
@@ -48,7 +48,7 @@ export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, T
             currentIndex++;
         }
 
-        throw new ArgumentOutOfRangeError(nameof({ index }));
+        throw new ArgumentOutOfRangeError(nameof({ index })[0]);
     }
 
 }

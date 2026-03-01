@@ -35,15 +35,6 @@ export class SkipWhileOperatorEnumerable<TSource> extends TyneqOperatorEnumerabl
         this.predicate = predicate;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const predicate = this.predicate;
-
-        return () => {
-            return new SkipWhileEnumerator<TSource>(source[Symbol.iterator](), predicate);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new SkipWhileEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
     }

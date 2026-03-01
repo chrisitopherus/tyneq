@@ -50,9 +50,6 @@ export class GroupByOperatorEnumerable<TSource, TKey, TValue, TResult> extends T
         resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
     ) {
         super(source);
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
-        ArgumentUtility.checkNotOptional(valueSelector, nameof({ valueSelector }));
-        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
 
         this.keySelector = keySelector;
         this.valueSelector = valueSelector;

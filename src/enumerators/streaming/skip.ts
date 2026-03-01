@@ -26,7 +26,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
      * The number of elements to skip from the beginning of the source sequence.
      */
     private readonly count: number;
-    
+
     /**
      * Flag indicating whether the skip phase has been completed.
      * Ensures elements are skipped only once during enumeration.
@@ -42,7 +42,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
      */
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNonNegative(count, nameof({ count }));
+        ArgumentUtility.checkNonNegative({ count });
 
         this.count = count;
     }

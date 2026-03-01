@@ -8,7 +8,7 @@ export class CountByOperator<T> extends TyneqTerminalOperator<T, number> {
 
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ predicate });
         this.predicate = predicate;
     }
 

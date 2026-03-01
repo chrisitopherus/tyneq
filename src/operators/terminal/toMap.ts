@@ -35,7 +35,7 @@ export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<
      */
     public constructor(source: ITyneqEnumerable<TSource>, selector: (item: TSource) => KeyValuePair<TKey, TValue>) {
         super(source);
-        ArgumentUtility.checkNotOptional(selector, nameof({ selector }));
+        ArgumentUtility.checkNotOptional({ selector });
 
         this.selector = selector;
     }

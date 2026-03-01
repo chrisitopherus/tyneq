@@ -11,8 +11,8 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 
     public constructor(count: number, randomizer: () => TSource) {
         super();
-        ArgumentUtility.checkNonNegative(count, nameof({ count }));
-        ArgumentUtility.checkNotOptional(randomizer, nameof({ randomizer }));
+        ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkNotOptional({ randomizer });
 
         this.count = count;
         this.randomizer = randomizer;

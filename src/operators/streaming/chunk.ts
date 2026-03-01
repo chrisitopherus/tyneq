@@ -35,15 +35,6 @@ export class ChunkOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TS
         this.size = size;
     }
 
-    public getFactory(): IteratorFactory<TSource[]> {
-        const source = this.source;
-        const size = this.size;
-        
-        return () => {
-            return new ChunkEnumerator<TSource>(source[Symbol.iterator](), size);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource[]> {
         return new ChunkEnumerator<TSource>(this.source[Symbol.iterator](), this.size);
     }

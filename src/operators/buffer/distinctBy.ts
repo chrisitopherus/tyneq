@@ -37,7 +37,6 @@ export class DistinctByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEn
      */
     public constructor(source: IEnumerable<TSource>, keySelector: (item: TSource) => TKey) {
         super(source);
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.keySelector = keySelector;
     }
