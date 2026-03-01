@@ -34,7 +34,7 @@ export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * Called before yielding the element, does not affect the element's value.
      */
     private readonly action: (item: TSource) => void;
-    
+
     /**
      * Initializes a new instance of the TapEnumerator class.
      * 
@@ -44,7 +44,7 @@ export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(action, nameof({ action }));
+        ArgumentUtility.checkNotOptional({ action });
 
         this.action = action;
     }

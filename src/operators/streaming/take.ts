@@ -34,15 +34,6 @@ export class TakeOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSo
         this.count = count;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const count = this.count;
-
-        return () => {
-            return new TakeEnumerator<TSource>(source[Symbol.iterator](), count);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new TakeEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
     }

@@ -35,15 +35,6 @@ export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<T
         this.other = other;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const other = this.other;
-
-        return () => {
-            return new ConcatEnumerator<TSource>(source[Symbol.iterator](), other[Symbol.iterator]());
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new ConcatEnumerator<TSource>(this.source[Symbol.iterator](), this.other[Symbol.iterator]());
     }

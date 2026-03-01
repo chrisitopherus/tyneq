@@ -41,9 +41,6 @@ export class UnionByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnume
      */
     public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
         super(source);
-        ArgumentUtility.checkNotOptional(otherValues, nameof({ otherValues }));
-        ArgumentUtility.checkIterable(otherValues, nameof({ otherValues }));
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.otherValues = otherValues;
         this.keySelector = keySelector;

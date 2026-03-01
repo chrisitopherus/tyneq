@@ -37,18 +37,8 @@ export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TS
      */
     public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>) {
         super(source);
-        ArgumentUtility.checkNotOptional(otherValues, nameof({ otherValues }));
-        ArgumentUtility.checkIterable(otherValues, nameof({ otherValues }));
 
         this.otherValues = otherValues;
-    }
-
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const otherValues = this.otherValues;
-        return () => {
-            return new UnionEnumerator<TSource>(source[Symbol.iterator](), otherValues);
-        }
     }
 
     public override getEnumerator(): IEnumerator<TSource> {

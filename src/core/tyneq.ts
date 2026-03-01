@@ -86,7 +86,8 @@ export class Tyneq {
      * @see {@link TyneqEnumerable} for available query operators.
      */
     public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
-        ArgumentUtility.checkNotOptional(source, nameof({ source }));
+        ArgumentUtility.checkNotOptional({ source });
+        ArgumentUtility.checkIterable({ source });
 
         const adapter = new EnumerableAdapter(source);
         return new TyneqEnumerable<TSource>(adapter);
@@ -159,8 +160,8 @@ export class Tyneq {
      * @see {@link empty} for creating an empty sequence.
      */
     public static range(start: number, count: number): TyneqEnumerable<number> {
-        ArgumentUtility.checkNonNegative(count, nameof({ count }));
-        ArgumentUtility.checkInteger(count, nameof({ count }));
+        ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
 
         if (count === 0) {
             return this.empty<number>();

@@ -24,7 +24,7 @@ export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: (item: T) => boolean;
     /** The zero-based index to start searching from. */
     private readonly startIndex: number;
-    
+
     /**
      * Creates a new indexOf operator.
      * 
@@ -35,8 +35,8 @@ export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
      */
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean, startIndex: number = 0) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
-        ArgumentUtility.checkNonNegative(startIndex, nameof({ startIndex }));
+        ArgumentUtility.checkNotOptional({ predicate });
+        ArgumentUtility.checkNonNegative({ startIndex });
 
         this.predicate = predicate;
         this.startIndex = startIndex;

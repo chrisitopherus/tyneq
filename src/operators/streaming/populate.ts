@@ -34,15 +34,6 @@ export class PopulateOperatorEnumerable<TSource, TValue> extends TyneqOperatorEn
         this.value = value;
     }
 
-    public getFactory(): IteratorFactory<TValue> {
-        const source = this.source;
-        const value = this.value;
-        
-        return () => {
-            return new PopulateEnumerator<TSource, TValue>(source[Symbol.iterator](), value);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TValue> {
         return new PopulateEnumerator<TSource, TValue>(this.source[Symbol.iterator](), this.value);
     }

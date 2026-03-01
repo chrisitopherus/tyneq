@@ -44,7 +44,7 @@ export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, splitOn: (item: TSource) => boolean) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(splitOn, nameof({ splitOn }));
+        ArgumentUtility.checkNotOptional({ splitOn });
 
         this.splitOn = splitOn;
     }

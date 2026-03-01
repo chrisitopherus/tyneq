@@ -34,15 +34,6 @@ export class SkipOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSo
         this.count = count;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const count = this.count;
-
-        return () => {
-            return new SkipEnumerator<TSource>(source[Symbol.iterator](), count);
-        }
-    }
-
     public override getEnumerator(): IEnumerator<TSource> {
         return new SkipEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
     }

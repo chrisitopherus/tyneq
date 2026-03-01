@@ -63,10 +63,11 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
         resultSelector: (outer: TOuter, inner: TInner) => TResult
     ) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(innerSource, nameof({ innerSource }));
-        ArgumentUtility.checkNotOptional(outerKeySelector, nameof({ outerKeySelector }));
-        ArgumentUtility.checkNotOptional(innerKeySelector, nameof({ innerKeySelector }));
-        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
+        ArgumentUtility.checkNotOptional({ innerSource });
+        ArgumentUtility.checkIterable({ innerSource });
+        ArgumentUtility.checkNotOptional({ outerKeySelector });
+        ArgumentUtility.checkNotOptional({ innerKeySelector });
+        ArgumentUtility.checkNotOptional({ resultSelector });
 
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;

@@ -55,7 +55,7 @@ export abstract class TyneqEnumerableEnumerator<TInput, TOutput = TInput> extend
      */
     public constructor(sourceEnumerable: IEnumerable<TInput>) {
         super();
-        ArgumentUtility.checkNotOptional(sourceEnumerable, nameof({ sourceEnumerable }));
+        ArgumentUtility.checkNotOptional({ sourceEnumerable });
 
         this.sourceEnumerable = sourceEnumerable;
     }

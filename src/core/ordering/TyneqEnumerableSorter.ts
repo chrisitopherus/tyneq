@@ -156,9 +156,9 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
      */
     public constructor(keySelector: (item: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean, next?: BaseEnumerableSorter<TSource>) {
         super();
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
-        ArgumentUtility.checkNotOptional(comparer, nameof({ comparer }));
-        
+        ArgumentUtility.checkNotOptional({ keySelector });
+        ArgumentUtility.checkNotOptional({ comparer });
+
         this.keySelector = keySelector;
         this.comparer = comparer;
         this.descending = descending ? -1 : 1;

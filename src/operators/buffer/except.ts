@@ -37,7 +37,6 @@ export class ExceptOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<T
      */
     public constructor(source: IEnumerable<TSource>, excludedValues: Iterable<TSource>) {
         super(source);
-        ArgumentUtility.checkNotOptional(excludedValues, nameof({ excludedValues }));
 
         this.excludedValues = excludedValues;
     }

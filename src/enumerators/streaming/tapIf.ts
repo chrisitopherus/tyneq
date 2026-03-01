@@ -36,7 +36,7 @@ export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
      * Called conditionally based on predicate evaluation, does not affect the element's value.
      */
     private readonly action: (item: TSource) => void;
-    
+
     /**
      * The predicate function that determines whether to execute the action.
      * Accepts no arguments - represents a global condition evaluated for each element.
@@ -53,8 +53,8 @@ export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void, predicate: () => boolean) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(action, nameof({ action }));
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ action });
+        ArgumentUtility.checkNotOptional({ predicate });
 
         this.action = action;
         this.predicate = predicate;

@@ -41,9 +41,6 @@ export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorE
      */
     public constructor(source: IEnumerable<TSource>, intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(source);
-        ArgumentUtility.checkNotOptional(intersectedKeys, nameof({ intersectedKeys }));
-        ArgumentUtility.checkIterable(intersectedKeys, nameof({ intersectedKeys }));
-        ArgumentUtility.checkNotOptional(keySelector, nameof({ keySelector }));
 
         this.intersectedKeys = intersectedKeys;
         this.keySelector = keySelector;

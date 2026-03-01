@@ -34,7 +34,7 @@ export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSou
      */
     public constructor(source: ITyneqEnumerable<TSource>, predicate: (item: TSource) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional(predicate, nameof({ predicate }));
+        ArgumentUtility.checkNotOptional({ predicate });
 
         this.predicate = predicate;
     }

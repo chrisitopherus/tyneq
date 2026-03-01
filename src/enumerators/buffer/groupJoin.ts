@@ -55,11 +55,11 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
         resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult
     ) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(innerSource, nameof({ innerSource }));
-        ArgumentUtility.checkIterable(innerSource, nameof({ innerSource }));
-        ArgumentUtility.checkNotOptional(outerKeySelector, nameof({ outerKeySelector }));
-        ArgumentUtility.checkNotOptional(innerKeySelector, nameof({ innerKeySelector }));
-        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
+        ArgumentUtility.checkNotOptional({ innerSource });
+        ArgumentUtility.checkIterable({ innerSource });
+        ArgumentUtility.checkNotOptional({ outerKeySelector });
+        ArgumentUtility.checkNotOptional({ innerKeySelector });
+        ArgumentUtility.checkNotOptional({ resultSelector });
 
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;

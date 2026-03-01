@@ -2,7 +2,6 @@ import { TyneqEnumerableEnumerator } from './TyneqEnumerableEnumerator';
 import { IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
-import { nameof } from '../../utility/nameof';
 import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
 
 /**
@@ -63,7 +62,7 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBas
      */
     public constructor(sourceEnumerator: IEnumerator<TInput>) {
         super();
-        ArgumentUtility.checkNotOptional(sourceEnumerator, nameof({ sourceEnumerator }));
+        ArgumentUtility.checkNotOptional({ sourceEnumerator });
 
         this.sourceEnumerator = sourceEnumerator;
     }

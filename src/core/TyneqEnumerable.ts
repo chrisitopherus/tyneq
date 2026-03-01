@@ -120,7 +120,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      */
     public constructor(enumeratorFactory: IEnumeratorFactory<TSource>) {
         super();
-        ArgumentUtility.checkNotOptional(enumeratorFactory, nameof({ enumeratorFactory }));
+        ArgumentUtility.checkNotOptional({ enumeratorFactory });
         this.enumeratorFactory = enumeratorFactory;
     }
 

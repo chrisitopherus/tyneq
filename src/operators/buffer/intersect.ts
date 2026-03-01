@@ -37,8 +37,6 @@ export class IntersectOperatorEnumerable<TSource> extends TyneqOperatorEnumerabl
      */
     public constructor(source: IEnumerable<TSource>, intersectedValues: Iterable<TSource>) {
         super(source);
-        ArgumentUtility.checkNotOptional(intersectedValues, nameof({ intersectedValues }));
-        ArgumentUtility.checkIterable(intersectedValues, nameof({ intersectedValues }));
         
         this.intersectedValues = intersectedValues;
     }

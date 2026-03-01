@@ -28,23 +28,7 @@ export class DistinctOperatorEnumerable<TSource> extends TyneqOperatorEnumerable
     public constructor(source: IEnumerable<TSource>) {
         super(source);
     }
-
-    /**
-     * Returns a factory function that creates fresh enumerators for this operation.
-     * 
-     * @remarks
-     * The factory captures the source sequence and returns a function that produces
-     * {@link DistinctEnumerator} instances. Each enumerator maintains independent state.
-     * 
-     * @returns A factory function producing distinct enumerators.
-     */
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        return () => {
-            return new DistinctEnumerator<TSource>(source[Symbol.iterator]());
-        }
-    }
-
+    
     /**
      * Creates a new enumerator for distinct enumeration.
      * 
