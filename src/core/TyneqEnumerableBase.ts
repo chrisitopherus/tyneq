@@ -1,4 +1,3 @@
-import { DistinctOperatorEnumerable } from "../operators/buffer/distinct";
 import { DistinctByOperatorEnumerable } from "../operators/buffer/distinctBy";
 import { ExceptOperatorEnumerable } from "../operators/buffer/except";
 import { ExceptByOperatorEnumerable } from "../operators/buffer/exceptBy";
@@ -17,7 +16,6 @@ import { ChunkOperatorEnumerable } from "../operators/streaming/chunk";
 import { ConcatOperatorEnumerable } from "../operators/streaming/concat";
 import { PairwiseOperatorEnumerable } from "../operators/streaming/pairwise";
 import { PrependOperatorEnumerable } from "../operators/streaming/prepend";
-import { SelectOperatorEnumerable } from "../operators/streaming/select";
 import { SelectManyOperatorEnumerable } from "../operators/streaming/selectMany";
 import { SkipOperatorEnumerable } from "../operators/streaming/skip";
 import { SkipLastOperatorEnumerable } from "../operators/streaming/skipLast";
@@ -28,7 +26,6 @@ import { TakeWhileOperatorEnumerable } from "../operators/streaming/takeWhile";
 import { TapOperatorEnumerable } from "../operators/streaming/tap";
 import { TapIfOperatorEnumerable } from "../operators/streaming/tapIf";
 import { ThrottleOperatorEnumerable } from "../operators/streaming/throttle";
-import { WhereOperatorEnumerable } from "../operators/streaming/where";
 import { ZipOperatorEnumerable } from "../operators/streaming/zip";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
@@ -54,11 +51,10 @@ import { SingleOperator } from "../operators/terminal/single";
 import { SingleOrDefaultOperator } from "../operators/terminal/singleOrDefault";
 import { StartsWithOperator } from "../operators/terminal/startsWith";
 import { SumOperator } from "../operators/terminal/sum";
-import { ToArrayOperator } from "../operators/terminal/toArray";
 import { ToMapOperator } from "../operators/terminal/toMap";
 import { ToRecordOperator } from "../operators/terminal/toRecord";
 import { ToSetOperator } from "../operators/terminal/toSet";
-import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair } from "../types/core";
+import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -736,33 +732,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     }
 
     /**
-     * Materializes the sequence into an array.
-     * 
-     * @remarks
-     * Enumerates the entire sequence and collects all elements into a standard JavaScript
-     * array. This is a terminal operator that triggers immediate evaluation of the
-     * entire query pipeline.
-     * 
-     * The resulting array is a new instance; modifying it does not affect the original
-     * sequence. If the sequence is re-iterable, calling `toArray()` again will produce
-     * a fresh array.
-     * 
-     * Use this method when:
-     * - You need random access to elements (indexing)
-     * - You want to cache results for multiple iterations
-     * - An API requires an array
-     * - You need to determine the length efficiently
-     * 
-     * Performance: O(n) time and space. The entire sequence is buffered in memory.
-     * 
-     * @returns A new array containing all elements from the sequence.
-     */
-    public toArray(): TSource[] {
-        return new ToArrayOperator<TSource>(this)
-            .process();
-    }
-
-    /**
      * Converts the sequence to a Map by extracting key-value pairs from each element.
      * 
      * @remarks
@@ -925,43 +894,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public prepend(item: TSource): ITyneqEnumerable<TSource> {
         return this.createEnumerable(
             new PrependOperatorEnumerable<TSource>(this, item)
-        );
-    }
-
-    /**
-     * Projects each element into a new form.
-     * 
-     * @remarks
-     * Applies a transformation function to each element of the sequence, producing
-     * a new sequence with the transformed values. This is a streaming operator that
-     * maintains lazy evaluation; elements are transformed on-demand during iteration.
-     * 
-     * The selector function is called once per element during enumeration, not when
-     * `select()` is called. This enables efficient query composition and avoids
-     * unnecessary computation for elements that are never consumed.
-     * 
-     * Common use cases:
-     * - Extracting properties from objects (projection)
-     * - Applying calculations or transformations
-     * - Type conversions
-     * - Creating new object shapes
-     * 
-     * Performance: O(1) time and space for the operator itself. O(n) total when
-     * enumerated. Does not buffer elements.
-     * 
-     * @typeParam TResult - The type of elements in the resulting sequence.
-     * 
-     * @param selector - Function to transform each element. Called for each element
-     *                   during iteration.
-     * 
-     * @returns A new sequence with transformed elements.
-     * 
-     * @throws {@link ArgumentNullError} when `selector` is null.
-     * @throws {@link ArgumentError} when `selector` is undefined.
-     */
-    public select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult> {
-        return this.createEnumerable(
-            new SelectOperatorEnumerable<TSource, TResult>(this, selector)
         );
     }
 
@@ -1211,37 +1143,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     }
 
     /**
-     * Filters the sequence to include only elements that satisfy a condition.
-     * 
-     * @remarks
-     * Applies a predicate function to each element and includes only those for which
-     * the predicate returns `true`. This is a streaming operator that maintains lazy
-     * evaluation; elements are tested on-demand during iteration.
-     * 
-     * The predicate is called once per source element during enumeration. Elements
-     * that fail the test are skipped without allocating memory.
-     * 
-     * Multiple `where()` calls can be chained; they are equivalent to a single call
-     * with a combined predicate using `&&`.
-     * 
-     * Performance: O(1) time and space for the operator itself. O(n) total when
-     * enumerated. Does not buffer elements.
-     * 
-     * @param predicate - Function to test each element. Returns `true` to include
-     *                    the element, `false` to exclude it.
-     * 
-     * @returns A new sequence containing only elements that satisfy the predicate.
-     * 
-     * @throws {@link ArgumentNullError} when `predicate` is null.
-     * @throws {@link ArgumentError} when `predicate` is undefined.
-     */
-    public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new WhereOperatorEnumerable<TSource>(this, predicate)
-        );
-    }
-
-    /**
      * Combines elements from two sequences according to a selector function.
      * 
      * @remarks
@@ -1274,28 +1175,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     }
 
     // buffering operators
-
-    /**
-     * Returns distinct elements from the sequence.
-     * 
-     * @remarks
-     * This is a buffering operator that filters out duplicate elements, keeping only
-     * the first occurrence of each value. Uses element equality (===) for comparison.
-     * 
-     * **Performance**: O(n) time, O(n) space. Must buffer all elements and maintain
-     * a hash set of seen values.
-     * 
-     * **Order**: Results appear in the order elements are first encountered.
-     * 
-     * @returns A sequence containing only the first occurrence of each unique element.
-     * 
-     * @see {@link distinctBy} - To remove duplicates based on a key selector.
-     */
-    public distinct(): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new DistinctOperatorEnumerable<TSource>(this)
-        );
-    }
 
     /**
      * Returns distinct elements based on a key selector.
@@ -1803,4 +1682,23 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     ): ITyneqOrderedEnumerable<TSource>;
 
     protected abstract createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource>;
+
+    // ── Extension operator stubs ─────────────────────────────────────────────
+    // These members are NOT implemented here. They are injected onto the
+    // prototype at module-load time when the extensions barrel is imported:
+    //
+    //   import 'tyneq/extensions';
+    //   // or: import { scan, window, intersperse, minMax } from 'tyneq';
+    //
+    // The `declare` keyword tells TypeScript the members will exist at runtime
+    // without requiring a compile-time implementation in this class.
+    // ─────────────────────────────────────────────────────────────────────────
+    declare where: (predicate: (item: TSource) => boolean) => ITyneqEnumerable<TSource>;
+    declare select: <TResult>(selector: (item: TSource) => TResult) => ITyneqEnumerable<TResult>;
+    declare toArray: () => TSource[];
+    declare distinct: () => ITyneqEnumerable<TSource>;
+    declare scan: <TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult) => ITyneqEnumerable<TResult>;
+    declare window: (size: number) => ITyneqEnumerable<TSource[]>;
+    declare intersperse: (delimiter: TSource) => ITyneqEnumerable<TSource>;
+    declare minMax: (comparer?: (a: TSource, b: TSource) => number) => MinMaxResult<TSource>;
 }

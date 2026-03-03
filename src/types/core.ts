@@ -854,6 +854,102 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A new queryable sequence of the transformed elements.
      */
     pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
+
+    // ========================================================================
+    // EXTENSION OPERATORS
+    // Registered via the extensibility infrastructure (@operator, createOperator,
+    // createGeneratorOperator, @terminal, createTerminalOperator).
+    // Requires importing 'tyneq/extensions' (or the operators/extensions barrel)
+    // to trigger side-effect registration before using these operators.
+    // ========================================================================
+
+    /**
+     * Emits a running accumulation of elements (streaming reduce / prefix scan).
+     *
+     * @remarks
+     * Unlike `reduce()`/`aggregate()`, `scan()` yields every intermediate value
+     * rather than only the final result, making it useful for running totals,
+     * moving-window computations, and state-machine outputs.
+     *
+     * The seed is **not** yielded; the first emitted value is `accumulator(seed, element[0])`.
+     *
+     * @typeParam TResult - The type of the accumulated result.
+     * @param seed - Initial accumulator value.
+     * @param accumulator - Applied to `(currentAcc, item)` for each element.
+     * @returns A sequence of intermediate accumulated values.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2, 3, 4, 5])
+     *     .scan(0, (acc, n) => acc + n)
+     *     .toArray();
+     * // → [1, 3, 6, 10, 15]
+     * ```
+     */
+    scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): ITyneqEnumerable<TResult>;
+
+    /**
+     * Produces overlapping sliding windows of exactly `size` consecutive elements.
+     *
+     * @remarks
+     * Only complete windows are emitted; trailing elements that do not fill a
+     * full window are discarded. The sequence must have at least `size` elements
+     * for any output to be produced.
+     *
+     * @param size - The number of elements per window (must be ≥ 1).
+     * @returns A sequence of arrays, each containing `size` consecutive elements.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2, 3, 4, 5])
+     *     .window(3)
+     *     .toArray();
+     * // → [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+     * ```
+     */
+    window(size: number): ITyneqEnumerable<TSource[]>;
+
+    /**
+     * Places a `delimiter` element between every pair of consecutive elements.
+     *
+     * @remarks
+     * The delimiter is only inserted **between** existing elements — it is never
+     * prepended or appended. An empty or single-element sequence passes through
+     * unchanged (no delimiter is inserted).
+     *
+     * @param delimiter - The value to insert between elements.
+     * @returns A sequence with `delimiter` inserted between each adjacent pair.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2, 3])
+     *     .intersperse(0)
+     *     .toArray();
+     * // → [1, 0, 2, 0, 3]
+     * ```
+     */
+    intersperse(delimiter: TSource): ITyneqEnumerable<TSource>;
+
+    /**
+     * Returns both the minimum and maximum elements in a **single** enumeration pass.
+     *
+     * @remarks
+     * Calling `min()` and `max()` separately requires two full passes over the source
+     * sequence. `minMax()` fuses them into one O(n) pass with O(1) space overhead,
+     * which is beneficial for large sequences or expensive iterators.
+     *
+     * @param comparer - Optional comparison function. If omitted, uses default
+     *   JavaScript relational comparison (works for numbers and strings).
+     * @returns An object containing both `min` and `max` elements.
+     * @throws {SequenceContainsNoElementsError} when the sequence is empty.
+     *
+     * @example
+     * ```ts
+     * const { min, max } = Tyneq.from([3, 1, 4, 1, 5, 9, 2, 6]).minMax();
+     * // → { min: 1, max: 9 }
+     * ```
+     */
+    minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource>;
 }
 
 /**
@@ -947,6 +1043,24 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
 }
 
 
+
+/**
+ * The result of a `minMax()` operation: both the minimum and maximum element.
+ *
+ * @remarks
+ * Returned by the `minMax()` extension operator, which computes both values in
+ * a single O(n) pass instead of requiring two separate `min()` / `max()` calls.
+ *
+ * @typeParam T - Element type of the source sequence.
+ *
+ * @see {@link ITyneqEnumerable.minMax}
+ */
+export type MinMaxResult<T> = {
+    /** The smallest element according to the comparer. */
+    readonly min: T;
+    /** The largest element according to the comparer. */
+    readonly max: T;
+};
 
 /**
  * Represents a key-value pair.

@@ -1,4 +1,4 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
+import type { IEnumerable, IEnumerator } from "../../types/core";
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { SelectManyEnumerator } from "../../enumerators/streaming/selectMany";
 

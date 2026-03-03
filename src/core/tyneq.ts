@@ -1,7 +1,7 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
 import { RandomOperatorEnumerable } from "../operators/streaming/random";
 import { RangeOperatorEnumerable } from "../operators/streaming/range";
-import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from "../types/core";
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./adapter/EnumerableAdapter";
@@ -85,7 +85,7 @@ export class Tyneq {
      * @see {@link enumerate} for wrapping an iterable with index tracking.
      * @see {@link TyneqEnumerable} for available query operators.
      */
-    public static from<TSource>(source: Iterable<TSource>): TyneqEnumerable<TSource> {
+    public static from<TSource>(source: Iterable<TSource>): ITyneqEnumerable<TSource> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
 
@@ -93,7 +93,7 @@ export class Tyneq {
         return new TyneqEnumerable<TSource>(adapter);
     }
 
-    public static random<TSource>(count: number, randomizer: () => TSource): TyneqEnumerable<TSource> {
+    public static random<TSource>(count: number, randomizer: () => TSource): ITyneqEnumerable<TSource> {
         if (count === 0) {
             return this.empty<TSource>();
         }
@@ -159,7 +159,7 @@ export class Tyneq {
      * 
      * @see {@link empty} for creating an empty sequence.
      */
-    public static range(start: number, count: number): TyneqEnumerable<number> {
+    public static range(start: number, count: number): ITyneqEnumerable<number> {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
 
@@ -215,7 +215,7 @@ export class Tyneq {
      * @see {@link range} for generating a sequence with a specific count.
      * @see {@link from} for wrapping existing iterables.
      */
-    public static empty<TSource>(): TyneqEnumerable<TSource> {
+    public static empty<TSource>(): ITyneqEnumerable<TSource> {
         return this.from<TSource>([]);
     }
 

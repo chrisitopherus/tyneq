@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from '../../extensibility/operatorDecorators';
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
@@ -13,10 +14,13 @@ import { ITyneqEnumerable } from "../../types/core";
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns an array.
  * 
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ * 
  * @typeParam TSource - The type of elements in the sequence.
  * 
  * @see {@link ITyneqEnumerable.toArray} for the public API.
  */
+@terminal('toArray')
 export class ToArrayOperator<TSource> extends TyneqTerminalOperator<TSource, TSource[]> {
     /**
      * Creates a new toArray operator.

@@ -89,7 +89,7 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
         }
 
         const [key, values] = value;
-        const result = this.resultSelector(key, Tyneq.from(values));
+        const result = this.resultSelector(key, Tyneq.from(values) as TyneqEnumerable<TValue>);
         return this.yield(result);
     }
 }

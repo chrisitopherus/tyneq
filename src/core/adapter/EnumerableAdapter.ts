@@ -1,6 +1,6 @@
 import { IEnumerable, IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
-import { nameof } from '../../utility/nameof';
+
 export class EnumerableAdapter<TSource> implements IEnumerable<TSource> {
     private readonly iterable: Iterable<TSource>;
     public constructor(iterable: Iterable<TSource>) {

@@ -1,8 +1,6 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { Tyneq } from "../../core/tyneq";
 import { ITyneqEnumerable, KeyValuePair } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Terminal operator implementation for converting a sequence to a Map.
@@ -41,7 +39,7 @@ export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<
     }
 
     public process(): Map<TKey, TValue> {
-        return new Map<TKey, TValue>(Tyneq.from(this.source).select((item) => {
+        return new Map<TKey, TValue>(Array.from(this.source, (item) => {
             const pair: KeyValuePair<TKey, TValue> = this.selector(item);
             return this.transformPairToTuple(pair);
         }));

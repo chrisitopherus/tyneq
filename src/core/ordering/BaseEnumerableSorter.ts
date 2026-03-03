@@ -1,4 +1,3 @@
-import { Tyneq } from "../../core/tyneq";
 
 /**
  * Abstract base class for sorting strategies in ordered sequences.
@@ -150,7 +149,7 @@ export abstract class BaseEnumerableSorter<TSource> {
      */
     public sort(source: TSource[], count: number): number[] {
         this.computeKeys([...source], count);
-        const indexMap: number[] = Tyneq.range(0, count).toArray();
+        const indexMap: number[] = Array.from({ length: count }, (_, i) => i);
 
         indexMap.sort((a, b) => this.compareKeys(a, b));
         return indexMap;

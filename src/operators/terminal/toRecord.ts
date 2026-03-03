@@ -1,8 +1,6 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { Tyneq } from "../../core/tyneq";
 import { ITyneqEnumerable, KeyValuePair } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Terminal operator implementation for converting a sequence to a Record object.
@@ -43,7 +41,7 @@ export class ToRecordOperator<TSource, TKey extends string | number | symbol, TV
     public process(): Record<TKey, TValue> {
         const result = {} as Record<TKey, TValue>;
 
-        for (const item of Tyneq.from(this.source)) {
+        for (const item of this.source) {
             const pair = this.selector(item);
             result[pair.key] = pair.value;
         }

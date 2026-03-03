@@ -1,9 +1,9 @@
-import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator, ITyneqEnumerable } from '../../types/core';
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 import { nameof } from "../../utility/nameof";
+import { Tyneq } from "../../core/tyneq";
 
 /**
  * Enumerator implementation for correlating outer elements with inner groups via keys.

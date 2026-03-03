@@ -1,6 +1,7 @@
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
+import { createOperator } from '../../extensibility/createOperator';
 import { DistinctEnumerator } from "../../enumerators/buffer/distinct";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from "../../types/core";
 
 /**
  * Operator implementation for filtering distinct elements from a sequence.
@@ -42,3 +43,18 @@ export class DistinctOperatorEnumerable<TSource> extends TyneqOperatorEnumerable
         return new DistinctEnumerator<TSource>(this.source[Symbol.iterator]());
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Registration — createOperator()
+// ─────────────────────────────────────────────────────────────────────────────
+//  Demonstrates the functional API with a custom IEnumeratorFactory.
+//  The factory wraps the existing DistinctOperatorEnumerable class, showing
+//  that class-based implementations work seamlessly with functional registration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+createOperator<any, any, []>({
+    name: 'distinct',
+    factory(source: IEnumerable<any>): IEnumeratorFactory<any> {
+        return new DistinctOperatorEnumerable(source);
+    }
+});
