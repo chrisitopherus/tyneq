@@ -13,10 +13,16 @@ import { IEnumerable } from "../../types/core";
  * **Performance**: O(1) space. O(n) time for general sequences, O(1) for arrays.
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a number.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam T - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.count} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     /**

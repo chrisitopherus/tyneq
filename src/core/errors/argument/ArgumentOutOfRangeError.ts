@@ -4,10 +4,8 @@ import { ArgumentError } from "./ArgumentError";
  * Thrown when a method argument value is outside the acceptable range or constraints.
  * 
  * @remarks
- * `ArgumentOutOfRangeError` is thrown by {@link ArgumentUtility} validation methods
- * ({@link ArgumentUtility.checkNonNegative checkNonNegative()}, 
- * {@link ArgumentUtility.checkPositive checkPositive()},
- * {@link ArgumentUtility.checkInRange checkInRange()}) when a numeric argument
+ * `ArgumentOutOfRangeError` is thrown by internal range-validation methods
+ * (for example: non-negative, positive, and in-range checks) when a numeric argument
  * violates specific constraints.
  * 
  * Common violations include:
@@ -39,7 +37,8 @@ import { ArgumentError } from "./ArgumentError";
  * ```
  * 
  * @see {@link ArgumentError} for general argument validation errors.
- * @see {@link ArgumentUtility} for validation methods that throw this error.
+ *
+ * @group Errors
  */
 export class ArgumentOutOfRangeError extends ArgumentError {
   /**

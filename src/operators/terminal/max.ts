@@ -14,10 +14,16 @@ import { Nullable } from "../../types/utility";
  * **Performance**: O(1) space. O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns an element.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.max} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     /** Comparison function to determine element ordering. */

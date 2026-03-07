@@ -16,6 +16,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam T - The type of elements in the sequence.
  * 
  * @see {@link AppendOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     /** Whether source enumeration is complete. */

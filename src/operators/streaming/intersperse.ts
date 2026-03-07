@@ -55,7 +55,13 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * **Registration method**: `createGeneratorOperator()` — the entire implementation
  * is a single generator function. No class, no constructor, no base class changes.
  *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @see {@link ITyneqEnumerable.intersperse} for the public API signature.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 createGeneratorOperator<any, any, [any]>({
     name: 'intersperse',

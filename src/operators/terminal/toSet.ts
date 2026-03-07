@@ -12,10 +12,16 @@ import { ITyneqEnumerable } from "../../types/core";
  * **Performance**: O(n) space (creates set). O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a Set.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.toSet} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     /**

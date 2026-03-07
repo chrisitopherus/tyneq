@@ -45,6 +45,11 @@ function registerOnProto(name: string, fn: (this: TyneqEnumerableBase<any>, ...a
  * @typeParam TResult - Element type of the result sequence.
  * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
  *
+ * @throws {Error} When a method named `config.name` is already defined on
+ *   `TyneqEnumerableBase.prototype`.
+ *
+ * @group Decorators
+ *
  * @example
  * ```ts
  * // window.ts — importing this file registers the operator
@@ -92,6 +97,11 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  * @typeParam TResult - Element type of the result sequence.
  * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
  *
+ * @throws {Error} When a method named `config.name` is already defined on
+ *   `TyneqEnumerableBase.prototype`.
+ *
+ * @group Decorators
+ *
  * @example
  * ```ts
  * // intersperse.ts
@@ -138,6 +148,11 @@ export function createGeneratorOperator<TSource = any, TResult = any, TArgs exte
  * @typeParam TSource - Element type of the source sequence.
  * @typeParam TResult - The concrete result type returned by the operator.
  * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
+ *
+ * @throws {Error} When a method named `config.name` is already defined on
+ *   `TyneqEnumerableBase.prototype`.
+ *
+ * @group Decorators
  *
  * @example
  * ```ts

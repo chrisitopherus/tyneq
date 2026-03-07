@@ -16,6 +16,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam TSource - The type of elements in the sequence.
  * 
  * @see {@link ShuffleOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** Array containing all source elements in shuffled order. */

@@ -16,6 +16,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam T - The type of elements in both sequences.
  * 
  * @see {@link ConcatOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
     /** The second enumerator to concatenate. */

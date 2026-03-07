@@ -14,12 +14,18 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(1) space. O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a value.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam UAccumulate - The type of the accumulator value.
  * @typeParam VResult - The type of the final result.
- * 
+ *
  * @see {@link ITyneqEnumerable.aggregate} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     /** Initial accumulator value. */

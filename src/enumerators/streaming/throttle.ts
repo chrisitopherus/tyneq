@@ -3,6 +3,21 @@ import { IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { nameof } from '../../utility/nameof';
 
+/**
+ * Enumerator implementation for yielding every Nth element from a sequence.
+ *
+ * @remarks
+ * Yields one element per every `count` source elements consumed. The first element
+ * (index 0) is always yielded; subsequent yields occur at indices that are multiples
+ * of `count` (0, count, 2×count, …).
+ *
+ * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
+ *
+ * @typeParam T - The type of elements in the sequence.
+ *
+ * @group Enumerators
+ * @internal
+ */
 export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;

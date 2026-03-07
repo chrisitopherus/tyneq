@@ -1,44 +1,62 @@
-# How Tyneq Differs from Popular Libraries
+# Differences from Other Libraries
 
-This section compares Tyneq with commonly used alternatives. The goal is not to replace all tools, but to clarify when Tyneq is the better fit.
+This page explains where Tyneq fits relative to common alternatives.
 
-## Native array methods
+## Native Array Methods
 
-Native arrays are excellent for eager, in-memory transforms. Tyneq differs by:
+Array methods are ideal for simple eager transformations over already-materialized data.
 
-- Supporting deferred execution by default
-- Providing a richer relational/query vocabulary (`join`, `groupJoin`, `groupBy`)
-- Offering a unified enumerable model rather than eager array snapshots at each step
+Tyneq differs by emphasizing:
+
+- Deferred execution for composed pipelines
+- Relational operators such as `join`, `groupJoin`, and `groupBy`
+- Re-iterable query abstractions over mixed iterable sources
+
+Choose arrays when eager snapshots are sufficient. Choose Tyneq when query semantics and composition depth matter.
 
 ## Lodash
 
-Lodash provides broad utilities but is not primarily a LINQ-style typed query system. Tyneq differs by:
+Lodash is a broad utility toolkit spanning collection helpers, object utilities, string operations, and more.
 
-- Focusing on query composition over general-purpose helpers
-- Preserving strong sequence typing through fluent chains
-- Making streaming vs buffering behavior explicit in operator semantics
+Tyneq differs by focusing on:
+
+- LINQ-style query composition
+- Strong TypeScript propagation across chained operators
+- Explicit streaming, buffering, and terminal execution behavior
+
+Choose Lodash for general utility breadth. Choose Tyneq for query-centric, typed iterable pipelines.
 
 ## IxJS
 
-IxJS also provides iterable-based querying. Tyneq emphasizes:
+IxJS provides iterable and async-iterable query operators inspired by ReactiveX concepts.
 
-- A compact, LINQ-like surface designed around TypeScript-first ergonomics
-- Explicit enumerable/ordered/cached sequence concepts in the core model
-- A practical balance of relational and set operators in a single fluent API
+Tyneq differs by focusing on:
 
-## linq-to-typescript
+- A compact LINQ-like surface for synchronous enumerable workflows
+- First-class ordered and cached enumerable concepts
+- Clear distinction between operator execution categories
 
-Both libraries target LINQ-style usage. Tyneq differentiates with:
+Choose IxJS when async iterable orchestration is central. Choose Tyneq for synchronous LINQ-style domain pipelines.
 
-- Strong focus on re-iterable pipelines
-- Clear operator categorization (streaming/buffering/terminal)
-- Built-in memoization workflow (`memoize` + `refresh`) for repeated expensive queries
+## LINQ-Style TypeScript Libraries
 
-## When to choose Tyneq
+Compared with other LINQ-inspired packages, Tyneq emphasizes:
 
-Tyneq is a strong choice when you need:
+- Re-iterable pipeline semantics
+- Operator categorization aligned with execution behavior
+- Built-in memoization workflow (`memoize()` and `refresh()`)
 
-- Consistent query semantics across complex pipelines
-- High readability in data-heavy business logic
-- Deferred execution plus controlled materialization
-- Rich set + relational operations in TypeScript
+## Decision Guide
+
+Choose Tyneq when you need:
+
+- Complex query composition over iterable sources
+- Relational operations in fluent pipelines
+- Predictable execution and materialization boundaries
+- Type-safe transformations in TypeScript-heavy codebases
+
+## Related Pages
+
+- [Core Concepts](/guide/concepts)
+- [Operators Overview](/guide/operators-overview)
+- [Examples](/guide/examples)

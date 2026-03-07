@@ -19,11 +19,17 @@ import { SelectEnumerator } from "../../enumerators/streaming/select";
  * A generator function wraps the class-based enumerator, demonstrating that both
  * class and generator implementations coexist cleanly.
  * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TResult - The type of elements in the result sequence.
- * 
+ *
  * @see {@link SelectEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.select} for the public API.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 export class SelectOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** Function to transform each source element. */

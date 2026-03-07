@@ -35,6 +35,22 @@
  * | `scan`         | Streaming | `@operator` decorator       | `operators/streaming/scan.ts`       |
  * | `window`       | Streaming | `createOperator()`          | `operators/streaming/window.ts`     |
  * | `intersperse`  | Streaming | `createGeneratorOperator()` | `operators/streaming/intersperse.ts`|
+ * | `append`       | Streaming | `@operator` decorator       | `operators/streaming/append.ts`     |
+ * | `chunk`        | Streaming | `@operator` decorator       | `operators/streaming/chunk.ts`      |
+ * | `concat`       | Streaming | `@operator` decorator       | `operators/streaming/concat.ts`     |
+ * | `pairwise`     | Streaming | `@operator` decorator       | `operators/streaming/pairwise.ts`   |
+ * | `prepend`      | Streaming | `@operator` decorator       | `operators/streaming/prepend.ts`    |
+ * | `selectMany`   | Streaming | `@operator` decorator       | `operators/streaming/selectMany.ts` |
+ * | `skip`         | Streaming | `@operator` decorator       | `operators/streaming/skip.ts`       |
+ * | `skipLast`     | Streaming | `@operator` decorator       | `operators/streaming/skipLast.ts`   |
+ * | `skipWhile`    | Streaming | `@operator` decorator       | `operators/streaming/skipWhile.ts`  |
+ * | `split`        | Streaming | `@operator` decorator       | `operators/streaming/split.ts`      |
+ * | `take`         | Streaming | `@operator` decorator       | `operators/streaming/take.ts`       |
+ * | `takeWhile`    | Streaming | `@operator` decorator       | `operators/streaming/takeWhile.ts`  |
+ * | `tap`          | Streaming | `@operator` decorator       | `operators/streaming/tap.ts`        |
+ * | `tapIf`        | Streaming | `@operator` decorator       | `operators/streaming/tapIf.ts`      |
+ * | `throttle`     | Streaming | `@operator` decorator       | `operators/streaming/throttle.ts`   |
+ * | `zip`          | Streaming | `@operator` decorator       | `operators/streaming/zip.ts`        |
  * | `distinct`     | Buffer    | `createOperator()`          | `operators/buffer/distinct.ts`      |
  * | `toArray`      | Terminal  | `@terminal` decorator       | `operators/terminal/toArray.ts`     |
  * | `minMax`       | Terminal  | `@terminal` decorator       | `operators/terminal/minMax.ts`      |
@@ -46,6 +62,8 @@
  *    `createOperator()` / `createGeneratorOperator()` / `createTerminalOperator()` at module level.
  * 3. Add the method signature to `ITyneqEnumerable` in `src/types/core.ts`.
  * 4. Add an `import` line below — that's everything.
+ *
+ * @internal
  */
 
 // ── Core streaming operators ──────────────────────────────────────────────────
@@ -64,6 +82,56 @@ import '../streaming/window';
 
 // createGeneratorOperator('intersperse') — generator shorthand, lowest ceremony
 import '../streaming/intersperse';
+
+// ── Migrated streaming operators (class decorator) ────────────────────────────
+
+// @operator('append') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/append';
+
+// @operator('chunk') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/chunk';
+
+// @operator('concat') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/concat';
+
+// @operator('pairwise') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/pairwise';
+
+// @operator('prepend') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/prepend';
+
+// @operator('selectMany') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/selectMany';
+
+// @operator('skip') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/skip';
+
+// @operator('skipLast') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/skipLast';
+
+// @operator('skipWhile') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/skipWhile';
+
+// @operator('split') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/split';
+
+// @operator('take') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/take';
+
+// @operator('takeWhile') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/takeWhile';
+
+// @operator('tap') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/tap';
+
+// @operator('tapIf') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/tapIf';
+
+// @operator('throttle') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/throttle';
+
+// @operator('zip') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/zip';
 
 // ── Core buffer operators ─────────────────────────────────────────────────────
 

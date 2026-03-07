@@ -15,14 +15,20 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(n) time, O(n) space. Must buffer all elements to form groups.
  * 
  * **Operator Category**: Buffering - materializes all elements into groups before yielding.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of grouping key.
  * @typeParam TValue - The type of projected values within each group.
  * @typeParam TResult - The type of result elements after applying result selector.
- * 
+ *
  * @see {@link GroupByEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.groupBy} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class GroupByOperatorEnumerable<TSource, TKey, TValue, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** Function to extract grouping keys from source elements. */

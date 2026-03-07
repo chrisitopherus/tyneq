@@ -13,11 +13,17 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * 
  * **Operator Category**: Buffering - materializes entire sequence into an array before yielding
  * elements in reverse order.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ReverseEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.reverse} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class ReverseOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /**

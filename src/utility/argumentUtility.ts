@@ -48,9 +48,12 @@ import { TypeGuardUtility } from './typeGuardUtility';
  * }
  * ```
  * 
- * @see {@link ArgumentError} - Base class for argument validation errors
- * @see {@link ArgumentNullError} - Thrown when null check fails
- * @see {@link ArgumentOutOfRangeError} - Thrown when range/numeric validation fails
+ * @see {@link ArgumentError} Base class for argument validation errors.
+ * @see {@link ArgumentNullError} Thrown when a null check fails.
+ * @see {@link ArgumentOutOfRangeError} Thrown when a range or numeric validation fails.
+ *
+ * @group Utilities
+ * @internal
  */
 export class ArgumentUtility {
     /**

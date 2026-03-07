@@ -63,6 +63,9 @@ import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
  * 
  * @see {@link BaseEnumerableSorter} for the abstract contract.
  * @see {@link TyneqOrderedEnumerable} which creates instances of this sorter.
+ *
+ * @group Classes
+ * @internal
  */
 export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<TSource> {
     /**

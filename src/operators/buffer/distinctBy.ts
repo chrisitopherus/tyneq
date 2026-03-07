@@ -15,12 +15,18 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(n) time, O(n) space. Must buffer all unique keys in a hash set.
  * 
  * **Operator Category**: Buffering - maintains a hash set of seen keys during enumeration.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequence.
  * @typeParam TKey - The type of key used for distinctness comparison.
- * 
+ *
  * @see {@link DistinctByEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.distinctBy} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class DistinctByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     /** Function to extract comparison keys from elements. */

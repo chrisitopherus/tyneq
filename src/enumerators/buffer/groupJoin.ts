@@ -24,6 +24,9 @@ import { Tyneq } from "../../core/tyneq";
  * @typeParam TResult - The type of the result after applying result selector.
  * 
  * @see {@link GroupJoinOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     /** The inner sequence to join against. */

@@ -14,10 +14,16 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(1) space. O(n) worst-case time, O(1) best-case (early termination).
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a boolean.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam T - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.all} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
     /** Predicate function to test all elements. */

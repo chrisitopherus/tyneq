@@ -15,6 +15,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam TSource - The type of elements in the sequence.
  * 
  * @see {@link DistinctOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** Set tracking values that have already been yielded. */

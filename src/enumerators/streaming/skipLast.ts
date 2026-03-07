@@ -24,6 +24,9 @@ import { IEnumerator } from "../../types/core";
  * - Streaming: Processes elements one at a time with minimal buffering
  * 
  * @typeParam T - The type of elements in the sequence
+ *
+ * @group Enumerators
+ * @internal
  */
 export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     /**

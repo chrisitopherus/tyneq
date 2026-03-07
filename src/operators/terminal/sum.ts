@@ -13,10 +13,16 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(1) space. O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a number.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam T - The type of elements in the source sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.sum} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class SumOperator<T> extends TyneqTerminalOperator<T, number> {
     /** Function to extract numeric value from each element. */

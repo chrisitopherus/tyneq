@@ -16,13 +16,15 @@ import { TyneqEnumerable } from './TyneqEnumerable';
  * and enumerate items with their indices. All methods return lazy-evaluated sequences that implement
  * the full suite of LINQ-style query operators.
  * 
- * All factory methods validate their inputs using {@link ArgumentUtility}, throwing appropriate
+ * All factory methods validate their inputs using internal argument validation utilities, throwing appropriate
  * errors for invalid arguments (null, undefined, negative values, non-integers where required).
  * 
  * This class is designed following the static factory pattern and cannot be instantiated.
  * 
- * @see {@link TyneqEnumerable} for the enumerable sequence type returned by these methods.
- * 
+ * @see {@link ITyneqEnumerable} for the enumerable sequence contract returned by these methods.
+ *
+ * @group Classes
+ *
  * @example
  * ```typescript
  * // Create from array
@@ -43,7 +45,7 @@ export class Tyneq {
      * Wraps an iterable source into a queryable sequence.
      * 
      * @remarks
-     * Creates a {@link TyneqEnumerable} from any iterable source (arrays, sets, maps, generator functions, etc.).
+    * Creates an `ITyneqEnumerable` from any iterable source (arrays, sets, maps, generator functions, etc.).
      * The returned sequence is lazy-evaluated and re-iterable, meaning it can be enumerated multiple times.
      * Each enumeration calls the source's `Symbol.iterator` method to obtain a fresh iterator.
      * 
@@ -54,7 +56,7 @@ export class Tyneq {
      * 
      * @param source - The iterable source to wrap. Must not be null or undefined.
      * 
-     * @returns A {@link TyneqEnumerable} that wraps the source iterable.
+    * @returns An `ITyneqEnumerable` that wraps the source iterable.
      * 
      * @throws {@link ArgumentNullError} when `source` is null.
      * @throws {@link ArgumentError} when `source` is undefined.
@@ -83,7 +85,7 @@ export class Tyneq {
      * ```
      * 
      * @see {@link enumerate} for wrapping an iterable with index tracking.
-     * @see {@link TyneqEnumerable} for available query operators.
+    * @see {@link ITyneqEnumerable} for available query operators.
      */
     public static from<TSource>(source: Iterable<TSource>): ITyneqEnumerable<TSource> {
         ArgumentUtility.checkNotOptional({ source });
@@ -93,6 +95,22 @@ export class Tyneq {
         return new TyneqEnumerable<TSource>(adapter);
     }
 
+    /**
+     * Generates a sequence of `count` elements produced by calling `randomizer` once per element.
+     *
+     * @remarks
+     * If `count` is 0, returns an empty sequence immediately. Otherwise, the sequence is lazy —
+     * `randomizer` is called once per element during iteration.
+     *
+     * @typeParam TSource - The element type returned by `randomizer`.
+     *
+     * @param count      - Number of elements to generate. A value of 0 returns an empty sequence.
+     * @param randomizer - Called once for each element position. Must not be `null` or `undefined`.
+     *
+     * @returns A lazy sequence of `count` elements produced by `randomizer`.
+     *
+     * @see {@link empty} For an empty sequence.
+     */
     public static random<TSource>(count: number, randomizer: () => TSource): ITyneqEnumerable<TSource> {
         if (count === 0) {
             return this.empty<TSource>();
@@ -103,6 +121,17 @@ export class Tyneq {
         return new TyneqEnumerable<TSource>(operator);
     }
 
+    /**
+     * Returns `true` if `source` is `null`, `undefined`, or contains no elements.
+     *
+     * @remarks
+     * This method uses immediate execution. The source is iterated only far enough to
+     * determine whether it contains at least one element.
+     *
+     * @param source - The iterable to test. May be `null` or `undefined`.
+     *
+     * @returns `true` if `source` is nullish or empty; otherwise `false`.
+     */
     public static isNullOrEmpty<TSource>(source: Iterable<TSource> | null | undefined): boolean {
         if (source === null || source === undefined) {
             return true;
@@ -127,7 +156,7 @@ export class Tyneq {
      * @param start - The first integer in the sequence. May be any finite integer (positive, negative, or zero).
      * @param count - The number of integers to generate. Must be a non-negative integer. A count of 0 produces an empty sequence.
      * 
-     * @returns A {@link TyneqEnumerable} containing `count` consecutive integers starting from `start`.
+    * @returns An `ITyneqEnumerable` containing `count` consecutive integers starting from `start`.
      * 
      * @throws {@link ArgumentOutOfRangeError} when `count` is negative or not a finite number.
      * @throws {@link ArgumentError} when `count` is not an integer.
@@ -186,7 +215,7 @@ export class Tyneq {
      * 
      * @typeParam TSource - The element type of the empty sequence.
      * 
-     * @returns A {@link TyneqEnumerable} containing zero elements.
+    * @returns An `ITyneqEnumerable` containing zero elements.
      * 
      * @example
      * ```typescript

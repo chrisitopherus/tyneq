@@ -35,6 +35,9 @@
  * // - computeKeys: Extract sort keys from source elements
  * // - compareKeys: Compare elements by their cached keys
  * ```
+ *
+ * @group Classes
+ * @internal
  */
 export abstract class BaseEnumerableSorter<TSource> {
     /**

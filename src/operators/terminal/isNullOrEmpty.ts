@@ -2,6 +2,28 @@ import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator
 import { IEnumerable } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
+/**
+ * Terminal operator implementation for checking if a sequence is null or empty.
+ *
+ * @remarks
+ * This is a terminal operator that returns true if the source is null or contains no
+ * elements. Checks at most one element, so it short-circuits immediately for non-empty
+ * sequences.
+ *
+ * **Performance**: O(1) space. O(1) time (reads at most one element).
+ *
+ * **Operator Category**: Terminal - forces evaluation and returns a boolean.
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * @typeParam T - The type of elements in the sequence.
+ *
+ * @see {@link ITyneqEnumerable.isNullOrEmpty} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
+ */
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>) {
         super(source);

@@ -20,6 +20,9 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
  * @typeParam TKey - The type of the comparison key.
  * 
  * @see {@link OrderByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** Array containing all source elements. */

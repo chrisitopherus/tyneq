@@ -95,6 +95,9 @@ import { TyneqCachedEnumerable } from "../cache/TyneqCachedEnumerable";
  * @see {@link ITyneqOrderedEnumerable} for the public API.
  * @see {@link IOrderedEnumerable} for the internal infrastructure.
  * @see {@link TyneqEnumerableBase.orderBy} for how this is created.
+ *
+ * @group Classes
+ * @internal
  */
 export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<TSource> implements ITyneqOrderedEnumerable<TSource> {
     /**

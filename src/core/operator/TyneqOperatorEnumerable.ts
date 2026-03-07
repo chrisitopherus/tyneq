@@ -55,6 +55,9 @@ import { nameof } from "../../utility/nameof";
  * 
  * @see {@link TyneqTerminalOperator} for operators that produce single values.
  * @see {@link IEnumerable} for the enumerable interface this implements.
+ *
+ * @group Classes
+ * @internal
  */
 export abstract class TyneqOperatorEnumerable<TSource, TResult = TSource> implements IEnumerable<TResult> {
     /**

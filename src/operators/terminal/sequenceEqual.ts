@@ -16,10 +16,16 @@ import { nameof } from "../../utility/nameof";
  * (short-circuits on first mismatch).
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a boolean.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in both sequences.
- * 
+ *
  * @see {@link ITyneqEnumerable.sequenceEqual} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     /** The sequence to compare against. */

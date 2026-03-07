@@ -14,6 +14,9 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(1) space (streaming). O(end - start + 1) time when fully enumerated.
  * 
  * @see {@link RangeOperator} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class RangeEnumerator extends TyneqBaseEnumerator<number> {
     /** Current value in the range. */

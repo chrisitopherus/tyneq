@@ -1,7 +1,6 @@
 import { IEnumerable, IEnumerator } from '../../types/core';
 import { operator } from '../../extensibility/operatorDecorators';
 import { TyneqOperatorEnumerable } from '../../core/operator/TyneqOperatorEnumerable';
-import { TyneqEnumerableBase } from '../../core/TyneqEnumerableBase';
 import { ScanEnumerator } from '../../enumerators/streaming/scan';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { nameof } from '../../utility/nameof';
@@ -52,17 +51,23 @@ import { nameof } from '../../utility/nameof';
  * The `@operator('scan')` line is the **only wiring** needed — no changes to
  * `TyneqEnumerableBase` or its import list.
  *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @typeParam TSource - Element type of the source sequence.
  * @typeParam TResult - Element type of the accumulated result sequence.
  *
  * @see {@link ScanEnumerator} for the iteration logic.
  * @see {@link ITyneqEnumerable.scan} for the public API signature.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 @operator('scan')
 export class ScanOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
 
-    declare private readonly seed: TResult;
-    declare private readonly accumulator: (acc: TResult, item: TSource) => TResult;
+    private readonly seed: TResult;
+    private readonly accumulator: (acc: TResult, item: TSource) => TResult;
 
     /**
      * @param source      - The source sequence to accumulate over.
@@ -87,15 +92,4 @@ export class ScanOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnume
             this.accumulator
         );
     }
-}
-
-const scanProto = TyneqEnumerableBase.prototype as any;
-if (!Object.prototype.hasOwnProperty.call(scanProto, 'scan')) {
-    scanProto.scan = function <TSource, TResult>(
-        this: TyneqEnumerableBase<TSource>,
-        seed: TResult,
-        accumulator: (acc: TResult, item: TSource) => TResult
-    ) {
-        return (this as any).createEnumerable(new ScanOperatorEnumerable<TSource, TResult>(this, seed, accumulator));
-    };
 }

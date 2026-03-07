@@ -20,6 +20,9 @@ import { Nullable } from '../../types/utility';
  * @typeParam U - The type of elements in the flattened result sequence.
  * 
  * @see {@link SelectManyOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /** Function to project each element to a nested sequence. */

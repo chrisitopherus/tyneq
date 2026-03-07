@@ -6,7 +6,12 @@
 npm install tyneq
 ```
 
-## First query
+## Prerequisites
+
+- TypeScript or JavaScript project with iterable data inputs
+- Familiarity with callbacks such as predicates and selectors
+
+## First Query
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -26,14 +31,22 @@ console.log(topCorePeople);
 // ["Grace (97)", "Ada (84)"]
 ```
 
-## Mental model
+## Reading the Example
 
-- Build query with fluent operators.
-- Keep pipeline lazy until you need a result.
-- Use terminal operators (`toArray`, `count`, `first`, etc.) to execute.
+1. `Tyneq.from(...)` creates a source sequence.
+2. `where` and `select` are composed as deferred operators.
+3. `orderByDescending` is a buffering operator that sorts on enumeration.
+4. `toArray` is terminal and triggers execution.
 
-## Next steps
+## Minimal Mental Model
 
-- Learn execution details in [Queries and Deferred Execution](/guide/querying-and-deferred-execution)
-- Explore full capability in [Examples](/guide/examples)
-- Browse generated signatures in [API reference](/api/)
+- Compose first, execute later.
+- Treat terminal operators as execution boundaries.
+- Prefer pure predicates/selectors for repeatable enumeration behavior.
+
+## Common Next Moves
+
+- Learn the execution contract: [Querying and Deferred Execution](/guide/querying-and-deferred-execution)
+- Learn operator categories: [Operators Overview](/guide/operators-overview)
+- See real patterns: [Examples](/guide/examples)
+- Browse full signatures: [API Reference](/api/reference/)

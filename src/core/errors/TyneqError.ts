@@ -14,9 +14,9 @@
  * configured to support `instanceof` checks and TypeScript's error discrimination.
  * 
  * @example
- * ```typescript
+ * ```ts
  * import { TyneqError } from 'tyneq';
- * 
+ *
  * try {
  *   // Some Tyneq operation that might fail
  * } catch (error) {
@@ -28,6 +28,8 @@
  *   }
  * }
  * ```
+ *
+ * @group Errors
  */
 export class TyneqError extends Error {
     /**

@@ -9,9 +9,9 @@ import { InvalidOperationError } from "./InvalidOperationError";
  * a filtering predicate.
  * 
  * Common operations that throw this error:
- * - {@link TyneqEnumerable.first first()} - retrieves the first element
- * - {@link TyneqEnumerable.last last()} - retrieves the last element
- * - {@link TyneqEnumerable.single single()} - retrieves a single element when no predicate is provided
+ * - {@link ITyneqEnumerable.first} - retrieves the first element
+ * - {@link ITyneqEnumerable.last} - retrieves the last element
+ * - {@link ITyneqEnumerable.single} - retrieves a single element when no predicate is provided
  * - Other operations that require a non-empty sequence
  * 
  * If a predicate is used and no matches are found, {@link InvalidOperationError} is thrown instead
@@ -47,6 +47,8 @@ import { InvalidOperationError } from "./InvalidOperationError";
  * ```
  * 
  * @see {@link InvalidOperationError} for more general operation state issues.
+ *
+ * @group Errors
  */
 export class SequenceContainsNoElementsError extends InvalidOperationError {
   /**

@@ -22,6 +22,8 @@ import { Nullable } from "./utility";
  * 
  * @see {@link IEnumeratorFactory} for creating enumerators.
  * @see {@link IEnumerable} for re-iterable sequences.
+ *
+ * @group Interfaces
  */
 export interface IEnumerator<T> extends Iterator<T> {
     next(): IteratorResult<T>;
@@ -61,6 +63,8 @@ export interface IEnumerator<T> extends Iterator<T> {
  * 
  * @see {@link IEnumerator} for the iterator type returned.
  * @see {@link IEnumerable} which combines this with the Iterable protocol.
+ *
+ * @group Interfaces
  */
 export interface IEnumeratorFactory<T> {
     /**
@@ -109,6 +113,8 @@ export interface IEnumeratorFactory<T> {
  * @see {@link IEnumerator} for the iterator type.
  * @see {@link IEnumeratorFactory} for the factory pattern.
  * @see {@link ITyneqEnumerable} for the full query operator interface.
+ *
+ * @group Interfaces
  */
 export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
     /**
@@ -159,6 +165,8 @@ export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
  * 
  * @see {@link IEnumerator} for the enumerator type returned.
  * @see {@link IEnumeratorFactory} for the interface-based equivalent.
+ *
+ * @group Types
  */
 export type IteratorFactory<T> = () => IEnumerator<T>;
 
@@ -182,6 +190,9 @@ export type IteratorFactory<T> = () => IEnumerator<T>;
  * 
  * @see {@link ITyneqEnumerable} for the base enumerable interface.
  * @see {@link IteratorFactory} for the factory function type.
+ *
+ * @group Types
+ * @internal
  */
 export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
@@ -235,6 +246,8 @@ export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable
  * 
  * @see {@link IEnumerable} for the base iterable interface.
  * @see {@link ITyneqOrderedEnumerable} for ordered sequences with additional sorting operators.
+ *
+ * @group Interfaces
  */
 export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // ========================================================================
@@ -627,6 +640,12 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      */
     tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
 
+    /**
+     * Returns every `count`-th element, discarding the elements in between.
+     *
+     * @param count - Sampling interval. Must be a positive integer. A value of 1 returns every element.
+     * @returns A new sequence containing only elements at positions that are multiples of `count`.
+     */
     throttle(count: number): ITyneqEnumerable<TSource>;
 
     /**
@@ -768,6 +787,20 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         resultSelector: (outer: TSource, inner: TInner) => TResult
     ): ITyneqEnumerable<TResult>;
 
+    /**
+     * Caches the sequence so that subsequent enumerations replay from the cache instead of re-evaluating the source.
+     *
+     * @remarks
+     * This method uses deferred execution. The source sequence is not enumerated until the
+     * returned sequence is iterated.
+     *
+     * Elements are cached incrementally: only the elements that have been iterated so far are held
+     * in memory. Subsequent enumerations reuse the cached values for the portion already evaluated
+     * and continue from the source for the remainder.
+     *
+    * @returns A cached enumerable that caches source elements on first access.
+    * Use `refresh()` on the returned value to invalidate the cache.
+     */
     memoize(): ITyneqCachedEnumerable<TSource>;
 
     /**
@@ -970,7 +1003,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
  * @typeParam TSource - The type of elements in the sequence.
  * 
  * @see {@link ITyneqEnumerable} for the base enumerable interface.
- * @see {@link IOrderedEnumerable} for the internal ordering contract.
+ * See internal ordered-enumerable infrastructure for implementation details.
+ *
+ * @group Interfaces
  */
 export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
     /**
@@ -994,14 +1029,62 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
 }
 
+/**
+ * A cached sequence that replays already-fetched elements without re-evaluating the source.
+ *
+ * @remarks
+ * Obtained by calling `memoize()` on any {@link ITyneqEnumerable}. Elements are fetched from
+ * the source on demand and stored in an internal cache. Subsequent enumerations replay cached
+ * elements for the portion already evaluated.
+ *
+ * Call `refresh()` to discard the cache and restart evaluation from the source on the next
+ * iteration.
+ *
+ * @typeParam TSource - Element type of the sequence.
+ *
+ * @see {@link ITyneqEnumerable.memoize} Factory method that returns this interface.
+ *
+ * @group Interfaces
+ * @internal
+ */
 export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+    /**
+     * Discards the internal cache and resets the sequence to re-evaluate from the source on
+     * the next iteration.
+     *
+     * @returns The same cached enumerable instance, now with an empty cache.
+     */
     refresh(): ITyneqCachedEnumerable<TSource>;
 }
 
+/**
+ * Low-level contract for incremental cache access used by memoize enumerators.
+ *
+ * @typeParam TSource - Element type of the sequence.
+ *
+ * @group Interfaces
+ * @internal
+ */
 export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
+    /**
+     * Returns the element at `index` from the cache if available, or fetches the next element
+     * from the source and caches it.
+     *
+     * @param index - Zero-based index of the element to retrieve.
+     * @returns `{ has: true, value }` if the element exists; `{ has: false }` if the source is
+     *   exhausted before reaching `index`.
+     */
     tryGetAtFromCache(index: number): CacheResult<TSource>;
 }
 
+/**
+ * Result of a single cache lookup via {@link ICachedEnumerable.tryGetAtFromCache}.
+ *
+ * @typeParam TSource - Element type of the sequence.
+ *
+ * @group Types
+ * @internal
+ */
 export type CacheResult<TSource> = { has: true, value: TSource } | { has: false };
 
 /**
@@ -1021,6 +1104,9 @@ export type CacheResult<TSource> = { has: true, value: TSource } | { has: false 
  * 
  * @see {@link ITyneqOrderedEnumerable} for the public ordered enumerable interface.
  * @see {@link BaseEnumerableSorter} for the sorter implementation.
+ *
+ * @group Interfaces
+ * @internal
  */
 export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
     /**
@@ -1054,6 +1140,8 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
  * @typeParam T - Element type of the source sequence.
  *
  * @see {@link ITyneqEnumerable.minMax}
+ *
+ * @group Types
  */
 export type MinMaxResult<T> = {
     /** The smallest element according to the comparer. */
@@ -1077,6 +1165,8 @@ export type MinMaxResult<T> = {
  * 
  * @see {@link ITyneqEnumerable.toMap}
  * @see {@link ITyneqEnumerable.toRecord}
+ *
+ * @group Types
  */
 export type KeyValuePair<TKey, TValue> = {
     /**

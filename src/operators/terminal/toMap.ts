@@ -13,12 +13,18 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * **Performance**: O(n) space (creates map). O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a Map.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of keys in the resulting map.
  * @typeParam TValue - The type of values in the resulting map.
- * 
+ *
  * @see {@link ITyneqEnumerable.toMap} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<TSource, Map<TKey, TValue>> {
     /** Function to extract key-value pairs from each element. */

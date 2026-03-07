@@ -46,6 +46,9 @@ import { IEnumerable, IEnumerator } from "../../types/core";
  * 
  * @see {@link TyneqOperatorEnumerable} for operators that transform source sequences.
  * @see {@link TyneqTerminalOperator} for operators that produce single values.
+ *
+ * @group Classes
+ * @internal
  */
 export abstract class TyneqOperator<TSource, TResult = TSource> implements IEnumerable<TResult> {
 

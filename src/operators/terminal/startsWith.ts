@@ -15,10 +15,16 @@ import { nameof } from "../../utility/nameof";
  * (short-circuits on mismatch).
  * 
  * **Operator Category**: Terminal - forces partial evaluation and returns a boolean.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam T - The type of elements in both sequences.
- * 
+ *
  * @see {@link ITyneqEnumerable.startsWith} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
     /** The prefix sequence to check for. */

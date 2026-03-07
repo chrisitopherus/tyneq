@@ -20,6 +20,9 @@ import { IEnumerator } from '../../types/core';
  * @typeParam TResult - Type of the accumulated result (may differ from TSource).
  *
  * @see {@link ScanOperatorEnumerable} for the operator wrapper.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;

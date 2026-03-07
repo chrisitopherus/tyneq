@@ -54,15 +54,21 @@ function defaultCompare<T>(a: T, b: T): number {
  * Extends `TyneqTerminalOperator` and implements `process()` — the decorator
  * wires `seq.minMax()` to `new MinMaxOperator(seq, ...).process()` automatically.
  *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam T - Element type of the sequence.
  *
  * @see {@link MinMaxResult} for the return type.
  * @see {@link ITyneqEnumerable.minMax} for the public API signature.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 @terminal('minMax')
 export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>> {
 
-    declare private readonly comparer: (a: T, b: T) => number;
+    private readonly comparer: (a: T, b: T) => number;
 
     /**
      * @param source    - The source sequence to evaluate.

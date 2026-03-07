@@ -26,6 +26,8 @@ import { TyneqError } from "./TyneqError";
  *   }
  * }
  * ```
+ *
+ * @group Errors
  */
 export class KeyNotFoundError extends TyneqError {
   /**

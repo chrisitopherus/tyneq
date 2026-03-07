@@ -11,22 +11,6 @@ import { ReverseOperatorEnumerable } from "../operators/buffer/reverse";
 import { ShuffleOperatorEnumerable } from "../operators/buffer/shuffle";
 import { UnionOperatorEnumerable } from "../operators/buffer/union";
 import { UnionByOperatorEnumerable } from "../operators/buffer/unionBy";
-import { AppendOperatorEnumerable } from "../operators/streaming/append";
-import { ChunkOperatorEnumerable } from "../operators/streaming/chunk";
-import { ConcatOperatorEnumerable } from "../operators/streaming/concat";
-import { PairwiseOperatorEnumerable } from "../operators/streaming/pairwise";
-import { PrependOperatorEnumerable } from "../operators/streaming/prepend";
-import { SelectManyOperatorEnumerable } from "../operators/streaming/selectMany";
-import { SkipOperatorEnumerable } from "../operators/streaming/skip";
-import { SkipLastOperatorEnumerable } from "../operators/streaming/skipLast";
-import { SkipWhileOperatorEnumerable } from "../operators/streaming/skipWhile";
-import { SplitOperatorEnumerable } from "../operators/streaming/split";
-import { TakeOperatorEnumerable } from "../operators/streaming/take";
-import { TakeWhileOperatorEnumerable } from "../operators/streaming/takeWhile";
-import { TapOperatorEnumerable } from "../operators/streaming/tap";
-import { TapIfOperatorEnumerable } from "../operators/streaming/tapIf";
-import { ThrottleOperatorEnumerable } from "../operators/streaming/throttle";
-import { ZipOperatorEnumerable } from "../operators/streaming/zip";
 import { AllOperator } from "../operators/terminal/all";
 import { AnyOperator } from "../operators/terminal/any";
 import { ContainsOperator } from "../operators/terminal/contains";
@@ -132,6 +116,9 @@ import { nameof } from "../utility/nameof";
  * 
  * @see {@link TyneqEnumerable} for the standard concrete implementation.
  * @see {@link TyneqOrderedEnumerable} for ordered sequence support.
+ *
+ * @group Classes
+ * @internal
  */
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
 
@@ -798,382 +785,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
             .process();
     }
 
-    // stream operators
-
-    /**
-     * Appends a single element to the end of the sequence.
-     * 
-     * @remarks
-     * This is a streaming operator that yields all elements from the source sequence,
-     * followed by the single appended element. The source is not consumed until
-     * enumeration begins.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated.
-     * 
-     * **Laziness**: Both the source and the append operation are evaluated lazily.
-     * 
-     * @param item - The element to append to the end of the sequence.
-     * 
-     * @returns A new sequence with the appended element at the end.
-     */
-    public append(item: TSource): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new AppendOperatorEnumerable<TSource>(this, item)
-        );
-    }
-
-    /**
-     * Splits the sequence into chunks of a specified size.
-     * 
-     * @remarks
-     * This is a buffering operator that groups consecutive elements into arrays
-     * of the specified size. The last chunk may contain fewer elements if the
-     * sequence length is not evenly divisible by the chunk size.
-     * 
-     * **Performance**: O(n) time, O(size) space. Buffers only the current chunk.
-     * 
-     * @param size - The maximum size of each chunk. Must be positive (> 0).
-     * 
-     * @returns A sequence of arrays, where each array contains up to `size` elements.
-     */
-    public chunk(size: number): ITyneqEnumerable<TSource[]> {
-        return this.createEnumerable(
-            new ChunkOperatorEnumerable<TSource>(this, size)
-        );
-    }
-
-    /**
-     * Concatenates two sequences.
-     * 
-     * @remarks
-     * This is a streaming operator that yields all elements from the first sequence,
-     * followed by all elements from the second sequence. Both sequences are evaluated
-     * lazily as enumeration progresses.
-     * 
-     * **Performance**: O(1) space (streaming). O(n + m) time when enumerated, where
-     * n is the length of this sequence and m is the length of the other sequence.
-     * 
-     * **Laziness**: Neither sequence is consumed until enumeration begins. The second
-     * sequence is only enumerated after the first is exhausted.
-     * 
-     * **No deduplication**: Unlike {@link union}, duplicates are preserved.
-     * 
-     * @param other - The second sequence to concatenate.
-     * Cannot be null.
-     * 
-     * @returns A sequence containing all elements from both sequences in order.
-     */
-    public concat(other: Iterable<TSource>): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new ConcatOperatorEnumerable<TSource>(this, other)
-        );
-    }
-
-    public pairwise(): ITyneqEnumerable<[TSource, TSource]> {
-        return this.createEnumerable(
-            new PairwiseOperatorEnumerable<TSource>(this)
-        );
-    }
-
-    /**
-     * Prepends a single element to the beginning of the sequence.
-     * 
-     * @remarks
-     * This is a streaming operator that yields the single prepended element first,
-     * followed by all elements from the source sequence. The source is not consumed
-     * until enumeration begins.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated.
-     * 
-     * **Laziness**: Both the prepend and source are evaluated lazily.
-     * 
-     * @param item - The element to prepend to the beginning of the sequence.
-     * 
-     * @returns A new sequence with the prepended element at the start.
-     */
-    public prepend(item: TSource): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new PrependOperatorEnumerable<TSource>(this, item)
-        );
-    }
-
-    /**
-     * Projects each element to a sequence and flattens the resulting sequences into one.
-     * 
-     * @remarks
-     * This is a streaming operator that applies a transform function to each element,
-     * obtaining an enumerable sequence for each element, and flattens all nested sequences
-     * into a single flat sequence. Also known as "flatMap" in functional programming.
-     * 
-     * **Performance**: O(1) space (streaming). O(n + m) time when enumerated, where n is the
-     * count of source elements and m is the total count of elements in all projected sequences.
-     * 
-     * **Laziness**: The source and inner sequences are evaluated lazily. Each inner sequence
-     * is enumerated as needed during iteration.
-     * 
-     * **Order**: Results appear in the order of the source sequence, with all elements from
-     * each projected sequence appearing before elements from the next source element.
-     * 
-     * @typeParam TResult - The type of elements in the result sequence.
-     * @param selector - A transform function that returns an enumerable sequence for each
-     *   source element. Cannot be null or undefined.
-     * 
-     * @returns A sequence containing all elements from all projected inner sequences.
-     * 
-     * @throws {@link ArgumentNullError} when `selector` is null.
-     * @throws {@link ArgumentError} when `selector` is undefined.
-     */
-    public selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): ITyneqEnumerable<TResult> {
-        return this.createEnumerable(
-            new SelectManyOperatorEnumerable<TSource, TResult>(this, selector)
-        );
-    }
-
-    /**
-     * Bypasses a specified number of elements from the beginning and returns the remaining elements.
-     * 
-     * @remarks
-     * This is a streaming operator that skips the first `count` elements and yields all
-     * subsequent elements. If `count` is greater than or equal to the sequence length,
-     * returns an empty sequence.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated.
-     * 
-     * @param count - The number of elements to skip from the beginning.
-     *   Can be 0 or negative (skips nothing).
-     * 
-     * @returns A sequence containing all elements after skipping the first `count` elements.
-     */
-    public skip(count: number): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new SkipOperatorEnumerable<TSource>(this, count)
-        );
-    }
-
-    /**
-     * Bypasses a specified number of elements from the end and returns the remaining elements.
-     * 
-     * @remarks
-     * This is a buffering operator that must examine the entire sequence to determine
-     * which elements are in the last `count` positions. Returns all elements except those.
-     * 
-     * **Performance**: O(n) time, O(count) space. Uses a sliding window of size `count`.
-     * 
-     * **Buffering**: Unlike {@link skip}, this must materialize elements as it scans.
-     * The entire sequence must be examined.
-     * 
-     * @param count - The number of elements to skip from the end.
-     * Can be 0 or negative (skips nothing).
-     * 
-     * @returns A sequence containing all elements except the last `count` elements.
-     */
-    public skipLast(count: number): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new SkipLastOperatorEnumerable<TSource>(this, count)
-        );
-    }
-
-    /**
-     * Bypasses elements while a condition is true and returns the remaining elements.
-     * 
-     * @remarks
-     * This is a streaming operator that skips leading elements that satisfy the predicate.
-     * Once an element fails the predicate, that element and all remaining elements are yielded,
-     * regardless of whether they would satisfy the predicate.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated. Can short-circuit
-     * on the first element that doesn't match the predicate.
-     * 
-     * **Semantics**: Only elements at the beginning are skipped. Once the predicate fails,
-     * enumeration continues including all subsequent elements.
-     * 
-     * @param predicate - A function to test each element.
-     * Cannot be null or undefined.
-     * 
-     * @returns A sequence containing elements starting from the first element that does not
-     *   satisfy the condition, plus all subsequent elements.
-     */
-    public skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new SkipWhileOperatorEnumerable<TSource>(this, predicate)
-        );
-    }
-
-    /**
-     * Splits the sequence into sub-sequences based on a predicate.
-     * 
-     * @remarks
-     * This is a buffering operator that groups consecutive elements into arrays, using the
-     * predicate to identify split points. Elements that cause the predicate to return true
-     * (the "split points") are excluded from the results.
-     * 
-     * **Performance**: O(n) time, O(n) space. Must buffer all elements.
-     * 
-     * **Semantics**: Consecutive elements that don't match the predicate are collected into
-     * an array. When an element matches the predicate, the current array is yielded (if
-     * non-empty) and a new group begins.
-     * 
-     * @param splitOn - A function that identifies elements to use as split points.
-     *   Cannot be null or undefined. Elements where this returns true are excluded.
-     * 
-     * @returns A sequence of arrays, where each array contains consecutive elements between
-     *   split points.
-     */
-    public split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]> {
-        return this.createEnumerable(
-            new SplitOperatorEnumerable<TSource>(this, splitOn)
-        );
-    }
-
-    /**
-     * Returns a specified number of elements from the beginning of the sequence.
-     * 
-     * @remarks
-     * This is a streaming operator that yields at most `count` elements from the start
-     * of the sequence. If the sequence contains fewer than `count` elements, all elements
-     * are returned. Enumeration stops after `count` elements (short-circuits).
-     * 
-     * **Performance**: O(1) space (streaming). O(min(count, n)) time when enumerated.
-     * 
-     * @param count - The maximum number of elements to return.
-     *   Can be 0 or negative (returns empty sequence).
-     * 
-     * @returns A sequence containing at most `count` elements from the beginning.
-     */
-    public take(count: number): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new TakeOperatorEnumerable<TSource>(this, count)
-        );
-    }
-
-    /**
-     * Returns elements while a condition is true and skips the remaining elements.
-     * 
-     * @remarks
-     * This is a streaming operator that yields elements as long as they satisfy the predicate.
-     * Once an element fails the predicate, enumeration stops immediately, and remaining
-     * elements are never consumed.
-     * 
-     * **Performance**: O(1) space (streaming). O(k) time where k is the count of elements
-     * yielded. Can short-circuit as soon as the predicate fails.
-     * 
-     * **Semantics**: Only elements at the beginning are included. Once the predicate fails,
-     * enumeration ends, even if later elements would satisfy the condition.
-     * 
-     * @param predicate - A function to test each element.
-     * Cannot be null or undefined.
-     * 
-     * @returns A sequence containing elements starting from the beginning while the predicate
-     *   returns true, stopping at the first element that doesn't satisfy the condition.
-     */
-    public takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new TakeWhileOperatorEnumerable<TSource>(this, predicate)
-        );
-    }
-
-    /**
-     * Performs a side effect on each element without modifying the sequence.
-     * 
-     * @remarks
-     * This is a streaming operator that passes elements through unchanged while executing
-     * an action on each element. Useful for debugging, logging, or side effects during
-     * pipeline execution.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated.
-     * 
-     * **Laziness**: The action is not invoked until the sequence is enumerated.
-     * 
-     * **Return value**: Returns the original sequence (this) unchanged. The action is
-     * executed for side effects only and does not affect the elements.
-     * 
-     * @param action - An action to perform on each element. Cannot be null.
-     *   Even if the action throws, elements are still yielded.
-     * 
-     * @returns The original sequence unchanged, with the action executed during enumeration.
-     * 
-     * @throws {@link ArgumentNullError} when `action` is null.
-     * @throws {@link ArgumentError} when `action` is undefined.
-     * 
-     * @see {@link tapIf} - To perform conditional side effects.
-     */
-    public tap(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new TapOperatorEnumerable<TSource>(this, action)
-        );
-    }
-
-    /**
-     * Performs a side effect on each element matching a condition, without modifying the sequence.
-     * 
-     * @remarks
-     * This is a debugging and introspection operator that passes elements through unchanged
-     * while conditionally executing an action on matching elements. Useful for conditional
-     * logging, conditional debugging, or conditional side effects during pipeline execution.
-     * 
-     * **Performance**: O(1) space (streaming). O(n) time when enumerated.
-     * 
-     * **Laziness**: The action is not invoked until the sequence is enumerated. The predicate
-     * is evaluated on every enumeration.
-     * 
-     * **Return value**: Returns the original sequence (this) unchanged. The action is executed
-     * for side effects only.
-     * 
-     * **Predicate evaluation**: The predicate is called once per enumeration to determine
-     * whether side effects should occur. This is different from {@link tap}, which always
-     * executes for every element.
-     * 
-     * @param action - An action to perform on each element if the predicate returns true.
-     *   Cannot be null. Even if the action throws, elements are still yielded.
-     * @param predicate - A function that determines whether to execute the action.
-     *   Cannot be null.
-     * 
-     * @returns The original sequence unchanged, with the conditional action executed during enumeration.
-     */
-    public tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new TapIfOperatorEnumerable<TSource>(this, action, predicate)
-        );
-    }
-
-    public throttle(count: number): ITyneqEnumerable<TSource> {
-        return this.createEnumerable(
-            new ThrottleOperatorEnumerable<TSource>(this, count)
-        );
-    }
-
-    /**
-     * Combines elements from two sequences according to a selector function.
-     * 
-     * @remarks
-     * This is a streaming operator that pairs corresponding elements from two sequences
-     * using the selector function. The resulting sequence length is the minimum of the
-     * two input sequence lengths. Both sequences are enumerated lazily.
-     * 
-     * **Performance**: O(1) space (streaming). O(min(n, m)) time when enumerated, where
-     * n is the length of this sequence and m is the length of the other.
-     * 
-     * **Laziness**: Both sequences are evaluated on-demand during iteration.
-     * 
-     * **Pairing**: Position-based matching. The first element of this sequence is paired
-     * with the first element of the other, and so on. Enumeration stops when either
-     * sequence is exhausted.
-     * 
-     * @typeParam TOther - The type of elements in the other sequence.
-     * @typeParam TResult - The type of elements in the result sequence (result of selector).
-     * @param other - The second sequence to zip with. Cannot be null.
-     * @param selector - A function that combines corresponding elements from both sequences.
-     *   Receives the current element from this sequence and the corresponding element from
-     *   the other sequence. Cannot be null or undefined.
-     * 
-     * @returns A sequence of combined elements from both sequences.
-     */
-    public zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult> {
-        return this.createEnumerable(
-            new ZipOperatorEnumerable<TSource, TOther, TResult>(this, other, selector)
-        );
-    }
-
     // buffering operators
 
     /**
@@ -1701,4 +1312,22 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     declare window: (size: number) => ITyneqEnumerable<TSource[]>;
     declare intersperse: (delimiter: TSource) => ITyneqEnumerable<TSource>;
     declare minMax: (comparer?: (a: TSource, b: TSource) => number) => MinMaxResult<TSource>;
+
+    // streaming operator stubs — migrated to @operator() decorators
+    declare append: (item: TSource) => ITyneqEnumerable<TSource>;
+    declare chunk: (size: number) => ITyneqEnumerable<TSource[]>;
+    declare concat: (other: Iterable<TSource>) => ITyneqEnumerable<TSource>;
+    declare pairwise: () => ITyneqEnumerable<[TSource, TSource]>;
+    declare prepend: (item: TSource) => ITyneqEnumerable<TSource>;
+    declare selectMany: <TResult>(selector: (item: TSource) => Iterable<TResult>) => ITyneqEnumerable<TResult>;
+    declare skip: (count: number) => ITyneqEnumerable<TSource>;
+    declare skipLast: (count: number) => ITyneqEnumerable<TSource>;
+    declare skipWhile: (predicate: (item: TSource) => boolean) => ITyneqEnumerable<TSource>;
+    declare split: (splitOn: (item: TSource) => boolean) => ITyneqEnumerable<TSource[]>;
+    declare take: (count: number) => ITyneqEnumerable<TSource>;
+    declare takeWhile: (predicate: (item: TSource) => boolean) => ITyneqEnumerable<TSource>;
+    declare tap: (action: (item: TSource) => void) => ITyneqEnumerable<TSource>;
+    declare tapIf: (action: (item: TSource) => void, predicate: () => boolean) => ITyneqEnumerable<TSource>;
+    declare throttle: (count: number) => ITyneqEnumerable<TSource>;
+    declare zip: <TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult) => ITyneqEnumerable<TResult>;
 }

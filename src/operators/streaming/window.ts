@@ -75,7 +75,13 @@ function* windowGenerator<T>(source: Iterator<T>, size: number): IterableIterato
  * **Registration method**: `createOperator()` functional API.
  * No class definition or base class modification required.
  *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @see {@link ITyneqEnumerable.window} for the public API signature.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 createOperator<any, any[], [number]>({
     name: 'window',

@@ -18,6 +18,9 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * @typeParam TKey - The type of the comparison key.
  * 
  * @see {@link ExceptByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to exclude. */

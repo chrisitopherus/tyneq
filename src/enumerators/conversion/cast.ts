@@ -31,6 +31,9 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The source type of elements in the sequence
  * @typeParam U - The target type to cast elements to (unchecked at runtime)
+ *
+ * @group Enumerators
+ * @internal
  */
 export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /**

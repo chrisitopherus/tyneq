@@ -22,6 +22,9 @@ import { Tyneq } from "../..";
  * @typeParam TResult - The type of the result after applying result selector.
  * 
  * @see {@link GroupByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
     /** Function to extract grouping key from each element. */

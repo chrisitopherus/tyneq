@@ -16,16 +16,22 @@ import { WhereEnumerator } from "../../enumerators/streaming/where";
  * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
  * 
  * **Registration method**: TC39 `@operator()` class decorator.
- * 
+ *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link WhereEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.where} for the public API.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 @operator('where')
 export class WhereOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** Predicate function to filter elements. */
-    declare private readonly predicate: (item: TSource) => boolean;
+    private readonly predicate: (item: TSource) => boolean;
 
     /**
      * Creates a new where (filter) operator.

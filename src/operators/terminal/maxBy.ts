@@ -17,11 +17,17 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(1) space. O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns an element.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the sequence.
  * @typeParam TKey - The type of the key used for comparison.
- * 
+ *
  * @see {@link ITyneqEnumerable.maxBy} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class MaxByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource, TSource> {
     /** Comparison function to determine key ordering. */

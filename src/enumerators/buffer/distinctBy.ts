@@ -16,6 +16,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam TKey - The type of the comparison key.
  * 
  * @see {@link DistinctByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** Set tracking keys that have already been yielded. */

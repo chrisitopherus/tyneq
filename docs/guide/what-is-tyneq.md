@@ -1,22 +1,45 @@
-# What is Tyneq
+# What Is Tyneq
 
-Tyneq is a LINQ-inspired query library for TypeScript and JavaScript. It provides a fluent API for transforming, combining, and materializing data from iterable sources.
+Tyneq is a typed query library for TypeScript and JavaScript that brings LINQ-style pipeline composition to iterable data.
 
-## What it aims to solve
+## Why Tyneq Exists
 
-Tyneq addresses recurring issues in data transformation code:
+Tyneq is designed for projects where plain array chaining or ad-hoc iterator utilities become hard to reason about.
 
-- Long chains of ad-hoc array operations that are hard to read and maintain
-- Inconsistent behavior between one-time iterators and re-iterable collections
-- Weak type propagation in complex query pipelines
-- Missing relational operations such as joins/group joins in many utility libraries
+Common pain points it addresses:
 
-## High-level implementation model
+- Pipelines that are readable at small size but opaque at production size
+- Unclear execution timing when mixing eager arrays and lazy iterables
+- Type information that degrades as chains become more complex
+- Limited relational and set-style operations in general utility libraries
 
-At an abstract level, Tyneq composes queries from three parts:
+## Core Design
 
-1. **Enumerable source**: a re-iterable data sequence
-2. **Operator pipeline**: transformations layered without immediate execution
-3. **Terminal execution**: a final operation that triggers evaluation
+Tyneq models querying as three explicit stages:
 
-The result is a model where behavior is explicit and predictable as pipelines grow.
+1. Source sequence construction (`Tyneq.from`, `Tyneq.range`, `Tyneq.empty`)
+2. Operator composition (`where`, `select`, `join`, `orderBy`, ...)
+3. Terminal execution (`toArray`, `count`, `first`, `sum`, ...)
+
+This design keeps execution semantics and performance characteristics visible from the pipeline shape.
+
+## What Tyneq Is Not
+
+- It is not a replacement for all utility libraries.
+- It is not an ORM or SQL translation layer.
+- It is not an asynchronous stream library.
+
+Tyneq focuses specifically on synchronous iterable querying with strong typing and predictable behavior.
+
+## Typical Use Cases
+
+- Read-model shaping in services or controllers
+- Relational joins over in-memory collections
+- Ordered analytics pipelines with deterministic semantics
+- Reusable query definitions that are executed in multiple contexts
+
+## Next Steps
+
+- Continue with [Getting Started](/guide/getting-started)
+- Learn semantic rules in [Core Concepts](/guide/concepts)
+- Review operator categories in [Operators Overview](/guide/operators-overview)

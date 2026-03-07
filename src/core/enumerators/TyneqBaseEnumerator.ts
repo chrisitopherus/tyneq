@@ -1,6 +1,36 @@
 import { IEnumerator } from '../../types/core';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
 
+/**
+ * Abstract base class providing the core lifecycle and state management for all enumerators.
+ *
+ * @remarks
+ * `TyneqBaseEnumerator` implements the {@link IEnumerator} protocol and handles the common
+ * plumbing shared across all enumerator implementations:
+ *
+ * - **Initialization**: Calls {@link initialize} once before the first element is yielded,
+ *   allowing subclasses to set up any required state or resources.
+ * - **Completion tracking**: Once `done: true` is returned, all subsequent `next()` calls
+ *   immediately return completion without delegating to {@link handleNext}.
+ * - **Early termination**: `return()` triggers {@link dispose} and marks the enumerator
+ *   as completed, releasing resources when iteration is cut short.
+ * - **Cleanup phases**: Disposal is split into {@link disposeSource} (release upstream)
+ *   and {@link disposeAdditional} (release local resources), called in that order.
+ *
+ * Subclasses must implement:
+ * - {@link handleNext} — produce the next element or signal completion
+ * - {@link dispose} — orchestrate cleanup
+ * - {@link disposeSource} — release the upstream source
+ *
+ * Helper methods {@link yield}, {@link done}, {@link doneWithYield}, and {@link earlyComplete}
+ * are provided so subclasses can return well-formed `IteratorResult` values without boilerplate.
+ *
+ * @typeParam TInput - The input element type (used by subclasses that transform a source).
+ * @typeParam TOutput - The type of elements produced by this enumerator.
+ *
+ * @group Enumerators
+ * @internal
+ */
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
     private initialized = false;
     protected sourceDisposed = false;

@@ -19,6 +19,9 @@ import { IEnumerator } from '../../types/core';
  * @typeParam TKey - The type of the comparison key.
  * 
  * @see {@link UnionByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The second sequence to union with. */

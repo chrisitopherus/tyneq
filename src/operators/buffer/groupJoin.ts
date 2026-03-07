@@ -16,14 +16,20 @@ import { nameof } from "../../utility/nameof";
  * O(m) space to index the inner sequence by key.
  * 
  * **Operator Category**: Buffering - indexes inner sequence before yielding results.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the outer (source) sequence.
  * @typeParam TInner - The type of elements in the inner sequence.
  * @typeParam TKey - The type of keys used for correlation.
  * @typeParam TResult - The type of result elements.
- * 
+ *
  * @see {@link GroupJoinEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.groupJoin} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** The inner sequence to join with. */

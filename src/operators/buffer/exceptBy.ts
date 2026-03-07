@@ -16,12 +16,18 @@ import { nameof } from "../../utility/nameof";
  * O(m) space to index the excluded keys in a hash set.
  * 
  * **Operator Category**: Buffering - builds a hash set of excluded keys before yielding.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of keys used for comparison.
- * 
+ *
  * @see {@link ExceptByEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.exceptBy} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     /** Sequence of keys to exclude. */

@@ -28,6 +28,9 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The source type of elements in the sequence
  * @typeParam U - The target subtype to filter for (must extend T)
+ *
+ * @group Enumerators
+ * @internal
  */
 export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {
     /**

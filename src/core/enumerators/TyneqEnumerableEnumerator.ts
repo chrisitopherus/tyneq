@@ -36,6 +36,9 @@ import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
  * 
  * @see {@link TyneqEnumerator} for working with enumerators directly
  * @see {@link TyneqGeneratorEnumerator} for generation without source dependency
+ *
+ * @group Enumerators
+ * @internal
  */
 export abstract class TyneqEnumerableEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
     /**

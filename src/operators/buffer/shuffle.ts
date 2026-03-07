@@ -17,11 +17,17 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * 
  * **Randomness**: Uses `Math.random()` for randomization. Each enumeration produces
  * a different random order.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ShuffleEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.shuffle} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class ShuffleOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /**

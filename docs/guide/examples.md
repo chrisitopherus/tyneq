@@ -1,9 +1,10 @@
-# Examples: From Simple to Complex
+# Examples
 
-## Simple: filter + project
+This page presents practical Tyneq query patterns from simple transformations to production-style pipelines.
 
-### Scenario
-Get active product names in uppercase.
+## Example 1: Filter and Project
+
+Goal: return active product names in uppercase.
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -24,10 +25,14 @@ console.log(result);
 // ["KEYBOARD", "MONITOR"]
 ```
 
-## Intermediate: grouped analytics
+Behavior notes:
 
-### Scenario
-Compute total sales per region and return a sorted leaderboard.
+- `where` and `select` stream.
+- `toArray` materializes the result.
+
+## Example 2: Group and Aggregate
+
+Goal: compute total sales per region and rank descending by total.
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -52,21 +57,20 @@ const leaderboard = Tyneq
 
 console.log(leaderboard);
 // [
-//   { region: 'US', total: 220 },
-//   { region: 'APAC', total: 200 },
-//   { region: 'EU', total: 160 }
+//   { region: "US", total: 220 },
+//   { region: "APAC", total: 200 },
+//   { region: "EU", total: 160 }
 // ]
 ```
 
-## Advanced: relational pipeline with ranking and paging
+Behavior notes:
 
-### Scenario
-Build a report that:
+- `groupBy` and `orderByDescending` are buffering operators.
+- Aggregation (`sum`) is terminal per group projection.
 
-1. joins users with orders
-2. computes per-user spend + order counts
-3. ranks by spend (desc), then order count (desc), then name (asc)
-4. returns page 1 with page size 3
+## Example 3: Relational Report with Ranking and Paging
+
+Goal: join users to orders, compute spend and count, sort deterministically, then paginate.
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -113,10 +117,7 @@ const report = Tyneq
   .thenBy(x => x.userName)
   .skip((page - 1) * pageSize)
   .take(pageSize)
-  .select(x => ({
-    rank: rank++,
-    ...x
-  }))
+  .select(x => ({ rank: rank++, ...x }))
   .toArray();
 
 console.log(report);
@@ -127,10 +128,14 @@ console.log(report);
 // ]
 ```
 
-## Advanced: stabilize expensive pipelines with memoization
+Behavior notes:
 
-### Scenario
-Reuse the same expensive query result multiple times in one request.
+- `groupJoin` and ordering stages buffer.
+- `skip` and `take` apply after ordering.
+
+## Example 4: Cache Expensive Query Results
+
+Goal: execute an expensive pipeline once, reuse results multiple times, then invalidate.
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -150,4 +155,13 @@ const recomputed = expensive.take(3).toArray();
 console.log(firstUse, secondUse, recomputed);
 ```
 
-Use this pattern when repeated enumeration cost matters and deterministic snapshot-like behavior is desired.
+Behavior notes:
+
+- `memoize()` caches enumeration output.
+- `refresh()` invalidates cached state and forces recomputation.
+
+## Related Pages
+
+- [Operators Overview](/guide/operators-overview)
+- [Querying and Deferred Execution](/guide/querying-and-deferred-execution)
+- [Error Handling](/guide/error-handling)

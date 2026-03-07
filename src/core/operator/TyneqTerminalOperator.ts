@@ -42,6 +42,9 @@ import { nameof } from "../../utility/nameof";
  * ```
  * 
  * @see {@link TyneqOperatorEnumerable} for non-terminal (streaming/buffering) operators.
+ *
+ * @group Classes
+ * @internal
  */
 export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     /**

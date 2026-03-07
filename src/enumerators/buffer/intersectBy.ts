@@ -18,6 +18,9 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * @typeParam TKey - The type of the comparison key.
  * 
  * @see {@link IntersectByOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to intersect with. */

@@ -53,6 +53,9 @@ import { Undefinedable } from "../types/utility";
  * ```
  * 
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | MDN: Iteration protocols}
+ *
+ * @group Classes
+ * @internal
  */
 export class TyneqIteratorResult<T> {
     /**

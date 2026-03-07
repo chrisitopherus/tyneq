@@ -37,6 +37,8 @@ import { TyneqError } from "./TyneqError";
  * 
  * @see {@link SequenceContainsNoElementsError} for the specialized case of empty sequences
  * without a predicate.
+ *
+ * @group Errors
  */
 export class InvalidOperationError extends TyneqError {
   /**

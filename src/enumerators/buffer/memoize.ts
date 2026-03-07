@@ -1,6 +1,22 @@
 import { TyneqCachedEnumerable } from "../../core/cache/TyneqCachedEnumerable";
 import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 
+/**
+ * Enumerator implementation that reads from a shared {@link TyneqCachedEnumerable}.
+ *
+ * @remarks
+ * Yields elements from the cache by index. The cache lazily expands the underlying
+ * source on demand; this enumerator advances the index after each successful yield.
+ * Multiple `MemoizeEnumerator` instances over the same cache share the underlying
+ * source, with each instance maintaining its own position independently.
+ *
+ * **Performance**: O(1) space per enumerator (shared cache holds the elements).
+ *
+ * @typeParam TSource - The type of elements in the sequence.
+ *
+ * @group Enumerators
+ * @internal
+ */
 export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;

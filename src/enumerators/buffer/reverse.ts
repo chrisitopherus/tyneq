@@ -16,6 +16,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam T - The type of elements in the sequence.
  * 
  * @see {@link ReverseOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     /** Array containing all source elements. */

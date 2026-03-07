@@ -17,6 +17,9 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * @typeParam TSource - The type of elements in the sequences.
  * 
  * @see {@link ExceptOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** The sequence of values to exclude. */

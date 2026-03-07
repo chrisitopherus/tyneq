@@ -13,11 +13,17 @@ import { PopulateEnumerator } from "../../enumerators/streaming/populate";
  * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
  * 
  * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
+ *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @typeParam TSource - The type of elements in the source sequence (ignored).
  * @typeParam TValue - The type of the replacement value.
- * 
+ *
  * @see {@link PopulateEnumerator} for the enumeration implementation.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 export class PopulateOperatorEnumerable<TSource, TValue> extends TyneqOperatorEnumerable<TSource, TValue> {
     /** The value to yield for each source element. */

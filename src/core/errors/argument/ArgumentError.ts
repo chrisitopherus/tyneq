@@ -8,7 +8,7 @@ import { TyneqError } from "../TyneqError";
  * It extends {@link TyneqError} and provides an optional `paramName` property to identify which
  * parameter caused the validation failure.
  * 
- * All Tyneq methods validate their arguments using the {@link ArgumentUtility} class, which throws
+ * All Tyneq methods validate their arguments using internal argument-validation utilities, which throw
  * `ArgumentError` or its subclasses ({@link ArgumentNullError}, {@link ArgumentOutOfRangeError},
  * {@link ArgumentTypeError}) when validation fails.
  * 
@@ -42,7 +42,8 @@ import { TyneqError } from "../TyneqError";
  * @see {@link ArgumentNullError} for null argument errors.
  * @see {@link ArgumentOutOfRangeError} for out-of-range argument errors.
  * @see {@link ArgumentTypeError} for type mismatch errors.
- * @see {@link ArgumentUtility} for validation utilities.
+ *
+ * @group Errors
  */
 export class ArgumentError extends TyneqError {
   /**

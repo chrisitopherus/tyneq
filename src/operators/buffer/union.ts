@@ -16,11 +16,17 @@ import { nameof } from "../../utility/nameof";
  * O(n + m) space to deduplicate using a hash set.
  * 
  * **Operator Category**: Buffering - builds a hash set of all unique elements before yielding.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequences.
- * 
+ *
  * @see {@link UnionEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.union} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to union with the source. */

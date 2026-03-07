@@ -42,8 +42,10 @@
  * const notEqual = TyneqComparer.defaultEqualityComparer(1, 2); // false
  * ```
  * 
- * @see {@link TyneqEnumerableBase.orderBy} for sorting operations.
- * @see {@link TyneqEnumerableBase.distinct} for deduplication operations.
+ * @see {@link ITyneqEnumerable.orderBy} for sorting operations.
+ * @see {@link ITyneqEnumerable.distinct} for deduplication operations.
+ *
+ * @group Utilities
  */
 export class TyneqComparer {
     /**

@@ -27,6 +27,9 @@ import { nameof } from "../../utility/nameof";
  * - Partial Streaming: Yields groups as soon as delimiters are encountered
  * 
  * @typeParam TSource - The type of elements in the source sequence
+ *
+ * @group Enumerators
+ * @internal
  */
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
     /**

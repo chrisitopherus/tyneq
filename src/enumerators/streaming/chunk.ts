@@ -18,6 +18,9 @@ import { nameof } from "../../utility/nameof";
  * @typeParam T - The type of elements in the source sequence.
  * 
  * @see {@link ChunkOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
     /** The maximum size of each chunk. */

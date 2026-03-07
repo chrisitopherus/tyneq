@@ -15,6 +15,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam T - The type of elements in the sequence.
  * 
  * @see {@link PrependOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class PrependEnumerator<T> extends TyneqEnumerator<T> {
     /** Whether the prepended item has been yielded. */

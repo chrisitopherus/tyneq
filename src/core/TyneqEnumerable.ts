@@ -89,6 +89,9 @@ import { TyneqOrderedEnumerable } from './ordering/TyneqOrderedEnumerable';
  * @see {@link TyneqEnumerableBase} for inherited query operators.
  * @see {@link TyneqOrderedEnumerable} for ordered sequence support.
  * @see {@link Tyneq} for factory methods that create instances.
+ *
+ * @group Classes
+ * @internal
  */
 export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
     /**

@@ -2,7 +2,21 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
-
+/**
+ * Enumerator implementation for generating a sequence of values produced by a randomizer function.
+ *
+ * @remarks
+ * Calls the provided `randomizer` function once per element position, up to the specified
+ * `count`. Yields values without buffering; each call to `handleNext` invokes the randomizer
+ * once and yields the result.
+ *
+ * **Performance**: O(1) space (streaming). O(count) time when fully enumerated.
+ *
+ * @typeParam TSource - The type of values produced by the randomizer.
+ *
+ * @group Enumerators
+ * @internal
+ */
 export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly count: number;
     private readonly randomizer: () => TSource;

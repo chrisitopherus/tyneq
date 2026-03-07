@@ -25,6 +25,8 @@ import { TyneqError } from "./TyneqError";
  *   }
  * }
  * ```
+ *
+ * @group Errors
  */
 export class NotSupportedError extends TyneqError {
   /**

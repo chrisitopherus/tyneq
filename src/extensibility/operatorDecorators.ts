@@ -28,7 +28,13 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
  *
  * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
  *
- * @example — Registering a library-grade streaming operator
+ * @throws {Error} When a method named `name` is already defined on
+ *   `TyneqEnumerableBase.prototype`.
+ *
+ * @group Decorators
+ *
+ * @example
+ * Registering a library-grade streaming operator:
  * ```ts
  * \@operator('scan')
  * export class ScanOperatorEnumerable<TSource, TResult>
@@ -43,7 +49,8 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
  * // That's it — no call in TyneqEnumerableBase, no manual prototype assignment.
  * ```
  *
- * @example — How the existing `where` operator *would* look with this decorator
+ * @example
+ * How the existing `where` operator would look with this decorator:
  * ```ts
  * // ── BEFORE (requires TyneqEnumerableBase to know about WhereOperatorEnumerable) ──
  * // In TyneqEnumerableBase.ts:
@@ -96,7 +103,13 @@ export function operator(name: string) {
  *
  * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
  *
- * @example — Registering a terminal operator
+ * @throws {Error} When a method named `name` is already defined on
+ *   `TyneqEnumerableBase.prototype`.
+ *
+ * @group Decorators
+ *
+ * @example
+ * Registering a terminal operator:
  * ```ts
  * \@terminal('minMax')
  * export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>> {
@@ -109,7 +122,8 @@ export function operator(name: string) {
  * // seq.minMax() now works on every ITyneqEnumerable
  * ```
  *
- * @example — How the existing `count` operator *would* look with this decorator
+ * @example
+ * How the existing `count` operator would look with this decorator:
  * ```ts
  * // ── BEFORE ──
  * // In TyneqEnumerableBase.ts:

@@ -17,6 +17,9 @@ import { IEnumerator } from "../../types/core";
  * @typeParam U - The type of elements in the result sequence.
  * 
  * @see {@link SelectOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /** Function to transform each source element. */

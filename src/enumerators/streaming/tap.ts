@@ -27,6 +27,9 @@ import { nameof } from "../../utility/nameof";
  * - Streaming: Elements are processed one at a time without materializing the sequence
  * 
  * @typeParam TSource - The type of elements in the sequence
+ *
+ * @group Enumerators
+ * @internal
  */
 export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /**

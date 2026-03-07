@@ -5,6 +5,25 @@ import { TyneqOrderedEnumerable } from "../ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 
+/**
+ * Concrete implementation of a memoizing enumerable that caches source elements on first access.
+ *
+ * @remarks
+ * Returned by `memoize()`. Elements are fetched from the source lazily and stored in an
+ * internal array. Any subsequent enumeration replays cached elements without re-evaluating
+ * the source for the portion already fetched.
+ *
+ * A single source enumerator is shared across all concurrent enumerations of this instance.
+ * Call `refresh()` to discard the cache and restart evaluation from the source.
+ *
+ * @typeParam TSource - Element type of the sequence.
+ *
+ * @see {@link ITyneqCachedEnumerable} for the public interface.
+ * @see {@link ITyneqEnumerable.memoize} for the factory method.
+ *
+ * @group Classes
+ * @internal
+ */
 export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource> implements ITyneqCachedEnumerable<TSource>, ICachedEnumerable<TSource> {
     private source: ITyneqEnumerable<TSource>;
     private cache: TSource[] = [];

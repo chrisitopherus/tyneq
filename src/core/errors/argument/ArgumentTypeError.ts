@@ -38,8 +38,8 @@ import { ArgumentError } from "./ArgumentError";
  * ```
  * 
  * @see {@link ArgumentError} for general argument validation errors.
- * @see {@link ArgumentUtility.checkFunction} which throws this error.
- * @see {@link ArgumentUtility.checkInstanceOf} which throws this error.
+ *
+ * @group Errors
  */
 export class ArgumentTypeError extends ArgumentError {
   /**

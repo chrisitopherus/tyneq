@@ -12,8 +12,14 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * **Performance**: O(1) space (streaming). O(max - start + 1) time when fully enumerated.
  * 
  * **Operator Category**: Streaming - generates numbers on-demand without buffering.
- * 
+ *
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
  * @see {@link RangeEnumerator} for the enumeration implementation.
+ *
+ * @group Operators
+ * @category Streaming
+ * @internal
  */
 export class RangeOperatorEnumerable extends TyneqOperator<number> {
     /** The first number in the range. */

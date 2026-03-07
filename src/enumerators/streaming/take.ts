@@ -24,6 +24,9 @@ import { IEnumerator } from "../../types/core";
  * - Early Termination: Source enumeration stops as soon as count is reached
  * 
  * @typeParam T - The type of elements in the sequence
+ *
+ * @group Enumerators
+ * @internal
  */
 export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     /**

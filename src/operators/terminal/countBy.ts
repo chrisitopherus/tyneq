@@ -3,6 +3,27 @@ import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
+/**
+ * Terminal operator implementation for counting elements that satisfy a predicate.
+ *
+ * @remarks
+ * This is a terminal operator that returns the number of elements in the sequence
+ * for which the predicate returns true. Must enumerate all elements.
+ *
+ * **Performance**: O(1) space. O(n) time (must enumerate all elements).
+ *
+ * **Operator Category**: Terminal - forces evaluation and returns a number.
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * @typeParam T - The type of elements in the sequence.
+ *
+ * @see {@link ITyneqEnumerable.countBy} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
+ */
 export class CountByOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: (item: T) => boolean;
 

@@ -16,6 +16,9 @@ import { IEnumerator } from '../../types/core';
  * @typeParam TValue - The type of the replacement value.
  * 
  * @see {@link PopulateOperatorEnumerable} for the operator that uses this enumerator.
+ *
+ * @group Enumerators
+ * @internal
  */
 export class PopulateEnumerator<TSource, TValue> extends TyneqEnumerator<TSource, TValue> {
     /** The value to yield for each source element. */

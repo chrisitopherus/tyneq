@@ -41,8 +41,11 @@ import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
  * @typeParam TInput - The type of elements produced by the source enumerator.
  * @typeParam TOutput - The type of elements yielded by this enumerator (may equal TInput).
  * 
- * @see {@link TyneqEnumerableEnumerator} for working with enumerables
- * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism
+ * @see {@link TyneqEnumerableEnumerator} for working with enumerables.
+ * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism.
+ *
+ * @group Enumerators
+ * @internal
  */
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
     /**

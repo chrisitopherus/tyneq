@@ -4,7 +4,7 @@ import { ArgumentError } from "./ArgumentError";
  * Thrown when a method argument is null when a non-null value is required.
  * 
  * @remarks
- * `ArgumentNullError` is thrown by {@link ArgumentUtility.checkNotNull checkNotNull()} when
+ * `ArgumentNullError` is thrown by internal null-check validation when
  * a required parameter is explicitly set to `null`. This is distinct from `undefined`; use
  * {@link ArgumentError} with a custom message for undefined checks.
  * 
@@ -32,7 +32,8 @@ import { ArgumentError } from "./ArgumentError";
  * ```
  * 
  * @see {@link ArgumentError} for general argument validation errors.
- * @see {@link ArgumentUtility.checkNotNull} which throws this error.
+ *
+ * @group Errors
  */
 export class ArgumentNullError extends ArgumentError {
   /**

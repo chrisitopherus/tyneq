@@ -23,6 +23,9 @@ import { IEnumerator } from '../../types/core';
  * - Predicate Evaluation: Called for every source element until a match is found
  * 
  * @typeParam T - The type of elements in the sequence
+ *
+ * @group Enumerators
+ * @internal
  */
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {
     /**

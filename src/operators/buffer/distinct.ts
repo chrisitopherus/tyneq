@@ -14,11 +14,17 @@ import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory } from ".
  * **Performance**: O(n) time, O(n) space. Must buffer all unique values in a hash set.
  * 
  * **Operator Category**: Buffering - maintains a hash set of seen elements during enumeration.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link DistinctEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.distinct} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class DistinctOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /**

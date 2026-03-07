@@ -1,16 +1,31 @@
 # Guide
 
-This guide explains Tyneq from first principles to advanced usage.
+This guide documents Tyneq in a library-reference style focused on semantics, execution behavior, and practical usage patterns.
 
-## Read this in order
+## Learning Path
 
-1. [What is Tyneq?](/guide/what-is-tyneq)
-2. [Core Concepts](/guide/concepts)
-3. [How Tyneq differs from other libraries](/guide/differences)
-4. [Getting Started](/guide/getting-started)
-5. [Queries and Deferred Execution](/guide/querying-and-deferred-execution)
-6. [Examples from simple to complex](/guide/examples)
+1. [What Is Tyneq](/guide/what-is-tyneq)
+2. [Getting Started](/guide/getting-started)
+3. [Core Concepts](/guide/concepts)
+4. [Operators Overview](/guide/operators-overview)
+5. [Querying and Deferred Execution](/guide/querying-and-deferred-execution)
+6. [Examples](/guide/examples)
+7. [Error Handling](/guide/error-handling)
+8. [Differences from Other Libraries](/guide/differences)
+
+## Quick Entry Points
+
+- New to Tyneq: start with [What Is Tyneq](/guide/what-is-tyneq) and [Getting Started](/guide/getting-started)
+- Looking for behavior details: read [Core Concepts](/guide/concepts), [Operators Overview](/guide/operators-overview), and [Querying and Deferred Execution](/guide/querying-and-deferred-execution)
+- Looking for implementation patterns: go to [Examples](/guide/examples)
+- Looking for runtime safety notes: review [Error Handling](/guide/error-handling)
+- Maintaining docs and API alignment: see [Documentation Maintenance](/guide/documentation-maintenance)
+
+## Reference Links
+
+- API reference index: [/api/reference/](/api/reference/)
+- Top-level docs home: [/](/)
 
 ## Audience
 
-This documentation targets developers already comfortable with JavaScript/TypeScript iterables and interested in LINQ-style query composition.
+This guide is written for developers already familiar with TypeScript and iterables who want LINQ-style query composition with explicit execution semantics.

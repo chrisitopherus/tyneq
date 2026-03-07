@@ -27,6 +27,8 @@
  * 
  * @see {@link Optional} for allowing both `null` and `undefined`
  * @see {@link Undefinedable} for distinguishing `undefined` from the absence of undefined
+ *
+ * @group Types
  */
 export type Nullable<T> = T | null;
 
@@ -56,6 +58,8 @@ export type Nullable<T> = T | null;
  * 
  * @see {@link Optional} for allowing both `null` and `undefined`
  * @see {@link Nullable} for distinguishing `null` from the absence of null
+ *
+ * @group Types
  */
 export type Undefinedable<T> = T | undefined;
 
@@ -85,6 +89,8 @@ export type Undefinedable<T> = T | undefined;
  * 
  * @see {@link Nullable} for distinguishing `null` from the absence of null
  * @see {@link Undefinedable} for distinguishing `undefined` from the absence of undefined
+ *
+ * @group Types
  */
 export type Optional<T> = T | null | undefined;
 
@@ -115,6 +121,8 @@ export type Optional<T> = T | null | undefined;
  * checkNotEmpty({ length: 5 });       // OK: Object has length property
  * checkNotEmpty({ value: 10 });       // ERROR: Missing length property
  * ```
+ *
+ * @group Types
  */
 export type HasLength = { length: number };
 
@@ -153,8 +161,10 @@ export type HasLength = { length: number };
  * // Cannot pass arguments (type error)
  * functions[0](123); // ERROR: Expected 0 arguments, got 1
  * ```
- * 
+ *
  * @returns `unknown` - Any return type is valid.
+ *
+ * @group Types
  */
 export type GenericFunction = (...x: never[]) => unknown;
 
@@ -193,6 +203,8 @@ export type GenericFunction = (...x: never[]) => unknown;
  * ```
  * 
  * @see {@link Cast} for unconditional type identity
+ *
+ * @group Types
  */
 export type Assume<T, U> = T extends U ? T : U;
 
@@ -229,5 +241,7 @@ export type Assume<T, U> = T extends U ? T : U;
  * ```
  * 
  * @see {@link Assume} for conditional type narrowing based on constraints
+ *
+ * @group Types
  */
 export type Cast<T> = T;

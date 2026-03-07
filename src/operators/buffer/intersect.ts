@@ -16,11 +16,17 @@ import { nameof } from "../../utility/nameof";
  * O(m) space to index the intersected values in a hash set.
  * 
  * **Operator Category**: Buffering - builds a hash set of intersected values before yielding.
- * 
+ *
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
  * @typeParam TSource - The type of elements in the sequences.
- * 
+ *
  * @see {@link IntersectEnumerator} for the enumeration implementation.
  * @see {@link ITyneqEnumerable.intersect} for the public API.
+ *
+ * @group Operators
+ * @category Buffering
+ * @internal
  */
 export class IntersectOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** Sequence of values that must appear in the result. */

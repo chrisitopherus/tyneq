@@ -13,12 +13,18 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * **Performance**: O(n) space (creates record). O(n) time (must enumerate all elements).
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a Record.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of keys (must be string, number, or symbol).
  * @typeParam TValue - The type of values in the resulting record.
- * 
+ *
  * @see {@link ITyneqEnumerable.toRecord} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class ToRecordOperator<TSource, TKey extends string | number | symbol, TValue> extends TyneqTerminalOperator<TSource, Record<TKey, TValue>> {
     /** Function to extract key-value pairs from each element. */

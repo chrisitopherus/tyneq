@@ -13,10 +13,16 @@ import { IEnumerator, ITyneqEnumerable } from "../../types/core";
  * **Performance**: O(1) space. O(1) time (only checks first element).
  * 
  * **Operator Category**: Terminal - forces partial evaluation and returns an enumerable.
- * 
+ *
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.defaultIfEmpty} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
 export class DefaultIfEmptyOperator<TSource> extends TyneqTerminalOperator<TSource, ITyneqEnumerable<TSource>> {
     /** The default value to return if sequence is empty. */

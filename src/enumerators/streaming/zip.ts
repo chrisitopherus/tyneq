@@ -32,6 +32,9 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @typeParam T - The type of elements in the first (source) sequence
  * @typeParam U - The type of elements in the second sequence
  * @typeParam V - The type of elements produced by combining pairs
+ *
+ * @group Enumerators
+ * @internal
  */
 export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     /**

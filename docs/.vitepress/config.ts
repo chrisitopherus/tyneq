@@ -23,12 +23,14 @@ export default defineConfig({
           text: "Guide",
           items: [
             { text: "Overview", link: "/guide/" },
-            { text: "What is Tyneq", link: "/guide/what-is-tyneq" },
-            { text: "Core Concepts", link: "/guide/concepts" },
-            { text: "Differences", link: "/guide/differences" },
+            { text: "What Is Tyneq", link: "/guide/what-is-tyneq" },
             { text: "Getting Started", link: "/guide/getting-started" },
+            { text: "Core Concepts", link: "/guide/concepts" },
+            { text: "Operators Overview", link: "/guide/operators-overview" },
             { text: "Queries & Deferred Execution", link: "/guide/querying-and-deferred-execution" },
             { text: "Examples", link: "/guide/examples" },
+            { text: "Error Handling", link: "/guide/error-handling" },
+            { text: "Differences", link: "/guide/differences" },
             { text: "Docs Maintenance", link: "/guide/documentation-maintenance" }
           ]
         }
