@@ -141,3 +141,7 @@ docs/api/reference
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Agents
+.agent.
+.claude
