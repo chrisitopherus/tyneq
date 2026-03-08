@@ -3,6 +3,7 @@ import { IntersectByEnumerator } from "../../enumerators/buffer/intersectBy";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for set intersection based on key selector.
@@ -17,6 +18,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Buffering - builds a hash set of intersected keys before yielding.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
  * @typeParam TSource - The type of elements in the source sequence.
@@ -29,6 +32,7 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('intersectBy')
 export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
     /** Function to extract keys from source elements. */
     private readonly keySelector: (item: TSource) => TKey;

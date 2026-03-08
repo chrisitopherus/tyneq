@@ -3,6 +3,7 @@ import { JoinEnumerator } from "../../enumerators/buffer/join";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for inner join operation.
@@ -16,6 +17,8 @@ import { nameof } from "../../utility/nameof";
  * O(m) space to index the inner sequence by key.
  * 
  * **Operator Category**: Buffering - indexes inner sequence before yielding results.
+ *
+ * **Registration method**: TC39 `@operator()` class decorator.
  *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
@@ -31,6 +34,7 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('join')
 export class JoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** The inner sequence to join with. */
     private readonly inner: Iterable<TInner>;

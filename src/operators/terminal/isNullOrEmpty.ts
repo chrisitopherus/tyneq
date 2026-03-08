@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
@@ -14,6 +15,8 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  *
  * **Operator Category**: Terminal - forces evaluation and returns a boolean.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam T - The type of elements in the sequence.
@@ -24,6 +27,7 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @category Terminal
  * @internal
  */
+@terminal('isNullOrEmpty')
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>) {
         super(source);

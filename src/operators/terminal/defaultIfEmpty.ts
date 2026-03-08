@@ -1,53 +1,68 @@
-import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { Tyneq } from "../../core/tyneq";
-import { IEnumerator, ITyneqEnumerable } from "../../types/core";
+import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
+import { operator } from "../../extensibility/operatorDecorators";
+import { IEnumerable, IEnumerator } from "../../types/core";
 
 /**
- * Terminal operator implementation for providing a default value if sequence is empty.
- * 
- * @remarks
- * This is a terminal operator that returns the original sequence if it contains elements,
- * or a single-element sequence containing the default value if empty. Checks emptiness
- * by attempting to get the first element.
- * 
- * **Performance**: O(1) space. O(1) time (only checks first element).
- * 
- * **Operator Category**: Terminal - forces partial evaluation and returns an enumerable.
+ * Streaming operator implementation for providing a default value if a sequence is empty.
  *
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * @remarks
+ * This is a streaming operator that lazily checks whether the source sequence is empty
+ * during enumeration. If the first call to `next()` returns `done: true`, a single element
+ * containing the default value is yielded. Otherwise all source elements are passed through
+ * unchanged, including the first element that was used for the emptiness check.
+ *
+ * **Performance**: O(1) space. O(n) time (passes all elements through).
+ *
+ * **Operator Category**: Streaming - deferred execution, no buffering.
+ *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
+ * This method uses deferred execution. The source sequence is not read until the
+ * returned sequence is iterated.
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.defaultIfEmpty} for the public API.
  *
  * @group Operators
- * @category Terminal
+ * @category Streaming
  * @internal
  */
-export class DefaultIfEmptyOperator<TSource> extends TyneqTerminalOperator<TSource, ITyneqEnumerable<TSource>> {
-    /** The default value to return if sequence is empty. */
+@operator('defaultIfEmpty')
+export class DefaultIfEmptyOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
+    /** The default value to yield if the source sequence is empty. */
     private readonly defaultValue: TSource;
 
     /**
      * Creates a new defaultIfEmpty operator.
-     * 
+     *
      * @param source - The source sequence.
-     * @param defaultValue - The value to return if sequence is empty.
+     * @param defaultValue - The value to yield when the source is empty.
      */
-    public constructor(source: ITyneqEnumerable<TSource>, defaultValue: TSource) {
+    public constructor(source: IEnumerable<TSource>, defaultValue: TSource) {
         super(source);
         this.defaultValue = defaultValue;
     }
-    public process(): ITyneqEnumerable<TSource> {
-        const enumerator: IEnumerator<TSource> = this.source[Symbol.iterator]();
-        const { done } = enumerator.next();
 
-        if (done) {
-            return Tyneq.from([this.defaultValue]);
-        }
+    public override getEnumerator(): IEnumerator<TSource> {
+        const source = this.source;
+        const defaultValue = this.defaultValue;
 
-        // assertion is safe here because we assign an ITyneqEnumerable<TSource> in the constructor.
-        return this.source as ITyneqEnumerable<TSource>;
+        return (function* (): Generator<TSource> {
+            const enumerator = source[Symbol.iterator]();
+            const first = enumerator.next();
+
+            if (first.done) {
+                yield defaultValue;
+                return;
+            }
+
+            yield first.value;
+            let current = enumerator.next();
+            while (!current.done) {
+                yield current.value;
+                current = enumerator.next();
+            }
+        })() as unknown as IEnumerator<TSource>;
     }
-
 }

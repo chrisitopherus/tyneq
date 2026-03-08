@@ -28,32 +28,84 @@
  *
  * ## Operator registry
  *
- * | Name           | Category  | Registration pattern        | Source file                         |
- * |----------------|-----------|-----------------------------|-------------------------------------|
- * | `where`        | Streaming | `@operator` decorator       | `operators/streaming/where.ts`      |
- * | `select`       | Streaming | `createGeneratorOperator()` | `operators/streaming/select.ts`     |
- * | `scan`         | Streaming | `@operator` decorator       | `operators/streaming/scan.ts`       |
- * | `window`       | Streaming | `createOperator()`          | `operators/streaming/window.ts`     |
- * | `intersperse`  | Streaming | `createGeneratorOperator()` | `operators/streaming/intersperse.ts`|
- * | `append`       | Streaming | `@operator` decorator       | `operators/streaming/append.ts`     |
- * | `chunk`        | Streaming | `@operator` decorator       | `operators/streaming/chunk.ts`      |
- * | `concat`       | Streaming | `@operator` decorator       | `operators/streaming/concat.ts`     |
- * | `pairwise`     | Streaming | `@operator` decorator       | `operators/streaming/pairwise.ts`   |
- * | `prepend`      | Streaming | `@operator` decorator       | `operators/streaming/prepend.ts`    |
- * | `selectMany`   | Streaming | `@operator` decorator       | `operators/streaming/selectMany.ts` |
- * | `skip`         | Streaming | `@operator` decorator       | `operators/streaming/skip.ts`       |
- * | `skipLast`     | Streaming | `@operator` decorator       | `operators/streaming/skipLast.ts`   |
- * | `skipWhile`    | Streaming | `@operator` decorator       | `operators/streaming/skipWhile.ts`  |
- * | `split`        | Streaming | `@operator` decorator       | `operators/streaming/split.ts`      |
- * | `take`         | Streaming | `@operator` decorator       | `operators/streaming/take.ts`       |
- * | `takeWhile`    | Streaming | `@operator` decorator       | `operators/streaming/takeWhile.ts`  |
- * | `tap`          | Streaming | `@operator` decorator       | `operators/streaming/tap.ts`        |
- * | `tapIf`        | Streaming | `@operator` decorator       | `operators/streaming/tapIf.ts`      |
- * | `throttle`     | Streaming | `@operator` decorator       | `operators/streaming/throttle.ts`   |
- * | `zip`          | Streaming | `@operator` decorator       | `operators/streaming/zip.ts`        |
- * | `distinct`     | Buffer    | `createOperator()`          | `operators/buffer/distinct.ts`      |
- * | `toArray`      | Terminal  | `@terminal` decorator       | `operators/terminal/toArray.ts`     |
- * | `minMax`       | Terminal  | `@terminal` decorator       | `operators/terminal/minMax.ts`      |
+ * ### Streaming operators
+ * | Name           | Registration pattern        | Source file                          |
+ * |----------------|-----------------------------|--------------------------------------|
+ * | `where`        | `@operator` decorator       | `operators/streaming/where.ts`       |
+ * | `select`       | `createGeneratorOperator()` | `operators/streaming/select.ts`      |
+ * | `scan`         | `@operator` decorator       | `operators/streaming/scan.ts`        |
+ * | `window`       | `createOperator()`          | `operators/streaming/window.ts`      |
+ * | `intersperse`  | `createGeneratorOperator()` | `operators/streaming/intersperse.ts` |
+ * | `append`       | `@operator` decorator       | `operators/streaming/append.ts`      |
+ * | `chunk`        | `@operator` decorator       | `operators/streaming/chunk.ts`       |
+ * | `concat`       | `@operator` decorator       | `operators/streaming/concat.ts`      |
+ * | `pairwise`     | `@operator` decorator       | `operators/streaming/pairwise.ts`    |
+ * | `populate`     | `@operator` decorator       | `operators/streaming/populate.ts`    |
+ * | `prepend`      | `@operator` decorator       | `operators/streaming/prepend.ts`     |
+ * | `selectMany`   | `@operator` decorator       | `operators/streaming/selectMany.ts`  |
+ * | `skip`         | `@operator` decorator       | `operators/streaming/skip.ts`        |
+ * | `skipLast`     | `@operator` decorator       | `operators/streaming/skipLast.ts`    |
+ * | `skipWhile`    | `@operator` decorator       | `operators/streaming/skipWhile.ts`   |
+ * | `split`        | `@operator` decorator       | `operators/streaming/split.ts`       |
+ * | `take`         | `@operator` decorator       | `operators/streaming/take.ts`        |
+ * | `takeWhile`    | `@operator` decorator       | `operators/streaming/takeWhile.ts`   |
+ * | `tap`          | `@operator` decorator       | `operators/streaming/tap.ts`         |
+ * | `tapIf`        | `@operator` decorator       | `operators/streaming/tapIf.ts`       |
+ * | `throttle`     | `@operator` decorator       | `operators/streaming/throttle.ts`    |
+ * | `zip`          | `@operator` decorator       | `operators/streaming/zip.ts`         |
+ *
+ * ### Buffer operators
+ * | Name           | Registration pattern        | Source file                          |
+ * |----------------|-----------------------------|--------------------------------------|
+ * | `backsert`     | `@operator` decorator       | `operators/buffer/backsert.ts`       |
+ * | `distinct`     | `createOperator()`          | `operators/buffer/distinct.ts`       |
+ * | `distinctBy`   | `@operator` decorator       | `operators/buffer/distinctBy.ts`     |
+ * | `except`       | `@operator` decorator       | `operators/buffer/except.ts`         |
+ * | `exceptBy`     | `@operator` decorator       | `operators/buffer/exceptBy.ts`       |
+ * | `groupBy`      | `@operator` decorator       | `operators/buffer/groupBy.ts`        |
+ * | `groupJoin`    | `@operator` decorator       | `operators/buffer/groupJoin.ts`      |
+ * | `intersect`    | `@operator` decorator       | `operators/buffer/intersect.ts`      |
+ * | `intersectBy`  | `@operator` decorator       | `operators/buffer/intersectBy.ts`    |
+ * | `join`         | `@operator` decorator       | `operators/buffer/join.ts`           |
+ * | `reverse`      | `@operator` decorator       | `operators/buffer/reverse.ts`        |
+ * | `shuffle`      | `@operator` decorator       | `operators/buffer/shuffle.ts`        |
+ * | `union`        | `@operator` decorator       | `operators/buffer/union.ts`          |
+ * | `unionBy`      | `@operator` decorator       | `operators/buffer/unionBy.ts`        |
+ *
+ * ### Terminal operators
+ * | Name                   | Registration pattern  | Source file                                  |
+ * |------------------------|-----------------------|----------------------------------------------|
+ * | `aggregate`            | `@terminal` decorator | `operators/terminal/aggregate.ts`            |
+ * | `all`                  | `@terminal` decorator | `operators/terminal/all.ts`                  |
+ * | `any`                  | `@terminal` decorator | `operators/terminal/any.ts`                  |
+ * | `average`              | `@terminal` decorator | `operators/terminal/average.ts`              |
+ * | `consume`              | `@terminal` decorator | `operators/terminal/consume.ts`              |
+ * | `contains`             | `@terminal` decorator | `operators/terminal/contains.ts`             |
+ * | `count`                | `@terminal` decorator | `operators/terminal/count.ts`                |
+ * | `countBy`              | `@terminal` decorator | `operators/terminal/countBy.ts`              |
+ * | `defaultIfEmpty`       | `@terminal` decorator | `operators/terminal/defaultIfEmpty.ts`       |
+ * | `elementAt`            | `@terminal` decorator | `operators/terminal/elementAt.ts`            |
+ * | `elementAtOrDefault`   | `@terminal` decorator | `operators/terminal/elementAtOrDefault.ts`   |
+ * | `first`                | `@terminal` decorator | `operators/terminal/first.ts`                |
+ * | `firstOrDefault`       | `@terminal` decorator | `operators/terminal/firstOrDefault.ts`       |
+ * | `indexOf`              | `@terminal` decorator | `operators/terminal/indexOf.ts`              |
+ * | `isNullOrEmpty`        | `@terminal` decorator | `operators/terminal/isNullOrEmpty.ts`        |
+ * | `last`                 | `@terminal` decorator | `operators/terminal/last.ts`                 |
+ * | `lastOrDefault`        | `@terminal` decorator | `operators/terminal/lastOrDefault.ts`        |
+ * | `max`                  | `@terminal` decorator | `operators/terminal/max.ts`                  |
+ * | `maxBy`                | `@terminal` decorator | `operators/terminal/maxBy.ts`                |
+ * | `min`                  | `@terminal` decorator | `operators/terminal/min.ts`                  |
+ * | `minBy`                | `@terminal` decorator | `operators/terminal/minBy.ts`                |
+ * | `minMax`               | `@terminal` decorator | `operators/terminal/minMax.ts`               |
+ * | `sequenceEqual`        | `@terminal` decorator | `operators/terminal/sequenceEqual.ts`        |
+ * | `single`               | `@terminal` decorator | `operators/terminal/single.ts`               |
+ * | `singleOrDefault`      | `@terminal` decorator | `operators/terminal/singleOrDefault.ts`      |
+ * | `startsWith`           | `@terminal` decorator | `operators/terminal/startsWith.ts`           |
+ * | `sum`                  | `@terminal` decorator | `operators/terminal/sum.ts`                  |
+ * | `toArray`              | `@terminal` decorator | `operators/terminal/toArray.ts`              |
+ * | `toMap`                | `@terminal` decorator | `operators/terminal/toMap.ts`                |
+ * | `toRecord`             | `@terminal` decorator | `operators/terminal/toRecord.ts`             |
+ * | `toSet`                | `@terminal` decorator | `operators/terminal/toSet.ts`                |
  *
  * ## Adding a new operator
  *
@@ -66,7 +118,7 @@
  * @internal
  */
 
-// ── Core streaming operators ──────────────────────────────────────────────────
+// ── Streaming operators ────────────────────────────────────────────────────────
 
 // @operator('where') — class decorator, extends TyneqOperatorEnumerable
 import '../streaming/where';
@@ -83,8 +135,6 @@ import '../streaming/window';
 // createGeneratorOperator('intersperse') — generator shorthand, lowest ceremony
 import '../streaming/intersperse';
 
-// ── Migrated streaming operators (class decorator) ────────────────────────────
-
 // @operator('append') — class decorator, extends TyneqOperatorEnumerable
 import '../streaming/append';
 
@@ -96,6 +146,9 @@ import '../streaming/concat';
 
 // @operator('pairwise') — class decorator, extends TyneqOperatorEnumerable
 import '../streaming/pairwise';
+
+// @operator('populate') — class decorator, extends TyneqOperatorEnumerable
+import '../streaming/populate';
 
 // @operator('prepend') — class decorator, extends TyneqOperatorEnumerable
 import '../streaming/prepend';
@@ -133,18 +186,144 @@ import '../streaming/throttle';
 // @operator('zip') — class decorator, extends TyneqOperatorEnumerable
 import '../streaming/zip';
 
-// ── Core buffer operators ─────────────────────────────────────────────────────
+// ── Buffer operators ──────────────────────────────────────────────────────────
+
+// @operator('backsert') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/backsert';
 
 // createOperator('distinct') — functional API wrapping class-based enumerator
 import '../buffer/distinct';
 
-// ── Core terminal operators ───────────────────────────────────────────────────
+// @operator('distinctBy') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/distinctBy';
+
+// @operator('except') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/except';
+
+// @operator('exceptBy') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/exceptBy';
+
+// @operator('groupBy') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/groupBy';
+
+// @operator('groupJoin') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/groupJoin';
+
+// @operator('intersect') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/intersect';
+
+// @operator('intersectBy') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/intersectBy';
+
+// @operator('join') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/join';
+
+// @operator('reverse') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/reverse';
+
+// @operator('shuffle') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/shuffle';
+
+// @operator('union') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/union';
+
+// @operator('unionBy') — class decorator, extends TyneqOperatorEnumerable
+import '../buffer/unionBy';
+
+// ── Terminal operators ────────────────────────────────────────────────────────
+
+// @terminal('aggregate') — class decorator, extends TyneqTerminalOperator
+import '../terminal/aggregate';
+
+// @terminal('all') — class decorator, extends TyneqTerminalOperator
+import '../terminal/all';
+
+// @terminal('any') — class decorator, extends TyneqTerminalOperator
+import '../terminal/any';
+
+// @terminal('average') — class decorator, extends TyneqTerminalOperator
+import '../terminal/average';
+
+// @terminal('consume') — class decorator, extends TyneqTerminalOperator
+import '../terminal/consume';
+
+// @terminal('contains') — class decorator, extends TyneqTerminalOperator
+import '../terminal/contains';
+
+// @terminal('count') — class decorator, extends TyneqTerminalOperator
+import '../terminal/count';
+
+// @terminal('countBy') — class decorator, extends TyneqTerminalOperator
+import '../terminal/countBy';
+
+// @terminal('defaultIfEmpty') — class decorator, extends TyneqTerminalOperator
+import '../terminal/defaultIfEmpty';
+
+// @terminal('elementAt') — class decorator, extends TyneqTerminalOperator
+import '../terminal/elementAt';
+
+// @terminal('elementAtOrDefault') — class decorator, extends TyneqTerminalOperator
+import '../terminal/elementAtOrDefault';
+
+// @terminal('first') — class decorator, extends TyneqTerminalOperator
+import '../terminal/first';
+
+// @terminal('firstOrDefault') — class decorator, extends TyneqTerminalOperator
+import '../terminal/firstOrDefault';
+
+// @terminal('indexOf') — class decorator, extends TyneqTerminalOperator
+import '../terminal/indexOf';
+
+// @terminal('isNullOrEmpty') — class decorator, extends TyneqTerminalOperator
+import '../terminal/isNullOrEmpty';
+
+// @terminal('last') — class decorator, extends TyneqTerminalOperator
+import '../terminal/last';
+
+// @terminal('lastOrDefault') — class decorator, extends TyneqTerminalOperator
+import '../terminal/lastOrDefault';
+
+// @terminal('max') — class decorator, extends TyneqTerminalOperator
+import '../terminal/max';
+
+// @terminal('maxBy') — class decorator, extends TyneqTerminalOperator
+import '../terminal/maxBy';
+
+// @terminal('min') — class decorator, extends TyneqTerminalOperator
+import '../terminal/min';
+
+// @terminal('minBy') — class decorator, extends TyneqTerminalOperator
+import '../terminal/minBy';
+
+// @terminal('minMax') — class decorator, extends TyneqTerminalOperator
+import '../terminal/minMax';
+
+// @terminal('sequenceEqual') — class decorator, extends TyneqTerminalOperator
+import '../terminal/sequenceEqual';
+
+// @terminal('single') — class decorator, extends TyneqTerminalOperator
+import '../terminal/single';
+
+// @terminal('singleOrDefault') — class decorator, extends TyneqTerminalOperator
+import '../terminal/singleOrDefault';
+
+// @terminal('startsWith') — class decorator, extends TyneqTerminalOperator
+import '../terminal/startsWith';
+
+// @terminal('sum') — class decorator, extends TyneqTerminalOperator
+import '../terminal/sum';
 
 // @terminal('toArray') — class decorator, extends TyneqTerminalOperator
 import '../terminal/toArray';
 
-// @terminal('minMax') — class decorator, extends TyneqTerminalOperator
-import '../terminal/minMax';
+// @terminal('toMap') — class decorator, extends TyneqTerminalOperator
+import '../terminal/toMap';
+
+// @terminal('toRecord') — class decorator, extends TyneqTerminalOperator
+import '../terminal/toRecord';
+
+// @terminal('toSet') — class decorator, extends TyneqTerminalOperator
+import '../terminal/toSet';
 
 // ── Re-exports (types needed by callers) ─────────────────────────────────────
 

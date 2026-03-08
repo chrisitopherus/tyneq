@@ -3,6 +3,7 @@ import { UnionEnumerator } from "../../enumerators/buffer/union";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for set union operation.
@@ -17,6 +18,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Buffering - builds a hash set of all unique elements before yielding.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
  * @typeParam TSource - The type of elements in the sequences.
@@ -28,6 +31,7 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('union')
 export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /** The second sequence to union with the source. */
     private readonly otherValues: Iterable<TSource>;

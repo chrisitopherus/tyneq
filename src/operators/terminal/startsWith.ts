@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -16,6 +17,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces partial evaluation and returns a boolean.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam T - The type of elements in both sequences.
@@ -26,6 +29,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('startsWith')
 export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
     /** The prefix sequence to check for. */
     private readonly sequence: Iterable<T>;

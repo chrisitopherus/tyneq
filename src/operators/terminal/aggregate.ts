@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -15,6 +16,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a value.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in the source sequence.
@@ -27,6 +30,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('aggregate')
 export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     /** Initial accumulator value. */
     private readonly seed: UAccumulate;

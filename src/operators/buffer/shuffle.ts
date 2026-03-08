@@ -1,6 +1,7 @@
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ShuffleEnumerator } from "../../enumerators/buffer/shuffle";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for randomizing element order.
@@ -18,6 +19,8 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * **Randomness**: Uses `Math.random()` for randomization. Each enumeration produces
  * a different random order.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
  * @typeParam TSource - The type of elements in the sequence.
@@ -29,6 +32,7 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * @category Buffering
  * @internal
  */
+@operator('shuffle')
 export class ShuffleOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /**
      * Creates a new shuffle operator for the given source sequence.

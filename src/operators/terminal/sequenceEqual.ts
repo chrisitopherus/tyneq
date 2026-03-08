@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { IEnumerable, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -17,6 +18,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a boolean.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in both sequences.
@@ -27,6 +30,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('sequenceEqual')
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     /** The sequence to compare against. */
     private readonly other: Iterable<TSource>;

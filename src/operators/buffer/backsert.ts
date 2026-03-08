@@ -3,6 +3,7 @@ import { BacksertEnumerator } from "../../enumerators/buffer/backsert";
 import { IEnumerable, IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for inserting elements at a position from the end of a sequence.
@@ -18,6 +19,8 @@ import { nameof } from "../../utility/nameof";
  * **Operator Category**: Buffering - materializes the source sequence to resolve the
  * back-relative insertion index.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
  * @typeParam TSource - The type of elements in the sequences.
@@ -29,15 +32,16 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('backsert')
 export class BacksertOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     private readonly other: Iterable<TSource>;
     private readonly index: number;
 
-    public constructor(source: IEnumerable<TSource>, other: Iterable<TSource>, index: number) {
+    public constructor(source: IEnumerable<TSource>, index: number, other: Iterable<TSource>) {
         super(source);
-        
-        this.other = other;
+
         this.index = index;
+        this.other = other;
     }
 
     public override getEnumerator(): IEnumerator<TSource> {

@@ -3,6 +3,7 @@ import { GroupJoinEnumerator } from "../../enumerators/buffer/groupJoin";
 import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for left outer join with grouping (group-join).
@@ -16,6 +17,8 @@ import { nameof } from "../../utility/nameof";
  * O(m) space to index the inner sequence by key.
  * 
  * **Operator Category**: Buffering - indexes inner sequence before yielding results.
+ *
+ * **Registration method**: TC39 `@operator()` class decorator.
  *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
@@ -31,6 +34,7 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('groupJoin')
 export class GroupJoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** The inner sequence to join with. */
     private readonly inner: Iterable<TInner>;

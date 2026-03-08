@@ -496,10 +496,38 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     /**
      * Creates a Set from the sequence.
-     * 
+     *
      * @returns A Set containing all unique elements from the sequence.
      */
     toSet(): Set<TSource>;
+
+    /**
+     * Computes the arithmetic mean of numeric values extracted from each element.
+     *
+     * @param selector - Function to extract a numeric value from each element. Cannot be null or undefined.
+     * @returns The average of all selected values. Returns 0 for empty sequences.
+     * @throws {ArgumentNullError} when `selector` is null.
+     * @throws {ArgumentError} when `selector` is undefined.
+     */
+    average(selector: (item: TSource) => number): number;
+
+    /**
+     * Applies an accumulator function over a sequence, returning a final result.
+     *
+     * @typeParam UAccumulate - The type of the accumulator value.
+     * @typeParam VResult - The type of the final result.
+     * @param seed - Initial accumulator value.
+     * @param func - Function applied to each element with the current accumulator. Cannot be null or undefined.
+     * @param resultSelector - Function to transform the final accumulator value. Cannot be null or undefined.
+     * @returns The final result after applying the accumulator to all elements.
+     * @throws {ArgumentNullError} when `func` or `resultSelector` is null.
+     * @throws {ArgumentError} when `func` or `resultSelector` is undefined.
+     */
+    aggregate<UAccumulate, VResult>(
+        seed: UAccumulate,
+        func: (accumulate: UAccumulate, item: TSource) => UAccumulate,
+        resultSelector: (accumulate: UAccumulate) => VResult
+    ): VResult;
 
     // ========================================================================
     // STREAMING OPERATORS
@@ -545,6 +573,15 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A new sequence with the prepended element.
      */
     prepend(item: TSource): ITyneqEnumerable<TSource>;
+
+    /**
+     * Replaces every element in the sequence with a constant value, preserving cardinality.
+     *
+     * @typeParam TValue - The type of the replacement value.
+     * @param value - The value to yield for each source element.
+     * @returns A new sequence of the same length, with every element replaced by `value`.
+     */
+    populate<TValue>(value: TValue): ITyneqEnumerable<TValue>;
 
     /**
      * Projects each element into a new form using a transform function.

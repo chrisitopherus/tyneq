@@ -1,5 +1,6 @@
 
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 
 /**
@@ -14,6 +15,8 @@ import { IEnumerable } from "../../types/core";
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a number.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam T - The type of elements in the sequence.
@@ -24,6 +27,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
+@terminal('count')
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     /**
      * Creates a new count operator.

@@ -1,5 +1,6 @@
 import { InvalidOperationError } from "../../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -17,6 +18,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns an element.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in the sequence.
@@ -27,6 +30,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('singleOrDefault')
 export class SingleOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     /** Predicate function to identify the desired element. */
     private readonly predicate: (item: TSource) => boolean;

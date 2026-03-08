@@ -3,6 +3,7 @@ import { GroupByEnumerator } from "../../enumerators/buffer/groupBy";
 import { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for grouping elements by key with value projection.
@@ -15,6 +16,8 @@ import { nameof } from "../../utility/nameof";
  * **Performance**: O(n) time, O(n) space. Must buffer all elements to form groups.
  * 
  * **Operator Category**: Buffering - materializes all elements into groups before yielding.
+ *
+ * **Registration method**: TC39 `@operator()` class decorator.
  *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
@@ -30,6 +33,7 @@ import { nameof } from "../../utility/nameof";
  * @category Buffering
  * @internal
  */
+@operator('groupBy')
 export class GroupByOperatorEnumerable<TSource, TKey, TValue, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
     /** Function to extract grouping keys from source elements. */
     private readonly keySelector: (item: TSource) => TKey;

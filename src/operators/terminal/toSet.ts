@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
@@ -13,6 +14,8 @@ import { ITyneqEnumerable } from "../../types/core";
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a Set.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in the sequence.
@@ -23,6 +26,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
+@terminal('toSet')
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     /**
      * Creates a new toSet operator.

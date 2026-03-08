@@ -1,6 +1,7 @@
 import type { IEnumerable, IEnumerator } from "../../types/core";
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { PopulateEnumerator } from "../../enumerators/streaming/populate";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for replacing all source elements with a constant value.
@@ -14,6 +15,8 @@ import { PopulateEnumerator } from "../../enumerators/streaming/populate";
  * 
  * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
  *
  * @typeParam TSource - The type of elements in the source sequence (ignored).
@@ -25,6 +28,7 @@ import { PopulateEnumerator } from "../../enumerators/streaming/populate";
  * @category Streaming
  * @internal
  */
+@operator('populate')
 export class PopulateOperatorEnumerable<TSource, TValue> extends TyneqOperatorEnumerable<TSource, TValue> {
     /** The value to yield for each source element. */
     private readonly value: TValue;

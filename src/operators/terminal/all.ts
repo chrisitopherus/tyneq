@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -15,6 +16,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces evaluation and returns a boolean.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam T - The type of elements in the sequence.
@@ -25,6 +28,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('all')
 export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
     /** Predicate function to test all elements. */
     private readonly predicate: (item: T) => boolean;

@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { ITyneqEnumerable, KeyValuePair } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
@@ -14,6 +15,8 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns a Record.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in the source sequence.
@@ -26,6 +29,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Terminal
  * @internal
  */
+@terminal('toRecord')
 export class ToRecordOperator<TSource, TKey extends string | number | symbol, TValue> extends TyneqTerminalOperator<TSource, Record<TKey, TValue>> {
     /** Function to extract key-value pairs from each element. */
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;

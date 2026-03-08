@@ -1,6 +1,7 @@
 import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
 import { ReverseEnumerator } from "../../enumerators/buffer/reverse";
 import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Operator implementation for reversing element order.
@@ -14,6 +15,8 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * **Operator Category**: Buffering - materializes entire sequence into an array before yielding
  * elements in reverse order.
  *
+ * **Registration method**: TC39 `@operator()` class decorator.
+ *
  * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
  * @typeParam TSource - The type of elements in the sequence.
@@ -25,6 +28,7 @@ import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
  * @category Buffering
  * @internal
  */
+@operator('reverse')
 export class ReverseOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
     /**
      * Creates a new reverse operator for the given source sequence.

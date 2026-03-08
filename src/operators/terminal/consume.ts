@@ -1,4 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { IEnumerable } from "../../types/core";
 
 /**
@@ -12,6 +13,8 @@ import { IEnumerable } from "../../types/core";
  *
  * **Operator Category**: Terminal - forces full evaluation, returns void.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam T - The type of elements in the sequence.
@@ -22,6 +25,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
+@terminal('consume')
 export class ConsumeOperator<T> extends TyneqTerminalOperator<T, void> {
     public constructor(source: IEnumerable<T>) {
         super(source);

@@ -1,5 +1,6 @@
 import { SequenceContainsNoElementsError } from "../../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/operatorDecorators";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
@@ -18,6 +19,8 @@ import { nameof } from "../../utility/nameof";
  * 
  * **Operator Category**: Terminal - forces full evaluation and returns an element.
  *
+ * **Registration method**: TC39 `@terminal()` class decorator.
+ *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
  *
  * @typeParam TSource - The type of elements in the sequence.
@@ -29,6 +32,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
+@terminal('maxBy')
 export class MaxByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource, TSource> {
     /** Comparison function to determine key ordering. */
     private readonly comparer: (a: TKey, b: TKey) => number;
