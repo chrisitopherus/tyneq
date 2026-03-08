@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for producing set union based on key comparison.
@@ -18,11 +19,11 @@ import { IEnumerator } from '../../types/core';
  * @typeParam TSource - The type of elements in the sequences.
  * @typeParam TKey - The type of the comparison key.
  * 
- * @see {@link UnionByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('unionBy')
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The second sequence to union with. */
     private readonly otherValues: Iterable<TSource>;

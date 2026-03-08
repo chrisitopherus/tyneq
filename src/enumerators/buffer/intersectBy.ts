@@ -1,5 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 
 /**
  * Enumerator implementation for producing set intersection based on key comparison.
@@ -17,11 +19,14 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of the comparison key.
  * 
- * @see {@link IntersectByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('intersectBy', (otherValues: any, keySelector: any) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to intersect with. */
     private readonly otherValues: Iterable<TKey>;

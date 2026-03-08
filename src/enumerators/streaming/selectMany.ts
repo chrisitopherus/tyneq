@@ -1,6 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from "../../types/core";
 import { Nullable } from '../../types/utility';
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for projecting and flattening nested sequences.
@@ -19,11 +20,11 @@ import { Nullable } from '../../types/utility';
  * @typeParam T - The type of elements in the source sequence.
  * @typeParam U - The type of elements in the flattened result sequence.
  * 
- * @see {@link SelectManyOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('selectMany')
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /** Function to project each element to a nested sequence. */
     private readonly selector: (item: T) => Iterable<U>;

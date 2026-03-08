@@ -1,6 +1,4 @@
 import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Enumerator implementation for generating a sequence of values produced by a randomizer function.
@@ -25,9 +23,6 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 
     public constructor(count: number, randomizer: () => TSource) {
         super();
-        ArgumentUtility.checkNonNegative({ count });
-        ArgumentUtility.checkNotOptional({ randomizer });
-
         this.count = count;
         this.randomizer = randomizer;
     }

@@ -1,5 +1,7 @@
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 
 /**
  * Enumerator that emits a running accumulation of elements.
@@ -19,11 +21,13 @@ import { IEnumerator } from '../../types/core';
  * @typeParam TSource - Type of elements in the source sequence.
  * @typeParam TResult - Type of the accumulated result (may differ from TSource).
  *
- * @see {@link ScanOperatorEnumerable} for the operator wrapper.
  *
  * @group Enumerators
  * @internal
  */
+@operator('scan', (_seed: any, accumulator: any) => {
+    ArgumentUtility.checkNotOptional({ accumulator });
+})
 export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
     private current: TResult;

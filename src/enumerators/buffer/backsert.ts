@@ -1,6 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
+import { operator } from '../../extensibility/operatorDecorators';
 
 // TODO: This implementation is not memory efficient. Consider implementing a more efficient version that does not require buffering the entire source and other enumerables.
 // TODO: Consider rethinking the API to allow for a more efficient implementation. For example, instead of specifying the back index, we could specify a predicate that determines where to insert the other enumerable.
@@ -20,25 +21,22 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @group Enumerators
  * @internal
  */
+@operator('backsert')
 export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly otherEnumerator: IEnumerator<T>;
+    private readonly other: Iterable<T>;
     private readonly backIndex: number;
     private buffer: T[] = [];
     private current = 0;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<T>, backIndex: number) {
+    public constructor(sourceEnumerator: IEnumerator<T>, backIndex: number, other: Iterable<T>) {
         super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
         this.backIndex = backIndex;
-    }
-
-    protected override disposeAdditional(): void {
-        EnumeratorUtility.tryDispose(this.otherEnumerator);
+        this.other = other;
     }
 
     protected override initialize(): void {
         const source = Array.from(EnumeratorUtility.toIterable(this.sourceEnumerator));
-        const other = Array.from(EnumeratorUtility.toIterable(this.otherEnumerator));
+        const other = Array.from(this.other);
 
         const insertionIndex = source.length === 0
             ? 0

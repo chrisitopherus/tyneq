@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that splits a sequence into sub-arrays based on a delimiter predicate.
@@ -31,6 +31,9 @@ import { nameof } from "../../utility/nameof";
  * @group Enumerators
  * @internal
  */
+@operator('split', (splitOn: any) => {
+    ArgumentUtility.checkNotOptional({ splitOn });
+})
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
     /**
      * The predicate function that identifies delimiter elements.
@@ -47,8 +50,6 @@ export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, splitOn: (item: TSource) => boolean) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional({ splitOn });
-
         this.splitOn = splitOn;
     }
 

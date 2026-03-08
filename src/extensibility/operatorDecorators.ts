@@ -5,9 +5,9 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
  * `TyneqEnumerable` instances by patching `TyneqEnumerableBase.prototype`.
  *
  * @remarks
- * The decorated class must:
- * - Extend `TyneqOperatorEnumerable<TSource, TResult>` (or implement `getEnumerator()`)
- * - Have a constructor with signature `(source: IEnumerable<TSource>, ...userArgs: TArgs)`
+ * The decorated class must be an **enumerator** (not a wrapper enumerable):
+ * - Extend `TyneqEnumerator<TSource, TResult>` or `TyneqBaseEnumerator<TResult>`
+ * - Have a constructor with signature `(sourceEnumerator: IEnumerator<TSource>, ...userArgs: TArgs)`
  *
  * Registration happens exactly once—when the class body is evaluated (i.e., when the
  * module containing the decorated class is first imported). Re-importing the same module
@@ -19,14 +19,23 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
  * user calls:   seq.scan(0, (a, b) => a + b)
  *                         └─ userArgs ──────┘
  *
- * injected fn:  new ScanOperatorEnumerable(seq, 0, (a, b) => a + b)
- *               └── source (=seq) is the first constructor arg ──────┘
+ * injected fn:  validate(0, (a, b) => a + b)   ← throws here if invalid (eager)
+ *               {
+ *                 getEnumerator() {
+ *                   return new ScanEnumerator(seq.getEnumerator(), 0, (a, b) => a + b)
+ *                 }
+ *               }
+ *               └── fresh IEnumerator created per iteration ──┘
  *
- * wrapped in:   this.createEnumerable(operatorInstance)
+ * wrapped in:   this.createEnumerable(factory)
  *               └── preserves the concrete TyneqEnumerable subtype ──┘
  * ```
  *
- * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
+ * @param name     - The method name to register on `TyneqEnumerableBase.prototype`.
+ * @param validate - Optional function called **synchronously at the call site** before
+ *                   the lazy factory is created. Receives the same user-facing arguments
+ *                   as the operator method (excluding the implicit source). Throw from
+ *                   here to enforce the LINQ convention of eager argument validation.
  *
  * @throws {Error} When a method named `name` is already defined on
  *   `TyneqEnumerableBase.prototype`.
@@ -34,38 +43,30 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
  * @group Decorators
  *
  * @example
- * Registering a library-grade streaming operator:
+ * Registering a streaming operator directly on the enumerator class:
  * ```ts
- * \@operator('scan')
- * export class ScanOperatorEnumerable<TSource, TResult>
- *     extends TyneqOperatorEnumerable<TSource, TResult> {
- *
- *     constructor(source: IEnumerable<TSource>, seed: TResult, acc: (a: TResult, b: TSource) => TResult) {
+ * \@operator('where')
+ * export class WhereEnumerator<T> extends TyneqEnumerator<T> {
+ *     constructor(source: IEnumerator<T>, private predicate: (item: T) => boolean) {
  *         super(source);
- *         // ...
  *     }
- *     getEnumerator() { return new ScanEnumerator(...); }
+ *     protected handleNext(): IteratorResult<T> { ... }
  * }
- * // That's it — no call in TyneqEnumerableBase, no manual prototype assignment.
+ * // That's it — no wrapper class, no changes to TyneqEnumerableBase.
  * ```
  *
  * @example
- * How the existing `where` operator would look with this decorator:
+ * Eager argument validation passed directly to the decorator:
  * ```ts
- * // ── BEFORE (requires TyneqEnumerableBase to know about WhereOperatorEnumerable) ──
- * // In TyneqEnumerableBase.ts:
- * //   import { WhereOperatorEnumerable } from '../operators/streaming/where';
- * //   public where(...) { return this.createEnumerable(new WhereOperatorEnumerable(this, pred)); }
- *
- * // ── AFTER (self-contained, zero changes to base class) ──
- * \@operator('where')
- * export class WhereOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
- *     constructor(source, private predicate: (item: TSource) => boolean) { super(source); }
- *     getEnumerator() { return new WhereEnumerator(this.source[Symbol.iterator](), this.predicate); }
+ * \@operator('scan', (_seed, accumulator) => {
+ *     ArgumentUtility.checkNotOptional({ accumulator });
+ * })
+ * export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
+ *     // ...
  * }
  * ```
  */
-export function operator(name: string) {
+export function operator(name: string, validate?: (...userArgs: any[]) => void) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
@@ -80,9 +81,13 @@ export function operator(name: string) {
         }
 
         proto[name] = function (this: TyneqEnumerableBase<any>, ...userArgs: any[]) {
-            // 'this' is the sequence instance; we inject it as first constructor arg.
-            // createEnumerable() is protected on TyneqEnumerableBase but accessible at runtime.
-            return (this as any).createEnumerable(new target(this, ...userArgs));
+            validate?.(...userArgs);
+            const source = this;
+            return (this as any).createEnumerable({
+                getEnumerator() {
+                    return new target(source.getEnumerator(), ...userArgs);
+                }
+            });
         };
 
         return target;

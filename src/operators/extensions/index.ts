@@ -120,115 +120,115 @@
 
 // ── Streaming operators ────────────────────────────────────────────────────────
 
-// @operator('where') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/where';
+// @operator('where') — enumerator class
+import '../../enumerators/streaming/where';
 
-// createGeneratorOperator('select') — generator shorthand
-import '../streaming/select';
+// @operator('select') — enumerator class
+import '../../enumerators/streaming/select';
 
-// @operator('scan') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/scan';
+// @operator('scan') — enumerator class
+import '../../enumerators/streaming/scan';
 
-// createOperator('window') — functional API, custom IEnumeratorFactory
+// createOperator('window') — functional API with generator (no enumerator class)
 import '../streaming/window';
 
-// createGeneratorOperator('intersperse') — generator shorthand, lowest ceremony
+// createGeneratorOperator('intersperse') — generator shorthand (no enumerator class)
 import '../streaming/intersperse';
 
-// @operator('append') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/append';
+// @operator('append') — enumerator class
+import '../../enumerators/streaming/append';
 
-// @operator('chunk') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/chunk';
+// @operator('chunk') — enumerator class
+import '../../enumerators/streaming/chunk';
 
-// @operator('concat') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/concat';
+// @operator('concat') — enumerator class
+import '../../enumerators/streaming/concat';
 
-// @operator('pairwise') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/pairwise';
+// @operator('pairwise') — enumerator class
+import '../../enumerators/streaming/pairwise';
 
-// @operator('populate') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/populate';
+// @operator('populate') — enumerator class
+import '../../enumerators/streaming/populate';
 
-// @operator('prepend') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/prepend';
+// @operator('prepend') — enumerator class
+import '../../enumerators/streaming/prepend';
 
-// @operator('selectMany') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/selectMany';
+// @operator('selectMany') — enumerator class
+import '../../enumerators/streaming/selectMany';
 
-// @operator('skip') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/skip';
+// @operator('skip') — enumerator class
+import '../../enumerators/streaming/skip';
 
-// @operator('skipLast') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/skipLast';
+// @operator('skipLast') — enumerator class
+import '../../enumerators/streaming/skipLast';
 
-// @operator('skipWhile') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/skipWhile';
+// @operator('skipWhile') — enumerator class
+import '../../enumerators/streaming/skipWhile';
 
-// @operator('split') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/split';
+// @operator('split') — enumerator class
+import '../../enumerators/streaming/split';
 
-// @operator('take') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/take';
+// @operator('take') — enumerator class
+import '../../enumerators/streaming/take';
 
-// @operator('takeWhile') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/takeWhile';
+// @operator('takeWhile') — enumerator class
+import '../../enumerators/streaming/takeWhile';
 
-// @operator('tap') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/tap';
+// @operator('tap') — enumerator class
+import '../../enumerators/streaming/tap';
 
-// @operator('tapIf') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/tapIf';
+// @operator('tapIf') — enumerator class
+import '../../enumerators/streaming/tapIf';
 
-// @operator('throttle') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/throttle';
+// @operator('throttle') — enumerator class
+import '../../enumerators/streaming/throttle';
 
-// @operator('zip') — class decorator, extends TyneqOperatorEnumerable
-import '../streaming/zip';
+// @operator('zip') — enumerator class
+import '../../enumerators/streaming/zip';
 
 // ── Buffer operators ──────────────────────────────────────────────────────────
 
-// @operator('backsert') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/backsert';
+// @operator('backsert') — enumerator class
+import '../../enumerators/buffer/backsert';
 
-// createOperator('distinct') — functional API wrapping class-based enumerator
-import '../buffer/distinct';
+// @operator('distinct') — enumerator class
+import '../../enumerators/buffer/distinct';
 
-// @operator('distinctBy') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/distinctBy';
+// @operator('distinctBy') — enumerator class
+import '../../enumerators/buffer/distinctBy';
 
-// @operator('except') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/except';
+// @operator('except') — enumerator class
+import '../../enumerators/buffer/except';
 
-// @operator('exceptBy') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/exceptBy';
+// @operator('exceptBy') — enumerator class
+import '../../enumerators/buffer/exceptBy';
 
-// @operator('groupBy') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/groupBy';
+// @operator('groupBy') — enumerator class
+import '../../enumerators/buffer/groupBy';
 
-// @operator('groupJoin') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/groupJoin';
+// @operator('groupJoin') — enumerator class
+import '../../enumerators/buffer/groupJoin';
 
-// @operator('intersect') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/intersect';
+// @operator('intersect') — enumerator class
+import '../../enumerators/buffer/intersect';
 
-// @operator('intersectBy') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/intersectBy';
+// @operator('intersectBy') — enumerator class
+import '../../enumerators/buffer/intersectBy';
 
-// @operator('join') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/join';
+// @operator('join') — enumerator class
+import '../../enumerators/buffer/join';
 
-// @operator('reverse') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/reverse';
+// @operator('reverse') — enumerator class
+import '../../enumerators/buffer/reverse';
 
-// @operator('shuffle') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/shuffle';
+// @operator('shuffle') — enumerator class
+import '../../enumerators/buffer/shuffle';
 
-// @operator('union') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/union';
+// @operator('union') — enumerator class
+import '../../enumerators/buffer/union';
 
-// @operator('unionBy') — class decorator, extends TyneqOperatorEnumerable
-import '../buffer/unionBy';
+// @operator('unionBy') — enumerator class
+import '../../enumerators/buffer/unionBy';
 
 // ── Terminal operators ────────────────────────────────────────────────────────
 
@@ -256,7 +256,7 @@ import '../terminal/count';
 // @terminal('countBy') — class decorator, extends TyneqTerminalOperator
 import '../terminal/countBy';
 
-// @terminal('defaultIfEmpty') — class decorator, extends TyneqTerminalOperator
+// createGeneratorOperator('defaultIfEmpty') — generator shorthand
 import '../terminal/defaultIfEmpty';
 
 // @terminal('elementAt') — class decorator, extends TyneqTerminalOperator

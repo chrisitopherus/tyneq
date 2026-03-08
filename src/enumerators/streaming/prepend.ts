@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for prepending a single element to the beginning of a sequence.
@@ -14,11 +15,11 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The type of elements in the sequence.
  * 
- * @see {@link PrependOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('prepend')
 export class PrependEnumerator<T> extends TyneqEnumerator<T> {
     /** Whether the prepended item has been yielded. */
     private prepended = false;

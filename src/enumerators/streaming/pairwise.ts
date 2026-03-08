@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for pairing each element with its predecessor.
@@ -17,6 +18,7 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator('pairwise')
 export class PairwiseEnumerator<T> extends TyneqEnumerator<T, [T, T]> {
     private hasPrevious = false;
     private previous!: T;

@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that yields elements while a predicate condition is true.
@@ -29,6 +30,7 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator('takeWhile')
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     /**
      * The predicate function used to determine whether to continue yielding elements.

@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that conditionally executes a side-effect action on each element based on a predicate.
@@ -33,6 +33,10 @@ import { nameof } from "../../utility/nameof";
  * @group Enumerators
  * @internal
  */
+@operator('tapIf', (action: any, predicate: any) => {
+    ArgumentUtility.checkNotOptional({ action });
+    ArgumentUtility.checkNotOptional({ predicate });
+})
 export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /**
      * The action to execute on each element when the predicate returns true.
@@ -56,9 +60,6 @@ export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void, predicate: () => boolean) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional({ action });
-        ArgumentUtility.checkNotOptional({ predicate });
-
         this.action = action;
         this.predicate = predicate;
     }

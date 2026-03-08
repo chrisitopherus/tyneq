@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for producing set difference based on key comparison.
@@ -17,11 +18,11 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of the comparison key.
  * 
- * @see {@link ExceptByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('exceptBy')
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** The sequence of keys to exclude. */
     private readonly excludedKeys: Iterable<TKey>;

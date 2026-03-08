@@ -1,6 +1,6 @@
-import type{ AppendOperatorEnumerable } from '../../operators/streaming/append';
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for appending a single element to the end of a sequence.
@@ -15,11 +15,11 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The type of elements in the sequence.
  * 
- * @see {@link AppendOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('append')
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     /** Whether source enumeration is complete. */
     private isSourceDone = false;

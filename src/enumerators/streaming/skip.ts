@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that bypasses a specified number of elements from the beginning of a sequence.
@@ -24,6 +24,9 @@ import { nameof } from "../../utility/nameof";
  * @group Enumerators
  * @internal
  */
+@operator('skip', (count: number) => {
+    ArgumentUtility.checkNonNegative({ count });
+})
 export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     /**
      * The number of elements to skip from the beginning of the source sequence.
@@ -45,8 +48,6 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
      */
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNonNegative({ count });
-
         this.count = count;
     }
 

@@ -1,6 +1,5 @@
 import { RangeEnumerator } from "../enumerators/streaming/range";
-import { RandomOperatorEnumerable } from "../operators/streaming/random";
-import { RangeOperatorEnumerable } from "../operators/streaming/range";
+import { RandomEnumerator } from "../enumerators/streaming/random";
 import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
@@ -112,13 +111,16 @@ export class Tyneq {
      * @see {@link empty} For an empty sequence.
      */
     public static random<TSource>(count: number, randomizer: () => TSource): ITyneqEnumerable<TSource> {
+        ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkNotOptional({ randomizer });
+
         if (count === 0) {
             return this.empty<TSource>();
         }
 
-        const operator = new RandomOperatorEnumerable<TSource>(count, randomizer);
-
-        return new TyneqEnumerable<TSource>(operator);
+        return new TyneqEnumerable<TSource>({
+            getEnumerator: () => new RandomEnumerator<TSource>(count, randomizer)
+        });
     }
 
     /**
@@ -196,9 +198,10 @@ export class Tyneq {
             return this.empty<number>();
         }
 
-        const operator = new RangeOperatorEnumerable(start, start + count - 1);
-
-        return new TyneqEnumerable<number>(operator);
+        const end = start + count - 1;
+        return new TyneqEnumerable<number>({
+            getEnumerator: () => new RangeEnumerator(start, end)
+        });
     }
 
     /**

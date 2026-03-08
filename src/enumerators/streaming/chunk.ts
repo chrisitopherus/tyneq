@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for splitting a sequence into fixed-size chunks.
@@ -17,11 +17,13 @@ import { nameof } from "../../utility/nameof";
  * 
  * @typeParam T - The type of elements in the source sequence.
  * 
- * @see {@link ChunkOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('chunk', (size: number) => {
+    ArgumentUtility.checkPositive({ size });
+})
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
     /** The maximum size of each chunk. */
     private readonly size: number;
@@ -37,8 +39,6 @@ export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
      */
     public constructor(sourceEnumerator: IEnumerator<T>, size: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkPositive({ size });
-
         this.size = size;
     }
 

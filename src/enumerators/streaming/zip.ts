@@ -1,6 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that combines two sequences in a pairwise manner using a selector function.
@@ -36,6 +37,7 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @group Enumerators
  * @internal
  */
+@operator('zip')
 export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     /**
      * The secondary enumerator providing the second element of each pair.
@@ -55,9 +57,9 @@ export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
      * @param otherEnumerator - The second sequence to zip
      * @param selector - The function that combines paired elements from both sequences
      */
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<U>, selector: (first: T, second: U) => V) {
+    public constructor(sourceEnumerator: IEnumerator<T>, other: Iterable<U>, selector: (first: T, second: U) => V) {
         super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
+        this.otherEnumerator = other[Symbol.iterator]();
         this.selector = selector;
     }
 

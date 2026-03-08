@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 import { TyneqMap } from "../../utility/map";
 import { TyneqEnumerable } from '../../core/TyneqEnumerable';
 import { Tyneq } from "../..";
@@ -21,11 +22,11 @@ import { Tyneq } from "../..";
  * @typeParam TValue - The type of elements within each group.
  * @typeParam TResult - The type of the result after applying result selector.
  * 
- * @see {@link GroupByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('groupBy')
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
     /** Function to extract grouping key from each element. */
     private readonly keySelector: (item: TSource) => TKey;

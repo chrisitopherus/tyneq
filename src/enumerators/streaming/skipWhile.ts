@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that bypasses elements while a predicate condition is true,
@@ -28,6 +29,7 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator('skipWhile')
 export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
     /**
      * The predicate function used to determine whether to skip each element.

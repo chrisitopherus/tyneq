@@ -1,8 +1,8 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator, ITyneqEnumerable } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
-import { nameof } from "../../utility/nameof";
 import { Tyneq } from "../../core/tyneq";
 
 /**
@@ -23,11 +23,17 @@ import { Tyneq } from "../../core/tyneq";
  * @typeParam TKey - The type of the join key.
  * @typeParam TResult - The type of the result after applying result selector.
  * 
- * @see {@link GroupJoinOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('groupJoin', (innerSource: any, outerKeySelector: any, innerKeySelector: any, resultSelector: any) => {
+    ArgumentUtility.checkNotOptional({ innerSource });
+    ArgumentUtility.checkIterable({ innerSource });
+    ArgumentUtility.checkNotOptional({ outerKeySelector });
+    ArgumentUtility.checkNotOptional({ innerKeySelector });
+    ArgumentUtility.checkNotOptional({ resultSelector });
+})
 export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     /** The inner sequence to join against. */
     private readonly innerSource: Iterable<TInner>;
@@ -58,12 +64,6 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
         resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult
     ) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional({ innerSource });
-        ArgumentUtility.checkIterable({ innerSource });
-        ArgumentUtility.checkNotOptional({ outerKeySelector });
-        ArgumentUtility.checkNotOptional({ innerKeySelector });
-        ArgumentUtility.checkNotOptional({ resultSelector });
-
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;
         this.innerKeySelector = innerKeySelector;

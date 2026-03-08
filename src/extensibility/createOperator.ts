@@ -69,9 +69,11 @@ function registerOnProto(name: string, fn: (this: TyneqEnumerableBase<any>, ...a
  */
 export function createOperator<TSource = any, TResult = any, TArgs extends any[] = any[]>(config: {
     name: string;
+    validate?: (...args: TArgs) => void;
     factory: (source: IEnumerable<TSource>, ...args: TArgs) => IEnumeratorFactory<TResult>;
 }): void {
     registerOnProto(config.name, function (this: TyneqEnumerableBase<TSource>, ...args: TArgs) {
+        config.validate?.(...args);
         const factory = config.factory(this as unknown as IEnumerable<TSource>, ...args);
         return (this as any).createEnumerable(factory);
     });
@@ -122,9 +124,11 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  */
 export function createGeneratorOperator<TSource = any, TResult = any, TArgs extends any[] = any[]>(config: {
     name: string;
+    validate?: (...args: TArgs) => void;
     generator: (source: Iterable<TSource>, ...args: TArgs) => IterableIterator<TResult>;
 }): void {
     registerOnProto(config.name, function (this: TyneqEnumerableBase<TSource>, ...args: TArgs) {
+        config.validate?.(...args);
         const self = this;
         return (this as any).createEnumerable({
             getEnumerator(): IEnumerator<TResult> {

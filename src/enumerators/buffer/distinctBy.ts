@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for filtering out elements with duplicate keys from a sequence.
@@ -15,11 +16,11 @@ import { IEnumerator } from "../../types/core";
  * @typeParam TSource - The type of elements in the sequence.
  * @typeParam TKey - The type of the comparison key.
  * 
- * @see {@link DistinctByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('distinctBy')
 export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     /** Set tracking keys that have already been yielded. */
     private readonly seenValues = new Set<TKey>();

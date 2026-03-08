@@ -10,7 +10,7 @@ import { createOperator } from '../../extensibility/createOperator';
 //
 //  When to prefer this over @operator():
 //    - No need for a named operator class (logic fits in a closure / generator)
-//    - Third-party authors who don't want to extend TyneqOperatorEnumerable
+//    - Third-party authors who want a minimal, class-free registration path
 //    - Simple operators where a full class is overkill
 // ─────────────────────────────────────────────────────────────────────────────
 

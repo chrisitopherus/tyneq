@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for projecting each element using a selector function.
@@ -16,11 +17,11 @@ import { IEnumerator } from "../../types/core";
  * @typeParam T - The type of elements in the source sequence.
  * @typeParam U - The type of elements in the result sequence.
  * 
- * @see {@link SelectOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('select')
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /** Function to transform each source element. */
     private readonly selector: (item: T) => U;

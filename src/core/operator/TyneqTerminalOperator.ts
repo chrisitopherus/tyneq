@@ -1,6 +1,5 @@
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Abstract base class for terminal operators that execute queries and return concrete values.
@@ -41,7 +40,7 @@ import { nameof } from "../../utility/nameof";
  * }
  * ```
  * 
- * @see {@link TyneqOperatorEnumerable} for non-terminal (streaming/buffering) operators.
+ * @see {@link TyneqEnumerator} for the base class used by streaming/buffering enumerator implementations.
  *
  * @group Classes
  * @internal

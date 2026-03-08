@@ -19,7 +19,6 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
  * @typeParam TSource - The type of elements in the sequence.
  * @typeParam TKey - The type of the comparison key.
  * 
- * @see {@link OrderByOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal

@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that executes a side-effect action on each element without modifying the sequence.
@@ -31,6 +31,9 @@ import { nameof } from "../../utility/nameof";
  * @group Enumerators
  * @internal
  */
+@operator('tap', (action: any) => {
+    ArgumentUtility.checkNotOptional({ action });
+})
 export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /**
      * The action to execute on each element as a side effect.
@@ -47,8 +50,6 @@ export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional({ action });
-
         this.action = action;
     }
 

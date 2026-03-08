@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerable, IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for producing set intersection (elements in both sequences).
@@ -16,11 +17,11 @@ import { IEnumerable, IEnumerator } from '../../types/core';
  * 
  * @typeParam TSource - The type of elements in the sequences.
  * 
- * @see {@link IntersectOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('intersect')
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     /** The sequence to intersect with. */
     private readonly otherValues: Iterable<TSource>;

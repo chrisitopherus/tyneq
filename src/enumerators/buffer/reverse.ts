@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for reversing the order of sequence elements.
@@ -15,11 +16,11 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The type of elements in the sequence.
  * 
- * @see {@link ReverseOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('reverse')
 export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     /** Array containing all source elements. */
     private buffer: T[] = [];

@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation that bypasses a specified number of elements from the end of a sequence.
@@ -28,6 +29,7 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator('skipLast')
 export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     /**
      * The number of elements to skip from the end of the source sequence.

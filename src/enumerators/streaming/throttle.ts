@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { IEnumerator } from '../../types/core';
 import { ArgumentUtility } from '../../utility/argumentUtility';
-import { nameof } from '../../utility/nameof';
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for yielding every Nth element from a sequence.
@@ -18,13 +18,15 @@ import { nameof } from '../../utility/nameof';
  * @group Enumerators
  * @internal
  */
+@operator('throttle', (count: number) => {
+    ArgumentUtility.checkSafeInteger({ count });
+    ArgumentUtility.checkPositive({ count });
+})
 export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
-        ArgumentUtility.checkSafeInteger({ count });
-        ArgumentUtility.checkPositive({ count });
         this.count = count;
     }
 

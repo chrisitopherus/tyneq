@@ -1,9 +1,9 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator, IEnumerable } from '../../types/core';
+import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Enumerator implementation for correlating elements from two sequences based on matching keys.
@@ -25,11 +25,17 @@ import { nameof } from "../../utility/nameof";
  * @typeParam TKey - The type of the join key.
  * @typeParam TResult - The type of the result after applying result selector.
  * 
- * @see {@link JoinOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('join', (innerSource: any, outerKeySelector: any, innerKeySelector: any, resultSelector: any) => {
+    ArgumentUtility.checkNotOptional({ innerSource });
+    ArgumentUtility.checkIterable({ innerSource });
+    ArgumentUtility.checkNotOptional({ outerKeySelector });
+    ArgumentUtility.checkNotOptional({ innerKeySelector });
+    ArgumentUtility.checkNotOptional({ resultSelector });
+})
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     /** The inner sequence to join against. */
     private readonly innerSource: Iterable<TInner>;
@@ -66,12 +72,6 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
         resultSelector: (outer: TOuter, inner: TInner) => TResult
     ) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional({ innerSource });
-        ArgumentUtility.checkIterable({ innerSource });
-        ArgumentUtility.checkNotOptional({ outerKeySelector });
-        ArgumentUtility.checkNotOptional({ innerKeySelector });
-        ArgumentUtility.checkNotOptional({ resultSelector });
-
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;
         this.innerKeySelector = innerKeySelector;

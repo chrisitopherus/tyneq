@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator implementation for concatenating two sequences.
@@ -15,11 +16,11 @@ import { IEnumerator } from "../../types/core";
  * 
  * @typeParam T - The type of elements in both sequences.
  * 
- * @see {@link ConcatOperatorEnumerable} for the operator that uses this enumerator.
  *
  * @group Enumerators
  * @internal
  */
+@operator('concat')
 export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
     /** The second enumerator to concatenate. */
     private readonly otherEnumerator: IEnumerator<T>;
@@ -28,13 +29,13 @@ export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
 
     /**
      * Creates a new concat enumerator.
-     * 
+     *
      * @param sourceEnumerator - The first enumerator.
-     * @param otherEnumerator - The second enumerator to concatenate.
+     * @param other - The second sequence to concatenate.
      */
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<T>) {
+    public constructor(sourceEnumerator: IEnumerator<T>, other: Iterable<T>) {
         super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
+        this.otherEnumerator = other[Symbol.iterator]();
     }
 
     /**
