@@ -1,5 +1,6 @@
 import { MemoizeEnumerator } from "../../enumerators/buffer/memoize";
 import { CacheResult, ICachedEnumerable, IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
+import type { IQueryNode } from '../../queryplan/IQueryNode';
 import { Nullable } from "../../types/utility";
 import { TyneqOrderedEnumerable } from "../ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "../TyneqEnumerable";
@@ -74,8 +75,10 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return { has: false };
     }
 
-    protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(factory);
+    public readonly queryNode: IQueryNode | null = null;
+
+    protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(factory, node);
     }
     protected createOrderedEnumerable<TKey>(keySelector: (x: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean): ITyneqOrderedEnumerable<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(

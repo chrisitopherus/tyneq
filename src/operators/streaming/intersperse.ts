@@ -63,9 +63,9 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * @category Streaming
  * @internal
  */
-createGeneratorOperator<any, any, [any]>({
+createGeneratorOperator({
     name: 'intersperse',
-    *generator(source: Iterable<any>, delimiter: any): IterableIterator<any> {
+    *generator(source: Iterable<unknown>, delimiter: unknown): IterableIterator<unknown> {
         let first = true;
         for (const item of source) {
             if (!first) yield delimiter;

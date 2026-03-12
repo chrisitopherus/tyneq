@@ -2,6 +2,7 @@ import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 import { TyneqEnumerableSorter } from "./TyneqEnumerableSorter";
 import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../../types/core';
+import type { IQueryNode } from '../../queryplan/IQueryNode';
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
@@ -350,8 +351,10 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * @see {@link createOrderedEnumerable} for creating new ordered enumerables.
      * @see {@link TyneqEnumerableBase} for the base class defining this pattern.
      */
-    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(factory);
+    public readonly queryNode: IQueryNode | null = null;
+
+    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(factory, node);
     }
 
     /**

@@ -28,22 +28,21 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('elementAt')
+@terminal<[index: unknown]>('elementAt', (index) => {
+    ArgumentUtility.checkNonNegative({ index: index as number });
+})
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     /** The zero-based index of the element to retrieve. */
     private readonly index: number;
 
     /**
      * Creates a new elementAt operator.
-     * 
+     *
      * @param source - The source sequence.
      * @param index - The zero-based index of the element to retrieve.
-     * @throws {ArgumentError} If index is negative.
      */
     public constructor(source: ITyneqEnumerable<TSource>, index: number) {
         super(source);
-        ArgumentUtility.checkNonNegative({ index });
-
         this.index = index;
     }
 

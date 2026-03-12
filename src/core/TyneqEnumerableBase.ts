@@ -1,5 +1,6 @@
 import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
+import type { IQueryNode } from '../queryplan/IQueryNode';
 
 /**
  * Abstract base class providing LINQ-style query operators for enumerable sequences.
@@ -80,6 +81,8 @@ import { ArgumentUtility } from "../utility/argumentUtility";
  * @internal
  */
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
+
+    public abstract readonly queryNode: IQueryNode | null;
 
     /**
      * Makes this sequence compatible with JavaScript's iteration protocol.
@@ -261,7 +264,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      *
      * @returns A new enumerable wrapping the factory.
      */
-    protected abstract createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult>;
+    protected abstract createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult>;
 
     /**
      * Creates an ordered enumerable for multi-level sorting.

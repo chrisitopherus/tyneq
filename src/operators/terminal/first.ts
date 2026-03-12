@@ -28,22 +28,21 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('first')
+@terminal<[(item: unknown) => boolean]>('first', (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
 export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     /** Predicate function to identify the desired element. */
     private readonly predicate: (item: TSource) => boolean;
 
     /**
      * Creates a new first operator.
-     * 
+     *
      * @param source - The source sequence.
      * @param predicate - Function to test each element.
-     * @throws {ArgumentError} If predicate is null or undefined.
      */
     public constructor(source: ITyneqEnumerable<TSource>, predicate: (item: TSource) => boolean) {
         super(source);
-        ArgumentUtility.checkNotOptional({ predicate });
-
         this.predicate = predicate;
     }
 

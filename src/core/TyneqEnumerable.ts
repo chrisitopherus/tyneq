@@ -1,5 +1,6 @@
 import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
+import type { IQueryNode } from '../queryplan/IQueryNode';
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { TyneqCachedEnumerable } from './cache/TyneqCachedEnumerable';
@@ -103,6 +104,8 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      */
     protected readonly enumeratorFactory: IEnumeratorFactory<TSource>;
 
+    public readonly queryNode: IQueryNode | null;
+
     /**
      * Creates a new enumerable sequence from an enumerator factory.
      * 
@@ -121,10 +124,11 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      * @throws {@link ArgumentNullError} when `enumeratorFactory` is null.
      * @throws {@link ArgumentError} when `enumeratorFactory` is undefined.
      */
-    public constructor(enumeratorFactory: IEnumeratorFactory<TSource>) {
+    public constructor(enumeratorFactory: IEnumeratorFactory<TSource>, node?: IQueryNode | null) {
         super();
         ArgumentUtility.checkNotOptional({ enumeratorFactory });
         this.enumeratorFactory = enumeratorFactory;
+        this.queryNode = node ?? null;
     }
 
     /**
@@ -164,8 +168,8 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
      * 
      * @returns A new `TyneqEnumerable<TResult>` wrapping the factory.
      */
-    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(factory);
+    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(factory, node);
     }
 
     /**

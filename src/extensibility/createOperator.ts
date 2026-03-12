@@ -1,5 +1,8 @@
-import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
 import type { IEnumerable, IEnumerator, IEnumeratorFactory } from '../types/core';
+import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
+import { OperatorRegistry } from './OperatorRegistry';
+import { QueryNode } from '../queryplan/QueryNode';
+import type { IQueryNode } from '../queryplan/IQueryNode';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Functional operator registration API
@@ -10,22 +13,14 @@ import type { IEnumerable, IEnumerator, IEnumeratorFactory } from '../types/core
 //   createOperator()            — streaming/buffer, returns ITyneqEnumerable
 //   createGeneratorOperator()   — streaming, implemented as a generator function
 //                                  (lowest ceremony, no class/constructor needed)
+//
+// All three route through OperatorRegistry.register().
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Internal helper ──────────────────────────────────────────────────────────
-
-function registerOnProto(name: string, fn: (this: TyneqEnumerableBase<any>, ...args: any[]) => any): void {
-    const proto = TyneqEnumerableBase.prototype as any;
-
-    if (Object.prototype.hasOwnProperty.call(proto, name)) {
-        throw new Error(
-            `[tyneq] createOperator/createTerminalOperator('${name}'): a method named '${name}' is ` +
-            `already defined on TyneqEnumerableBase.prototype. ` +
-            `Use a different name or check for duplicate registrations.`
-        );
-    }
-
-    proto[name] = fn;
+/** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
+interface IWithCreateEnumerable {
+    createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
+    readonly queryNode: IQueryNode | null;
 }
 
 // ── createOperator() ─────────────────────────────────────────────────────────
@@ -38,15 +33,29 @@ function registerOnProto(name: string, fn: (this: TyneqEnumerableBase<any>, ...a
  * Call this function at module level. Registration happens as a side-effect of
  * importing the file that contains the call.
  *
- * The `factory` receives the source enumerable and any user-provided arguments, and
- * must return an `IEnumeratorFactory<TResult>` (any object with `getEnumerator()`).
+ * The `factory` receives the source enumerable and any user-provided arguments,
+ * and must return an `IEnumeratorFactory<TResult>` (any object with `getEnumerator()`).
  *
- * @typeParam TSource - Element type of the source sequence.
- * @typeParam TResult - Element type of the result sequence.
- * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
+ * ## Typed Arguments
  *
- * @throws {Error} When a method named `config.name` is already defined on
- *   `TyneqEnumerableBase.prototype`.
+ * Declare user-facing argument types on the `factory` function. TypeScript infers
+ * `TArgs` automatically, giving `validate` a fully-typed parameter list with no
+ * extra annotations:
+ *
+ * ```ts
+ * createOperator({
+ *     name: 'window',
+ *     factory(source: IEnumerable<unknown>, size: number) { ... },
+ *     validate(size) {  // ← size: number, inferred from factory
+ *         ArgumentUtility.checkPositive({ size });
+ *     }
+ * });
+ * ```
+ *
+ * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
+ *   Inferred from the `factory` signature — no explicit type parameter needed at the call site.
+ *
+ * @throws {Error} When a method named `config.name` is already registered.
  *
  * @group Decorators
  *
@@ -55,27 +64,39 @@ function registerOnProto(name: string, fn: (this: TyneqEnumerableBase<any>, ...a
  * // window.ts — importing this file registers the operator
  * import { createOperator } from '../extensibility/createOperator';
  *
- * createOperator<any, any[], [number]>({
+ * createOperator({
  *     name: 'window',
- *     factory(source, size: number) {
+ *     factory(source: IEnumerable<unknown>, size: number) {
  *         return {
  *             getEnumerator() {
- *                 return windowGenerator(source[Symbol.iterator](), size) as any;
+ *                 return windowGenerator(source[Symbol.iterator](), size) as unknown as IEnumerator<unknown>;
  *             }
  *         };
+ *     },
+ *     validate(size) {  // size: number — inferred, no annotation needed
+ *         ArgumentUtility.checkPositive({ size });
  *     }
  * });
  * ```
  */
-export function createOperator<TSource = any, TResult = any, TArgs extends any[] = any[]>(config: {
+export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    validate?: (...args: TArgs) => void;
+    kind?: 'streaming' | 'buffer';
     factory: (source: IEnumerable<TSource>, ...args: TArgs) => IEnumeratorFactory<TResult>;
+    validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
-    registerOnProto(config.name, function (this: TyneqEnumerableBase<TSource>, ...args: TArgs) {
-        config.validate?.(...args);
-        const factory = config.factory(this as unknown as IEnumerable<TSource>, ...args);
-        return (this as any).createEnumerable(factory);
+    const kind = config.kind ?? 'streaming';
+    OperatorRegistry.register({
+        metadata: { name: config.name, kind },
+        impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
+            config.validate?.(...(args as TArgs));
+            const withCreate = this as unknown as IWithCreateEnumerable;
+            const node = new QueryNode(config.name, args, withCreate.queryNode, kind);
+            return withCreate.createEnumerable(
+                config.factory(this as IEnumerable<TSource>, ...(args as TArgs)),
+                node
+            );
+        }
     });
 }
 
@@ -86,7 +107,7 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  * generator function — the lowest-ceremony way to define an operator.
  *
  * @remarks
- * The `generator` receives the source `Iterable<TSource>` and any user arguments,
+ * The `generator` receives the source `Iterable<unknown>` and any user arguments,
  * and `yield`s result elements. The library wraps the generator in the standard
  * `IEnumeratorFactory` pattern automatically.
  *
@@ -95,12 +116,25 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  *
  * Registration happens as a side-effect of importing the file.
  *
- * @typeParam TSource - Element type of the source sequence.
- * @typeParam TResult - Element type of the result sequence.
- * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
+ * ## Typed Arguments
  *
- * @throws {Error} When a method named `config.name` is already defined on
- *   `TyneqEnumerableBase.prototype`.
+ * Declare user-facing argument types on the `generator` function. TypeScript infers
+ * `TArgs` automatically, giving `validate` a fully-typed parameter list:
+ *
+ * ```ts
+ * createGeneratorOperator({
+ *     name: 'intersperse',
+ *     *generator(source: Iterable<unknown>, delimiter: unknown) { ... },
+ *     validate(delimiter) {  // ← delimiter: unknown, inferred from generator
+ *         ArgumentUtility.checkNotOptional({ delimiter });
+ *     }
+ * });
+ * ```
+ *
+ * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
+ *   Inferred from the `generator` signature — no explicit type parameter needed at the call site.
+ *
+ * @throws {Error} When a method named `config.name` is already registered.
  *
  * @group Decorators
  *
@@ -109,9 +143,9 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  * // intersperse.ts
  * import { createGeneratorOperator } from '../extensibility/createOperator';
  *
- * createGeneratorOperator<any, any, [any]>({
+ * createGeneratorOperator({
  *     name: 'intersperse',
- *     *generator(source, delimiter) {
+ *     *generator(source: Iterable<unknown>, delimiter: unknown) {
  *         let first = true;
  *         for (const item of source) {
  *             if (!first) yield delimiter;
@@ -122,20 +156,28 @@ export function createOperator<TSource = any, TResult = any, TArgs extends any[]
  * });
  * ```
  */
-export function createGeneratorOperator<TSource = any, TResult = any, TArgs extends any[] = any[]>(config: {
+export function createGeneratorOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    validate?: (...args: TArgs) => void;
     generator: (source: Iterable<TSource>, ...args: TArgs) => IterableIterator<TResult>;
+    validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
-    registerOnProto(config.name, function (this: TyneqEnumerableBase<TSource>, ...args: TArgs) {
-        config.validate?.(...args);
-        const self = this;
-        return (this as any).createEnumerable({
-            getEnumerator(): IEnumerator<TResult> {
-                // IterableIterator<T> is structurally compatible with IEnumerator<T>
-                return config.generator(self as unknown as Iterable<TSource>, ...args) as unknown as IEnumerator<TResult>;
-            }
-        } satisfies IEnumeratorFactory<TResult>);
+    OperatorRegistry.register({
+        metadata: { name: config.name, kind: 'streaming' },
+        impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
+            config.validate?.(...(args as TArgs));
+            const self = this;
+            const withCreate = this as unknown as IWithCreateEnumerable;
+            const node = new QueryNode(config.name, args, withCreate.queryNode, 'streaming');
+            return withCreate.createEnumerable({
+                getEnumerator(): IEnumerator<unknown> {
+                    // IterableIterator<T> is structurally compatible with IEnumerator<T>
+                    return config.generator(
+                        self as Iterable<TSource>,
+                        ...(args as TArgs)
+                    ) as unknown as IEnumerator<unknown>;
+                }
+            } satisfies IEnumeratorFactory<unknown>, node);
+        }
     });
 }
 
@@ -149,12 +191,25 @@ export function createGeneratorOperator<TSource = any, TResult = any, TArgs exte
  * The `execute` function receives the source enumerable and any user arguments, and
  * returns the result value directly. It may enumerate the source partially or fully.
  *
- * @typeParam TSource - Element type of the source sequence.
- * @typeParam TResult - The concrete result type returned by the operator.
- * @typeParam TArgs   - Tuple of argument types the operator accepts (beyond `source`).
+ * ## Typed Arguments
  *
- * @throws {Error} When a method named `config.name` is already defined on
- *   `TyneqEnumerableBase.prototype`.
+ * Declare user-facing argument types on the `execute` function. TypeScript infers
+ * `TArgs` automatically, giving `validate` a fully-typed parameter list:
+ *
+ * ```ts
+ * createTerminalOperator({
+ *     name: 'joinString',
+ *     execute(source: IEnumerable<unknown>, separator: string) { ... },
+ *     validate(separator) {  // ← separator: string, inferred from execute
+ *         ArgumentUtility.checkNotOptional({ separator });
+ *     }
+ * });
+ * ```
+ *
+ * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
+ *   Inferred from the `execute` signature — no explicit type parameter needed at the call site.
+ *
+ * @throws {Error} When a method named `config.name` is already registered.
  *
  * @group Decorators
  *
@@ -162,9 +217,9 @@ export function createGeneratorOperator<TSource = any, TResult = any, TArgs exte
  * ```ts
  * import { createTerminalOperator } from '../extensibility/createOperator';
  *
- * createTerminalOperator<number, string, [string]>({
+ * createTerminalOperator({
  *     name: 'joinString',
- *     execute(source, separator) {
+ *     execute(source: IEnumerable<unknown>, separator: string): string {
  *         const parts: string[] = [];
  *         for (const item of source) parts.push(String(item));
  *         return parts.join(separator);
@@ -175,11 +230,16 @@ export function createGeneratorOperator<TSource = any, TResult = any, TArgs exte
  * Tyneq.from([1, 2, 3]).joinString(', '); // "1, 2, 3"
  * ```
  */
-export function createTerminalOperator<TSource = any, TResult = any, TArgs extends any[] = any[]>(config: {
+export function createTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
     execute: (source: IEnumerable<TSource>, ...args: TArgs) => TResult;
+    validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
-    registerOnProto(config.name, function (this: TyneqEnumerableBase<TSource>, ...args: TArgs) {
-        return config.execute(this as unknown as IEnumerable<TSource>, ...args);
+    OperatorRegistry.register({
+        metadata: { name: config.name, kind: 'terminal' },
+        impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
+            config.validate?.(...(args as TArgs));
+            return config.execute(this as IEnumerable<TSource>, ...(args as TArgs));
+        }
     });
 }

@@ -37,3 +37,5 @@
  */
 export { operator, terminal } from './operatorDecorators';
 export { createOperator, createGeneratorOperator, createTerminalOperator } from './createOperator';
+export { OperatorRegistry } from './OperatorRegistry';
+export type { OperatorMetadata, OperatorEntry, OperatorEntryInput } from './OperatorRegistry';

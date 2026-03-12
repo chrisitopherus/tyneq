@@ -1,5 +1,6 @@
 import { IEnumerable, IEnumerator, IEnumeratorFactory } from '../../types/core';
 import { createOperator } from '../../extensibility/createOperator';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  createOperator() registration demo
@@ -83,14 +84,17 @@ function* windowGenerator<T>(source: Iterator<T>, size: number): IterableIterato
  * @category Streaming
  * @internal
  */
-createOperator<any, any[], [number]>({
+createOperator({
     name: 'window',
-    factory(source: IEnumerable<any>, size: number): IEnumeratorFactory<any[]> {
+    factory(source: IEnumerable<unknown>, size: number): IEnumeratorFactory<unknown> {
         return {
-            getEnumerator(): IEnumerator<any[]> {
+            getEnumerator(): IEnumerator<unknown> {
                 // IterableIterator is structurally compatible with IEnumerator
-                return windowGenerator(source[Symbol.iterator](), size) as unknown as IEnumerator<any[]>;
+                return windowGenerator(source[Symbol.iterator](), size) as unknown as IEnumerator<unknown>;
             }
         };
+    },
+    validate(size) {  // size: number — inferred from factory
+        ArgumentUtility.checkPositive({ size });
     }
 });

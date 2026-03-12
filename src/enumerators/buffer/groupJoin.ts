@@ -27,7 +27,7 @@ import { Tyneq } from "../../core/tyneq";
  * @group Enumerators
  * @internal
  */
-@operator('groupJoin', (innerSource: any, outerKeySelector: any, innerKeySelector: any, resultSelector: any) => {
+@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>('groupJoin', (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ innerSource });
     ArgumentUtility.checkIterable({ innerSource });
     ArgumentUtility.checkNotOptional({ outerKeySelector });

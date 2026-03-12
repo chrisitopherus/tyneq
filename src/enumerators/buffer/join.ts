@@ -29,7 +29,7 @@ import { TyneqMap } from "../../utility/map";
  * @group Enumerators
  * @internal
  */
-@operator('join', (innerSource: any, outerKeySelector: any, innerKeySelector: any, resultSelector: any) => {
+@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>('join', (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ innerSource });
     ArgumentUtility.checkIterable({ innerSource });
     ArgumentUtility.checkNotOptional({ outerKeySelector });

@@ -25,7 +25,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator('scan', (_seed: any, accumulator: any) => {
+@operator<[seed: unknown, accumulator: unknown]>('scan', (_seed, accumulator) => {
     ArgumentUtility.checkNotOptional({ accumulator });
 })
 export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {

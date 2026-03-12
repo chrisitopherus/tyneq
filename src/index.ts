@@ -16,5 +16,8 @@ export * from "./core/errors/argument/ArgumentError";
 export * from "./core/errors/argument/ArgumentNullError";
 export * from "./core/errors/argument/ArgumentOutOfRangeError";
 export * from "./core/errors/argument/ArgumentTypeError";
+export * from "./core/errors/argument/ValidationError";
+export * from "./utility/ValidationBuilder";
+export * from "./queryplan";
 export * from "./extensibility";
 export * from "./operators/extensions";

@@ -19,9 +19,9 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * @category Streaming
  * @internal
  */
-createGeneratorOperator<any, any, [any]>({
+createGeneratorOperator({
     name: 'defaultIfEmpty',
-    *generator(source: Iterable<any>, defaultValue: any): IterableIterator<any> {
+    *generator(source: Iterable<unknown>, defaultValue: unknown): IterableIterator<unknown> {
         let hasElements = false;
         for (const item of source) {
             hasElements = true;

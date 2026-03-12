@@ -31,7 +31,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('tap', (action: any) => {
+@operator<[action: unknown]>('tap', (action) => {
     ArgumentUtility.checkNotOptional({ action });
 })
 export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {

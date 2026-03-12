@@ -33,7 +33,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('tapIf', (action: any, predicate: any) => {
+@operator<[action: unknown, predicate: unknown]>('tapIf', (action, predicate) => {
     ArgumentUtility.checkNotOptional({ action });
     ArgumentUtility.checkNotOptional({ predicate });
 })

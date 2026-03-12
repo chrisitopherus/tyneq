@@ -24,8 +24,8 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('skip', (count: number) => {
-    ArgumentUtility.checkNonNegative({ count });
+@operator<[count: unknown]>('skip', (count) => {
+    ArgumentUtility.checkNonNegative({ count: count as number });
 })
 export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     /**

@@ -40,9 +40,8 @@ describe("window", () => {
       expect(result).toEqual([]);
     });
 
-    it("yields an empty sequence when window size is 0", () => {
-      const result = Tyneq.from([1, 2, 3]).window(0).toArray();
-      expect(result).toEqual([]);
+    it("throws ArgumentOutOfRangeError when window size is 0", () => {
+      expect(() => Tyneq.from([1, 2, 3]).window(0)).toThrow();
     });
   });
 

@@ -31,7 +31,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('split', (splitOn: any) => {
+@operator<[splitOn: unknown]>('split', (splitOn) => {
     ArgumentUtility.checkNotOptional({ splitOn });
 })
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
@@ -68,7 +68,7 @@ export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]
      * @returns An iterator result containing an array of elements for the next split group,
      *          or done if the sequence is exhausted with no remaining elements
      */
-    protected handleNext(): IteratorResult<TSource[], any> {
+    protected handleNext(): IteratorResult<TSource[]> {
         const currentSplit: TSource[] = [];
 
         while (true) {

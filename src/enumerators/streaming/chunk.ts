@@ -21,8 +21,8 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('chunk', (size: number) => {
-    ArgumentUtility.checkPositive({ size });
+@operator<[size: unknown]>('chunk', (size) => {
+    ArgumentUtility.checkPositive({ size: size as number });
 })
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
     /** The maximum size of each chunk. */

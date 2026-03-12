@@ -1,5 +1,6 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
 import { Nullable } from "./utility";
+import type { IQueryNode } from '../queryplan/IQueryNode';
 
 /**
  * Represents an iterator that traverses a sequence of elements.
@@ -250,6 +251,34 @@ export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable
  * @group Interfaces
  */
 export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
+    // ========================================================================
+    // QUERY PLAN
+    // ========================================================================
+
+    /**
+     * The query plan node representing this step in the operator chain.
+     *
+     * @remarks
+     * Each operator that produces a new `ITyneqEnumerable` attaches a `QueryNode`
+     * describing itself (name, args, category) and linking to the previous node via
+     * `queryNode.source`. The root node (from `Tyneq.from`, `Tyneq.range`, etc.)
+     * has `source === null`.
+     *
+     * Use this property with an {@link IQueryPlanVisitor} to inspect, print, or
+     * transform the query plan without executing the sequence:
+     *
+     * ```ts
+     * const seq = Tyneq.from([1, 2, 3]).where(x => x > 0).select(x => x * 2);
+     * console.log(seq.queryNode?.operatorName); // 'select'
+     * console.log(seq.queryNode?.source?.operatorName); // 'where'
+     * ```
+     *
+     * `null` is returned for sequences created without query-plan support (e.g.,
+     * sequences produced by `pipe()` or sequences constructed directly without
+     * passing a node to `createEnumerable`).
+     */
+    readonly queryNode: IQueryNode | null;
+
     // ========================================================================
     // TERMINAL OPERATORS
     // These operators execute the query and return a concrete value.

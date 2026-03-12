@@ -18,9 +18,9 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('throttle', (count: number) => {
-    ArgumentUtility.checkSafeInteger({ count });
-    ArgumentUtility.checkPositive({ count });
+@operator<[count: unknown]>('throttle', (count) => {
+    ArgumentUtility.checkSafeInteger({ count: count as number });
+    ArgumentUtility.checkPositive({ count: count as number });
 })
 export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
