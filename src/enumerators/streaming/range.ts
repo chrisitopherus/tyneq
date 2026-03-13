@@ -3,40 +3,31 @@ import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutO
 import { nameof } from "../../utility/nameof";
 
 /**
- * Enumerator implementation for generating a sequence of consecutive integers.
- * 
+ * Enumerator that generates a sequence of consecutive integers from `start` to `end` inclusive.
+ *
  * @remarks
- * This enumerator generates integers from start to end (inclusive) without buffering.
- * Each call to next() generates the next number in the sequence.
- * 
- * **Implementation**: Maintains current value, increments on each call.
- * 
- * **Performance**: O(1) space (streaming). O(end - start + 1) time when fully enumerated.
- * 
- * @see {@link RangeOperator} for the operator that uses this enumerator.
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Each call to `next()` yields the next integer in the range without buffering.
  *
  * @group Enumerators
  * @internal
  */
 export class RangeEnumerator extends TyneqBaseEnumerator<number> {
-    /** Current value in the range. */
     private current: number;
-    /** Last value in the range (inclusive). */
     private end: number;
 
     /**
-     * Creates a new range enumerator.
-     * 
-     * @param start - The first number in the range.
-     * @param end - The last number in the range (inclusive).
-     * @throws {ArgumentOutOfRangeError} If start is greater than end.
+     * @param start - First integer in the range (inclusive).
+     * @param end - Last integer in the range (inclusive); must be >= `start`.
+     * @throws {ArgumentOutOfRangeError} If `start` is greater than `end`.
      */
     public constructor(start: number, end: number) {
         super();
         if (start > end) {
             throw new ArgumentOutOfRangeError(nameof({ start })[0], `Expected ${nameof({ start })[0]} to be less than or equal to ${nameof({ end })[0]}.`);
         }
-        
+
         this.current = start;
         this.end = end;
     }
@@ -51,11 +42,6 @@ export class RangeEnumerator extends TyneqBaseEnumerator<number> {
         this.sourceDisposed = true;
     }
 
-    /**
-     * Generates the next integer in the range.
-     * 
-     * @returns Iterator result containing the next integer, or done when end is exceeded.
-     */
     protected override handleNext(): IteratorResult<number> {
         if (this.current > this.end) {
             return this.done();

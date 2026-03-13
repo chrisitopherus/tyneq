@@ -4,20 +4,13 @@ import { IEnumerable } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**
- * Terminal operator implementation for checking if a sequence is null or empty.
+ * Terminal operator that returns `true` if the sequence is null or contains no elements.
  *
  * @remarks
- * This is a terminal operator that returns true if the source is null or contains no
- * elements. Checks at most one element, so it short-circuits immediately for non-empty
- * sequences.
- *
- * **Performance**: O(1) space. O(1) time (reads at most one element).
- *
- * **Operator Category**: Terminal - forces evaluation and returns a boolean.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Reads at most one element to determine whether the sequence is empty, then disposes the
+ * iterator.
  *
  * @typeParam T - The type of elements in the sequence.
  *
@@ -40,7 +33,7 @@ export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> 
 
         const iterator = this.source[Symbol.iterator]();
         const first = iterator.next();
-        
+
         EnumeratorUtility.tryDispose(iterator);
         return first.done === true;
     }

@@ -6,25 +6,19 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 
 /**
- * Enumerator implementation for correlating elements from two sequences based on matching keys.
- * 
+ * Enumerator that correlates elements from two sequences based on matching keys (inner join).
+ *
  * @remarks
- * This enumerator performs an inner join between outer and inner sequences based on matching keys.
- * Lazily builds a lookup from the inner sequence on first iteration, then yields a result for
- * each outer-inner pair with matching keys. Handles one-to-many relationships (one outer can
- * match multiple inner elements).
- * 
- * **Implementation**: Buffers entire inner sequence into a key-to-values lookup on first call.
- * Maintains pending state for outer elements with multiple inner matches.
- * 
- * **Performance**: O(m) space where m is size of inner sequence. O(m) time for initial
- * inner sequence consumption, then O(k) per outer element where k is matches.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Buffers the entire inner sequence into a key-to-values lookup on first iteration. For each
+ * outer element, yields one result per matching inner element. Outer elements with no matches
+ * are skipped.
+ *
  * @typeParam TOuter - The type of elements in the outer (source) sequence.
  * @typeParam TInner - The type of elements in the inner sequence.
  * @typeParam TKey - The type of the join key.
- * @typeParam TResult - The type of the result after applying result selector.
- * 
+ * @typeParam TResult - The type of the result produced by the result selector.
  *
  * @group Enumerators
  * @internal
@@ -37,31 +31,21 @@ import { TyneqMap } from "../../utility/map";
     ArgumentUtility.checkNotOptional({ resultSelector });
 })
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
-    /** The inner sequence to join against. */
     private readonly innerSource: Iterable<TInner>;
-    /** Function to extract key from outer elements. */
     private readonly outerKeySelector: (outer: TOuter) => TKey;
-    /** Function to extract key from inner elements. */
     private readonly innerKeySelector: (inner: TInner) => TKey;
-    /** Function to combine outer and inner elements. */
     private readonly resultSelector: (outer: TOuter, inner: TInner) => TResult;
-    /** Map from keys to arrays of matching inner elements. */
     private innerLookup = new TyneqMap<TKey, TInner[]>();
-    /** Current outer element being processed for multiple inner matches. */
     private pendingOuter!: TOuter;
-    /** Array of inner elements matching current outer element. */
     private pendingMatches: Nullable<TInner[]> = null;
-    /** Index into pending matches array. */
     private pendingIndex = 0;
 
     /**
-     * Creates a new join enumerator.
-     * 
      * @param sourceEnumerator - The outer sequence enumerator.
-     * @param innerSource - The inner sequence to join against.
-     * @param outerKeySelector - Function to extract key from outer elements.
-     * @param innerKeySelector - Function to extract key from inner elements.
-     * @param resultSelector - Function to combine outer and inner elements.
+     * @param innerSource - The inner sequence to join against; fully buffered on first iteration.
+     * @param outerKeySelector - Extracts the join key from each outer element.
+     * @param innerKeySelector - Extracts the join key from each inner element.
+     * @param resultSelector - Combines a matching outer and inner element into a result.
      * @throws {ArgumentError} If any required parameter is null or undefined.
      */
     public constructor(
@@ -86,12 +70,6 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
         }
     }
 
-    /**
-     * Gets the next joined result by combining outer and inner elements with matching keys.
-     * On first call, consumes entire inner sequence to build lookup.
-     * 
-     * @returns Iterator result containing the next joined result, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TResult> {
         while (true) {
             if (this.pendingMatches !== null) {

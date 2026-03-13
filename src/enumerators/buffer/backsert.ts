@@ -7,14 +7,14 @@ import { operator } from '../../extensibility/operatorDecorators';
 // TODO: Consider rethinking the API to allow for a more efficient implementation. For example, instead of specifying the back index, we could specify a predicate that determines where to insert the other enumerable.
 // TODO: Consider rethinking the way it should work, the current implementation is not intuitive - inserting at the beginning prepends the other source but backsert at 0 does not append but instead the last element of the source remains to be the last.
 /**
- * Enumerator implementation for inserting a sequence at a position measured from the end.
+ * Enumerator that inserts a sequence at a position measured from the end of the source.
  *
  * @remarks
- * Buffers both source and other sequences entirely before yielding. The insertion point
- * is computed as `source.length - 1 - backIndex`. Elements before the insertion point
- * come from source, then all elements from other, then the remaining source elements.
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
  *
- * **Performance**: O(n + m) space for buffering both sequences.
+ * Buffers both the source and the other sequence on first iteration. The insertion point is
+ * `source.length - 1 - backIndex`. Elements before that index come from source, then all
+ * elements from other, then the remaining source elements.
  *
  * @typeParam T - The type of elements in the sequences.
  *
@@ -28,6 +28,11 @@ export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private current = 0;
 
+    /**
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param backIndex - Distance from the last element where `other` is inserted.
+     * @param other - The sequence to insert at the computed position.
+     */
     public constructor(sourceEnumerator: IEnumerator<T>, backIndex: number, other: Iterable<T>) {
         super(sourceEnumerator);
         this.backIndex = backIndex;

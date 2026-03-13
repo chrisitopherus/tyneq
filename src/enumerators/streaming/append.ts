@@ -3,47 +3,33 @@ import { IEnumerator } from "../../types/core";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for appending a single element to the end of a sequence.
- * 
+ * Enumerator that appends a single element to the end of a sequence.
+ *
  * @remarks
- * This enumerator yields all source elements first, followed by the appended item.
- * Streams elements without buffering.
- * 
- * **Implementation**: Passes through source elements, then yields appended item once, then completes.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Yields all source elements first, then the appended item.
+ *
  * @typeParam T - The type of elements in the sequence.
- * 
  *
  * @group Enumerators
  * @internal
  */
 @operator('append')
 export class AppendEnumerator<T> extends TyneqEnumerator<T> {
-    /** Whether source enumeration is complete. */
     private isSourceDone = false;
-    /** Whether the appended item has been yielded. */
     private appended = false;
-    /** The item to append to the end. */
     private readonly item: T;
 
     /**
-     * Creates a new append enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param item - The element to append to the end.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param item - The element to append after all source elements.
      */
     public constructor(sourceEnumerator: IEnumerator<T>, item: T) {
         super(sourceEnumerator);
         this.item = item;
     }
 
-    /**
-     * Gets the next element (source elements first, then appended item).
-     * 
-     * @returns Iterator result containing the next element, or done after appended item.
-     */
     protected override handleNext(): IteratorResult<T> {
         if (!this.isSourceDone) {
             const sourceNext = this.sourceEnumerator.next();

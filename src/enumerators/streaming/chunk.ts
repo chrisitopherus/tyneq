@@ -4,19 +4,15 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for splitting a sequence into fixed-size chunks.
- * 
+ * Enumerator that splits a sequence into fixed-size chunks.
+ *
  * @remarks
- * This enumerator groups consecutive elements into arrays of the specified size.
- * The last chunk may contain fewer elements if the source length is not evenly divisible.
- * Streams chunks as they are completed without buffering entire sequence.
- * 
- * **Implementation**: Accumulates elements into current chunk until size reached, then yields.
- * 
- * **Performance**: O(size) space for current chunk. O(n) time when fully enumerated.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Groups consecutive elements into arrays of the specified size. The last chunk may contain
+ * fewer elements if the source length is not evenly divisible by `size`.
+ *
  * @typeParam T - The type of elements in the source sequence.
- * 
  *
  * @group Enumerators
  * @internal
@@ -25,29 +21,18 @@ import { operator } from '../../extensibility/operatorDecorators';
     ArgumentUtility.checkPositive({ size: size as number });
 })
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
-    /** The maximum size of each chunk. */
     private readonly size: number;
-    /** Array accumulating elements for the current chunk. */
     private currentChunk: T[] = [];
 
     /**
-     * Creates a new chunk enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param size - The maximum number of elements per chunk.
-     * @throws {ArgumentError} If size is not positive.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param size - Maximum number of elements per chunk; must be positive.
      */
     public constructor(sourceEnumerator: IEnumerator<T>, size: number) {
         super(sourceEnumerator);
         this.size = size;
     }
 
-    /**
-     * Gets the next chunk of elements.
-     * Accumulates elements until chunk size is reached or source is exhausted.
-     * 
-     * @returns Iterator result containing the next chunk array, or done if source exhausted.
-     */
     protected override handleNext(): IteratorResult<T[]> {
         while (this.currentChunk.length < this.size) {
             const next = this.sourceEnumerator.next();

@@ -4,23 +4,14 @@ import type { IQueryNode } from '../queryplan/IQueryNode';
 
 /**
  * Represents an iterator that traverses a sequence of elements.
- * 
+ *
  * @remarks
- * Extends the standard JavaScript `Iterator<T>` interface with optional `return` and `throw` methods.
- * This interface is the foundation for enumerable sequences, providing the mechanism to iterate
- * over elements one at a time.
- * 
- * Unlike one-time-use generators, enumerators created from {@link IEnumeratorFactory}
- * can support re-iteration by creating fresh enumerator instances.
- * 
- * The enumerator follows the standard iterator protocol:
- * - Call `next()` to advance and retrieve the next value
- * - When exhausted, `next()` returns `{ done: true, value: undefined }`
- * - Optional `return()` allows early termination
- * - Optional `throw()` allows injecting errors into iteration
- * 
+ * Extends the standard JavaScript `Iterator<T>` interface with optional `return` and `throw`
+ * methods. Enumerators created from {@link IEnumeratorFactory} can support re-iteration by
+ * creating fresh instances on each call to `getEnumerator()`.
+ *
  * @typeParam T - The type of elements being enumerated.
- * 
+ *
  * @see {@link IEnumeratorFactory} for creating enumerators.
  * @see {@link IEnumerable} for re-iterable sequences.
  *
@@ -48,20 +39,13 @@ export interface IEnumerator<T> extends Iterator<T> {
 
 /**
  * Provides a factory method for creating enumerators.
- * 
+ *
  * @remarks
- * This interface enables re-iterability by providing a method that creates fresh enumerators
- * on demand. Each call to `getEnumerator()` returns a new enumerator instance starting from
- * the beginning of the sequence.
- * 
- * This pattern solves the limitation of JavaScript generators, which are single-use and
- * cannot be reset or re-iterated after exhaustion.
- * 
- * Implementations must ensure that multiple calls to `getEnumerator()` produce independent
- * enumerators that do not share iteration state.
- * 
+ * Each call to `getEnumerator()` must return a new, independent enumerator instance starting
+ * from the beginning of the sequence with no shared iteration state.
+ *
  * @typeParam T - The type of elements in the sequence.
- * 
+ *
  * @see {@link IEnumerator} for the iterator type returned.
  * @see {@link IEnumerable} which combines this with the Iterable protocol.
  *
@@ -78,39 +62,15 @@ export interface IEnumeratorFactory<T> {
 
 /**
  * Represents a re-iterable sequence of elements.
- * 
+ *
  * @remarks
  * Combines the standard JavaScript `Iterable<T>` protocol with the {@link IEnumeratorFactory}
- * pattern to provide sequences that can be enumerated multiple times. Each iteration obtains
- * a fresh enumerator via `Symbol.iterator`, ensuring independent iteration state.
- * 
- * This interface serves as the base for {@link ITyneqEnumerable}, which extends it with
- * LINQ-style query operators.
- * 
- * Unlike raw generators or one-time iterators, `IEnumerable<T>` sequences are designed to be:
- * - **Re-iterable**: Can be enumerated multiple times
- * - **Lazy**: Elements are typically computed on-demand during iteration
- * - **Composable**: Can be transformed and combined using query operators
- * 
- * The `Symbol.iterator` method must return a fresh enumerator on each call, allowing
- * constructs like `for...of` loops, spread operators, and `Array.from()` to work correctly
- * across multiple enumerations.
- * 
+ * pattern so that sequences can be enumerated multiple times. Each call to `Symbol.iterator`
+ * returns a fresh, independent enumerator. This interface serves as the base for
+ * {@link ITyneqEnumerable}, which extends it with LINQ-style query operators.
+ *
  * @typeParam T - The type of elements in the sequence.
- * 
- * @example
- * ```typescript
- * const enumerable: IEnumerable<number> = ...
- * 
- * // Can enumerate multiple times
- * for (const item of enumerable) { console.log(item); }
- * for (const item of enumerable) { console.log(item); } // Works again
- * 
- * // Works with standard JavaScript iteration protocols
- * const array = [...enumerable];
- * const set = new Set(enumerable);
- * ```
- * 
+ *
  * @see {@link IEnumerator} for the iterator type.
  * @see {@link IEnumeratorFactory} for the factory pattern.
  * @see {@link ITyneqEnumerable} for the full query operator interface.
@@ -119,14 +79,8 @@ export interface IEnumeratorFactory<T> {
  */
 export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
     /**
-     * Returns an enumerator that iterates through the sequence.
-     * 
-     * @remarks
-     * This method implements the JavaScript iterator protocol (`Symbol.iterator`).
-     * Each call must return a fresh enumerator instance, enabling re-iteration.
-     * 
-     * Equivalent to `GetEnumerator()` in C# LINQ.
-     * 
+     * Returns a new enumerator positioned before the first element.
+     *
      * @returns A new {@link IEnumerator} positioned before the first element.
      */
     [Symbol.iterator](): IEnumerator<T>;
@@ -134,36 +88,13 @@ export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
 
 /**
  * A factory function that creates a new enumerator.
- * 
+ *
  * @remarks
- * This function type provides a lightweight alternative to {@link IEnumeratorFactory}
- * for creating re-iterable sequences. Each invocation produces a fresh enumerator
- * starting from the beginning of the sequence.
- * 
- * This pattern is essential for enabling re-iterability in the library, as JavaScript
- * generators are single-use and cannot be reset after exhaustion.
- * 
- * Functions of this type must be pure with respect to iteration state—each call
- * should produce an independent enumerator with no shared mutable state.
- * 
+ * Lightweight functional alternative to {@link IEnumeratorFactory}. Each invocation must
+ * produce a fresh, independent enumerator with no shared mutable state.
+ *
  * @typeParam T - The type of elements produced by the enumerator.
- * 
- * @example
- * ```typescript
- * const factory: IteratorFactory<number> = () => {
- *     let i = 0;
- *     return {
- *         next: () => i < 5 
- *             ? { value: i++, done: false }
- *             : { value: undefined, done: true }
- *     };
- * };
- * 
- * // Create independent enumerators
- * const enum1 = factory();
- * const enum2 = factory();
- * ```
- * 
+ *
  * @see {@link IEnumerator} for the enumerator type returned.
  * @see {@link IEnumeratorFactory} for the interface-based equivalent.
  *
@@ -173,22 +104,14 @@ export type IteratorFactory<T> = () => IEnumerator<T>;
 
 /**
  * A factory function that creates a typed enumerable from an iterator factory.
- * 
+ *
  * @remarks
- * This type represents a higher-order function used internally to construct
- * specific {@link ITyneqEnumerable} implementations from iterator factories.
- * It enables query operators to create sequences of the same concrete type
- * as the source sequence, preserving type-specific behavior and extensions.
- * 
- * This pattern supports derived enumerable types (like ordered enumerables)
- * that need to preserve their specific type through query operator chains.
- * 
+ * Used internally to construct specific {@link ITyneqEnumerable} implementations so that
+ * query operators produce sequences of the same concrete type as the source.
+ *
  * @typeParam TSource - The element type of the sequence.
  * @typeParam TEnumerable - The specific enumerable implementation type.
- * 
- * @param iteratorFactory - A factory function that creates enumerators for the sequence.
- * @returns A new enumerable instance of type `TEnumerable`.
- * 
+ *
  * @see {@link ITyneqEnumerable} for the base enumerable interface.
  * @see {@link IteratorFactory} for the factory function type.
  *
@@ -199,52 +122,16 @@ export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable
 
 /**
  * Represents a queryable sequence with LINQ-style operators.
- * 
+ *
  * @remarks
- * This is the primary interface for working with enumerable sequences in this library.
- * It extends {@link IEnumerable} with a comprehensive set of query operators inspired by
- * .NET LINQ, enabling functional composition of data transformations.
- * 
- * ## Operator Categories
- * 
- * ### Terminal Operators
- * Execute the query and return a single value or materialize the sequence.
- * Examples: `toArray()`, `count()`, `first()`, `any()`, `sum()`.
- * These operators enumerate the sequence and do not return another enumerable.
- * 
- * ### Streaming Operators  
- * Transform or filter elements one-at-a-time as they flow through.
- * Examples: `select()`, `where()`, `take()`, `skip()`.
- * These operators are lazy and do not enumerate until a terminal operator is applied.
- * 
- * ### Buffering Operators
- * Must buffer or cache elements before producing results.
- * Examples: `distinct()`, `orderBy()`, `reverse()`, `groupBy()`.
- * These operators enumerate part or all of the source sequence during execution.
- * 
- * ## Laziness and Deferred Execution
- * 
- * Most query operators use deferred execution—they do not process elements until
- * the sequence is enumerated (typically by a terminal operator or iteration).
- * This allows:
- * - Efficient query composition without intermediate collections
- * - Processing infinite or very large sequences
- * - Short-circuiting when only partial results are needed
- * 
- * ## Re-iterability
- * 
- * Sequences implementing this interface are re-iterable. Each enumeration creates
- * a fresh iterator and re-executes the query pipeline. For operators that perform
- * side effects (like `tap()`), these effects will occur on every enumeration.
- * 
- * ## Performance Characteristics
- * 
- * - **Streaming operators**: O(1) space overhead, O(n) time when enumerated
- * - **Buffering operators**: O(n) space, O(n) or O(n log n) time depending on operation
- * - **Terminal operators**: Varies by operation; documented per method in implementations
- * 
+ * Extends {@link IEnumerable} with terminal, streaming, and buffering operators. Streaming
+ * operators transform elements one-at-a-time using deferred execution; buffering operators
+ * buffer part or all of the source before producing results; terminal operators enumerate the
+ * source immediately and return a concrete value. Sequences are re-iterable — each enumeration
+ * creates a fresh iterator and re-executes the pipeline.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link IEnumerable} for the base iterable interface.
  * @see {@link ITyneqOrderedEnumerable} for ordered sequences with additional sorting operators.
  *
@@ -858,14 +745,12 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      *
      * @remarks
      * This method uses deferred execution. The source sequence is not enumerated until the
-     * returned sequence is iterated.
+     * returned sequence is iterated. Elements are cached incrementally; subsequent enumerations
+     * reuse cached values for the portion already evaluated and continue from the source for
+     * the remainder.
      *
-     * Elements are cached incrementally: only the elements that have been iterated so far are held
-     * in memory. Subsequent enumerations reuse the cached values for the portion already evaluated
-     * and continue from the source for the remainder.
-     *
-    * @returns A cached enumerable that caches source elements on first access.
-    * Use `refresh()` on the returned value to invalidate the cache.
+     * @returns A cached enumerable that stores source elements on first access.
+     * Call `refresh()` on the returned value to invalidate the cache.
      */
     memoize(): ITyneqCachedEnumerable<TSource>;
 
@@ -966,11 +851,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Emits a running accumulation of elements (streaming reduce / prefix scan).
      *
      * @remarks
-     * Unlike `reduce()`/`aggregate()`, `scan()` yields every intermediate value
-     * rather than only the final result, making it useful for running totals,
-     * moving-window computations, and state-machine outputs.
-     *
-     * The seed is **not** yielded; the first emitted value is `accumulator(seed, element[0])`.
+     * Unlike `aggregate()`, yields every intermediate accumulator value rather than only the
+     * final result. The seed is not yielded; the first emitted value is
+     * `accumulator(seed, element[0])`.
      *
      * @typeParam TResult - The type of the accumulated result.
      * @param seed - Initial accumulator value.
@@ -991,9 +874,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Produces overlapping sliding windows of exactly `size` consecutive elements.
      *
      * @remarks
-     * Only complete windows are emitted; trailing elements that do not fill a
-     * full window are discarded. The sequence must have at least `size` elements
-     * for any output to be produced.
+     * Only complete windows are emitted. Trailing elements that do not fill a full window
+     * are discarded. The sequence must contain at least `size` elements for any output to
+     * be produced.
      *
      * @param size - The number of elements per window (must be ≥ 1).
      * @returns A sequence of arrays, each containing `size` consecutive elements.
@@ -1012,9 +895,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Places a `delimiter` element between every pair of consecutive elements.
      *
      * @remarks
-     * The delimiter is only inserted **between** existing elements — it is never
-     * prepended or appended. An empty or single-element sequence passes through
-     * unchanged (no delimiter is inserted).
+     * The delimiter is only inserted between existing elements — it is never prepended or
+     * appended. An empty or single-element sequence passes through unchanged.
      *
      * @param delimiter - The value to insert between elements.
      * @returns A sequence with `delimiter` inserted between each adjacent pair.
@@ -1030,15 +912,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     intersperse(delimiter: TSource): ITyneqEnumerable<TSource>;
 
     /**
-     * Returns both the minimum and maximum elements in a **single** enumeration pass.
+     * Returns both the minimum and maximum elements in a single enumeration pass.
      *
-     * @remarks
-     * Calling `min()` and `max()` separately requires two full passes over the source
-     * sequence. `minMax()` fuses them into one O(n) pass with O(1) space overhead,
-     * which is beneficial for large sequences or expensive iterators.
-     *
-     * @param comparer - Optional comparison function. If omitted, uses default
-     *   JavaScript relational comparison (works for numbers and strings).
+     * @param comparer - Optional comparison function. If omitted, uses default comparison.
      * @returns An object containing both `min` and `max` elements.
      * @throws {SequenceContainsNoElementsError} when the sequence is empty.
      *
@@ -1053,23 +929,15 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
 /**
  * Represents an ordered sequence with additional ordering operators.
- * 
+ *
  * @remarks
- * Returned by `orderBy()` and `orderByDescending()` operators, this interface extends
- * {@link ITyneqEnumerable} with `thenBy()` and `thenByDescending()` methods for
- * multi-level sorting.
- * 
- * Ordered enumerables maintain a chain of sort criteria that are applied in sequence
- * when the sequence is enumerated. Each `thenBy` operation adds a secondary sort
- * criterion without replacing the primary ordering.
- * 
- * The sort is stable—elements that compare as equal maintain their relative order
- * from the source sequence.
- * 
+ * Returned by `orderBy()` and `orderByDescending()`. Extends {@link ITyneqEnumerable} with
+ * `thenBy()` and `thenByDescending()` for multi-level sorting. Each `thenBy` call adds a
+ * secondary sort criterion without replacing the primary ordering. The sort is stable.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable} for the base enumerable interface.
- * See internal ordered-enumerable infrastructure for implementation details.
  *
  * @group Interfaces
  */
@@ -1154,20 +1022,14 @@ export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
 export type CacheResult<TSource> = { has: true, value: TSource } | { has: false };
 
 /**
- * Internal interface for ordered enumerable implementations.
- * 
+ * Internal contract for ordered enumerable implementations.
+ *
  * @remarks
- * This interface defines the internal contract for implementing ordered sequences.
- * It maintains a reference to the source sequence, an optional parent ordering
- * for chained `thenBy` operations, and a method to construct the composite sorter.
- * 
- * Implementations use this interface to build a chain of {@link BaseEnumerableSorter}
- * instances that collectively define the multi-level sort behavior.
- * 
- * This is an internal interface not typically used directly by library consumers.
- * 
+ * Maintains a reference to the source sequence, an optional parent ordering for chained
+ * `thenBy` operations, and a method to construct the composite {@link BaseEnumerableSorter}.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqOrderedEnumerable} for the public ordered enumerable interface.
  * @see {@link BaseEnumerableSorter} for the sorter implementation.
  *
@@ -1199,10 +1061,6 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
 /**
  * The result of a `minMax()` operation: both the minimum and maximum element.
  *
- * @remarks
- * Returned by the `minMax()` extension operator, which computes both values in
- * a single O(n) pass instead of requiring two separate `min()` / `max()` calls.
- *
  * @typeParam T - Element type of the source sequence.
  *
  * @see {@link ITyneqEnumerable.minMax}
@@ -1218,17 +1076,13 @@ export type MinMaxResult<T> = {
 
 /**
  * Represents a key-value pair.
- * 
+ *
  * @remarks
- * Used by operators like `toMap()` and `toRecord()` to specify both the key and value
- * when materializing sequences into dictionaries or records.
- * 
- * This type provides a simple, strongly-typed structure for returning paired data
- * from selector functions.
- * 
+ * Returned by selector functions passed to `toMap()` and `toRecord()`.
+ *
  * @typeParam TKey - The type of the key.
  * @typeParam TValue - The type of the value.
- * 
+ *
  * @see {@link ITyneqEnumerable.toMap}
  * @see {@link ITyneqEnumerable.toRecord}
  *

@@ -4,14 +4,7 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * Yields all source elements, or a single default value if the source is empty.
  *
  * @remarks
- * **Performance**: O(1) space (streaming generator). O(n) time.
- *
- * **Operator Category**: Streaming - deferred execution, no buffering.
- *
- * **Registration method**: `createGeneratorOperator()`.
- *
- * This method uses deferred execution. The source sequence is not read until the
- * returned sequence is iterated.
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
  *
  * @see {@link ITyneqEnumerable.defaultIfEmpty} for the public API.
  *

@@ -5,20 +5,13 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for finding the index of the first matching element.
- * 
+ * Terminal operator that returns the zero-based index of the first element satisfying a predicate.
+ *
  * @remarks
- * This is a terminal operator that returns the zero-based index of the first element
- * that satisfies the predicate, starting from a specified index. Returns -1 if no match
- * is found. Short-circuits on the first match.
- * 
- * **Performance**: O(1) space. O(n) worst-case time, O(1) best-case (early termination).
- * 
- * **Operator Category**: Terminal - forces partial evaluation and returns a number.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Starts searching from `startIndex`. Short-circuits on the first match. Returns `-1` if no
+ * element satisfies the predicate.
  *
  * @typeParam T - The type of elements in the sequence.
  *
@@ -30,18 +23,14 @@ import { nameof } from "../../utility/nameof";
  */
 @terminal('indexOf')
 export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
-    /** Predicate function to identify the desired element. */
     private readonly predicate: (item: T) => boolean;
-    /** The zero-based index to start searching from. */
     private readonly startIndex: number;
 
     /**
-     * Creates a new indexOf operator.
-     * 
      * @param source - The source sequence.
-     * @param predicate - Function to test each element.
-     * @param startIndex - The index to start searching from (default: 0).
-     * @throws {ArgumentError} If predicate is null/undefined or startIndex is negative.
+     * @param predicate - The predicate tested against each element.
+     * @param startIndex - The zero-based index at which to begin searching (default: `0`).
+     * @throws {ArgumentError} If `predicate` is null or undefined, or `startIndex` is negative.
      */
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean, startIndex: number = 0) {
         super(source);

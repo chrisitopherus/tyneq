@@ -1,7 +1,7 @@
 # ATTENTION — Items Needing Awareness or Future Work
 
 Items in this file are not bugs. They are deliberate trade-offs, known limitations, or
-architectural decisions that don't fit cleanly into any of the four refactoring tasks
+architectural decisions that don't fit cleanly into any single refactoring task
 but deserve to be documented so future maintainers aren't surprised.
 
 ---
@@ -49,27 +49,7 @@ one-off or third-party operators.
 
 ---
 
-## 3. `TyneqOrderedEnumerable` and `TyneqCachedEnumerable` — `queryNode` Always `null`
-
-**Location**: `src/core/ordering/TyneqOrderedEnumerable.ts`, `src/core/cache/TyneqCachedEnumerable.ts`
-
-Both subclasses declare `public readonly queryNode: IQueryNode | null = null` as a fixed
-`null`. This means that when `orderBy` or `memoize` are the root operators, their
-`queryNode` is `null` rather than a meaningful `QueryNode`.
-
-**Why**: `TyneqOrderedEnumerable` and `TyneqCachedEnumerable` are created directly by
-their respective operator impls (`@operator` + enumerator class for `orderBy`, and the
-`memoize` class for memoize). The `createEnumerable` chain that threads `QueryNode`s
-does not currently feed into the constructor of these concrete subclasses.
-
-**Correct fix** (deferred): Thread a `node?: IQueryNode | null` constructor parameter
-through `TyneqOrderedEnumerable` and `TyneqCachedEnumerable`, and pass the node from the
-registered `impl` function. This is straightforward but touches class constructors that
-were intentionally left minimal.
-
----
-
-## 4. `createEnumerable` Protected Access — Structural Cast Pattern
+## 3. `createEnumerable` Protected Access — Structural Cast Pattern
 
 **Location**: `src/extensibility/operatorDecorators.ts`, `src/extensibility/createOperator.ts`
 
@@ -97,7 +77,7 @@ accommodation for the `protected` modifier.
 
 ---
 
-## 5. Divergent Enumerator Hierarchies
+## 4. Divergent Enumerator Hierarchies
 
 **Location**: `src/core/enumerators/TyneqEnumerator.ts`, `src/core/operator/TyneqTerminalOperator.ts`
 
@@ -117,7 +97,7 @@ clearly so operators land in the right base class.
 
 ---
 
-## 6. `argumentUtility.ts` — Candidate for Splitting
+## 5. `argumentUtility.ts` — Candidate for Splitting
 
 **Location**: `src/utility/argumentUtility.ts` (~930 lines)
 
@@ -135,7 +115,7 @@ compatibility. No behavioural changes needed.
 
 ---
 
-## 7. `QueryNode` Args Capture Lambdas by Reference
+## 6. `QueryNode` Args Capture Lambdas by Reference
 
 **Location**: `src/queryplan/QueryNode.ts`, all operator registration impls
 
@@ -145,6 +125,7 @@ structural inspection, but:
 
 - **Serialization**: Functions are not JSON-serializable. Visitor implementations that
   serialize query plans must handle `typeof arg === 'function'` explicitly.
+  `QueryPlanPrinter` already handles this by rendering functions as `<fn>`.
 - **Memory**: Long-lived query nodes hold references to closure objects. If those closures
   capture large data, the query plan tree will retain it.
 
@@ -153,7 +134,7 @@ structural inspection, but:
 
 ---
 
-## 8. `Tyneq.empty()` QueryNode Chains Through `from([])`
+## 7. `Tyneq.empty()` QueryNode Chains Through `from([])`
 
 **Location**: `src/core/tyneq.ts` — `Tyneq.empty<T>()`
 
@@ -169,3 +150,48 @@ dedicated `QueryNode('empty', [], null, 'source')` would be more semantically co
 query plan inspection.
 
 **Low priority** — a visitor can detect `from` with an empty array arg if needed.
+
+---
+
+## 8. `QueryPlanPrinter` Uses Node.js `fs` — Not Browser-Safe
+
+**Location**: `src/queryplan/QueryPlanPrinter.ts`
+
+`QueryPlanPrinter` imports `writeFileSync` from Node's built-in `fs` module to support
+the file-output path. This makes it Node.js-only.
+
+**If browser support is ever needed**:
+- Remove the `fs` import and the file-write branch.
+- Restrict file output to a separate utility (`writePlanToFile`) exported conditionally
+  via a Node-specific entry point in `package.json` `exports`.
+- Or use a dynamic `import('fs')` guarded by `typeof process !== 'undefined'`.
+
+**Currently acceptable**: Tyneq targets Node/TypeScript environments and the `fs` import
+is tree-shaken away if file output is never used with a bundler that supports it.
+
+---
+
+## 9. `orderBy` / `thenBy` QueryNode Args Include `undefined` Comparer
+
+**Location**: `src/core/TyneqEnumerableBase.ts`, `src/core/ordering/TyneqOrderedEnumerable.ts`
+
+When `orderBy(keySelector)` is called without a comparer, the node is created as:
+
+```ts
+new QueryNode('orderBy', [keySelector, comparer], this.queryNode, 'buffer')
+//                                     ^ undefined here
+```
+
+The second arg is `undefined` when the caller omitted `comparer`. This is consistent with
+capturing exactly what the user passed, but visitors iterating `node.args` will see a
+trailing `undefined`.
+
+**Mitigation**: Filter `undefined` in your visitor's arg formatter, or use
+`node.args.filter(a => a !== undefined)`. `QueryPlanPrinter` renders `undefined` as the
+literal string `"undefined"` — distinguishable from a real string argument.
+
+**Future fix (low priority)**: Only include `comparer` in args when it is not `undefined`:
+```ts
+const args = comparer !== undefined ? [keySelector, comparer] : [keySelector];
+new QueryNode('orderBy', args, this.queryNode, 'buffer')
+```

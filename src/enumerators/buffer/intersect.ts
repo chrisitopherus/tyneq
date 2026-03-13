@@ -3,38 +3,28 @@ import { IEnumerable, IEnumerator } from '../../types/core';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for producing set intersection (elements in both sequences).
- * 
+ * Enumerator that yields elements present in both the source and another sequence.
+ *
  * @remarks
- * This enumerator yields elements that appear in both the source and other sequences.
- * Lazily initializes a set from the other sequence on first iteration. Each value appears
- * at most once in the output.
- * 
- * **Implementation**: Buffers other sequence into a Set on first call. Tracks yielded values.
- * 
- * **Performance**: O(m) space where m is size of other sequence. O(1) per element for set
- * lookups after initialization.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Buffers the other sequence into a `Set` on first iteration. Each value appears at most once
+ * in the output.
+ *
  * @typeParam TSource - The type of elements in the sequences.
- * 
  *
  * @group Enumerators
  * @internal
  */
 @operator('intersect')
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** The sequence to intersect with. */
     private readonly otherValues: Iterable<TSource>;
-    /** Set of values from the other sequence (for membership testing). */
     private intersectionValues = new Set<TSource>();
-    /** Set of values already yielded (for uniqueness). */
     private bufferedValues = new Set<TSource>();
 
     /**
-     * Creates a new intersect enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param otherValues - The sequence to intersect with.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param otherValues - The second sequence; buffered into a `Set` on first iteration.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
@@ -45,12 +35,6 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.intersectionValues = new Set<TSource>(this.otherValues);
     }
 
-    /**
-     * Gets the next unique element that exists in both sequences.
-     * On first call, buffers other sequence into a set.
-     * 
-     * @returns Iterator result containing the next intersecting element, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();

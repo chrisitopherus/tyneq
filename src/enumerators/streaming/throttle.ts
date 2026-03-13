@@ -4,14 +4,13 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for yielding every Nth element from a sequence.
+ * Enumerator that yields every Nth element from a sequence.
  *
  * @remarks
- * Yields one element per every `count` source elements consumed. The first element
- * (index 0) is always yielded; subsequent yields occur at indices that are multiples
- * of `count` (0, count, 2×count, …).
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
  *
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
+ * The element at index 0 is always yielded; subsequent elements are yielded at indices that are
+ * multiples of `count` (0, count, 2×count, …).
  *
  * @typeParam T - The type of elements in the sequence.
  *
@@ -25,6 +24,11 @@ import { operator } from '../../extensibility/operatorDecorators';
 export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
+
+    /**
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param count - Stride between yielded elements; must be a positive safe integer.
+     */
     public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

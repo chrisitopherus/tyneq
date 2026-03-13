@@ -3,15 +3,13 @@ import { IEnumerator } from "../../types/core";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for pairing each element with its predecessor.
+ * Enumerator that yields consecutive overlapping pairs from a sequence.
  *
  * @remarks
- * Yields consecutive overlapping pairs `[prev, current]` from the source sequence.
- * The first element is buffered and used as the "previous" value for the first pair.
- * A sequence of n elements produces n-1 pairs. An empty or single-element sequence
- * produces no pairs.
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
  *
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
+ * Each pair is `[previous, current]`. A sequence of n elements produces n-1 pairs.
+ * An empty or single-element sequence produces no output.
  *
  * @typeParam T - The type of elements in the source sequence.
  *

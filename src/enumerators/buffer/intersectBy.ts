@@ -4,21 +4,16 @@ import { operator } from '../../extensibility/operatorDecorators';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
 /**
- * Enumerator implementation for producing set intersection based on key comparison.
- * 
+ * Enumerator that yields elements whose keys appear in both the source and another key sequence.
+ *
  * @remarks
- * This enumerator yields elements whose keys appear in both the source and other key sequences.
- * Lazily initializes a set from the other keys on first iteration. Each unique key appears
- * at most once in the output.
- * 
- * **Implementation**: Buffers other keys into a Set on first call. Tracks yielded keys.
- * 
- * **Performance**: O(m) space where m is size of other keys. O(1) per element for set
- * lookups after initialization.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Buffers the other keys into a `Set` on first iteration. Each unique key appears at most once
+ * in the output.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of the comparison key.
- * 
  *
  * @group Enumerators
  * @internal
@@ -28,21 +23,15 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
     ArgumentUtility.checkNotOptional({ keySelector });
 })
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
-    /** The sequence of keys to intersect with. */
     private readonly otherValues: Iterable<TKey>;
-    /** Function to extract comparison key from each element. */
     private readonly keySelector: (item: TSource) => TKey;
-    /** Set of keys from the other sequence (for membership testing). */
     private intersectionKeys = new Set<TKey>();
-    /** Set of keys already yielded (for uniqueness). */
     private bufferedKeys = new Set<TKey>();
 
     /**
-     * Creates a new intersectBy enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param otherValues - The sequence of keys to intersect with.
-     * @param keySelector - Function to extract comparison key from each element.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param otherValues - The keys to intersect with; buffered into a `Set` on first iteration.
+     * @param keySelector - Extracts the comparison key from each source element.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
@@ -54,12 +43,6 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
         this.intersectionKeys = new Set<TKey>(this.otherValues);
     }
 
-    /**
-     * Gets the next element whose key exists in the other key sequence.
-     * On first call, buffers other keys into a set.
-     * 
-     * @returns Iterator result containing the next intersecting element, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();

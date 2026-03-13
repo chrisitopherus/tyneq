@@ -7,20 +7,13 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for retrieving the single element matching a predicate.
- * 
+ * Terminal operator that returns the single element satisfying a predicate.
+ *
  * @remarks
- * This is a terminal operator that returns the only element that satisfies the predicate.
- * Throws an error if no elements match or if more than one element matches. Must enumerate
- * all elements to ensure uniqueness.
- * 
- * **Performance**: O(1) space. O(n) time (must enumerate all elements to verify uniqueness).
- * 
- * **Operator Category**: Terminal - forces full evaluation and returns an element.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Must enumerate the entire sequence to ensure uniqueness. Throws if no element matches, or
+ * if more than one element matches.
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
@@ -32,15 +25,12 @@ import { nameof } from "../../utility/nameof";
  */
 @terminal('single')
 export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    /** Predicate function to identify the desired element. */
     private readonly predicate: (item: TSource) => boolean;
 
     /**
-     * Creates a new single operator.
-     * 
      * @param source - The source sequence.
-     * @param predicate - Function to test each element.
-     * @throws {ArgumentError} If predicate is null or undefined.
+     * @param predicate - The predicate tested against each element.
+     * @throws {ArgumentError} If `predicate` is null or undefined.
      */
     public constructor(source: ITyneqEnumerable<TSource>, predicate: (item: TSource) => boolean) {
         super(source);

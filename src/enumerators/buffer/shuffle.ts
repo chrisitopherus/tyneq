@@ -3,34 +3,26 @@ import { IEnumerator } from "../../types/core";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for randomizing the order of sequence elements.
- * 
+ * Enumerator that yields elements in randomized order.
+ *
  * @remarks
- * This enumerator consumes the entire source sequence on first iteration to buffer all
- * elements, shuffles them using Fisher-Yates algorithm, then yields them in random order.
- * 
- * **Implementation**: Buffers all source elements into an array on first call, shuffles
- * in-place, then yields in shuffled order.
- * 
- * **Performance**: O(n) space for buffering. O(n) time for shuffling.
- * 
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
+ * Consumes the entire source on first iteration, shuffles the buffer in-place using the
+ * Fisher-Yates algorithm, then yields elements in the shuffled order.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
  *
  * @group Enumerators
  * @internal
  */
 @operator('shuffle')
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** Array containing all source elements in shuffled order. */
     private buffer: TSource[] = [];
-    /** Current position in the shuffled buffer. */
     private currentIndex = 0;
 
     /**
-     * Creates a new shuffle enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>) {
         super(sourceEnumerator);
@@ -42,12 +34,6 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.buffer = buffer;
     }
 
-    /**
-     * Gets the next element in shuffled order.
-     * On first call, consumes entire source and shuffles.
-     * 
-     * @returns Iterator result containing the next shuffled element, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         if (this.buffer.length <= this.currentIndex) {
             return this.done();
@@ -58,12 +44,6 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
         return this.yield(result);
     }
 
-    /**
-     * Shuffles array elements in-place using Fisher-Yates algorithm.
-     * 
-     * @param array - The array to shuffle.
-     * @returns The same array, shuffled in-place.
-     */
     private shuffle<T>(array: T[]): T[] {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));

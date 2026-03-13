@@ -5,17 +5,9 @@ import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
  * Abstract base class providing the core lifecycle and state management for all enumerators.
  *
  * @remarks
- * `TyneqBaseEnumerator` implements the {@link IEnumerator} protocol and handles the common
- * plumbing shared across all enumerator implementations:
- *
- * - **Initialization**: Calls {@link initialize} once before the first element is yielded,
- *   allowing subclasses to set up any required state or resources.
- * - **Completion tracking**: Once `done: true` is returned, all subsequent `next()` calls
- *   immediately return completion without delegating to {@link handleNext}.
- * - **Early termination**: `return()` triggers {@link dispose} and marks the enumerator
- *   as completed, releasing resources when iteration is cut short.
- * - **Cleanup phases**: Disposal is split into {@link disposeSource} (release upstream)
- *   and {@link disposeAdditional} (release local resources), called in that order.
+ * Handles the plumbing shared across all enumerator implementations: one-time initialization
+ * via {@link initialize} before the first element, completion tracking so `next()` is safe to
+ * call after the sequence ends, and resource cleanup via `return()`.
  *
  * Subclasses must implement:
  * - {@link handleNext} — produce the next element or signal completion
@@ -23,7 +15,7 @@ import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
  * - {@link disposeSource} — release the upstream source
  *
  * Helper methods {@link yield}, {@link done}, {@link doneWithYield}, and {@link earlyComplete}
- * are provided so subclasses can return well-formed `IteratorResult` values without boilerplate.
+ * let subclasses return well-formed `IteratorResult` values without boilerplate.
  *
  * @typeParam TInput - The input element type (used by subclasses that transform a source).
  * @typeParam TOutput - The type of elements produced by this enumerator.
@@ -63,22 +55,13 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
     }
 
     /**
-     * Initializes the enumerator before iteration begins.
-     * 
-     * @remarks
-     * Called by `next()` on the first invocation to perform any necessary setup.
-     * Subclasses can override this method to initialize state, buffers, or resources.
-     * Default implementation does nothing.
+     * Called once before the first element is produced. Override to set up state or resources.
      */
     protected initialize(): void { }
 
     /**
-     * Yields a value to the caller.
-     * 
-     * @remarks
-     * Helper method for subclasses to return a value continuation.
-     * Used within `handleNext()` implementations to signal an element is available.
-     * 
+     * Returns an `IteratorResult` carrying `value`.
+     *
      * @param value - The element to yield.
      * @returns `{ done: false, value }`
      */
@@ -87,12 +70,8 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
     }
 
     /**
-     * Signals completion of iteration.
-     * 
-     * @remarks
-     * Helper method indicating the end of the sequence.
-     * Used to terminate iteration without producing a final value.
-     * 
+     * Returns a completion `IteratorResult`.
+     *
      * @returns `{ done: true, value: undefined }`
      */
     protected done(): IteratorResult<TOutput> {
@@ -100,13 +79,9 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
     }
 
     /**
-     * Yields a final value and completes iteration.
-     * 
-     * @remarks
-     * Convenience method for the pattern of returning a value and then ending.
-     * After calling this, subsequent `next()` calls will return completion.
-     * 
-     * @param value - The final element to yield.
+     * Marks the enumerator as completed and returns the final value.
+     *
+     * @param value - The final element to yield before completing.
      * @returns `{ done: false, value }`
      */
     protected doneWithYield(value: TOutput): IteratorResult<TOutput> {
@@ -115,13 +90,8 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
     }
 
     /**
-     * Terminates iteration early and triggers resource cleanup.
-     * 
-     * @remarks
-     * Used when subclass logic determines early completion is necessary
-     * (e.g., a predicate is satisfied and no further elements are needed).
-     * Automatically disposes resources and the source enumerator via {@link dispose}.
-     * 
+     * Disposes resources and signals completion immediately.
+     *
      * @param reason - Optional reason or context for early completion.
      * @returns `{ done: true, value: undefined }`
      */
@@ -133,47 +103,27 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements I
 
     /**
      * Releases resources associated with this enumerator.
-     * 
-     * @remarks
-     * 
+     *
      * @param value - Optional context passed through cleanup phases.
      */
     protected abstract dispose(value?: unknown): void;
 
     /**
-     * Safely disposes the source enumerator.
-     * 
-     * @remarks
-     * 
-     * This ensures that resources held by the source are released even if the
-     * source's `return()` method throws an exception.
+     * Releases the upstream source enumerator.
      */
     protected abstract disposeSource(): void;
 
     /**
-     * Disposes additional resources specific to this enumerator.
-     * 
-     * @remarks
-     * Override this method in subclasses to release custom resources (buffers, timers, etc.).
-     * Called after {@link disposeSource} during cleanup.
-     * Default implementation does nothing.
-     * 
+     * Releases additional resources specific to this enumerator. Override as needed.
+     *
      * @param value - Optional context from the disposal trigger.
      */
     protected disposeAdditional(value?: unknown): void { }
 
     /**
-     * Retrieves the next element from the source and produces the output.
-     * 
-     * @remarks
-     * Subclasses must implement this method to define transformation/filtering logic.
-     * This method is called by `next()` and should:
-     * - Return `{ done: false, value }` to yield an element
-     * - Return `{ done: true, value: undefined }` when source is exhausted
-     * 
-     * Side effects (like disposal) are handled by `next()`, not this method.
-     * 
-     * @returns An iterator result containing either the next transformed value or completion.
+     * Produces the next output element or signals completion.
+     *
+     * @returns An iterator result containing the next value or completion.
      */
     protected abstract handleNext(): IteratorResult<TOutput>;
 }

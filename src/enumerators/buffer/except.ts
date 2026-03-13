@@ -4,20 +4,15 @@ import { operator } from '../../extensibility/operatorDecorators';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
 /**
- * Enumerator implementation for producing set difference (elements in first but not in second).
- * 
+ * Enumerator that yields elements from the source that are not present in an excluded-values sequence.
+ *
  * @remarks
- * This enumerator yields elements from the source that are not present in the excluded values
- * sequence. Lazily initializes an exclusion set on first iteration. Each source value appears
- * at most once in the output.
- * 
- * **Implementation**: Buffers excluded values in a Set on first call. Also tracks yielded values.
- * 
- * **Performance**: O(m) space where m is size of excluded sequence plus unique source elements.
- * O(1) per element for set lookups after initialization.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Buffers the excluded sequence into a `Set` on first iteration. Each source value appears at
+ * most once in the output (already-yielded values are also added to the exclusion set).
+ *
  * @typeParam TSource - The type of elements in the sequences.
- * 
  *
  * @group Enumerators
  * @internal
@@ -26,16 +21,12 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
     ArgumentUtility.checkNotOptional({ excludedValues });
 })
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** The sequence of values to exclude. */
     private readonly excludedValues: Iterable<TSource>;
-    /** Set of values to exclude (includes both excluded values and already-yielded values). */
     private excludeSet = new Set<TSource>();
 
     /**
-     * Creates a new except enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param excludedValues - The sequence of values to exclude from the result.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param excludedValues - Values to exclude from the result; buffered into a `Set` on first iteration.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, excludedValues: Iterable<TSource>) {
         super(sourceEnumerator);
@@ -46,11 +37,6 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.excludeSet = new Set<TSource>(this.excludedValues);
     }
 
-    /**
-     * Gets the next unique element that is not in the excluded set.
-     * 
-     * @returns Iterator result containing the next unique non-excluded element, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();

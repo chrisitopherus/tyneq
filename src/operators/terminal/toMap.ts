@@ -4,20 +4,13 @@ import { ITyneqEnumerable, KeyValuePair } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Terminal operator implementation for converting a sequence to a Map.
- * 
+ * Terminal operator that converts a sequence into a JavaScript `Map`.
+ *
  * @remarks
- * This is a terminal operator that transforms a sequence into a JavaScript Map by
- * applying a selector to each element to extract key-value pairs. Later values with
- * duplicate keys will overwrite earlier values.
- * 
- * **Performance**: O(n) space (creates map). O(n) time (must enumerate all elements).
- * 
- * **Operator Category**: Terminal - forces full evaluation and returns a Map.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Applies `selector` to each element to produce a key-value pair. Later elements with
+ * duplicate keys overwrite earlier ones.
  *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of keys in the resulting map.
@@ -31,15 +24,12 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  */
 @terminal('toMap')
 export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<TSource, Map<TKey, TValue>> {
-    /** Function to extract key-value pairs from each element. */
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 
     /**
-     * Creates a new toMap operator.
-     * 
      * @param source - The source sequence.
-     * @param selector - Function to extract key-value pairs from each element.
-     * @throws {ArgumentError} If selector is null or undefined.
+     * @param selector - Extracts a key-value pair from each element.
+     * @throws {ArgumentError} If `selector` is null or undefined.
      */
     public constructor(source: ITyneqEnumerable<TSource>, selector: (item: TSource) => KeyValuePair<TKey, TValue>) {
         super(source);

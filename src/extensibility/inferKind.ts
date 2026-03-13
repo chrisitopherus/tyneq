@@ -10,21 +10,16 @@ import { TyneqEnumerableEnumerator } from '../core/enumerators/TyneqEnumerableEn
  * its prototype chain.
  *
  * @remarks
- * Used internally by the `@operator` decorator so that callers do not need to
- * pass `kind` explicitly. The rules are:
- *
- * - If any prototype in the chain is `TyneqEnumerator.prototype`, the class is
- *   a **streaming** operator.
- * - If any prototype in the chain is `TyneqEnumerableEnumerator.prototype`, the
- *   class is a **buffer** operator.
- * - If neither is found, an error is thrown guiding the author to use the correct
- *   base class.
+ * Used internally by the `@operator` decorator so callers do not need to pass `kind`
+ * explicitly. Returns `'streaming'` if the chain contains `TyneqEnumerator.prototype`,
+ * `'buffer'` if it contains `TyneqEnumerableEnumerator.prototype`, or throws if neither
+ * is found.
  *
  * @param target - The enumerator class constructor to inspect.
+ *
  * @returns `'streaming'` or `'buffer'`.
  *
- * @throws {Error} When the class does not extend `TyneqEnumerator` or
- *   `TyneqEnumerableEnumerator`.
+ * @throws {Error} If the class does not extend `TyneqEnumerator` or `TyneqEnumerableEnumerator`.
  *
  * @group Registry
  * @internal

@@ -3,41 +3,29 @@ import { IEnumerator } from "../../types/core";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for filtering out duplicate values from a sequence.
- * 
+ * Enumerator that filters out duplicate values from a sequence.
+ *
  * @remarks
- * This enumerator maintains a Set to track values that have already been yielded,
- * ensuring each unique value appears only once. Uses value equality for comparison.
- * 
- * **Implementation**: Buffers seen values in a Set. Yields elements in first-seen order.
- * 
- * **Performance**: O(n) space for the seen values set. O(1) per element for set lookups.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Tracks seen values in a `Set`. Yields each value at most once, in first-seen order.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
  *
  * @group Enumerators
  * @internal
  */
 @operator('distinct')
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** Set tracking values that have already been yielded. */
     private readonly seenValues = new Set<TSource>();
 
     /**
-     * Creates a new distinct enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator to filter.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>) {
         super(sourceEnumerator);
     }
 
-    /**
-     * Gets the next unique element from the source sequence.
-     * 
-     * @returns Iterator result containing the next unique element, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();

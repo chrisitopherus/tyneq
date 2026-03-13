@@ -3,39 +3,28 @@ import { IEnumerator } from '../../types/core';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
- * Enumerator implementation for producing set union (unique elements from both sequences).
- * 
+ * Enumerator that yields unique elements from both the source and a second sequence.
+ *
  * @remarks
- * This enumerator yields unique elements from both the source and other sequences.
- * Enumerates source first, then other sequence. Each value appears at most once in the output.
- * 
- * **Implementation**: Tracks yielded values in a Set. Switches to other sequence when source
- * is exhausted.
- * 
- * **Performance**: O(n + m) space where n and m are sizes of both sequences (for tracking
- * yielded values). O(1) per element for set lookups.
- * 
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ *
+ * Enumerates the source first, then the second sequence. Each value appears at most once in
+ * the output. Uniqueness is tracked in a Set accumulated across both sequences.
+ *
  * @typeParam TSource - The type of elements in the sequences.
- * 
  *
  * @group Enumerators
  * @internal
  */
 @operator('union')
 export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    /** The second sequence to union with. */
     private readonly otherValues: Iterable<TSource>;
-    /** Set of values already yielded (for uniqueness). */
     private bufferedValues = new Set<TSource>();
-    /** Current enumerator (starts with source, switches to other). */
     private currentEnumerator: IEnumerator<TSource>;
-    /** Whether source sequence has been exhausted. */
     private isSourceDone = false;
-    
+
     /**
-     * Creates a new union enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      * @param otherValues - The second sequence to union with.
      */
     public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
@@ -44,12 +33,6 @@ export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
         this.currentEnumerator = this.sourceEnumerator;
     }
 
-    /**
-     * Gets the next unique element from either source or other sequence.
-     * Automatically switches to other sequence when source is exhausted.
-     * 
-     * @returns Iterator result containing the next unique element, or done if both exhausted.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.currentEnumerator.next();

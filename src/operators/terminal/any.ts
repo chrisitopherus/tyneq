@@ -5,20 +5,12 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for checking if any element satisfies a predicate.
- * 
+ * Terminal operator that returns `true` if at least one element satisfies a predicate.
+ *
  * @remarks
- * This is a terminal operator that returns true if at least one element in the sequence
- * satisfies the predicate, or false otherwise. Short-circuits on the first matching element.
- * Returns false for empty sequences.
- * 
- * **Performance**: O(1) space. O(n) worst-case time, O(1) best-case (early termination).
- * 
- * **Operator Category**: Terminal - forces evaluation and returns a boolean.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Short-circuits on the first matching element. Returns `false` for empty sequences.
  *
  * @typeParam T - The type of elements in the sequence.
  *
@@ -30,15 +22,12 @@ import { nameof } from "../../utility/nameof";
  */
 @terminal('any')
 export class AnyOperator<T> extends TyneqTerminalOperator<T, boolean> {
-    /** Predicate function to test elements. */
     private readonly predicate: (item: T) => boolean;
 
     /**
-     * Creates a new any operator.
-     * 
      * @param source - The source sequence.
-     * @param predicate - Function to test each element.
-     * @throws {ArgumentError} If predicate is null or undefined.
+     * @param predicate - The predicate tested against each element.
+     * @throws {ArgumentError} If `predicate` is null or undefined.
      */
     public constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
         super(source);

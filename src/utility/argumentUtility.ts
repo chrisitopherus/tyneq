@@ -8,49 +8,19 @@ import { nameof } from './nameof';
 import { TypeGuardUtility } from './typeGuardUtility';
 
 /**
- * Utility class providing comprehensive argument validation methods for the Tyneq library.
- * 
+ * Static utility class centralising argument validation for the Tyneq library.
+ *
  * @remarks
- * `ArgumentUtility` is a static utility class that centralizes all parameter validation logic
- * used throughout the Tyneq library. It provides type-safe assertion methods using TypeScript's
- * `asserts` keyword, which narrows types after successful validation.
- * 
- * All validation methods throw descriptive errors ({@link ArgumentError}, {@link ArgumentNullError},
- * or {@link ArgumentOutOfRangeError}) when validation fails, including the parameter name in the
- * error for improved debugging.
- * 
- * **Key Features:**
- * - Type assertion methods that narrow TypeScript types after validation
- * - Null/undefined/empty value checks for various types
- * - Numeric validation (range, sign, integer, finiteness)
- * - String validation (whitespace, emptiness)
- * - Generic predicate-based validation
- * - Type checking for functions, iterables, iterators, enumerables, enumerators, and instances
- * 
- * **Usage Pattern:**
- * Methods are designed to be called at the start of functions to validate inputs before processing.
- * The `asserts` return type means that TypeScript knows the value is valid after the check passes.
- * Validation methods support two invocation styles:
- * 1) explicit value + parameter name (e.g. `checkNotNull(value, 'value')`)
- * 2) object shorthand for automatic name inference (e.g. `checkNotNull({ value })`)
- * 
- * @example
- * ```typescript
- * import { ArgumentUtility } from './utility/argumentUtility';
- * 
- * function processItems<T>(items: Nullable<T[]>, count: number): T[] {
- *   // Validate parameters
- *   ArgumentUtility.checkNotNull(items, 'items');
- *   ArgumentUtility.checkNonNegative(count, 'count');
- *   
- *   // TypeScript knows items is T[] here (not null)
- *   return items.slice(0, count);
- * }
- * ```
- * 
- * @see {@link ArgumentError} Base class for argument validation errors.
- * @see {@link ArgumentNullError} Thrown when a null check fails.
- * @see {@link ArgumentOutOfRangeError} Thrown when a range or numeric validation fails.
+ * Provides type-safe assertion methods using TypeScript's `asserts` keyword, which narrows types
+ * after successful validation. Methods throw {@link ArgumentError}, {@link ArgumentNullError}, or
+ * {@link ArgumentOutOfRangeError} on failure, including the parameter name in the message.
+ * Each method supports two invocation styles: explicit value plus name (e.g.
+ * `checkNotNull(value, 'value')`) or object shorthand for automatic name inference
+ * (e.g. `checkNotNull({ value })`).
+ *
+ * @see {@link ArgumentError}
+ * @see {@link ArgumentNullError}
+ * @see {@link ArgumentOutOfRangeError}
  *
  * @group Utilities
  * @internal
@@ -63,28 +33,15 @@ export class ArgumentUtility {
 
     /**
      * Validates that a value is not null.
-     * 
+     *
      * @remarks
-     * This is a type assertion method that narrows the type from `Nullable<T>` to `T` upon success.
-     * It checks only for `null`, not `undefined`. For checking both, use {@link checkNotOptional}.
-     * Supports both invocation styles: `checkNotNull(value, 'value')` and `checkNotNull({ value })`.
-     * 
-     * The method uses TypeScript's `asserts` keyword, meaning that after this call, TypeScript
-     * knows the value is definitely not null.
-     * 
-     * @typeParam T - The type of the value being validated
-     * @param value - The value to check for null
-     * @param paramName - The name of the parameter being validated (for error messages)
-     * @throws {ArgumentNullError} If value is null
-     * 
-     * @example
-     * ```typescript
-     * function process(data: string | null) {
-     *   ArgumentUtility.checkNotNull(data, 'data');
-     *   // TypeScript knows data is string here
-     *   console.log(data.length);
-     * }
-     * ```
+     * Narrows from `Nullable<T>` to `T`. Checks only for `null`, not `undefined`;
+     * use {@link checkNotOptional} to check both.
+     *
+     * @typeParam T - The type of the value being validated.
+     * @param param - The value or object-shorthand to check.
+     * @param paramName - The parameter name for error messages (explicit-value style only).
+     * @throws {ArgumentNullError} If the value is null.
      */
     public static checkNotNull<T>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
     public static checkNotNull<T>(param: Nullable<T>, paramName: string): asserts param is T;

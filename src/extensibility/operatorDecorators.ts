@@ -11,67 +11,35 @@ interface IWithCreateEnumerable {
 }
 
 /**
- * TC39 class decorator that registers a **streaming or buffering** operator on all
+ * TC39 class decorator that registers a streaming or buffering operator on all
  * `TyneqEnumerable` instances by patching `TyneqEnumerableBase.prototype`.
  *
  * @remarks
- * The decorated class must be an **enumerator** (not a wrapper enumerable):
- * - Extend `TyneqEnumerator<TSource, TResult>` (streaming) or
- *   `TyneqEnumerableEnumerator<TSource, TResult>` (buffer)
- * - Have a constructor with signature `(sourceEnumerator: IEnumerator<TSource>, ...userArgs: TArgs)`
+ * The decorated class must extend `TyneqEnumerator<TSource, TResult>` (streaming) or
+ * `TyneqEnumerableEnumerator<TSource, TResult>` (buffering). Its constructor must have the
+ * signature `(sourceEnumerator: IEnumerator<TSource>, ...userArgs: TArgs)`. The operator
+ * `kind` is inferred automatically from the base class.
  *
- * Registration happens exactly once — when the class body is evaluated (i.e., when the
- * module containing the decorated class is first imported). Re-importing the same module
- * does not re-register because JS module evaluation is cached.
- *
- * The `kind` (`'streaming'` or `'buffer'`) is **inferred automatically** from the base
- * class — no extra argument is needed.
- *
- * ## Typed Validation
+ * Registration happens once when the module containing the decorated class is first imported.
  *
  * Pass a `TArgs` type parameter to get a fully-typed `validate` body. Use `unknown` for
  * each argument — validation is a runtime defensive boundary, not a type-safe transform.
- * `unknown` forces explicit narrowing inside the validate body, which is the correct contract.
+ * `unknown` forces explicit narrowing inside the validate body.
  *
- * ```ts
- * // validate body is typed: (_seed: unknown, accumulator: unknown) => void
- * \@operator<[seed: unknown, accumulator: unknown]>('scan', (_seed, accumulator) => {
- *     ArgumentUtility.checkNotOptional({ accumulator });
- * })
- * ```
+ * The injected method calls `validate(…userArgs)` eagerly at the call site (before the lazy
+ * factory is created), then wraps a `getEnumerator()` factory in `this.createEnumerable()`.
  *
- * When `TArgs` is omitted (default `never`), the validate parameter is typed as
- * `(...args: never[]) => void` and must also be omitted.
- *
- * ## How the injected method works
- *
- * ```text
- * user calls:   seq.scan(0, (a, b) => a + b)
- *                         └─ userArgs ──────┘
- *
- * injected fn:  validate(0, (a, b) => a + b)   ← throws here if invalid (eager)
- *               {
- *                 getEnumerator() {
- *                   return new ScanEnumerator(seq.getEnumerator(), 0, (a, b) => a + b)
- *                 }
- *               }
- *               └── fresh IEnumerator created per iteration ──┘
- *
- * wrapped in:   this.createEnumerable(factory)
- *               └── preserves the concrete TyneqEnumerable subtype ──┘
- * ```
+ * When `TArgs` is omitted (default `never`), the validate parameter must also be omitted.
  *
  * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source
  *   enumerator). Default `never` — use when the operator takes no user arguments.
  *
- * @param name     - The method name to register on `TyneqEnumerableBase.prototype`.
- * @param validate - Optional function called **synchronously at the call site** before
- *                   the lazy factory is created. Receives the same user-facing arguments
- *                   as the operator method (excluding the implicit source). Throw from
- *                   here to enforce the LINQ convention of eager argument validation.
+ * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
+ * @param validate - Optional function called synchronously at the call site before the lazy
+ *   factory is created. Throw here to enforce eager argument validation.
  *
- * @throws {Error} When a method named `name` is already registered.
- * @throws {Error} When the decorated class does not extend `TyneqEnumerator` or
+ * @throws {Error} If a method named `name` is already registered.
+ * @throws {Error} If the decorated class does not extend `TyneqEnumerator` or
  *   `TyneqEnumerableEnumerator` (kind cannot be inferred).
  *
  * @group Decorators
@@ -97,7 +65,6 @@ interface IWithCreateEnumerable {
  * export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
  *     constructor(source: IEnumerator<TSource>, seed: TResult, accumulator: ...) {
  *         super(source);
- *         // No validation here — moved to eager validate above
  *     }
  * }
  * ```
@@ -133,53 +100,25 @@ export function operator<TArgs extends unknown[] = never>(
 }
 
 /**
- * TC39 class decorator that registers a **terminal** operator on all `TyneqEnumerable`
+ * TC39 class decorator that registers a terminal operator on all `TyneqEnumerable`
  * instances by patching `TyneqEnumerableBase.prototype`.
  *
  * @remarks
- * The decorated class must:
- * - Extend `TyneqTerminalOperator<TSource, TResult>`
- * - Have a constructor with signature `(source: IEnumerable<TSource>, ...userArgs: TArgs)`
- * - Implement `process(): TResult`
+ * The decorated class must extend `TyneqTerminalOperator<TSource, TResult>`, have a constructor
+ * with signature `(source: IEnumerable<TSource>, ...userArgs: TArgs)`, and implement
+ * `process(): TResult`. The injected method calls `new DecoratedClass(seq, …userArgs).process()`.
  *
- * The injected method calls `new DecoratedClass(seq, ...userArgs).process()` automatically.
- *
- * ## Typed Validation
- *
- * Pass a `TArgs` type parameter to get a fully-typed `validate` body. Validation runs
- * **eagerly at the call site**, before the operator class is instantiated — satisfying
- * the LINQ convention that argument errors should throw at query definition time.
- *
- * ```ts
- * // Before — validation was in constructor (lazy, only when iteration began)
- * \@terminal('first')
- * export class FirstOperator<T> extends TyneqTerminalOperator<T, T> {
- *     constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
- *         super(source);
- *         ArgumentUtility.checkNotOptional({ predicate }); // ← lazy
- *     }
- * }
- *
- * // After — eager, typed
- * \@terminal<[(item: unknown) => boolean]>('first', (predicate) => {
- *     ArgumentUtility.checkNotOptional({ predicate });
- * })
- * export class FirstOperator<T> extends TyneqTerminalOperator<T, T> {
- *     constructor(source: IEnumerable<T>, predicate: (item: T) => boolean) {
- *         super(source);
- *         // No validation here
- *     }
- * }
- * ```
+ * Pass a `TArgs` type parameter to get a fully-typed `validate` body. Validation runs eagerly
+ * at the call site before the operator class is instantiated.
  *
  * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
  *   Default `never` — use when the operator takes no user arguments.
  *
- * @param name     - The method name to register on `TyneqEnumerableBase.prototype`.
- * @param validate - Optional function called **synchronously at the call site** before
- *                   the operator is instantiated and `process()` is called.
+ * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
+ * @param validate - Optional function called synchronously at the call site before the
+ *   operator is instantiated and `process()` is called.
  *
- * @throws {Error} When a method named `name` is already registered.
+ * @throws {Error} If a method named `name` is already registered.
  *
  * @group Decorators
  *
@@ -203,10 +142,7 @@ export function operator<TArgs extends unknown[] = never>(
  *     ArgumentUtility.checkNonNegative({ index });
  * })
  * export class ElementAtOperator<T> extends TyneqTerminalOperator<T, T> {
- *     constructor(source: IEnumerable<T>, index: number) {
- *         super(source);
- *         // No validation here — moved to eager validate above
- *     }
+ *     constructor(source: IEnumerable<T>, index: number) { super(source); }
  *     process(): T { ... }
  * }
  * ```

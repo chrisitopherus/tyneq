@@ -31,9 +31,10 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     private done: boolean = false;
     private sourceEnumerator: Nullable<IEnumerator<TSource>> = null;
 
-    public constructor(source: ITyneqEnumerable<TSource>) {
+    public constructor(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null) {
         super();
         this.source = source;
+        this.queryNode = node ?? null;
     }
 
     public getEnumerator(): IEnumerator<TSource> {
@@ -75,7 +76,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return { has: false };
     }
 
-    public readonly queryNode: IQueryNode | null = null;
+    public readonly queryNode: IQueryNode | null;
 
     protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
@@ -89,7 +90,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         );
     }
 
-    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource> {
-        return new TyneqCachedEnumerable<TSource>(source);
+    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

@@ -4,7 +4,6 @@ import { OperatorRegistry } from './OperatorRegistry';
 import { QueryNode } from '../queryplan/QueryNode';
 import type { IQueryNode } from '../queryplan/IQueryNode';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Functional operator registration API
 //
 // Three levels of ceremony — pick the one that fits:
@@ -15,7 +14,6 @@ import type { IQueryNode } from '../queryplan/IQueryNode';
 //                                  (lowest ceremony, no class/constructor needed)
 //
 // All three route through OperatorRegistry.register().
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
 interface IWithCreateEnumerable {
@@ -23,10 +21,8 @@ interface IWithCreateEnumerable {
     readonly queryNode: IQueryNode | null;
 }
 
-// ── createOperator() ─────────────────────────────────────────────────────────
-
 /**
- * Defines and **immediately registers** a streaming or buffering operator on all
+ * Defines and immediately registers a streaming or buffering operator on all
  * `TyneqEnumerable` instances without requiring a class.
  *
  * @remarks
@@ -34,28 +30,16 @@ interface IWithCreateEnumerable {
  * importing the file that contains the call.
  *
  * The `factory` receives the source enumerable and any user-provided arguments,
- * and must return an `IEnumeratorFactory<TResult>` (any object with `getEnumerator()`).
- *
- * ## Typed Arguments
+ * and must return an `IEnumeratorFactory<TResult>`.
  *
  * Declare user-facing argument types on the `factory` function. TypeScript infers
  * `TArgs` automatically, giving `validate` a fully-typed parameter list with no
- * extra annotations:
- *
- * ```ts
- * createOperator({
- *     name: 'window',
- *     factory(source: IEnumerable<unknown>, size: number) { ... },
- *     validate(size) {  // ← size: number, inferred from factory
- *         ArgumentUtility.checkPositive({ size });
- *     }
- * });
- * ```
+ * extra annotations.
  *
  * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
  *   Inferred from the `factory` signature — no explicit type parameter needed at the call site.
  *
- * @throws {Error} When a method named `config.name` is already registered.
+ * @throws {Error} If a method named `config.name` is already registered.
  *
  * @group Decorators
  *
@@ -100,10 +84,8 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
     });
 }
 
-// ── createGeneratorOperator() ────────────────────────────────────────────────
-
 /**
- * Defines and **immediately registers** a streaming operator implemented as a
+ * Defines and immediately registers a streaming operator implemented as a
  * generator function — the lowest-ceremony way to define an operator.
  *
  * @remarks
@@ -111,30 +93,15 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
  * and `yield`s result elements. The library wraps the generator in the standard
  * `IEnumeratorFactory` pattern automatically.
  *
- * Because `for…of` works on any `Iterable`, you can iterate `source` directly in
- * the generator body without calling `[Symbol.iterator]()` manually.
- *
  * Registration happens as a side-effect of importing the file.
  *
- * ## Typed Arguments
- *
  * Declare user-facing argument types on the `generator` function. TypeScript infers
- * `TArgs` automatically, giving `validate` a fully-typed parameter list:
- *
- * ```ts
- * createGeneratorOperator({
- *     name: 'intersperse',
- *     *generator(source: Iterable<unknown>, delimiter: unknown) { ... },
- *     validate(delimiter) {  // ← delimiter: unknown, inferred from generator
- *         ArgumentUtility.checkNotOptional({ delimiter });
- *     }
- * });
- * ```
+ * `TArgs` automatically, giving `validate` a fully-typed parameter list.
  *
  * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
  *   Inferred from the `generator` signature — no explicit type parameter needed at the call site.
  *
- * @throws {Error} When a method named `config.name` is already registered.
+ * @throws {Error} If a method named `config.name` is already registered.
  *
  * @group Decorators
  *
@@ -181,35 +148,21 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
     });
 }
 
-// ── createTerminalOperator() ─────────────────────────────────────────────────
-
 /**
- * Defines and **immediately registers** a terminal operator — one that evaluates
+ * Defines and immediately registers a terminal operator — one that evaluates
  * the sequence immediately and returns a concrete value (not another enumerable).
  *
  * @remarks
  * The `execute` function receives the source enumerable and any user arguments, and
  * returns the result value directly. It may enumerate the source partially or fully.
  *
- * ## Typed Arguments
- *
  * Declare user-facing argument types on the `execute` function. TypeScript infers
- * `TArgs` automatically, giving `validate` a fully-typed parameter list:
- *
- * ```ts
- * createTerminalOperator({
- *     name: 'joinString',
- *     execute(source: IEnumerable<unknown>, separator: string) { ... },
- *     validate(separator) {  // ← separator: string, inferred from execute
- *         ArgumentUtility.checkNotOptional({ separator });
- *     }
- * });
- * ```
+ * `TArgs` automatically, giving `validate` a fully-typed parameter list.
  *
  * @typeParam TArgs - Tuple of user-facing argument types (excluding the implicit source).
  *   Inferred from the `execute` signature — no explicit type parameter needed at the call site.
  *
- * @throws {Error} When a method named `config.name` is already registered.
+ * @throws {Error} If a method named `config.name` is already registered.
  *
  * @group Decorators
  *

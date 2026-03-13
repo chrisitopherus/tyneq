@@ -5,19 +5,13 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for retrieving an element at a specific index with a default.
- * 
+ * Terminal operator that returns the element at a specified zero-based index, or a default value if out of range.
+ *
  * @remarks
- * This is a terminal operator that returns the element at the specified zero-based index,
- * or a default value if the index is out of bounds. Does not throw exceptions.
- * 
- * **Performance**: O(1) space. O(index) time (enumerates up to the target index).
- * 
- * **Operator Category**: Terminal - forces partial evaluation and returns an element.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Enumerates the source up to the target index. Returns `defaultValue` rather than throwing
+ * when the index is out of range.
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
@@ -29,18 +23,14 @@ import { nameof } from "../../utility/nameof";
  */
 @terminal('elementAtOrDefault')
 export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    /** The zero-based index of the element to retrieve. */
     private readonly index: number;
-    /** The value to return if index is out of bounds. */
     private readonly defaultValue: TSource;
 
     /**
-     * Creates a new elementAtOrDefault operator.
-     * 
      * @param source - The source sequence.
      * @param index - The zero-based index of the element to retrieve.
-     * @param defaultValue - The value to return if index is out of bounds.
-     * @throws {ArgumentError} If index is negative.
+     * @param defaultValue - The value returned when `index` is out of range.
+     * @throws {ArgumentError} If `index` is negative.
      */
     public constructor(source: ITyneqEnumerable<TSource>, index: number, defaultValue: TSource) {
         super(source);

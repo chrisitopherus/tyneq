@@ -1,14 +1,12 @@
 import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 
 /**
- * Enumerator implementation for generating a sequence of values produced by a randomizer function.
+ * Enumerator that generates a fixed-length sequence by calling a randomizer function.
  *
  * @remarks
- * Calls the provided `randomizer` function once per element position, up to the specified
- * `count`. Yields values without buffering; each call to `handleNext` invokes the randomizer
- * once and yields the result.
+ * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
  *
- * **Performance**: O(1) space (streaming). O(count) time when fully enumerated.
+ * Invokes `randomizer` once per element position, up to `count` times.
  *
  * @typeParam TSource - The type of values produced by the randomizer.
  *
@@ -21,6 +19,10 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 
     private yieldedCount: number = 0;
 
+    /**
+     * @param count - Number of elements to generate.
+     * @param randomizer - Factory called once per element to produce a value.
+     */
     public constructor(count: number, randomizer: () => TSource) {
         super();
         this.count = count;
@@ -37,11 +39,6 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
         this.sourceDisposed = true;
     }
 
-    /**
-     * Generates the next value in the random sequence.
-     * 
-     * @returns Iterator result containing the next value, or done when end is exceeded.
-     */
     protected override handleNext(): IteratorResult<TSource> {
         if (this.yieldedCount >= this.count) {
             return this.done();

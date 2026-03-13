@@ -64,47 +64,12 @@ export interface OperatorEntryInput {
  * @remarks
  * Every registration path — `@operator`, `@terminal`, `createOperator`,
  * `createGeneratorOperator`, and `createTerminalOperator` — routes through
- * `OperatorRegistry.register()`. The registry is the single source of truth for:
+ * `OperatorRegistry.register()`. The registry performs duplicate-name detection,
+ * patches `TyneqEnumerableBase.prototype`, exposes introspection methods, and
+ * supports lifecycle hooks, registration guards, and test-isolation via `unregister`.
  *
- * - Duplicate-name detection (throws with context on collision)
- * - Prototype patching (`TyneqEnumerableBase.prototype[name] = impl`)
- * - Introspection (`has`, `get`, `list`, `listByKind`, `count`)
- * - Lifecycle extensibility (`onRegister` hooks, `addGuard` guards)
- * - Test isolation (`unregister`)
- *
- * ## Registration Guards
- *
- * Guards run **before** an entry is stored. Throw from a guard to block
- * registration. Useful for enforcing naming conventions or reserved names:
- *
- * ```ts
- * OperatorRegistry.addGuard(entry => {
- *     if (!/^[a-z][a-zA-Z0-9]*$/.test(entry.metadata.name)) {
- *         throw new Error(`Operator name '${entry.metadata.name}' must be camelCase`);
- *     }
- * });
- * ```
- *
- * ## Post-Registration Hooks
- *
- * Hooks fire **after** a successful registration. Use them for logging, tooling,
- * or dev-tools integration without coupling to core:
- *
- * ```ts
- * const unsub = OperatorRegistry.onRegister(e =>
- *     console.log('[tyneq]', e.metadata.name, 'registered as', e.metadata.kind)
- * );
- * // later:
- * unsub(); // removes the hook
- * ```
- *
- * ## Test Isolation
- *
- * ```ts
- * afterEach(() => {
- *     OperatorRegistry.unregister('myTestOp');
- * });
- * ```
+ * Guards run before an entry is stored and may throw to block registration.
+ * Hooks fire after each successful registration and are for observation only.
  *
  * @group Registry
  */
@@ -116,20 +81,16 @@ export class OperatorRegistry {
     // ── Registration ──────────────────────────────────────────────────────────
 
     /**
-     * Register an operator. Patches `TyneqEnumerableBase.prototype` immediately.
+     * Registers an operator and patches `TyneqEnumerableBase.prototype` immediately.
      *
      * @remarks
-     * Registration order:
-     * 1. Duplicate-name check — throws if `name` is already registered.
-     * 2. Guards run in insertion order — any guard may throw to block.
-     * 3. Entry stored in internal Map.
-     * 4. `TyneqEnumerableBase.prototype[name]` patched with `impl`.
-     * 5. Post-registration hooks fire in insertion order.
+     * Checks for duplicate names, runs guards in insertion order, stores the entry,
+     * patches the prototype, then fires post-registration hooks in insertion order.
      *
      * @param entry - The operator entry to register.
      *
-     * @throws {Error} When `entry.metadata.name` is already registered.
-     * @throws {Error} When any registration guard throws.
+     * @throws {Error} If `entry.metadata.name` is already registered.
+     * @throws {Error} If any registration guard throws.
      *
      * @group Registry
      */

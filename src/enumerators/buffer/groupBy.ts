@@ -6,46 +6,35 @@ import { TyneqEnumerable } from '../../core/TyneqEnumerable';
 import { Tyneq } from "../..";
 
 /**
- * Enumerator implementation for grouping sequence elements by a key.
- * 
+ * Enumerator that groups sequence elements by a key.
+ *
  * @remarks
- * This enumerator consumes the entire source sequence on first iteration to build a lookup
- * table grouping elements by key. Applies value and result selectors to transform the output.
- * 
- * **Implementation**: Buffers all source elements into a key-to-values lookup on first call.
- * Then yields transformed groups.
- * 
- * **Performance**: O(n) space for buffering all elements. O(n) time for initial grouping.
- * 
+ * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ *
+ * Consumes the entire source on first iteration to build a key-to-values lookup, then yields
+ * one transformed group per distinct key via the result selector.
+ *
  * @typeParam TSource - The type of elements in the source sequence.
  * @typeParam TKey - The type of the grouping key.
  * @typeParam TValue - The type of elements within each group.
- * @typeParam TResult - The type of the result after applying result selector.
- * 
+ * @typeParam TResult - The type of the result produced by the result selector.
  *
  * @group Enumerators
  * @internal
  */
 @operator('groupBy')
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
-    /** Function to extract grouping key from each element. */
     private readonly keySelector: (item: TSource) => TKey;
-    /** Function to transform each element into group value. */
     private readonly valueSelector: (item: TSource) => TValue;
-    /** Function to transform key and group into result. */
     private readonly resultSelector: (key: TKey, values: TyneqEnumerable<TValue>) => TResult;
-    /** Enumerator over the grouped entries. */
     private lookupEnumerator?: IEnumerator<[TKey, TValue[]]>;
-    /** Map from keys to arrays of grouped values. */
     private lookup = new TyneqMap<TKey, TValue[]>();
 
     /**
-     * Creates a new groupBy enumerator.
-     * 
-     * @param sourceEnumerator - The source enumerator.
-     * @param keySelector - Function to extract grouping key from each element.
-     * @param valueSelector - Function to transform each element into group value.
-     * @param resultSelector - Function to transform key and group into result.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param keySelector - Extracts the grouping key from each element.
+     * @param valueSelector - Transforms each element into the group element type.
+     * @param resultSelector - Combines a key and its group into the output element.
      */
     public constructor(
         sourceEnumerator: IEnumerator<TSource>,
@@ -75,12 +64,6 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
         this.lookupEnumerator = this.lookup.entries();
     }
 
-    /**
-     * Gets the next group from the lookup table.
-     * On first call, consumes entire source to build groups.
-     * 
-     * @returns Iterator result containing the next transformed group, or done if exhausted.
-     */
     protected override handleNext(): IteratorResult<TResult> {
         // May throw if not initialized
         if (this.lookupEnumerator === undefined) {

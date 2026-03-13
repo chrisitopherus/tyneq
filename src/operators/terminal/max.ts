@@ -6,19 +6,13 @@ import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 
 /**
- * Terminal operator implementation for finding the maximum element in a sequence.
- * 
+ * Terminal operator that returns the maximum element in a sequence.
+ *
  * @remarks
- * This is a terminal operator that returns the maximum element according to a comparer
- * function. Throws an error if the sequence is empty. Must enumerate all elements.
- * 
- * **Performance**: O(1) space. O(n) time (must enumerate all elements).
- * 
- * **Operator Category**: Terminal - forces full evaluation and returns an element.
- *
- * **Registration method**: TC39 `@terminal()` class decorator.
- *
  * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Compares elements using `comparer`, defaulting to the natural order comparer. Throws if the
+ * sequence is empty.
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
@@ -30,14 +24,11 @@ import { Nullable } from "../../types/utility";
  */
 @terminal('max')
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    /** Comparison function to determine element ordering. */
     private readonly comparer: (a: TSource, b: TSource) => number;
 
     /**
-     * Creates a new max operator.
-     * 
      * @param source - The source sequence.
-     * @param comparer - Optional comparison function (returns <0, 0, or >0).
+     * @param comparer - The comparer used to order elements; defaults to the natural order comparer.
      */
     public constructor(source: ITyneqEnumerable<TSource>, comparer?: (a: TSource, b: TSource) => number) {
         super(source);
