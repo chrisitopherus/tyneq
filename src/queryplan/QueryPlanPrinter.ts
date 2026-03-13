@@ -1,4 +1,3 @@
-import { writeFileSync } from 'node:fs';
 import type { IQueryNode } from './IQueryNode';
 import type { IQueryPlanVisitor } from './IQueryPlanVisitor';
 
@@ -124,7 +123,6 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
      */
     public visit(node: IQueryNode): string {
         const result = this.buildPlan(node);
-        this.writeOutput(result);
         return result;
     }
 
@@ -214,13 +212,5 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
             current = current.source;
         }
         return nodes;
-    }
-
-    private writeOutput(content: string): void {
-        if (this.output === 'console') {
-            console.log(content);
-        } else if (this.output !== 'none') {
-            writeFileSync(this.output, content, 'utf-8');
-        }
     }
 }
