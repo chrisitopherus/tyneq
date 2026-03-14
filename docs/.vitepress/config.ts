@@ -15,22 +15,45 @@ export default defineConfig({
     },
     nav: [
       { text: "Guide", link: "/guide/" },
-      { text: "API", link: "/api/" }
+      { text: "API", link: "/api/" },
+      { text: "Contributing", link: "/guide/contributing" }
     ],
     sidebar: {
       "/guide/": [
         {
-          text: "Guide",
+          text: "Introduction",
           items: [
             { text: "Overview", link: "/guide/" },
             { text: "What Is Tyneq", link: "/guide/what-is-tyneq" },
-            { text: "Getting Started", link: "/guide/getting-started" },
+            { text: "Getting Started", link: "/guide/getting-started" }
+          ]
+        },
+        {
+          text: "Core Concepts",
+          items: [
             { text: "Core Concepts", link: "/guide/concepts" },
             { text: "Operators Overview", link: "/guide/operators-overview" },
-            { text: "Queries & Deferred Execution", link: "/guide/querying-and-deferred-execution" },
+            { text: "Queries & Deferred Execution", link: "/guide/querying-and-deferred-execution" }
+          ]
+        },
+        {
+          text: "Guides",
+          items: [
             { text: "Examples", link: "/guide/examples" },
             { text: "Error Handling", link: "/guide/error-handling" },
-            { text: "Differences", link: "/guide/differences" },
+            { text: "vs. Other Libraries", link: "/guide/differences" }
+          ]
+        },
+        {
+          text: "Extending Tyneq",
+          items: [
+            { text: "Extensibility & Query Plans", link: "/guide/extensibility" }
+          ]
+        },
+        {
+          text: "Contributing",
+          items: [
+            { text: "Contributor Guide", link: "/guide/contributing" },
             { text: "Docs Maintenance", link: "/guide/documentation-maintenance" }
           ]
         }

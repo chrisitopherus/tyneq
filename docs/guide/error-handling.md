@@ -86,8 +86,5 @@ try {
 
 - [Core Concepts](/guide/concepts)
 - [Operators Overview](/guide/operators-overview)
-
-
-- [Core Concepts](/guide/concepts)
 - [Examples](/guide/examples)
 - [API Reference](/api/reference/)

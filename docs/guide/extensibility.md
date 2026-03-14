@@ -2,6 +2,17 @@
 
 This page explains how to extend Tyneq with custom operators, how to use the `OperatorRegistry` for introspection, and how to apply the visitor pattern to query plans for analysis, optimization, and tooling.
 
+## What This Page Covers
+
+| Section | What you will learn |
+|---|---|
+| [Custom Operators](#extending-tyneq-with-operators) | The three registration APIs and when to use each |
+| [OperatorRegistry](#the-operatorregistry) | Introspect registered operators, add guards, observe registrations |
+| [Query Plans](#query-plans) | Access and print the `IQueryNode` chain attached to every sequence |
+| [Visitor Pattern](#the-visitor-pattern) | Walk plans to collect, analyze, lint, optimize, or serialize |
+| [Design Notes](#design-notes) | Why the visitor uses a single `visit` method; node immutability |
+| [Interop with Other Libraries](#interop-and-extension-patterns) | Use custom operators with data from IxJS, generators, or any iterable |
+
 ## Extending Tyneq with Operators
 
 Tyneq exposes a public registration API that lets you add operators without modifying the library source. All registration paths live in `tyneq/extensibility`.
@@ -456,8 +467,113 @@ Sequences created via `.pipe()` opt out of the query-plan infrastructure. Their 
 
 ---
 
+## Interop and Extension Patterns
+
+Custom operators work with any iterable source — there is nothing Tyneq-specific about the input. This lets you wrap data from external libraries naturally.
+
+### Wrapping an IxJS iterable result
+
+```ts
+import { from as ixFrom } from 'ix/iterable';
+import { filter, map } from 'ix/iterable/operators';
+import { Tyneq } from 'tyneq';
+
+// Produce data with IxJS
+const ixResult = ixFrom([1, 2, 3, 4, 5]).pipe(
+  filter(x => x % 2 === 0),
+  map(x => x * 3)
+);
+
+// Wrap with Tyneq to use relational operators or custom extensions
+const result = Tyneq
+  .from(ixResult)         // ixResult is iterable — Tyneq accepts it
+  .stride(1)              // custom operator registered from extension file
+  .toArray();
+// → [6, 12]
+```
+
+### Packaging a custom operator as a module
+
+A good pattern for sharing custom operators is a dedicated module that registers the operator as a side effect of import:
+
+```ts
+// my-tyneq-extensions/sliding-percentile.ts
+import { createGeneratorOperator } from 'tyneq/extensibility';
+
+export {}; // mark as a module
+
+createGeneratorOperator({
+    name: 'slidingPercentile',
+    *generator(source: Iterable<unknown>, windowSize: number, p: number): IterableIterator<unknown> {
+        const buf: number[] = [];
+        for (const val of source as Iterable<number>) {
+            buf.push(val);
+            if (buf.length > windowSize) buf.shift();
+            const sorted = [...buf].sort((a, b) => a - b);
+            const idx = Math.floor(p * (sorted.length - 1));
+            yield sorted[idx];
+        }
+    },
+    validate(windowSize, p) {
+        if (typeof windowSize !== 'number' || windowSize < 1) throw new RangeError('windowSize must be >= 1');
+        if (typeof p !== 'number' || p < 0 || p > 1) throw new RangeError('p must be between 0 and 1');
+    }
+});
+
+declare module 'tyneq' {
+    interface ITyneqEnumerable<TSource> {
+        slidingPercentile(windowSize: number, p: number): ITyneqEnumerable<TSource>;
+    }
+}
+```
+
+Consumers import the file once (typically in an entry point) and the operator is available everywhere:
+
+```ts
+// app entry point
+import 'my-tyneq-extensions/sliding-percentile';
+
+// anywhere in the codebase
+import { Tyneq } from 'tyneq';
+
+const p90 = Tyneq
+  .from(readings)
+  .slidingPercentile(10, 0.9)
+  .toArray();
+```
+
+### Using the query plan for cross-library pipeline auditing
+
+If your project uses both Tyneq and another library, you can inspect the query plan to produce a summary of what a Tyneq-side pipeline is doing before handing results off:
+
+```ts
+import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from 'tyneq';
+
+function auditedToArray<T>(seq: ITyneqEnumerable<T>, label: string): T[] {
+    const node = seq[tyneqQueryNode];
+    if (node) {
+        const plan = QueryPlanPrinter.print(node, { output: 'none' });
+        console.debug(`[${label}] query plan:\n${plan}`);
+    }
+    return seq.toArray();
+}
+
+const result = auditedToArray(
+  Tyneq.from(data).where(x => x.active).orderByDescending(x => x.score).take(5),
+  'top-scores'
+);
+// [top-scores] query plan:
+// from([...N items])
+//   → where(<fn>)
+//   → orderByDescending(<fn>)
+//   → take(5)
+```
+
+---
+
 ## Related Pages
 
 - [Contributing](/guide/contributing)
 - [Core Concepts](/guide/concepts)
+- [vs. Other Libraries](/guide/differences)
 - [API Reference — QueryPlan](/api/reference/)
