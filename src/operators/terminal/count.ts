@@ -7,12 +7,10 @@ import { IEnumerable } from "../../types/core";
  * Terminal operator that returns the number of elements in a sequence.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Optimizes for arrays by reading the `length` property directly. For all other sequences,
  * enumerates each element to count them.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.count} for the public API.
  *

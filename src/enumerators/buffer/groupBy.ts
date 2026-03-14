@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 import { TyneqMap } from "../../utility/map";
 import { TyneqEnumerable } from '../../core/TyneqEnumerable';
@@ -9,20 +10,19 @@ import { Tyneq } from "../..";
  * Enumerator that groups sequence elements by a key.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ * Deferred. Source is fully buffered on first iteration.
  *
  * Consumes the entire source on first iteration to build a key-to-values lookup, then yields
  * one transformed group per distinct key via the result selector.
  *
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TKey - The type of the grouping key.
- * @typeParam TValue - The type of elements within each group.
- * @typeParam TResult - The type of the result produced by the result selector.
- *
  * @group Enumerators
  * @internal
  */
-@operator('groupBy')
+@operator<[keySelector: unknown, valueSelector: unknown, resultSelector: unknown]>('groupBy', (keySelector, valueSelector, resultSelector) => {
+    ArgumentUtility.checkNotOptional({ keySelector });
+    ArgumentUtility.checkNotOptional({ valueSelector });
+    ArgumentUtility.checkNotOptional({ resultSelector });
+})
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly valueSelector: (item: TSource) => TValue;

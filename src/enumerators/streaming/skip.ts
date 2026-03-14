@@ -7,12 +7,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that bypasses a specified number of elements from the beginning of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Skips the first `count` elements lazily on the first call to `handleNext`, then passes
  * through all subsequent elements without buffering.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

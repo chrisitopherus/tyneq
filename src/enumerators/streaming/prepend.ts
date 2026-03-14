@@ -6,11 +6,9 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that prepends a single element to the beginning of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Yields the prepended item first, then all source elements.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

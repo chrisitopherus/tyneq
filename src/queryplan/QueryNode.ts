@@ -1,26 +1,22 @@
-import type { IQueryNode, OperatorCategory } from './IQueryNode';
-import type { IQueryPlanVisitor } from './IQueryPlanVisitor';
+import type { IQueryNode, IQueryPlanVisitor, OperatorCategory } from '../types/queryplan';
 
 /**
  * Standard immutable implementation of {@link IQueryNode}.
  *
  * @remarks
- * `QueryNode` instances are created automatically by the operator registration
- * infrastructure (`@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`)
- * and by `Tyneq.from` / `Tyneq.range` for root source nodes.
+ * Instances are created automatically by the operator registration infrastructure
+ * (`@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`) and by
+ * `Tyneq.from` / `Tyneq.range` for root source nodes.
  *
- * You do not typically construct `QueryNode` directly in application code.
- * Use it inside custom {@link IQueryPlanVisitor} implementations when you need to
- * produce a new (modified) node — for example in a query optimizer:
+ * Construct `QueryNode` directly only when producing modified nodes inside a
+ * {@link IQueryPlanVisitor} — for example, in a query optimizer:
  *
  * ```ts
- * import { QueryNode } from 'tyneq';
- *
  * class QueryOptimizer implements IQueryPlanVisitor<IQueryNode> {
  *     visit(node: IQueryNode): IQueryNode {
  *         const optimizedSource = node.source ? this.visit(node.source) : null;
  *
- *         // Merge adjacent where().where() into a single where()
+ *         // Merge adjacent where().where() into a single predicate
  *         if (node.operatorName === 'where' && optimizedSource?.operatorName === 'where') {
  *             const [p1] = node.args as [(x: unknown) => boolean];
  *             const [p2] = optimizedSource.args as [(x: unknown) => boolean];
@@ -36,8 +32,6 @@ import type { IQueryPlanVisitor } from './IQueryPlanVisitor';
  */
 export class QueryNode implements IQueryNode {
     /**
-     * Creates a new `QueryNode`.
-     *
      * @param operatorName - The registered operator name (e.g., `'where'`, `'from'`).
      * @param args         - The user arguments passed to this operator.
      * @param source       - The previous node in the chain, or `null` for root nodes.
@@ -50,13 +44,6 @@ export class QueryNode implements IQueryNode {
         public readonly category: OperatorCategory
     ) {}
 
-    /**
-     * Dispatches this node to a visitor by calling `visitor.visit(this)`.
-     *
-     * @typeParam T - The return type of the visitor.
-     * @param visitor - The visitor to dispatch to.
-     * @returns The result of `visitor.visit(this)`.
-     */
     accept<T>(visitor: IQueryPlanVisitor<T>): T {
         return visitor.visit(this);
     }

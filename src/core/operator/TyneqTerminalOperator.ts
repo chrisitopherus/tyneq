@@ -1,5 +1,4 @@
 import { IEnumerable } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Abstract base class for terminal operators that evaluate a query and return a concrete value.
@@ -20,17 +19,9 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     protected readonly source: IEnumerable<TSource>;
 
-    /**
-     * @param source - The source sequence to operate on.
-     */
     public constructor(source: IEnumerable<TSource>) {
         this.source = source;
     }
 
-    /**
-     * Executes the terminal operation and returns the result.
-     *
-     * @returns The computed result value.
-     */
     public abstract process(): TResult;
 }

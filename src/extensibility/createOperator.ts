@@ -2,7 +2,8 @@ import type { IEnumerable, IEnumerator, IEnumeratorFactory } from '../types/core
 import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
 import { OperatorRegistry } from './OperatorRegistry';
 import { QueryNode } from '../queryplan/QueryNode';
-import type { IQueryNode } from '../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../types/queryplan';
+import type { IQueryNode } from '../types/queryplan';
 
 // Functional operator registration API
 //
@@ -18,7 +19,7 @@ import type { IQueryNode } from '../queryplan/IQueryNode';
 /** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
 interface IWithCreateEnumerable {
     createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
-    readonly queryNode: IQueryNode | null;
+    readonly [tyneqQueryNode]: IQueryNode | null;
 }
 
 /**
@@ -75,7 +76,7 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const withCreate = this as unknown as IWithCreateEnumerable;
-            const node = new QueryNode(config.name, args, withCreate.queryNode, kind);
+            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], kind);
             return withCreate.createEnumerable(
                 config.factory(this as IEnumerable<TSource>, ...(args as TArgs)),
                 node
@@ -134,7 +135,7 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
             config.validate?.(...(args as TArgs));
             const self = this;
             const withCreate = this as unknown as IWithCreateEnumerable;
-            const node = new QueryNode(config.name, args, withCreate.queryNode, 'streaming');
+            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], 'streaming');
             return withCreate.createEnumerable({
                 getEnumerator(): IEnumerator<unknown> {
                     // IterableIterator<T> is structurally compatible with IEnumerator<T>

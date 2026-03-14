@@ -6,12 +6,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that yields elements in reverse order.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ * Deferred. Source is fully buffered on first iteration.
  *
  * Consumes the entire source on first iteration to build a buffer, then yields elements
  * from the end backwards.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

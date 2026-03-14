@@ -6,12 +6,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that yields consecutive overlapping pairs from a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Each pair is `[previous, current]`. A sequence of n elements produces n-1 pairs.
  * An empty or single-element sequence produces no output.
- *
- * @typeParam T - The type of elements in the source sequence.
  *
  * @group Enumerators
  * @internal

@@ -6,11 +6,9 @@ import { ITyneqEnumerable } from "../../types/core";
  * Terminal operator that materializes a sequence into a JavaScript `Set`.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Duplicate values are removed automatically by the `Set` constructor.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.toSet} for the public API.
  *

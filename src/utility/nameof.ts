@@ -2,29 +2,18 @@
  * Extracts the name and value of the first property of a single-key object literal.
  *
  * @remarks
- * Used throughout the library to obtain a parameter name as a string at call-sites without
- * hardcoding string literals. The caller passes `{ paramName }` (object shorthand) and receives
- * `[name, value]` back, where `name` is `"paramName"` and `value` is the runtime value.
+ * Pass `{ paramName }` (object shorthand) to receive `[name, value]` back, where `name`
+ * is `"paramName"` and `value` is the runtime value. Used throughout the library to obtain
+ * a parameter name as a string without hardcoding string literals.
  *
- * Only the first own enumerable key of `param` is read. Passing an object with more than one
- * property is valid but only the first key (in insertion order) is returned.
- *
- * @typeParam T - The type of the value being named.
+ * Only the first own enumerable key of `param` is read. Passing an object with more than
+ * one property is valid but only the first key (in insertion order) is returned.
  *
  * @param param - A single-property object whose key is the parameter name and value is the
  *   parameter value. Typically written as object shorthand: `{ myParam }`.
  *
  * @returns A tuple `[name, value]` where `name` is the string key and `value` is the
  *   corresponding value from `param`.
- *
- * @example
- * ```ts
- * function validate(count: number) {
- *     const [name, value] = nameof({ count });
- *     // name  → "count"
- *     // value → the runtime value of count
- * }
- * ```
  *
  * @group Utilities
  * @internal

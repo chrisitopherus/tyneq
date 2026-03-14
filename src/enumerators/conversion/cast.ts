@@ -5,14 +5,11 @@ import { IEnumerator } from "../../types/core";
  * Enumerator that performs an unchecked type cast on each element of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Casts each element from `T` to `U` via a double type assertion. No runtime type checking is
  * performed; the cast is a compile-time-only operation. Use `OfTypeEnumerator` for runtime-safe
  * type filtering.
- *
- * @typeParam T - The source element type.
- * @typeParam U - The target element type (unchecked at runtime).
  *
  * @group Enumerators
  * @internal

@@ -4,19 +4,15 @@ import { terminal } from "../../extensibility/operatorDecorators";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
  * Terminal operator that returns the minimum element in a sequence.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Compares elements using `comparer`, defaulting to the natural order comparer. Throws if the
  * sequence is empty.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.min} for the public API.
  *

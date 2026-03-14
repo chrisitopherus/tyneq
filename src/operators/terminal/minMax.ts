@@ -18,12 +18,10 @@ function defaultCompare<T>(a: T, b: T): number {
  * Terminal operator that returns both the minimum and maximum elements in a single pass.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Fuses `min()` and `max()` into a single enumeration, which avoids iterating the source
  * twice. Throws if the sequence is empty.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @see {@link MinMaxResult} for the return type.
  * @see {@link ITyneqEnumerable.minMax} for the public API.

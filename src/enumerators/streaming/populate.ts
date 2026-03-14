@@ -6,12 +6,9 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that replaces every source element with a constant value.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Preserves the cardinality of the source sequence; yields `value` once per source element.
- *
- * @typeParam TSource - The type of elements in the source sequence (consumed but not yielded).
- * @typeParam TValue - The type of the replacement value.
  *
  * @group Enumerators
  * @internal

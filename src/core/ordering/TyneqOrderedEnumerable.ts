@@ -2,7 +2,8 @@ import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 import { TyneqEnumerableSorter } from "./TyneqEnumerableSorter";
 import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../../types/core';
-import type { IQueryNode } from '../../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../../types/queryplan';
+import type { IQueryNode } from '../../types/queryplan';
 import { QueryNode } from '../../queryplan/QueryNode';
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
@@ -39,7 +40,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
 
     public readonly source: ITyneqEnumerable<TSource>;
     public readonly parent: Nullable<IOrderedEnumerable<TSource>>;
-    public readonly queryNode: IQueryNode | null;
+    public readonly [tyneqQueryNode]: IQueryNode | null;
 
     /**
      * @param source - The sequence to order.
@@ -68,7 +69,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         this.comparer = comparer;
         this.descending = descending;
         this.parent = parent ?? null;
-        this.queryNode = node ?? null;
+        this[tyneqQueryNode] = node ?? null;
     }
 
     public override getEnumerator(): IEnumerator<TSource> {
@@ -94,7 +95,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * Adds a secondary ascending sort criterion.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+     * Deferred. Source is fully buffered on first iteration.
      *
      * @typeParam UKey - The type of the secondary sort key.
      *
@@ -109,7 +110,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('thenBy', [keySelector, comparer], this.queryNode, 'buffer');
+        const node = new QueryNode('thenBy', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,
@@ -124,7 +125,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
      * Adds a secondary descending sort criterion.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+     * Deferred. Source is fully buffered on first iteration.
      *
      * @typeParam UKey - The type of the secondary sort key.
      *
@@ -138,7 +139,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     public thenByDescending<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('thenByDescending', [keySelector, comparer], this.queryNode, 'buffer');
+        const node = new QueryNode('thenByDescending', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,

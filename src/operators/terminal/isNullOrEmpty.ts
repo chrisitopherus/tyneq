@@ -7,12 +7,10 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * Terminal operator that returns `true` if the sequence is null or contains no elements.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Reads at most one element to determine whether the sequence is empty, then disposes the
  * iterator.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.isNullOrEmpty} for the public API.
  *

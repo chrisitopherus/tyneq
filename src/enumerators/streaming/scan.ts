@@ -7,7 +7,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * Enumerator that emits a running accumulation of elements.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * For each source element, applies the accumulator to the running total and yields the updated
  * value. The seed is not yielded; only accumulated results are.
@@ -16,9 +16,6 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * source:  [ 1,  2,  3,  4,  5 ]   seed = 0, acc = (a, b) => a + b
  * yields:  [ 1,  3,  6, 10, 15 ]
  * ```
- *
- * @typeParam TSource - Type of elements in the source sequence.
- * @typeParam TResult - Type of the accumulated result (may differ from TSource).
  *
  * @group Enumerators
  * @internal

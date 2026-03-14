@@ -1,6 +1,7 @@
 import { MemoizeEnumerator } from "../../enumerators/buffer/memoize";
 import { CacheResult, ICachedEnumerable, IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
-import type { IQueryNode } from '../../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../../types/queryplan';
+import type { IQueryNode } from '../../types/queryplan';
 import { Nullable } from "../../types/utility";
 import { TyneqOrderedEnumerable } from "../ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "../TyneqEnumerable";
@@ -34,7 +35,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     public constructor(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null) {
         super();
         this.source = source;
-        this.queryNode = node ?? null;
+        this[tyneqQueryNode] = node ?? null;
     }
 
     public getEnumerator(): IEnumerator<TSource> {
@@ -76,7 +77,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return { has: false };
     }
 
-    public readonly queryNode: IQueryNode | null;
+    public readonly [tyneqQueryNode]: IQueryNode | null;
 
     protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);

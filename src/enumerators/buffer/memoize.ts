@@ -5,13 +5,11 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
  * Enumerator that reads from a shared {@link TyneqCachedEnumerable}.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Yields elements from the cache by index. The cache lazily expands the underlying source on
  * demand. Multiple `MemoizeEnumerator` instances over the same cache share the underlying
  * source while each maintaining its own position independently.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

@@ -2,12 +2,13 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
 import { OperatorRegistry } from './OperatorRegistry';
 import { inferOperatorKind } from './inferKind';
 import { QueryNode } from '../queryplan/QueryNode';
-import type { IQueryNode } from '../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../types/queryplan';
+import type { IQueryNode } from '../types/queryplan';
 
 /** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
 interface IWithCreateEnumerable {
     createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
-    readonly queryNode: IQueryNode | null;
+    readonly [tyneqQueryNode]: IQueryNode | null;
 }
 
 /**
@@ -87,7 +88,7 @@ export function operator<TArgs extends unknown[] = never>(
                 const base = this;
                 const withCreate = this as unknown as IWithCreateEnumerable;
                 const kind = inferOperatorKind(target);
-                const node = new QueryNode(name, userArgs, withCreate.queryNode, kind === 'streaming' ? 'streaming' : 'buffer');
+                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind === 'streaming' ? 'streaming' : 'buffer');
                 return withCreate.createEnumerable({
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);

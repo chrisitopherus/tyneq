@@ -7,12 +7,10 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * Enumerator that yields elements from the source that are not present in an excluded-values sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the excluded sequence into a `Set` on first iteration. Each source value appears at
  * most once in the output (already-yielded values are also added to the exclusion set).
- *
- * @typeParam TSource - The type of elements in the sequences.
  *
  * @group Enumerators
  * @internal

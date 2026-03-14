@@ -20,8 +20,6 @@ export class TypeGuardUtility {
      * @remarks
      * Checks that `value` is non-null, non-undefined, and has a callable `[Symbol.iterator]`
      * property. Does not invoke the iterator.
-     *
-     * @param value - The value to test.
      */
     public static isIterable<T = unknown>(value: unknown): value is Iterable<T> {
         return value !== null
@@ -34,8 +32,6 @@ export class TypeGuardUtility {
      *
      * @remarks
      * Checks that `value` is a non-null object or function with a callable `next` property.
-     *
-     * @param value - The value to test.
      */
     public static isIterator<T = unknown>(value: unknown): value is Iterator<T> {
         const valueType = typeof value;
@@ -47,8 +43,6 @@ export class TypeGuardUtility {
 
     /**
      * Returns `true` if `value` implements both `Iterable<T>` and `Iterator<T>`.
-     *
-     * @param value - The value to test.
      */
     public static isIterableIterator<T = unknown>(value: unknown): value is IterableIterator<T> {
         return this.isIterable<T>(value) && this.isIterator<T>(value);
@@ -60,8 +54,6 @@ export class TypeGuardUtility {
      * @remarks
      * Checks that `value` is an `Iterator<T>` whose optional `return` and `throw` properties,
      * if present, are functions.
-     *
-     * @param value - The value to test.
      */
     public static isEnumerator<T = unknown>(value: unknown): value is IEnumerator<T> {
         if (!this.isIterator<T>(value)) return false;
@@ -77,8 +69,6 @@ export class TypeGuardUtility {
      * @remarks
      * Checks that `value` is a non-null `Iterable<T>` that also has a callable `getEnumerator`
      * property.
-     *
-     * @param value - The value to test.
      */
     public static isEnumerable<T = unknown>(value: unknown): value is IEnumerable<T> {
         if (value === null || value === undefined) return false;

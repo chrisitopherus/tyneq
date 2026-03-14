@@ -1,22 +1,22 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that projects each element through a selector function.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Applies the selector to each source element in order, yielding the transformed value.
- *
- * @typeParam T - The type of elements in the source sequence.
- * @typeParam U - The type of elements in the result sequence.
  *
  * @group Enumerators
  * @internal
  */
-@operator('select')
+@operator<[selector: unknown]>('select', (selector) => {
+    ArgumentUtility.checkNotOptional({ selector });
+})
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 

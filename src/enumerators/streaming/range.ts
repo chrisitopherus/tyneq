@@ -6,7 +6,7 @@ import { nameof } from "../../utility/nameof";
  * Enumerator that generates a sequence of consecutive integers from `start` to `end` inclusive.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Values are generated on demand.
  *
  * Each call to `next()` yields the next integer in the range without buffering.
  *

@@ -1,6 +1,7 @@
 import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
-import type { IQueryNode } from '../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../types/queryplan';
+import type { IQueryNode } from '../types/queryplan';
 import { QueryNode } from '../queryplan/QueryNode';
 
 /**
@@ -24,30 +25,19 @@ import { QueryNode } from '../queryplan/QueryNode';
  */
 export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<TSource> {
 
-    public abstract readonly queryNode: IQueryNode | null;
+    public abstract readonly [tyneqQueryNode]: IQueryNode | null;
 
-    /**
-     * Implements the `Iterable<TSource>` protocol by delegating to {@link getEnumerator}.
-     *
-     * @returns A fresh iterator positioned before the first element.
-     */
     public [Symbol.iterator](): IEnumerator<TSource> {
         return this.getEnumerator();
     }
 
-    /**
-     * Returns a fresh iterator for the sequence. Called by `Symbol.iterator` and by operators
-     * that need an independent enumeration.
-     *
-     * @returns A fresh iterator positioned before the first element.
-     */
     public abstract getEnumerator(): IEnumerator<TSource>;
 
     /**
      * Sorts the sequence in ascending order by a key.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+     * Deferred. Source is fully buffered on first iteration.
      *
      * The sort is stable. Supports multi-level sorting via `thenBy()` and `thenByDescending()`.
      *
@@ -63,7 +53,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('orderBy', [keySelector, comparer], this.queryNode, 'buffer');
+        const node = new QueryNode('orderBy', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
@@ -76,7 +66,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * Sorts the sequence in descending order by a key.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+     * Deferred. Source is fully buffered on first iteration.
      *
      * The sort is stable. Supports multi-level sorting via `thenBy()` and `thenByDescending()`.
      *
@@ -94,7 +84,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('orderByDescending', [keySelector, comparer], this.queryNode, 'buffer');
+        const node = new QueryNode('orderByDescending', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
@@ -104,7 +94,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     }
 
     public memoize(): ITyneqCachedEnumerable<TSource> {
-        const node = new QueryNode('memoize', [], this.queryNode, 'buffer');
+        const node = new QueryNode('memoize', [], this[tyneqQueryNode], 'buffer');
         return this.createCachedEnumerable(this, node);
     }
 
@@ -112,7 +102,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * Applies a custom transformation to the sequence using a factory function.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
      *
      * The `factory` is invoked on each enumeration, ensuring re-iterability. Use this as an
      * escape hatch for transformations not covered by built-in operators.
@@ -134,26 +124,8 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         } satisfies IEnumeratorFactory<TResult>);
     }
 
-    /**
-     * Creates a new enumerable from an enumerator factory. Called by query operators to
-     * wrap result iterators.
-     *
-     * @typeParam TResult - The element type of the new sequence.
-     *
-     * @param factory - Factory that produces iterators for the new sequence.
-     */
     protected abstract createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult>;
 
-    /**
-     * Creates an ordered enumerable for a single sort criterion. Called by `orderBy()` and
-     * `orderByDescending()`.
-     *
-     * @typeParam TKey - The type of the sort key.
-     *
-     * @param keySelector - Extracts the sort key from each element.
-     * @param comparer - Compares two keys.
-     * @param descending - Whether to sort in descending order.
-     */
     protected abstract createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
         comparer: (a: TKey, b: TKey) => number,

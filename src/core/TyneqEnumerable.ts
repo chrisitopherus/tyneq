@@ -1,6 +1,7 @@
 import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
-import type { IQueryNode } from '../queryplan/IQueryNode';
+import { tyneqQueryNode } from '../types/queryplan';
+import type { IQueryNode } from '../types/queryplan';
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { TyneqCachedEnumerable } from './cache/TyneqCachedEnumerable';
@@ -26,7 +27,7 @@ import { TyneqOrderedEnumerable } from './ordering/TyneqOrderedEnumerable';
 export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
     protected readonly enumeratorFactory: IEnumeratorFactory<TSource>;
 
-    public readonly queryNode: IQueryNode | null;
+    public readonly [tyneqQueryNode]: IQueryNode | null;
 
     /**
      * @param enumeratorFactory - Factory that produces a fresh iterator on each enumeration.
@@ -38,7 +39,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
         super();
         ArgumentUtility.checkNotOptional({ enumeratorFactory });
         this.enumeratorFactory = enumeratorFactory;
-        this.queryNode = node ?? null;
+        this[tyneqQueryNode] = node ?? null;
     }
 
     public override getEnumerator(): IEnumerator<TSource> {

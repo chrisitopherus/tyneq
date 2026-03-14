@@ -1,22 +1,22 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that filters out elements with duplicate keys from a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Tracks seen keys in a `Set`. Yields the first element for each key, in first-seen-key order.
- *
- * @typeParam TSource - The type of elements in the sequence.
- * @typeParam TKey - The type of the comparison key.
  *
  * @group Enumerators
  * @internal
  */
-@operator('distinctBy')
+@operator<[keySelector: unknown]>('distinctBy', (keySelector) => {
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
 export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;

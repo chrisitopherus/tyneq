@@ -6,12 +6,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that yields elements in randomized order.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ * Deferred. Source is fully buffered on first iteration.
  *
  * Consumes the entire source on first iteration, shuffles the buffer in-place using the
  * Fisher-Yates algorithm, then yields elements in the shuffled order.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

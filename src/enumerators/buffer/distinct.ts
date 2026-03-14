@@ -6,11 +6,9 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that filters out duplicate values from a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Tracks seen values in a `Set`. Yields each value at most once, in first-seen order.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

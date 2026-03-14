@@ -1,22 +1,23 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that yields elements while a predicate is true, then stops.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Evaluates the predicate for each element. The first element that returns `false` causes early
  * completion; that element and all subsequent elements are not yielded.
  *
- * @typeParam T - The type of elements in the sequence.
- *
  * @group Enumerators
  * @internal
  */
-@operator('takeWhile')
+@operator<[predicate: unknown]>('takeWhile', (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (value: T) => boolean;
 

@@ -7,13 +7,10 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * Enumerator that yields elements whose keys appear in both the source and another key sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the other keys into a `Set` on first iteration. Each unique key appears at most once
  * in the output.
- *
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TKey - The type of the comparison key.
  *
  * @group Enumerators
  * @internal

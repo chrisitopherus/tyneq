@@ -7,17 +7,16 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that splits a sequence into fixed-size chunks.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Groups consecutive elements into arrays of the specified size. The last chunk may contain
  * fewer elements if the source length is not evenly divisible by `size`.
- *
- * @typeParam T - The type of elements in the source sequence.
  *
  * @group Enumerators
  * @internal
  */
 @operator<[size: unknown]>('chunk', (size) => {
+    ArgumentUtility.checkSafeInteger({ size: size as number });
     ArgumentUtility.checkPositive({ size: size as number });
 })
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {

@@ -1,23 +1,25 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that yields elements from both the source and a second sequence whose keys are unique.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Enumerates the source first, then the second sequence. Each unique key appears at most once
  * in the output. The first element encountered for a given key is yielded.
  *
- * @typeParam TSource - The type of elements in the sequences.
- * @typeParam TKey - The type of the comparison key.
- *
  * @group Enumerators
  * @internal
  */
-@operator('unionBy')
+@operator<[otherValues: unknown, keySelector: unknown]>('unionBy', (otherValues, keySelector) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private readonly bufferedKeys = new Set<TKey>();

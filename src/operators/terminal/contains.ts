@@ -6,11 +6,9 @@ import { IEnumerable } from "../../types/core";
  * Terminal operator that returns `true` if the sequence contains a specific value.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Compares elements using strict equality (`===`). Short-circuits on the first match.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.contains} for the public API.
  *

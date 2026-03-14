@@ -40,11 +40,11 @@ export class EnumeratorUtility {
      *
      * @remarks
      * The returned iterable always returns the same enumerator instance from `[Symbol.iterator]()`.
-     * It is therefore **single-use** — iterating it a second time re-uses the already-advanced
-     * enumerator and will produce no further elements.
+     * It is **single-use** — iterating it a second time re-uses the already-advanced enumerator
+     * and will produce no further elements.
      *
      * @param enumerator - The enumerator to wrap.
-     * @returns A single-use `Iterable<TSource>` backed by the enumerator.
+     * @returns A single-use `Iterable<TSource>` backed by `enumerator`.
      */
     public static toIterable<TSource>(enumerator: IEnumerator<TSource>): Iterable<TSource> {
         return {

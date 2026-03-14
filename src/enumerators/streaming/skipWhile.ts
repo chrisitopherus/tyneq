@@ -1,23 +1,24 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that bypasses elements from the beginning while a predicate is true, then yields all remaining elements.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Tests each element against the predicate until the first element that returns `false`.
  * That element and all subsequent elements are yielded without further predicate evaluation.
  * Once skipping ends it does not resume, even if later elements would satisfy the predicate.
  *
- * @typeParam T - The type of elements in the sequence.
- *
  * @group Enumerators
  * @internal
  */
-@operator('skipWhile')
+@operator<[predicate: unknown]>('skipWhile', (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
 export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
     private isSkipping = true;

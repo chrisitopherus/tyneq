@@ -7,14 +7,11 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
  * Enumerator that yields elements in sorted order.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ * Deferred. Source is fully buffered on first iteration.
  *
  * Consumes the entire source on first iteration to build a sorted index map using a chain of
  * sorters from the ordered enumerable. Supports multi-level sorting via chained sorters
  * produced by `thenBy` operations.
- *
- * @typeParam TSource - The type of elements in the sequence.
- * @typeParam TKey - The type of the comparison key.
  *
  * @group Enumerators
  * @internal

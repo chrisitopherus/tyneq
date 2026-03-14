@@ -7,12 +7,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that executes a side-effect action on each element without modifying the sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Invokes `action` on each element before yielding it unchanged. Useful for logging,
  * debugging, or triggering external operations during enumeration.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

@@ -5,13 +5,10 @@ import { IEnumerator } from "../../types/core";
  * Enumerator that filters elements using a type guard, yielding only elements of the target type.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Tests each source element against the provided type guard predicate and yields only elements
  * for which it returns `true`. Unlike `CastEnumerator`, the type narrowing is validated at runtime.
- *
- * @typeParam T - The source element type.
- * @typeParam U - The target subtype to filter for (must extend `T`).
  *
  * @group Enumerators
  * @internal

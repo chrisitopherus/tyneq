@@ -1,22 +1,24 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that yields elements present in both the source and another sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the other sequence into a `Set` on first iteration. Each value appears at most once
  * in the output.
  *
- * @typeParam TSource - The type of elements in the sequences.
- *
  * @group Enumerators
  * @internal
  */
-@operator('intersect')
+@operator<[otherValues: unknown]>('intersect', (otherValues) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+})
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private intersectionValues = new Set<TSource>();

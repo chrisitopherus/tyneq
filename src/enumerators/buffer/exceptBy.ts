@@ -1,23 +1,25 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerable, IEnumerator } from '../../types/core';
+import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that yields elements whose keys are not present in an excluded-keys sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the excluded keys into a `Set` on first iteration. Each unique key appears at most
  * once in the output (already-yielded keys are also added to the exclusion set).
  *
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TKey - The type of the comparison key.
- *
  * @group Enumerators
  * @internal
  */
-@operator('exceptBy')
+@operator<[excludedKeys: unknown, keySelector: unknown]>('exceptBy', (excludedKeys, keySelector) => {
+    ArgumentUtility.checkNotOptional({ excludedKeys });
+    ArgumentUtility.checkIterable({ excludedKeys });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly excludedKeys: Iterable<TKey>;
     private excludeSet = new Set<TKey>();

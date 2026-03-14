@@ -4,11 +4,8 @@ import { Undefinedable } from "../types/utility";
  * Factory class for creating well-formed `IteratorResult` objects.
  *
  * @remarks
- * Provides a type-safe, explicit API for constructing `IteratorResult<T>` values.
  * Use {@link yield} to signal that a value is available, and {@link complete} to signal
  * that iteration has finished.
- *
- * @typeParam T - The type of values yielded by the iterator.
  *
  * @group Classes
  * @internal
@@ -26,8 +23,6 @@ export class TyneqIteratorResult<T> {
     /**
      * Creates an in-progress `IteratorResult` carrying `value`.
      *
-     * @param value - The element to yield.
-     *
      * @returns `{ value, done: false }`
      */
     public static yield<T>(value: T): IteratorResult<T> {
@@ -36,8 +31,6 @@ export class TyneqIteratorResult<T> {
 
     /**
      * Creates a completion `IteratorResult`.
-     *
-     * @typeParam T - The element type of the iterator.
      *
      * @returns `{ value: undefined, done: true }`
      */

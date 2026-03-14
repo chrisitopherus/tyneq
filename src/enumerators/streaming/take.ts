@@ -6,13 +6,11 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that yields a specified number of elements from the beginning of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Signals early completion once `count` elements have been yielded, stopping source enumeration
  * immediately rather than consuming the remainder of the sequence.
  * Negative values of `count` are treated as 0, resulting in an empty sequence.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

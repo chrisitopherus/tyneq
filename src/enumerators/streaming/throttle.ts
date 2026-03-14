@@ -7,12 +7,10 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that yields every Nth element from a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * The element at index 0 is always yielded; subsequent elements are yielded at indices that are
  * multiples of `count` (0, count, 2×count, …).
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

@@ -4,11 +4,9 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
  * Enumerator that generates a fixed-length sequence by calling a randomizer function.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Values are generated on demand.
  *
  * Invokes `randomizer` once per element position, up to `count` times.
- *
- * @typeParam TSource - The type of values produced by the randomizer.
  *
  * @group Enumerators
  * @internal

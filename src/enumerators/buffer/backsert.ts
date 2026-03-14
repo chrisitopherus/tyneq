@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
@@ -10,18 +11,19 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that inserts a sequence at a position measured from the end of the source.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+ * Deferred. Source is fully buffered on first iteration.
  *
  * Buffers both the source and the other sequence on first iteration. The insertion point is
  * `source.length - 1 - backIndex`. Elements before that index come from source, then all
  * elements from other, then the remaining source elements.
  *
- * @typeParam T - The type of elements in the sequences.
- *
  * @group Enumerators
  * @internal
  */
-@operator('backsert')
+@operator<[backIndex: unknown, other: unknown]>('backsert', (_backIndex, other) => {
+    ArgumentUtility.checkNotOptional({ other });
+    ArgumentUtility.checkIterable({ other });
+})
 export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
     private readonly other: Iterable<T>;
     private readonly backIndex: number;

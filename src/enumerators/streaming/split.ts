@@ -7,13 +7,11 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that splits a sequence into sub-arrays at delimiter elements.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Elements for which the predicate returns `true` are treated as delimiters and are excluded from output.
  * Consecutive delimiters do not produce empty arrays. A trailing delimiter produces no extra empty array.
  * The final partial group is yielded when the source is exhausted.
- *
- * @typeParam TSource - The type of elements in the source sequence.
  *
  * @group Enumerators
  * @internal

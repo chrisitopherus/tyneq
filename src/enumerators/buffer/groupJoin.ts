@@ -9,15 +9,10 @@ import { Tyneq } from "../../core/tyneq";
  * Enumerator that correlates outer elements with inner groups via matching keys (left outer join).
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the entire inner sequence into a key-to-values lookup on first iteration. Each outer
  * element is then paired with an enumerable of all matching inner elements (empty if no matches).
- *
- * @typeParam TOuter - The type of elements in the outer (source) sequence.
- * @typeParam TInner - The type of elements in the inner sequence.
- * @typeParam TKey - The type of the join key.
- * @typeParam TResult - The type of the result produced by the result selector.
  *
  * @group Enumerators
  * @internal

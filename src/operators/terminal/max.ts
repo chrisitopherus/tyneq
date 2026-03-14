@@ -9,12 +9,10 @@ import { Nullable } from "../../types/utility";
  * Terminal operator that returns the maximum element in a sequence.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is enumerated on call.
  *
  * Compares elements using `comparer`, defaulting to the natural order comparer. Throws if the
  * sequence is empty.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @see {@link ITyneqEnumerable.max} for the public API.
  *

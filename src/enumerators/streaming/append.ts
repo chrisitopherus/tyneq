@@ -6,11 +6,9 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that appends a single element to the end of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Yields all source elements first, then the appended item.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

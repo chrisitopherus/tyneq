@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
@@ -7,20 +8,20 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that combines two sequences pairwise using a selector function.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Pulls one element from each sequence per iteration and applies the selector to produce an output element.
  * Terminates as soon as either sequence is exhausted (shortest-sequence semantics).
  * Properly disposes the secondary enumerator on completion or early termination.
  *
- * @typeParam T - The type of elements in the first (source) sequence.
- * @typeParam U - The type of elements in the second sequence.
- * @typeParam V - The type of elements produced by the selector.
- *
  * @group Enumerators
  * @internal
  */
-@operator('zip')
+@operator<[other: unknown, selector: unknown]>('zip', (other, selector) => {
+    ArgumentUtility.checkNotOptional({ other });
+    ArgumentUtility.checkIterable({ other });
+    ArgumentUtility.checkNotOptional({ selector });
+})
 export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     private readonly otherEnumerator: IEnumerator<U>;
     private readonly selector: (first: T, second: U) => V;

@@ -1,8 +1,23 @@
 # Documentation Guidelines — Tyneq
 
-Single source of truth for JSDoc/TSDoc across the Tyneq library.
-**Toolchain:** TypeDoc + `typedoc-plugin-markdown`. Comments must be valid TSDoc.
-**Target reader:** Developers familiar with LINQ or Rx.js. No tutorials — precise semantics only.
+**Toolchain:** TypeDoc + `typedoc-plugin-markdown`. All comments must be valid TSDoc.
+**Target reader:** Developers familiar with LINQ or RxJS. Assume fluency with TypeScript generics.
+
+---
+
+## The One Rule
+
+> **A comment must tell the reader something the signature cannot.**
+
+If the reader can infer it from the name, the types, and common sense — omit it.
+Documentation that restates the obvious creates noise and maintenance debt.
+
+| Adds value | Doesn't |
+|---|---|
+| Empty-sequence behavior | That the method accepts a predicate |
+| Stable vs. unstable sort guarantee | That it returns `this` type |
+| When deferred becomes immediate | That it "filters elements" (the name is `where`) |
+| Exact error type and trigger condition | `@param value - The value.` |
 
 ---
 
@@ -14,135 +29,106 @@ Use exactly. No synonyms.
 |---|---|
 | **sequence** | Any `IEnumerable<T>` value |
 | **source** | The upstream sequence passed into an operator |
-| **element** | A single item produced by a sequence during iteration |
+| **element** | A single item produced by a sequence |
 | **predicate** | `(item: T) => boolean` |
 | **selector** | `(item: T) => TResult` projection |
 | **accumulator** | `(acc: TResult, item: T) => TResult` fold |
-| **comparer** | `(a: T, b: T) => number`; negative = less than, 0 = equal, positive = greater than |
-| **streaming operator** | O(1) space; yields elements one-at-a-time; deferred |
-| **buffering operator** | O(n) space; materialises source before yielding; deferred |
+| **comparer** | `(a: T, b: T) => number` — negative = less than, 0 = equal, positive = greater than |
+| **streaming operator** | O(1) space; yields one element at a time; deferred |
+| **buffering operator** | O(n) space; materialises the full source before yielding; deferred |
 | **terminal operator** | Returns a concrete value; forces immediate evaluation |
 | **deferred execution** | Source not iterated until the returned sequence is iterated |
 | **immediate execution** | Source fully iterated at the point of the method call |
 
 ---
 
-## Required Tags
+## What to Document
 
-### `@group` (required on every exported symbol)
+### Always
 
-| Symbol kind | `@group` |
-|---|---|
-| Interfaces | `Interfaces` |
-| Abstract or concrete classes | `Classes` |
-| Streaming / buffering / terminal operator classes | `Operators` |
-| Enumerator classes | `Enumerators` |
-| Error classes | `Errors` |
-| Type aliases | `Types` |
-| Decorator functions | `Decorators` |
-| Utility classes | `Utilities` |
-| QueryPlan types | `QueryPlan` |
+- **`@throws`** — the exact error class and the exact condition. Callers can't see this in the type system.
+- **Edge-case behavior** — empty sequences, `null`/`undefined` elements, zero-length ranges.
+- **Non-obvious ordering or stability guarantees** — e.g. stable sort, original-index preservation.
+- **Execution model for operators** — deferred or immediate, and when buffering occurs.
 
-### `@category` (operator classes only)
+### When it adds clarity
 
-| Operator kind | `@category` |
-|---|---|
-| Streaming | `Streaming` |
-| Buffering | `Buffering` |
-| Terminal | `Terminal` |
+- **`@param`** — only when the meaning isn't obvious from the name and type together. Skip `count`, `predicate`, `selector` when their role is self-evident from context.
+- **`@returns`** — only when the return value has semantics beyond its type (e.g. "returns the first matching element, or `undefined` if none").
+- **`@example`** — wherever calling the API is non-obvious or the output is surprising. Prefer one focused example over a comprehensive one.
+- **`@remarks`** — for behavioral caveats, performance notes, or constraints the summary line can't hold. Not for restating the summary.
+- **`@see`** — when a related symbol is genuinely helpful for navigation. Not as a reflex.
 
-### `@internal`
+### Never
 
-Apply to: enumerator classes, abstract base classes not in the public extensibility API,
-utility classes used only internally. TypeDoc excludes `@internal` symbols from generated docs.
+- Don't describe what the TypeScript signature already says.
+- Don't document `@internal` symbols beyond what contributors need to safely override or extend them.
+- Don't add `@param` entries that just repeat the parameter name: `@param value - The value.`
+- Don't write `@example` on `@internal` classes or interface members — put examples on the concrete public API.
+- Don't document inherited members unless behavior differs from the parent.
 
 ---
 
-## Execution Model
+## Execution Model (Operators)
 
-First sentence of `@remarks` — verbatim, no paraphrase:
+State execution model as the **first line of `@remarks`** on every operator. Use these standard phrases so readers build pattern recognition across the library:
 
-**Streaming:**
-> This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+| Kind | Standard phrasing |
+|---|---|
+| Streaming | `Deferred. Source is not enumerated until the returned sequence is iterated.` |
+| Buffering | `Deferred. Source is fully buffered on the first iteration of the returned sequence.` |
+| Terminal | `Immediate. Source is fully enumerated when this method is called.` |
 
-**Buffering:**
-> This method uses deferred execution. The source sequence is fully buffered on first iteration of the returned sequence.
+Adapt only when an operator has genuinely unusual semantics (e.g. partial buffering). In that case, explain what actually happens — don't force a misfit phrase.
 
-**Terminal:**
-> This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+---
+
+## TypeDoc Metadata
+
+These tags control grouping in generated docs. They are metadata, not documentation.
+
+| Tag | When to apply |
+|---|---|
+| `@group Operators` | All operator classes |
+| `@group Interfaces` / `Classes` / `Errors` / `Types` / `Decorators` / `Utilities` / `QueryPlan` | Other exported symbols by kind |
+| `@category Streaming` / `Buffering` / `Terminal` | Operator classes only |
+| `@internal` | Enumerators, abstract bases not in the public extensibility API, utility classes |
+
+Keep these on a single line at the end of the block. They don't need prose around them.
 
 ---
 
 ## Templates
 
+Templates show the **minimum viable** comment. Add only what passes the one rule.
+
 ### Interface
 
 ```ts
 /**
- * [What this contract represents.]
+ * [What contract this represents. One sentence.]
  *
  * @remarks
- * [Guarantees: invariants, protocol requirements, re-iterability contract.
- *  What this interface adds beyond any parent it extends.]
+ * [Guarantees: invariants, re-iterability, what it adds beyond its parent — only if non-obvious.]
  *
- * @typeParam T - [Role in this contract.]
- *
- * @see {@link RelatedType}
+ * @typeParam T - [Role in the contract, if not obvious.]
  *
  * @group Interfaces
  */
 export interface IExample<T> { ... }
 ```
 
-Member:
+Interface **members** — document the contract, not an implementation. Omit if the signature is self-explanatory.
 
 ```ts
 /**
- * [What calling this does or what this property holds.]
+ * [What this does or holds. One sentence. Omit if obvious from the name.]
  *
- * @remarks
- * [Contract callers can rely on. Does each call return an independent instance?]
- *
- * @returns [Shape and guarantee of the return value.]
+ * @returns [Guarantee beyond the return type — e.g. "always a new instance".]
+ * @throws {SomeError} When [exact condition].
  */
-methodName(): ReturnType;
+memberName(): ReturnType;
 ```
-
-Rules:
-- Document the contract, not an implementation.
-- No `@example` on interface members — examples belong on concrete classes or factory methods.
-- If the interface extends another, document what it *adds*, not what the parent already covers.
-
----
-
-### Concrete / Abstract Class
-
-```ts
-/**
- * [What this class is and does.]
- *
- * @remarks
- * [Key characteristics: laziness, re-iterability, how instances are obtained.
- *  For abstract classes: which methods subclasses must override and what they must guarantee.]
- *
- * @typeParam TSource - [Meaning.]
- *
- * @example
- * ```ts
- * const seq = Tyneq.from([1, 2, 3]).where(n => n > 1);
- * ```
- *
- * @see {@link TyneqEnumerableBase}
- *
- * @group Classes
- */
-export class TyneqExample<TSource> { ... }
-```
-
-Rules:
-- Abstract base classes not in the public extensibility API → add `@internal`.
-- If only obtained via a factory (not `new`), say so in `@remarks`.
-- Omit `@example` for `@internal` classes.
 
 ---
 
@@ -150,18 +136,16 @@ Rules:
 
 ```ts
 /**
- * [What the operator does to the sequence. Starts with a verb.]
+ * [Verb phrase: what the operator does to the sequence.]
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the
- * returned sequence is iterated.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * [Order preservation, predicate call count, what is yielded.]
+ * [Ordering guarantee. Per-element call count. Any other non-obvious behavioral contract.]
  *
- * **Performance:** O(1) space. O(n) time when fully enumerated.
+ * **Performance:** O(1) space. O(n) time.
  *
- * @typeParam TSource - Element type of the source sequence.
- * @typeParam TResult - Element type of the output sequence. [Omit if same as TSource.]
+ * @typeParam TResult - [Only if different from TSource and not obvious.]
  *
  * @see {@link CorrespondingEnumerator}
  * @see {@link ITyneqEnumerable.methodName}
@@ -170,21 +154,15 @@ Rules:
  * @category Streaming
  * @internal
  */
-@operator('methodName')
-export class ExampleOperator<TSource> extends TyneqOperatorEnumerable<TSource> { ... }
 ```
-
-Rules:
-- Always `@internal`. No `@example` (belongs on the interface method).
-- `@see` to enumerator and public API method are mandatory.
 
 ---
 
 ### Buffering Operator
 
-Same as streaming with:
-- Execution model sentence: `...fully buffered on first iteration of the returned sequence.`
-- Performance: `**Performance:** O(n) space (full buffer). O(n) time when fully enumerated.`
+Same as streaming, with:
+- `Deferred. Source is fully buffered on the first iteration of the returned sequence.`
+- `**Performance:** O(n) space (full buffer). O(n) time.`
 - `@category Buffering`
 
 ---
@@ -193,17 +171,14 @@ Same as streaming with:
 
 ```ts
 /**
- * [What this terminal operation computes.]
+ * [Verb phrase: what this computes.]
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when
- * this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * [Empty-sequence behavior. Default comparer behavior if applicable.]
+ * [Empty-sequence behavior — throws or returns a defined value. Always document this.]
  *
- * **Performance:** O(n) time. O(1) space. [Adjust space if buffering is needed.]
- *
- * @typeParam T - Element type of the source sequence.
+ * **Performance:** O(n) time. O(1) space. [Adjust if buffering occurs.]
  *
  * @see {@link ITyneqEnumerable.methodName}
  *
@@ -211,51 +186,36 @@ Same as streaming with:
  * @category Terminal
  * @internal
  */
-@terminal('methodName')
-export class ExampleTerminalOperator<T> extends TyneqTerminalOperator<T, ResultType> { ... }
 ```
 
-`process()`:
+`process()` — document only throws and non-obvious return value:
 
 ```ts
 /**
- * Executes the terminal operation.
- *
  * @returns [What is returned.]
- *
  * @throws {SequenceContainsNoElementsError} When the source is empty.
  */
 public override process(): ResultType { ... }
 ```
 
-Rules:
-- Always document empty-sequence behavior — throws or returns a defined default.
-- Always `@internal`.
-
 ---
 
 ### Enumerator
 
+Document only what contributors need to safely override:
+
 ```ts
 /**
- * Enumerator that [what it does during iteration].
+ * Enumerates [what it does step by step].
  *
  * @remarks
- * [Lifecycle: what initialize() sets up, what handleNext() does per step,
- *  what dispose() releases. State maintained between calls.]
- *
- * @typeParam TInput  - Source element type.
- * @typeParam TOutput - Output element type. [Omit if same as TInput.]
- *
- * @see {@link CorrespondingOperatorClass}
+ * [What `initialize()` sets up. What `handleNext()` produces per step. What `dispose()` releases.]
  *
  * @internal
  */
-export class ExampleEnumerator<TInput, TOutput> extends TyneqBaseEnumerator<TInput, TOutput> { ... }
 ```
 
-Rules:
-- Always `@internal`. No `@example`. Document lifecycle hooks for contributors.
+No `@example`. No `@group`. Enumerators are contributor-facing only.
 
 ---
 
@@ -263,10 +223,10 @@ Rules:
 
 ```ts
 /**
- * [What condition this error signals. One sentence.]
+ * Thrown when [exact condition, one sentence].
  *
  * @remarks
- * [When the library throws this. How to distinguish from related error types.]
+ * [How to distinguish from related error types — only if genuinely ambiguous.]
  *
  * @example
  * ```ts
@@ -278,15 +238,39 @@ Rules:
  * ```
  *
  * @see {@link TyneqError}
- *
  * @group Errors
  */
-export class SpecificError extends TyneqError { ... }
 ```
 
-Rules:
-- `@example` must show a `try/catch` with `instanceof`. Required.
-- Do not document inherited `.name`, `.message`, `.stack`.
+`@example` with `instanceof` catch is required — it shows how callers handle the error.
+
+---
+
+### Decorator Function
+
+```ts
+/**
+ * [Verb phrase: what the decorator does when applied.]
+ *
+ * @remarks
+ * [When registration happens. What the decorated class must extend. Duplicate-name behavior.]
+ *
+ * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
+ *
+ * @example
+ * ```ts
+ * \@operator('double')
+ * export class DoubleOperator<T extends number> extends TyneqOperatorEnumerable<T> {
+ *   constructor(source: IEnumerable<T>) { super(source); }
+ *   getEnumerator() { return new DoubleEnumerator(this.source[Symbol.iterator]()); }
+ * }
+ * // seq.double() is now available on every ITyneqEnumerable
+ * ```
+ *
+ * @throws {Error} When `name` is already registered.
+ * @group Decorators
+ */
+```
 
 ---
 
@@ -297,61 +281,19 @@ Rules:
  * [What this type represents.]
  *
  * @remarks
- * [When to use vs. related types. TypeScript-specific behavior.]
- *
- * @typeParam T - [Meaning.]
+ * [When to prefer this over a related type — only if the distinction is non-obvious.]
  *
  * @example
  * ```ts
- * const value: Nullable<string> = null;   // → valid
- * const bad: Nullable<string> = undefined; // → compile error
+ * const a: Nullable<string> = null;      // → valid
+ * const b: Nullable<string> = undefined; // → compile error
  * ```
- *
- * @see {@link Optional}
  *
  * @group Types
  */
-export type Nullable<T> = T | null;
 ```
 
-Rules:
-- `@example` required when the distinction from related types is non-obvious.
-- For conditional types, show at least one true case and one false case.
-
----
-
-### Decorator Function
-
-```ts
-/**
- * [What the decorator does when applied. Starts with a verb.]
- *
- * @remarks
- * [When registration happens. What the decorated class must extend.
- *  What happens if the name is already registered.]
- *
- * @param name - The method name to inject on `TyneqEnumerableBase.prototype`.
- *
- * @example
- * ```ts
- * \@operator('double')
- * export class DoubleOperator<T extends number> extends TyneqOperatorEnumerable<T> {
- *   constructor(source: IEnumerable<T>) { super(source); }
- *   getEnumerator() { return new DoubleEnumerator(this.source[Symbol.iterator]()); }
- * }
- * // seq.double() is now available on every ITyneqEnumerable instance
- * ```
- *
- * @throws {Error} When `name` is already registered on `TyneqEnumerableBase.prototype`.
- *
- * @group Decorators
- */
-export function operator(name: string) { ... }
-```
-
-Rules:
-- `@example` required with a realistic end-to-end registration.
-- Use `\@operator` (escaped) inside example code blocks.
+`@example` only when the distinction from a similar type would otherwise be unclear.
 
 ---
 
@@ -359,62 +301,36 @@ Rules:
 
 ```ts
 /**
- * [What category of helpers this groups.]
- *
- * @remarks
- * [Internal only, contributor use, or public. Any global state or side effects.]
+ * [What category of helpers this groups. One sentence.]
  *
  * @group Utilities
  * @internal
  */
-export class ExampleUtility { ... }
 ```
 
-Method (only document if the method is public API):
-
-```ts
-/**
- * [What this method does. Starts with a verb.]
- *
- * @param value - [Meaning. What triggers a throw vs. a pass.]
- *
- * @throws {ArgumentNullError} When `value` is `null`.
- */
-public static methodName(value: unknown): void { ... }
-```
+Document public static methods only. Skip `@internal` methods — the code is the doc.
 
 ---
 
 ## Style
 
-- **Active voice:** "Returns", "Throws", "Yields" — not "is returned", "will be thrown".
-- **Precise:** `does / returns / throws` for guaranteed behavior; `may` only when genuinely conditional.
-- **No marketing language:** no "powerful", "elegant", "seamlessly", "easy-to-use".
-- **One term per concept:** use the Terminology table; no synonyms.
-- **`@param` describes meaning**, not the type signature. Never write `@param value - The value.`
-- **Expected output:** `// → value` as inline comment, not a `console.log`.
-- **No `any`:** use `unknown` or a concrete generic.
-- **Concise:** cut filler, not meaning. If it fits in one sentence, don't use three.
-
----
-
-## What NOT to Do
-
-- Do not describe behavior not confirmed by reading the implementation.
-- Do not omit the execution model sentence from any operator `@remarks`.
-- Do not write examples that won't type-check against the actual exported signature.
-- Do not reference `private`, `protected`, or `@internal` symbols as stable API.
-- Do not add `@example` to interface members or `@internal` classes.
-- Do not write `@param value - The value parameter.` — describe meaning, not the name.
+- **Active voice.** "Returns", "Throws", "Yields" — not "is returned", "will be thrown".
+- **Certainty language.** `returns` / `throws` for guaranteed behavior. `may` only when genuinely conditional.
+- **No marketing.** "powerful", "elegant", "seamless", "easy-to-use" are banned.
+- **Expected output.** Use `// → value` as an inline comment, not `console.log`.
+- **`@param` describes meaning, not the name.** "The maximum number of elements to return" not "The count parameter."
+- **If it fits in one sentence, use one sentence.**
 
 ---
 
 ## Definition of Done
 
-- [ ] `@group` present (and `@category` for operators).
-- [ ] Execution model sentence verbatim as the **first sentence** of `@remarks` (operators only).
-- [ ] Every `@param` states meaning and null/undefined behavior.
-- [ ] Every `@throws` names the exact error class and the condition that triggers it.
-- [ ] `@example` present where required and compiles against the actual exported signature.
-- [ ] `@see` links: enumerator backing an operator, public API method, related siblings.
-- [ ] Prose is precise, terse, no filler.
+A documented symbol is done when:
+
+1. Every `@throws` names the exact error class and exact trigger condition.
+2. Every operator has an execution model statement as the first line of `@remarks`.
+3. Empty-sequence behavior is stated for every terminal operator.
+4. `@example` is present wherever it's required (errors, decorators, non-obvious operators).
+5. No comment restates what the TypeScript signature already says.
+6. `@group` (and `@category` for operators) is present on every exported symbol.
+7. Prose is active voice, terse, no filler.

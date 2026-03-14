@@ -1,24 +1,24 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerable, IEnumerator } from "../../types/core";
+import { IEnumerator } from "../../types/core";
 import { Nullable } from '../../types/utility';
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that projects each element to a nested sequence and flattens the results.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Applies the selector to each source element to obtain a nested sequence, then yields all
  * elements of each nested sequence in order (flatMap semantics).
  *
- * @typeParam T - The type of elements in the source sequence.
- * @typeParam U - The type of elements in the flattened result sequence.
- *
  * @group Enumerators
  * @internal
  */
-@operator('selectMany')
+@operator<[selector: unknown]>('selectMany', (selector) => {
+    ArgumentUtility.checkNotOptional({ selector });
+})
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => Iterable<U>;
     private innerEnumerator: Nullable<IEnumerator<U>> = null;

@@ -7,14 +7,12 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that conditionally executes a side-effect action on each element.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Evaluates `predicate` (which takes no arguments) for each element. When `predicate` returns `true`,
  * `action` is invoked with the element. All elements are yielded unchanged regardless of the predicate result.
  *
  * The predicate represents a global condition (e.g., a debug flag) rather than an element-specific test.
- *
- * @typeParam TSource - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

@@ -6,7 +6,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * Enumerator that bypasses a specified number of elements from the end of a sequence.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Uses a circular buffer of size `count` to hold a sliding window of the most-recent elements.
  * Once the buffer is full, each incoming element displaces the oldest, which is then yielded.
@@ -14,8 +14,6 @@ import { operator } from '../../extensibility/operatorDecorators';
  *
  * Negative values of `count` are treated as 0 (pass-through).
  * If the source has fewer than `count` elements, the output is empty.
- *
- * @typeParam T - The type of elements in the sequence.
  *
  * @group Enumerators
  * @internal

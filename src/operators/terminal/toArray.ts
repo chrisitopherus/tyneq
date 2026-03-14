@@ -6,9 +6,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * Terminal operator that materializes a sequence into a JavaScript array.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
- *
- * @typeParam TSource - The type of elements in the sequence.
+ * Immediate. Source is enumerated on call.
  *
  * @see {@link ITyneqEnumerable.toArray} for the public API.
  *

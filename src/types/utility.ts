@@ -1,47 +1,37 @@
 /**
- * A type that is either a value of type `T` or `null`.
+ * `T | null` — explicitly nullable, but not `undefined`.
  *
  * @remarks
- * Represents a value that may be `null` but not `undefined`. Use for APIs that explicitly
- * allow `null` while treating `undefined` as "not provided".
+ * Use when `null` is a valid value but `undefined` means "not provided".
  *
- * @typeParam T - The underlying value type.
- *
- * @see {@link Optional} for allowing both `null` and `undefined`.
- * @see {@link Undefinedable} for the `undefined`-only variant.
+ * @see {@link Optional} for `T | null | undefined`.
+ * @see {@link Undefinedable} for `T | undefined`.
  *
  * @group Types
  */
 export type Nullable<T> = T | null;
 
 /**
- * A type that is either a value of type `T` or `undefined`.
+ * `T | undefined` — optionally absent, but not `null`.
  *
  * @remarks
- * Represents an optional value that may be `undefined` but not `null`. Use for APIs that allow
- * omission while treating explicit `null` as a meaningful value.
+ * Use when omission is valid but an explicit `null` carries distinct meaning.
  *
- * @typeParam T - The underlying value type.
- *
- * @see {@link Optional} for allowing both `null` and `undefined`.
- * @see {@link Nullable} for the `null`-only variant.
+ * @see {@link Optional} for `T | null | undefined`.
+ * @see {@link Nullable} for `T | null`.
  *
  * @group Types
  */
 export type Undefinedable<T> = T | undefined;
 
 /**
- * A type that is `T`, `null`, or `undefined`.
+ * `T | null | undefined` — the most permissive optional type.
  *
  * @remarks
- * The most permissive optional type, equivalent to JavaScript's implicit handling of missing values.
- * Use {@link Nullable} or {@link Undefinedable} when the distinction between `null` and `undefined`
- * matters.
+ * Use {@link Nullable} or {@link Undefinedable} when the distinction between `null` and `undefined` matters.
  *
- * @typeParam T - The underlying value type.
- *
- * @see {@link Nullable} for the `null`-only variant.
- * @see {@link Undefinedable} for the `undefined`-only variant.
+ * @see {@link Nullable} for `T | null`.
+ * @see {@link Undefinedable} for `T | undefined`.
  *
  * @group Types
  */
@@ -87,15 +77,12 @@ export type GenericFunction = (...x: never[]) => unknown;
 export type Assume<T, U> = T extends U ? T : U;
 
 /**
- * A pass-through type that explicitly declares a type's identity.
+ * Identity type alias — evaluates to exactly `T`.
  *
  * @remarks
- * Has no runtime effect. Evaluates to exactly `T` without any narrowing or widening, serving
- * as a documentation or assertion tool to make implicit type assumptions explicit.
+ * Has no runtime effect. Use to make implicit type assumptions explicit at the call site.
  *
- * @typeParam T - The type being cast (identity).
- *
- * @see {@link Assume} for conditional type narrowing based on constraints.
+ * @see {@link Assume} for conditional narrowing against a constraint.
  *
  * @group Types
  */

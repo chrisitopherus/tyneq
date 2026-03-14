@@ -1,22 +1,23 @@
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { IEnumerator } from '../../types/core';
+import { ArgumentUtility } from '../../utility/argumentUtility';
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that filters elements based on a predicate.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Yields only those elements for which the predicate returns `true`. The predicate is evaluated
  * for every element in the source sequence.
  *
- * @typeParam T - The type of elements in the sequence.
- *
  * @group Enumerators
  * @internal
  */
-@operator('where')
+@operator<[predicate: unknown]>('where', (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
 

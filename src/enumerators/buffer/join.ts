@@ -9,16 +9,11 @@ import { TyneqMap } from "../../utility/map";
  * Enumerator that correlates elements from two sequences based on matching keys (inner join).
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Buffers the entire inner sequence into a key-to-values lookup on first iteration. For each
  * outer element, yields one result per matching inner element. Outer elements with no matches
  * are skipped.
- *
- * @typeParam TOuter - The type of elements in the outer (source) sequence.
- * @typeParam TInner - The type of elements in the inner sequence.
- * @typeParam TKey - The type of the join key.
- * @typeParam TResult - The type of the result produced by the result selector.
  *
  * @group Enumerators
  * @internal

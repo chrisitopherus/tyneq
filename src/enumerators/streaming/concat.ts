@@ -1,21 +1,23 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from '../../extensibility/operatorDecorators';
 
 /**
  * Enumerator that concatenates two sequences.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until iteration begins.
  *
  * Yields all source elements first, then all elements from the second sequence.
- *
- * @typeParam T - The type of elements in both sequences.
  *
  * @group Enumerators
  * @internal
  */
-@operator('concat')
+@operator<[other: unknown]>('concat', (other) => {
+    ArgumentUtility.checkNotOptional({ other });
+    ArgumentUtility.checkIterable({ other });
+})
 export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
     private readonly otherEnumerator: IEnumerator<T>;
     private isSourceDone = false;
