@@ -9,6 +9,9 @@ hero:
   name: Tyneq
   text: LINQ-style querying for TypeScript
   tagline: Build readable, composable, and predictable data pipelines over any iterable source.
+  image:
+    src: /logo.svg
+    alt: Tyneq
   actions:
     - theme: brand
       text: Get Started

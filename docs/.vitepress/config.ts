@@ -8,8 +8,12 @@ export default defineConfig({
   base: isGitHubActions ? "/tyneq/" : "/",
   cleanUrls: true,
   lastUpdated: true,
+  head: [
+    ["link", { rel: "icon", type: "image/svg+xml", href: isGitHubActions ? "/tyneq/logo.svg" : "/logo.svg" }]
+  ],
   themeConfig: {
-    siteTitle: "Tyneq Docs",
+    logo: "/logo.svg",
+    siteTitle: "Tyneq",
     search: {
       provider: "local"
     },
