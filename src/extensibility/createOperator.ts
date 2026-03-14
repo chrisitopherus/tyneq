@@ -42,7 +42,7 @@ interface IWithCreateEnumerable {
  *
  * @throws {Error} If a method named `config.name` is already registered.
  *
- * @group Decorators
+ * @group Utilities
  *
  * @example
  * ```ts
@@ -104,7 +104,7 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
  *
  * @throws {Error} If a method named `config.name` is already registered.
  *
- * @group Decorators
+ * @group Utilities
  *
  * @example
  * ```ts
@@ -165,7 +165,7 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
  *
  * @throws {Error} If a method named `config.name` is already registered.
  *
- * @group Decorators
+ * @group Utilities
  *
  * @example
  * ```ts

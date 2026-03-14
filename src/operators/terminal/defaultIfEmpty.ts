@@ -4,7 +4,7 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * Yields all source elements, or a single default value if the source is empty.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
  * @see {@link ITyneqEnumerable.defaultIfEmpty} for the public API.
  *

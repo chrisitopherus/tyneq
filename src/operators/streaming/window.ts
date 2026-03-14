@@ -33,7 +33,7 @@ function* windowGenerator<T>(source: Iterator<T>, size: number): IterableIterato
  * Produces sliding windows of `size` consecutive elements.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
  * Each window is an independent array snapshot. Windows advance one element at a time
  * (stride = 1). Incomplete windows at the end of the source are not emitted.

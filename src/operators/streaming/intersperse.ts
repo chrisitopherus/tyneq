@@ -4,7 +4,7 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * Places a delimiter element between every pair of consecutive source elements.
  *
  * @remarks
- * This method uses deferred execution. The source sequence is not enumerated until the returned sequence is iterated.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
  * The first and last elements are never preceded or followed by the delimiter. The result
  * length is `2 * sourceLength - 1` for a non-empty source.

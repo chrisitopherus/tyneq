@@ -35,9 +35,11 @@ npm run docs:dev
 ## Review Checklist for PRs
 
 - Public API changes include TSDoc updates.
-- New operators are reflected in conceptual pages where needed.
+- New operators are reflected in [Operators Overview](/guide/operators-overview) and [Core Concepts](/guide/concepts).
 - Error behavior updates are reflected in [Error Handling](/guide/error-handling).
 - Feature-level comparison implications are reflected in [Differences from Other Libraries](/guide/differences) when applicable.
+- New extensibility mechanisms are reflected in [Extensibility and Query Plans](/guide/extensibility).
+- Contributor-facing process changes are reflected in [Contributing](/guide/contributing).
 
 ## Common Drift Risks
 

@@ -169,24 +169,54 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      */
     all(predicate: (item: TSource) => boolean): boolean;
 
+    /**
+     * Returns `true` if the sequence contains `value`.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called. Elements are compared
+     * with `===`. Returns `false` for an empty sequence. Short-circuits on the first match.
+     */
     contains(value: TSource): boolean;
 
+    /**
+     * Returns the number of elements in the sequence.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called. Returns `0` for an
+     * empty sequence.
+     */
     count(): number;
 
     /**
      * Returns the number of elements that satisfy the predicate.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
      */
     countBy(predicate: (item: TSource) => boolean): number;
 
     /**
      * Forces immediate evaluation by fully consuming the sequence.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called. Use to trigger
+     * side effects registered via `tap()` or `tapIf()` without materializing results.
      */
     consume(): void;
 
+    /**
+     * Returns `true` if the sequence is `null` or contains no elements.
+     *
+     * @remarks
+     * Immediate. Reads at most one element from the source.
+     */
     isNullOrEmpty(): boolean;
 
     /**
      * Returns the sequence unchanged, or a single-element sequence containing `defaultValue` if empty.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
     defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
 
@@ -304,18 +334,36 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      */
     sum(selector: (item: TSource) => number): number;
 
+    /**
+     * Materializes the sequence into an array.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
+     */
     toArray(): TSource[];
 
     /**
      * Creates a `Map` by applying `selector` to each element.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
      */
     toMap<TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Map<TKey, TValue>;
 
     /**
      * Creates a plain record object by applying `selector` to each element.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
      */
     toRecord<TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Record<TKey, TValue>;
 
+    /**
+     * Materializes the sequence into a `Set`, deduplicating by reference equality.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
+     */
     toSet(): Set<TSource>;
 
     /**
@@ -345,20 +393,45 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // They do not enumerate the source until iteration begins.
     // ========================================================================
 
+    /**
+     * Yields all source elements followed by `item`.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     */
     append(item: TSource): ITyneqEnumerable<TSource>;
 
     /**
      * Splits the sequence into arrays of at most `size` elements. The last chunk may be smaller.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
     chunk(size: number): ITyneqEnumerable<TSource[]>;
 
+    /**
+     * Yields all elements of this sequence followed by all elements of `other`.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     */
     concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
 
     /**
      * Yields adjacent element pairs as `[previous, current]` tuples.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated. Produces
+     * no output for sequences with fewer than two elements.
      */
     pairwise(): ITyneqEnumerable<[TSource, TSource]>;
 
+    /**
+     * Yields `item` followed by all source elements.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     */
     prepend(item: TSource): ITyneqEnumerable<TSource>;
 
     /**
@@ -534,10 +607,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Caches the sequence so that subsequent enumerations replay from the cache instead of re-evaluating the source.
      *
      * @remarks
-     * This method uses deferred execution. The source sequence is not enumerated until the
-     * returned sequence is iterated. Elements are cached incrementally; subsequent enumerations
-     * reuse cached values for the portion already evaluated and continue from the source for
-     * the remainder.
+     * Deferred. Source is not enumerated until the returned sequence is iterated. Elements are
+     * cached incrementally; subsequent enumerations reuse cached values for the portion already
+     * evaluated and continue from the source for the remainder.
      *
      * @returns A cached enumerable that stores source elements on first access.
      * Call `refresh()` on the returned value to invalidate the cache.
@@ -570,8 +642,20 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         comparer?: (a: TKey, b: TKey) => number
     ): ITyneqOrderedEnumerable<TSource>;
 
+    /**
+     * Yields elements in reverse order.
+     *
+     * @remarks
+     * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+     */
     reverse(): ITyneqEnumerable<TSource>;
 
+    /**
+     * Yields elements in a random order.
+     *
+     * @remarks
+     * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+     */
     shuffle(): ITyneqEnumerable<TSource>;
 
     /**
@@ -611,6 +695,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Emits a running accumulation of elements (streaming reduce / prefix scan).
      *
      * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     *
      * Unlike `aggregate()`, yields every intermediate accumulator value rather than only the
      * final result. The seed is not yielded; the first emitted value is
      * `accumulator(seed, element[0])`.
@@ -634,6 +720,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Produces overlapping sliding windows of exactly `size` consecutive elements.
      *
      * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     *
      * Only complete windows are emitted. Trailing elements that do not fill a full window
      * are discarded. The sequence must contain at least `size` elements for any output to
      * be produced.
@@ -655,6 +743,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Places a `delimiter` element between every pair of consecutive elements.
      *
      * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     *
      * The delimiter is only inserted between existing elements — it is never prepended or
      * appended. An empty or single-element sequence passes through unchanged.
      *
@@ -673,6 +763,9 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
 
     /**
      * Returns both the minimum and maximum elements in a single enumeration pass.
+     *
+     * @remarks
+     * Immediate. Source is fully enumerated when this method is called.
      *
      * @param comparer - Custom comparison function; if omitted, uses default ordering.
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
