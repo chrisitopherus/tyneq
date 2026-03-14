@@ -15,8 +15,8 @@ import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from '../
  *   → take(5)
  * ```
  *
- * Lambda arguments are always rendered as `<fn>`. Override {@link formatArg} in a
- * subclass to customise argument rendering, or override {@link formatLine} to change
+ * Lambda arguments are always rendered as `<fn>`. Override `formatArg` in a
+ * subclass to customise argument rendering, or override `formatLine` to change
  * the full line structure.
  *
  * ```ts

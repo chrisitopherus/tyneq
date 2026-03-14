@@ -87,9 +87,9 @@ export class OperatorRegistry {
      * Checks for duplicate names, runs guards in insertion order, stores the entry,
      * patches the prototype, then fires post-registration hooks in insertion order.
      *
-     * @param entry - The operator entry to register.
+     * @param input - The operator entry to register.
      *
-     * @throws {Error} If `entry.metadata.name` is already registered.
+     * @throws {Error} If `input.metadata.name` is already registered.
      * @throws {Error} If any registration guard throws.
      *
      * @group Registry

@@ -180,7 +180,7 @@ Runtime registration alone does not teach the TypeScript type system about the n
 everyOther(): ITyneqEnumerable<TSource>;
 ```
 
-Follow the [Documentation Guidelines](../../DOCUMENTATION_GUIDELINES.md) — every operator declaration needs the execution-model `@remarks`, and `@throws` where applicable.
+Follow the `DOCUMENTATION_GUIDELINES.md` in the repo root — every operator declaration needs the execution-model `@remarks`, and `@throws` where applicable.
 
 ### Step 6 — Write tests
 
