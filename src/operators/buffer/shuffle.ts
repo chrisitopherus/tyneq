@@ -14,7 +14,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('shuffle')
+@operator('shuffle', 'buffer')
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;

@@ -10,10 +10,12 @@ import type { IWithCreateEnumerable } from './_internal';
  * `TyneqEnumerable` instances by patching `TyneqEnumerableBase.prototype`.
  *
  * @remarks
- * The decorated class must extend `TyneqEnumerator<TSource, TResult>` (streaming) or
- * `TyneqEnumerableEnumerator<TSource, TResult>` (buffering). Its constructor must have the
- * signature `(sourceEnumerator: IEnumerator<TSource>, ...userArgs: TArgs)`. The operator
- * `kind` is inferred automatically from the base class.
+ * The decorated class must extend `TyneqEnumerator<TSource, TResult>`. Its constructor must
+ * have the signature `(sourceEnumerator: IEnumerator<TSource>, ...userArgs: TArgs)`.
+ *
+ * **Kind resolution** — the `kind` is determined in this order:
+ * 1. Explicit second argument (`'streaming'` or `'buffer'`). Preferred for buffer operators.
+ * 2. Inferred from the prototype chain via `inferOperatorKind` when omitted.
  *
  * Registration happens once when the module containing the decorated class is first imported.
  *
@@ -30,12 +32,12 @@ import type { IWithCreateEnumerable } from './_internal';
  *   enumerator). Default `never` — use when the operator takes no user arguments.
  *
  * @param name - The method name to register on `TyneqEnumerableBase.prototype`.
- * @param validate - Optional function called synchronously at the call site before the lazy
- *   factory is created. Throw here to enforce eager argument validation.
+ * @param kindOrValidate - Either an explicit `'streaming' | 'buffer'` kind, or the validate
+ *   function when no explicit kind is needed (backward-compatible).
+ * @param validate - Optional validate function; only used when `kindOrValidate` is a kind string.
  *
  * @throws {Error} If a method named `name` is already registered.
- * @throws {Error} If the decorated class does not extend `TyneqEnumerator` or
- *   `TyneqEnumerableEnumerator` (kind cannot be inferred).
+ * @throws {Error} If kind is omitted and cannot be inferred from the prototype chain.
  *
  * @group Decorators
  *
@@ -52,31 +54,48 @@ import type { IWithCreateEnumerable } from './_internal';
  * ```
  *
  * @example
- * Eager typed validation:
+ * Registering a buffer operator with explicit kind:
+ * ```ts
+ * \@operator('reverse', 'buffer')
+ * export class ReverseEnumerator<T> extends TyneqEnumerator<T> { ... }
+ * ```
+ *
+ * @example
+ * Eager typed validation with explicit kind:
+ * ```ts
+ * \@operator<[keySelector: unknown]>('distinctBy', 'buffer', (keySelector) => {
+ *     ArgumentUtility.checkNotOptional({ keySelector });
+ * })
+ * export class DistinctByEnumerator<T, K> extends TyneqEnumerator<T> { ... }
+ * ```
+ *
+ * @example
+ * Eager typed validation (streaming, kind inferred):
  * ```ts
  * \@operator<[seed: unknown, accumulator: unknown]>('scan', (_seed, accumulator) => {
  *     ArgumentUtility.checkNotOptional({ accumulator });
  * })
- * export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
- *     constructor(source: IEnumerator<TSource>, seed: TResult, accumulator: ...) {
- *         super(source);
- *     }
- * }
+ * export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> { ... }
  * ```
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
+    kindOrValidate?: 'streaming' | 'buffer' | ((...args: TArgs) => void),
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        const kind = inferOperatorKind(target);
+        const kind: 'streaming' | 'buffer' = typeof kindOrValidate === 'string'
+            ? kindOrValidate
+            : inferOperatorKind(target);
+        const actualValidate: ((...args: TArgs) => void) | undefined =
+            typeof kindOrValidate === 'function' ? kindOrValidate : validate;
         OperatorRegistry.register({
             metadata: { name, kind, source: 'internal' },
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
-                validate?.(...(userArgs as TArgs));
+                actualValidate?.(...(userArgs as TArgs));
                 const base = this;
                 const withCreate = this as unknown as IWithCreateEnumerable;
                 const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind);

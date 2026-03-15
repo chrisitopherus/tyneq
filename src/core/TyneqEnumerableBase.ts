@@ -177,11 +177,14 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     declare startsWith: (sequence: Iterable<TSource>) => boolean;
     declare sum: (selector: (item: TSource) => number) => number;
     declare toArray: () => TSource[];
+    declare toAsync: () => AsyncIterable<TSource>;
     declare toMap: <TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>) => Map<TKey, TValue>;
     declare toRecord: <TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>) => Record<TKey, TValue>;
     declare toSet: () => Set<TSource>;
 
     // ── Streaming operators ───────────────────────────────────────────────────
+    declare cast: <U>() => ITyneqEnumerable<U>;
+    declare ofType: <U extends TSource>(guard: (value: TSource) => value is U) => ITyneqEnumerable<U>;
     declare append: (item: TSource) => ITyneqEnumerable<TSource>;
     declare chunk: (size: number) => ITyneqEnumerable<TSource[]>;
     declare concat: (other: Iterable<TSource>) => ITyneqEnumerable<TSource>;

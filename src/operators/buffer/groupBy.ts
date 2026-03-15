@@ -18,7 +18,7 @@ import { Tyneq } from "../..";
  * @group Enumerators
  * @internal
  */
-@operator<[keySelector: unknown, valueSelector: unknown, resultSelector: unknown]>('groupBy', (keySelector, valueSelector, resultSelector) => {
+@operator<[keySelector: unknown, valueSelector: unknown, resultSelector: unknown]>('groupBy', 'buffer', (keySelector, valueSelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ keySelector });
     ArgumentUtility.checkNotOptional({ valueSelector });
     ArgumentUtility.checkNotOptional({ resultSelector });

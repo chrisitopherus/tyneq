@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown]>('union', (otherValues) => {
+@operator<[otherValues: unknown]>('union', 'buffer', (otherValues) => {
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkIterable({ otherValues });
 })

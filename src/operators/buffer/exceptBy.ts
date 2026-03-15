@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[excludedKeys: unknown, keySelector: unknown]>('exceptBy', (excludedKeys, keySelector) => {
+@operator<[excludedKeys: unknown, keySelector: unknown]>('exceptBy', 'buffer', (excludedKeys, keySelector) => {
     ArgumentUtility.checkNotOptional({ excludedKeys });
     ArgumentUtility.checkIterable({ excludedKeys });
     ArgumentUtility.checkNotOptional({ keySelector });

@@ -41,6 +41,7 @@ export class ValidationBuilder {
         } catch (e) {
             this._errors.push(e instanceof Error ? e.message : String(e));
         }
+        
         return this;
     }
 

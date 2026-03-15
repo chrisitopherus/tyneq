@@ -3,10 +3,11 @@
 ## Session Start
 
 Before any implementation:
-1. Read `tasks/lessons.md` — contains distilled rules; don't re-derive them
-2. Read `tasks/todo.md` — check active work items and known issues
-3. Run `git branch` — implementation work goes on feature branches, not `main`
-4. Consult `.claude/workflow.md` for task execution protocol
+1. Read `tasks/lessons.md` - check if unanswered questions/ideas are there and answer them
+2. Read `tasks/lessons.md` — contains distilled rules; don't re-derive them
+3. Read `tasks/todo.md` — check active work items and known issues
+4. Run `git branch` — implementation work goes on feature branches, not `main`
+5. Consult `.claude/workflow.md` for task execution protocol
 
 ---
 
@@ -65,7 +66,7 @@ All four steps are mandatory. Missing any causes silent failures or type errors.
 | Kind | Extends |
 |------|---------|
 | Streaming operator | `TyneqEnumerator` |
-| Buffer operator | `TyneqEnumerableEnumerator` |
+| Buffer operator | `TyneqEnumerator` (declare kind explicitly: `@operator('name', 'buffer')`) |
 | Terminal operator | `TyneqTerminalOperator` |
 | Source generator | `TyneqBaseEnumerator` ← **not for pipeline operators** |
 

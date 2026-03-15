@@ -13,7 +13,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('distinct')
+@operator('distinct', 'buffer')
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
 

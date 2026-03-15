@@ -14,7 +14,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[keySelector: unknown]>('distinctBy', (keySelector) => {
+@operator<[keySelector: unknown]>('distinctBy', 'buffer', (keySelector) => {
     ArgumentUtility.checkNotOptional({ keySelector });
 })
 export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {

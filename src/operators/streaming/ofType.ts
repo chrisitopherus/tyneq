@@ -1,5 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Enumerator that filters elements using a type guard, yielding only elements of the target type.
@@ -13,6 +15,9 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator<[guard: unknown]>('ofType', (guard) => {
+    ArgumentUtility.checkNotOptional({ guard });
+})
 export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {
     private readonly guard: (value: T) => value is U;
 

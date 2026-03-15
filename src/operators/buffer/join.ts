@@ -18,7 +18,7 @@ import { TyneqMap } from "../../utility/map";
  * @group Enumerators
  * @internal
  */
-@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>('join', (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
+@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>('join', 'buffer', (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ innerSource });
     ArgumentUtility.checkIterable({ innerSource });
     ArgumentUtility.checkNotOptional({ outerKeySelector });

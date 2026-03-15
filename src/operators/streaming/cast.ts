@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that performs an unchecked type cast on each element of a sequence.
@@ -14,6 +15,7 @@ import { IEnumerator } from "../../types/core";
  * @group Enumerators
  * @internal
  */
+@operator('cast')
 export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /**
      * @param sourceEnumerator - The upstream enumerator to wrap.

@@ -1,36 +1,10 @@
 import type { KeyValuePair } from '../types/core';
 import type { HasLength, Nullable, Optional, Undefinedable } from '../types/utility';
-import { extractParameter as _extractParameter } from './guards/extractParameter';
-import {
-    checkNotNull as _checkNotNull,
-    checkNotUndefined as _checkNotUndefined,
-    checkNotOptional as _checkNotOptional,
-    checkNotNullOrEmpty as _checkNotNullOrEmpty,
-    checkNotOptionalOrEmpty as _checkNotOptionalOrEmpty,
-} from './guards/nullGuards';
-import { checkNotNullOrWhiteSpace as _checkNotNullOrWhiteSpace } from './guards/stringGuards';
-import {
-    checkNonNegative as _checkNonNegative,
-    checkPositive as _checkPositive,
-    checkNegative as _checkNegative,
-    checkNonPositive as _checkNonPositive,
-    checkInRange as _checkInRange,
-    checkInteger as _checkInteger,
-    checkFinite as _checkFinite,
-    checkNotNaN as _checkNotNaN,
-    checkSafeInteger as _checkSafeInteger,
-    checkArrayIndex as _checkArrayIndex,
-} from './guards/numericGuards';
-import {
-    checkFunction as _checkFunction,
-    checkIterable as _checkIterable,
-    checkIterator as _checkIterator,
-    checkEnumerable as _checkEnumerable,
-    checkEnumerator as _checkEnumerator,
-    checkInstanceOf as _checkInstanceOf,
-    checkHasLength as _checkHasLength,
-    check as _check,
-} from './guards/typeGuards';
+import { extractParameter } from './guards/extractParameter';
+import { NullGuards } from './guards/nullGuards';
+import { StringGuards } from './guards/stringGuards';
+import { NumericGuards } from './guards/numericGuards';
+import { TypeGuards } from './guards/typeGuards';
 import type { IEnumerable, IEnumerator } from '../types/core';
 
 /**
@@ -46,11 +20,11 @@ import type { IEnumerable, IEnumerator } from '../types/core';
  * {@link ArgumentOutOfRangeError}, or {@link ArgumentTypeError}, always including the
  * parameter name in the error message.
  *
- * Implementations are split into focused guard modules under `src/utility/guards/`:
- * - `nullGuards.ts` — null/undefined/empty checks
- * - `stringGuards.ts` — string whitespace check
- * - `numericGuards.ts` — numeric range and type checks
- * - `typeGuards.ts` — function, iterable, iterator, enumerable, and custom predicate checks
+ * Implementations are split into focused guard classes under `src/utility/guards/`:
+ * - `NullGuards` — null/undefined/empty checks
+ * - `StringGuards` — string whitespace check
+ * - `NumericGuards` — numeric range and type checks
+ * - `TypeGuards` — function, iterable, iterator, enumerable, and custom predicate checks
  *
  * @see {@link ArgumentError}
  * @see {@link ArgumentNullError}
@@ -76,7 +50,7 @@ export class ArgumentUtility {
     public static checkNotNull<T>(param: Nullable<T>, paramName: string): asserts param is T;
     public static checkNotNull<T>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotNull(value, key);
+        NullGuards.checkNotNull(value, key);
     }
 
     /**
@@ -91,7 +65,7 @@ export class ArgumentUtility {
     public static checkNotUndefined<T>(param: Undefinedable<T>, paramName: string): asserts param is T;
     public static checkNotUndefined<T>(param: Record<string, Undefinedable<T>> | Undefinedable<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotUndefined(value, key);
+        NullGuards.checkNotUndefined(value, key);
     }
 
     /**
@@ -104,7 +78,7 @@ export class ArgumentUtility {
     public static checkNotOptional<T>(param: Optional<T>, paramName: string): asserts param is T;
     public static checkNotOptional<T>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotOptional(value, key);
+        NullGuards.checkNotOptional(value, key);
     }
 
     /**
@@ -121,7 +95,7 @@ export class ArgumentUtility {
     public static checkNotNullOrEmpty<T extends HasLength>(param: Nullable<T>, paramName: string): asserts param is T;
     public static checkNotNullOrEmpty<T extends HasLength>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotNullOrEmpty(value, key);
+        NullGuards.checkNotNullOrEmpty(value, key);
     }
 
     /**
@@ -134,7 +108,7 @@ export class ArgumentUtility {
     public static checkNotOptionalOrEmpty<T extends HasLength>(param: Optional<T>, paramName: string): asserts param is T;
     public static checkNotOptionalOrEmpty<T extends HasLength>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotOptionalOrEmpty(value, key);
+        NullGuards.checkNotOptionalOrEmpty(value, key);
     }
 
     // ── String guards ─────────────────────────────────────────────────────────
@@ -152,7 +126,7 @@ export class ArgumentUtility {
     public static checkNotNullOrWhiteSpace(param: Optional<string>, paramName: string): asserts param is string;
     public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>> | Optional<string>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotNullOrWhiteSpace(value, key);
+        StringGuards.checkNotNullOrWhiteSpace(value, key);
     }
 
     // ── Numeric guards ────────────────────────────────────────────────────────
@@ -166,7 +140,7 @@ export class ArgumentUtility {
     public static checkNonNegative(param: number, paramName: string): void;
     public static checkNonNegative(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNonNegative(value, key);
+        NumericGuards.checkNonNegative(value, key);
     }
 
     /**
@@ -181,7 +155,7 @@ export class ArgumentUtility {
     public static checkPositive(param: number, paramName: string): void;
     public static checkPositive(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkPositive(value, key);
+        NumericGuards.checkPositive(value, key);
     }
 
     /**
@@ -197,7 +171,7 @@ export class ArgumentUtility {
     public static checkNegative(param: number, paramName: string): void;
     public static checkNegative(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNegative(value, key);
+        NumericGuards.checkNegative(value, key);
     }
 
     /**
@@ -212,7 +186,7 @@ export class ArgumentUtility {
     public static checkNonPositive(param: number, paramName: string): void;
     public static checkNonPositive(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNonPositive(value, key);
+        NumericGuards.checkNonPositive(value, key);
     }
 
     /**
@@ -227,7 +201,7 @@ export class ArgumentUtility {
     public static checkInRange(param: number, min: number, max: number, paramName: string): void;
     public static checkInRange(param: Record<string, number> | number, min: number, max: number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkInRange(value, min, max, key);
+        NumericGuards.checkInRange(value, min, max, key);
     }
 
     /**
@@ -239,7 +213,7 @@ export class ArgumentUtility {
     public static checkInteger(param: number, paramName: string): void;
     public static checkInteger(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkInteger(value, key);
+        NumericGuards.checkInteger(value, key);
     }
 
     /**
@@ -251,7 +225,7 @@ export class ArgumentUtility {
     public static checkFinite(param: number, paramName: string): void;
     public static checkFinite(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkFinite(value, key);
+        NumericGuards.checkFinite(value, key);
     }
 
     /**
@@ -266,7 +240,7 @@ export class ArgumentUtility {
     public static checkNotNaN(param: number, paramName: string): void;
     public static checkNotNaN(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkNotNaN(value, key);
+        NumericGuards.checkNotNaN(value, key);
     }
 
     /**
@@ -282,7 +256,7 @@ export class ArgumentUtility {
     public static checkSafeInteger(param: number, paramName: string): void;
     public static checkSafeInteger(param: Record<string, number> | number, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkSafeInteger(value, key);
+        NumericGuards.checkSafeInteger(value, key);
     }
 
     /**
@@ -305,7 +279,7 @@ export class ArgumentUtility {
             ? this.extractParameter(param as number, paramNameOrArrayLength)
             : this.extractParameter(param as Record<string, number>);
         const resolvedArrayLength = hasExplicitParamName ? arrayLength : paramNameOrArrayLength as number | undefined;
-        _checkArrayIndex(value, key, resolvedArrayLength);
+        NumericGuards.checkArrayIndex(value, key, resolvedArrayLength);
     }
 
     // ── Type guards ───────────────────────────────────────────────────────────
@@ -321,7 +295,7 @@ export class ArgumentUtility {
     public static checkFunction(param: unknown, paramName: string): asserts param is Function;
     public static checkFunction(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkFunction(value, key);
+        TypeGuards.checkFunction(value, key);
     }
 
     /**
@@ -333,7 +307,7 @@ export class ArgumentUtility {
     public static checkIterable<T = unknown>(param: unknown, paramName: string): asserts param is Iterable<T>;
     public static checkIterable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkIterable<T>(value, key);
+        TypeGuards.checkIterable<T>(value, key);
     }
 
     /**
@@ -345,7 +319,7 @@ export class ArgumentUtility {
     public static checkIterator<T = unknown>(param: unknown, paramName: string): asserts param is Iterator<T>;
     public static checkIterator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkIterator<T>(value, key);
+        TypeGuards.checkIterator<T>(value, key);
     }
 
     /**
@@ -357,7 +331,7 @@ export class ArgumentUtility {
     public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerable<T>;
     public static checkEnumerable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkEnumerable<T>(value, key);
+        TypeGuards.checkEnumerable<T>(value, key);
     }
 
     /**
@@ -369,7 +343,7 @@ export class ArgumentUtility {
     public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerator<T>;
     public static checkEnumerator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkEnumerator<T>(value, key);
+        TypeGuards.checkEnumerator<T>(value, key);
     }
 
     /**
@@ -392,7 +366,7 @@ export class ArgumentUtility {
         paramName?: string
     ): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkInstanceOf(value, constructor, key);
+        TypeGuards.checkInstanceOf(value, constructor, key);
     }
 
     /**
@@ -404,7 +378,7 @@ export class ArgumentUtility {
     public static checkHasLength(param: unknown, paramName: string): asserts param is HasLength;
     public static checkHasLength(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
-        _checkHasLength(value, key);
+        TypeGuards.checkHasLength(value, key);
     }
 
     /**
@@ -438,7 +412,7 @@ export class ArgumentUtility {
         const { key, value } = hasExplicitParamName
             ? this.extractParameter(param as T, paramNameOrPredicate)
             : this.extractParameter(param as Record<string, T>);
-        _check(value, key, predicate, validationMessage);
+        TypeGuards.check(value, key, predicate, validationMessage);
     }
 
     // ── Infrastructure ────────────────────────────────────────────────────────
@@ -452,6 +426,6 @@ export class ArgumentUtility {
     public static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;
     public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T>;
     public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T> {
-        return _extractParameter(param as any, paramName as any);
+        return extractParameter(param as any, paramName as any);
     }
 }

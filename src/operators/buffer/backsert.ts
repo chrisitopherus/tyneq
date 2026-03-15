@@ -20,7 +20,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[backIndex: unknown, other: unknown]>('backsert', (_backIndex, other) => {
+@operator<[backIndex: unknown, other: unknown]>('backsert', 'buffer', (_backIndex, other) => {
     ArgumentUtility.checkNotOptional({ other });
     ArgumentUtility.checkIterable({ other });
 })

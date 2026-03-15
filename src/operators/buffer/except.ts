@@ -15,7 +15,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator<[excludedValues: unknown]>('except', (excludedValues) => {
+@operator<[excludedValues: unknown]>('except', 'buffer', (excludedValues) => {
     ArgumentUtility.checkNotOptional({ excludedValues });
 })
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {

@@ -19,6 +19,12 @@ import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
  *
  * @see {@link TyneqEnumerator} for working with enumerators directly.
  *
+ * @deprecated No built-in operator currently extends this class. All operators (including
+ * those with buffer semantics) extend {@link TyneqEnumerator} and declare
+ * `@operator('name', 'buffer')` to register with the correct kind. This class is kept for
+ * backward compatibility and `inferOperatorKind` still detects it. Prefer `TyneqEnumerator`
+ * for all new operator implementations.
+ *
  * @group Enumerators
  * @internal
  */

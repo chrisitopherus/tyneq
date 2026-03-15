@@ -6,14 +6,15 @@ import { TyneqEnumerableEnumerator } from '../core/enumerators/TyneqEnumerableEn
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Infers whether a class-based operator is `'streaming'` or `'buffer'` by walking
- * its prototype chain.
+ * Fallback kind inference for the `@operator` decorator.
  *
  * @remarks
- * Used internally by the `@operator` decorator so callers do not need to pass `kind`
- * explicitly. Returns `'streaming'` if the chain contains `TyneqEnumerator.prototype`,
- * `'buffer'` if it contains `TyneqEnumerableEnumerator.prototype`, or throws if neither
- * is found.
+ * Called only when `kind` is not passed explicitly to `@operator`. Walks the prototype
+ * chain looking for `TyneqEnumerator.prototype` (→ `'streaming'`) or the legacy
+ * `TyneqEnumerableEnumerator.prototype` (→ `'buffer'`).
+ *
+ * Prefer passing `kind` explicitly for buffer operators:
+ * `@operator('reverse', 'buffer')`.
  *
  * @param target - The enumerator class constructor to inspect.
  *
@@ -31,10 +32,10 @@ export function inferOperatorKind(target: Function): 'streaming' | 'buffer' {
         if (proto === TyneqEnumerableEnumerator.prototype) return 'buffer';
         proto = Object.getPrototypeOf(proto);
     }
-    
+
     throw new Error(
         `[tyneq] @operator('${target.name ?? '?'}'): ` +
-        `cannot infer kind — class must extend TyneqEnumerator (streaming) ` +
-        `or TyneqEnumerableEnumerator (buffer).`
+        `cannot infer kind — class must extend TyneqEnumerator, ` +
+        `or pass kind explicitly: @operator('${target.name ?? '?'}', 'streaming' | 'buffer').`
     );
 }

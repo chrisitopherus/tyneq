@@ -11,7 +11,7 @@ contract, QueryNode threading, and the special cases for ordered and cached enum
 | Category | Description | Base class |
 |---|---|---|
 | **Streaming** | Transforms elements one-at-a-time; O(1) space | `TyneqEnumerator<TSource, TResult>` |
-| **Buffer** | Must see some/all elements before yielding; O(n) space | `TyneqEnumerableEnumerator<TSource, TResult>` |
+| **Buffer** | Must see some/all elements before yielding; O(n) space | `TyneqEnumerator<TSource, TResult>` |
 | **Terminal** | Consumes the sequence and returns a concrete value | `TyneqTerminalOperator<TSource, TResult>` |
 
 Use streaming unless the operator requires random access, sorting, or set operations.
@@ -67,10 +67,53 @@ export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource, TSource> {
 - User arguments come after; do NOT re-validate them — `@operator`'s `validate` runs first.
 - Throw `ArgumentError` / `ArgumentNullError` / `ArgumentOutOfRangeError` from `validate`, not from the constructor.
 
-**Enumerator lifecycle** (for `TyneqEnumerator` / `TyneqEnumerableEnumerator`):
+**Enumerator lifecycle** (for `TyneqEnumerator`):
 - `initialize()` — called once on the first `next()`. Override to set up buffers.
 - `handleNext()` — called on every subsequent `next()`. Return `{ value, done: false }` or `{ value: undefined, done: true }`.
 - `dispose(value?)` — override for early-termination cleanup.
+
+**Buffer operators** follow the same pattern but declare `'buffer'` explicitly and override
+`initialize()` to fill their buffer before `handleNext()` is called:
+
+```ts
+// src/operators/buffer/myBufferOp.ts
+import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
+import { IEnumerator } from '../../types/core';
+import { operator } from '../../extensibility/operatorDecorators';
+import { ArgumentUtility } from '../../utility/argumentUtility';
+import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
+
+@operator<[selector: unknown]>('myBufferOp', 'buffer', (selector) => {
+    ArgumentUtility.checkNotOptional({ selector });
+})
+export class MyBufferOpEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
+    private readonly selector: (item: TSource) => TKey;
+    private buffer: TSource[] = [];
+    private index = 0;
+
+    public constructor(sourceEnumerator: IEnumerator<TSource>, selector: (item: TSource) => TKey) {
+        super(sourceEnumerator);
+        this.selector = selector;
+    }
+
+    protected override initialize(): void {
+        // Buffer the entire source — runs once before the first handleNext()
+        this.buffer = Array.from(EnumeratorUtility.toIterable(this.sourceEnumerator));
+        this.buffer.sort((a, b) => /* ... */ 0);
+        this.index = 0;
+    }
+
+    protected override handleNext(): IteratorResult<TSource> {
+        if (this.index >= this.buffer.length) {
+            return this.done();
+        }
+        return this.yield(this.buffer[this.index++]);
+    }
+}
+```
+
+The only difference from a streaming operator is the `'buffer'` kind argument and the use of
+`initialize()` to fill the buffer. The base class (`TyneqEnumerator`) is identical.
 
 ### 3b. Register by importing the module
 

@@ -15,7 +15,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown, keySelector: unknown]>('intersectBy', (otherValues, keySelector) => {
+@operator<[otherValues: unknown, keySelector: unknown]>('intersectBy', 'buffer', (otherValues, keySelector) => {
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkNotOptional({ keySelector });
 })

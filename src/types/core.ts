@@ -335,6 +335,16 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     toArray(): TSource[];
 
     /**
+     * Wraps the sequence as a native `AsyncIterable`, enabling `for await...of` consumption
+     * and piping to async sinks.
+     *
+     * @remarks
+     * Deferred. The source is not enumerated until the returned `AsyncIterable` is iterated.
+     * Each iteration of the returned `AsyncIterable` produces a fresh traversal of the source.
+     */
+    toAsync(): AsyncIterable<TSource>;
+
+    /**
      * Creates a `Map` by applying `selector` to each element.
      *
      * @remarks
@@ -394,6 +404,16 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     append(item: TSource): ITyneqEnumerable<TSource>;
 
     /**
+     * Casts every element to `U` via a compile-time-only double assertion.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     *
+     * No runtime type checking is performed. Use {@link ofType} for runtime-safe filtering.
+     */
+    cast<U>(): ITyneqEnumerable<U>;
+
+    /**
      * Splits the sequence into arrays of at most `size` elements. The last chunk may be smaller.
      *
      * @remarks
@@ -425,6 +445,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * no output for sequences with fewer than two elements.
      */
     pairwise(): ITyneqEnumerable<[TSource, TSource]>;
+
+    /**
+     * Filters elements to those matching `guard`, narrowing the element type to `U`.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     *
+     * @throws {ArgumentNullError} When `guard` is null.
+     * @throws {ArgumentError} When `guard` is undefined.
+     */
+    ofType<U extends TSource>(guard: (value: TSource) => value is U): ITyneqEnumerable<U>;
 
     /**
      * Yields `item` followed by all source elements.
