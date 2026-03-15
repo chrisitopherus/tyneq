@@ -213,14 +213,6 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     isNullOrEmpty(): boolean;
 
     /**
-     * Returns the sequence unchanged, or a single-element sequence containing `defaultValue` if empty.
-     *
-     * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
-     */
-    defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
-
-    /**
      * Returns the element at zero-based `index`.
      *
      * @throws {InvalidOperationError} When the index is out of range.
@@ -416,6 +408,14 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
     concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
+
+    /**
+     * Returns the sequence unchanged, or a single-element sequence containing `defaultValue` if empty.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     */
+    defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
 
     /**
      * Yields adjacent element pairs as `[previous, current]` tuples.

@@ -109,6 +109,9 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
      * The `factory` is invoked on each enumeration, ensuring re-iterability. Use this as an
      * escape hatch for transformations not covered by built-in operators.
      *
+     * The returned sequence does not participate in query plan tracking — its
+     * `{@link tyneqQueryNode}` is `null`.
+     *
      * @typeParam TResult - The type of elements produced by the factory.
      *
      * @param factory - Receives the source sequence and returns an iterator; called on each enumeration.
@@ -155,7 +158,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     declare contains: (value: TSource) => boolean;
     declare count: () => number;
     declare countBy: (predicate: (item: TSource) => boolean) => number;
-    declare defaultIfEmpty: (defaultValue: TSource) => ITyneqEnumerable<TSource>;
     declare elementAt: (index: number) => TSource;
     declare elementAtOrDefault: (index: number, defaultValue: TSource) => TSource;
     declare first: (predicate: (item: TSource) => boolean) => TSource;
@@ -183,6 +185,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     declare append: (item: TSource) => ITyneqEnumerable<TSource>;
     declare chunk: (size: number) => ITyneqEnumerable<TSource[]>;
     declare concat: (other: Iterable<TSource>) => ITyneqEnumerable<TSource>;
+    declare defaultIfEmpty: (defaultValue: TSource) => ITyneqEnumerable<TSource>;
     declare intersperse: (delimiter: TSource) => ITyneqEnumerable<TSource>;
     declare pairwise: () => ITyneqEnumerable<[TSource, TSource]>;
     declare populate: <TValue>(value: TValue) => ITyneqEnumerable<TValue>;
