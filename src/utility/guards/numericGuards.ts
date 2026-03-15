@@ -14,7 +14,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number ≥ 0.
      * @throws {ArgumentOutOfRangeError}
      */
-    static checkNonNegative(value: number, paramName: string): void {
+    public static checkNonNegative(value: number, paramName: string): void {
         if (!Number.isFinite(value) || value < 0) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-negative number.`);
         }
@@ -24,7 +24,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number > 0.
      * @throws {ArgumentOutOfRangeError}
      */
-    static checkPositive(value: number, paramName: string): void {
+    public static checkPositive(value: number, paramName: string): void {
         if (!Number.isFinite(value) || value <= 0) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a positive number.`);
         }
@@ -34,7 +34,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number < 0.
      * @throws {ArgumentOutOfRangeError}
      */
-    static checkNegative(value: number, paramName: string): void {
+    public static checkNegative(value: number, paramName: string): void {
         if (!Number.isFinite(value) || value >= 0) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a negative number.`, value);
         }
@@ -44,7 +44,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number ≤ 0.
      * @throws {ArgumentOutOfRangeError}
      */
-    static checkNonPositive(value: number, paramName: string): void {
+    public static checkNonPositive(value: number, paramName: string): void {
         if (!Number.isFinite(value) || value > 0) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-positive number.`, value);
         }
@@ -54,7 +54,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number in the inclusive range `[min, max]`.
      * @throws {ArgumentOutOfRangeError}
      */
-    static checkInRange(value: number, min: number, max: number, paramName: string): void {
+    public static checkInRange(value: number, min: number, max: number, paramName: string): void {
         if (!Number.isFinite(value) || value < min || value > max) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be in range [${min}, ${max}].`);
         }
@@ -64,7 +64,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite integer.
      * @throws {ArgumentError}
      */
-    static checkInteger(value: number, paramName: string): void {
+    public static checkInteger(value: number, paramName: string): void {
         if (!Number.isFinite(value) || !Number.isInteger(value)) {
             throw new ArgumentError(`'${paramName}' must be an integer.`, paramName);
         }
@@ -74,7 +74,7 @@ export class NumericGuards {
      * Asserts that `value` is a finite number (not `Infinity`, `-Infinity`, or `NaN`).
      * @throws {ArgumentError}
      */
-    static checkFinite(value: number, paramName: string): void {
+    public static checkFinite(value: number, paramName: string): void {
         if (!Number.isFinite(value)) {
             throw new ArgumentError(`'${paramName}' must be a finite number.`, paramName);
         }
@@ -84,7 +84,7 @@ export class NumericGuards {
      * Asserts that `value` is not `NaN`. Allows `Infinity` and `-Infinity`.
      * @throws {ArgumentError}
      */
-    static checkNotNaN(value: number, paramName: string): void {
+    public static checkNotNaN(value: number, paramName: string): void {
         if (Number.isNaN(value)) {
             throw new ArgumentError(`'${paramName}' cannot be NaN.`, paramName);
         }
@@ -94,7 +94,7 @@ export class NumericGuards {
      * Asserts that `value` is a safe integer (within `[-(2^53 − 1), 2^53 − 1]`).
      * @throws {ArgumentError}
      */
-    static checkSafeInteger(value: number, paramName: string): void {
+    public static checkSafeInteger(value: number, paramName: string): void {
         if (!Number.isSafeInteger(value)) {
             throw new ArgumentError(`'${paramName}' must be a safe integer.`, paramName);
         }
@@ -106,7 +106,7 @@ export class NumericGuards {
      * @throws {ArgumentError} When not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `< 0` or `>= arrayLength`.
      */
-    static checkArrayIndex(value: number, paramName: string, arrayLength?: number): void {
+    public static checkArrayIndex(value: number, paramName: string, arrayLength?: number): void {
         NumericGuards.checkSafeInteger(value, paramName);
         const maxLength = arrayLength ?? Number.MAX_SAFE_INTEGER;
         if (value < 0 || value >= maxLength) {

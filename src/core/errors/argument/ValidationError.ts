@@ -48,7 +48,7 @@ export class ValidationError extends ArgumentError {
      *
      * @param errors - The individual error messages that were collected.
      */
-    constructor(errors: readonly string[]) {
+    public constructor(errors: readonly string[]) {
         super(
             `${errors.length} validation error(s):\n${errors.map((e, i) => `  ${i + 1}. ${e}`).join("\n")}`
         );

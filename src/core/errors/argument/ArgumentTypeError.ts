@@ -29,7 +29,7 @@ export class ArgumentTypeError extends ArgumentError {
      */
     public readonly actualType?: string;
 
-    constructor(
+    public constructor(
         paramName: string,
         expectedType?: string,
         actualType?: string,

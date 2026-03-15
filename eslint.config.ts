@@ -41,7 +41,17 @@ export default defineConfig(
 
             // ── Object / array spacing ────────────────────────────────────────
             // Spaces inside object literal braces: { key: value }, not {key: value}.
-            "object-curly-spacing": ["error", "always"]
+            "object-curly-spacing": ["error", "always"],
+
+            // ── Explicit access modifiers ─────────────────────────────────────
+            // All class members must declare public/private/protected explicitly.
+            // Constructors are exempt so private constructor() { } stays concise.
+            "@typescript-eslint/explicit-member-accessibility": [
+                "error",
+                {
+                    "accessibility": "explicit"
+                }
+            ]
         }
     }
 );

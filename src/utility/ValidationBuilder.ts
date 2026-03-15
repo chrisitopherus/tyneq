@@ -35,7 +35,7 @@ export class ValidationBuilder {
      * @param fn - A zero-argument function that throws if the check fails.
      * @returns `this` — enables fluent chaining.
      */
-    check(fn: () => void): this {
+    public check(fn: () => void): this {
         try {
             fn();
         } catch (e) {
@@ -51,7 +51,7 @@ export class ValidationBuilder {
      *
      * @throws {ValidationError} When one or more checks recorded an error.
      */
-    throwIfAny(): void {
+    public throwIfAny(): void {
         if (this._errors.length > 0) {
             throw new ValidationError(this._errors);
         }

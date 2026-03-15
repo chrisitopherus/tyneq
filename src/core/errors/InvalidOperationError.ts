@@ -23,7 +23,7 @@ import { TyneqError } from "./TyneqError";
  * @group Errors
  */
 export class InvalidOperationError extends TyneqError {
-    constructor(message = "The operation is invalid in the current state.", inner?: Error) {
+    public constructor(message = "The operation is invalid in the current state.", inner?: Error) {
         super(message, { inner });
     }
 }

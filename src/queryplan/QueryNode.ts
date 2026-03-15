@@ -37,14 +37,14 @@ export class QueryNode implements IQueryNode {
      * @param source       - The previous node in the chain, or `null` for root nodes.
      * @param category     - The execution category of this operator.
      */
-    constructor(
+    public constructor(
         public readonly operatorName: string,
         public readonly args: readonly unknown[],
         public readonly source: IQueryNode | null,
         public readonly category: OperatorCategory
     ) {}
 
-    accept<T>(visitor: IQueryPlanVisitor<T>): T {
+    public accept<T>(visitor: IQueryPlanVisitor<T>): T {
         return visitor.visit(this);
     }
 }

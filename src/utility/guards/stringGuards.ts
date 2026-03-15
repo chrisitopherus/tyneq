@@ -16,7 +16,7 @@ export class StringGuards {
      * @throws {ArgumentNullError} When `null`.
      * @throws {ArgumentError} When `undefined`, empty, or whitespace-only.
      */
-    static checkNotNullOrWhiteSpace(value: Optional<string>, paramName: string): asserts value is string {
+    public static checkNotNullOrWhiteSpace(value: Optional<string>, paramName: string): asserts value is string {
         NullGuards.checkNotOptional(value, paramName);
         if (value.trim().length === 0) {
             throw new ArgumentError(`'${paramName}' cannot be empty or whitespace.`, paramName);

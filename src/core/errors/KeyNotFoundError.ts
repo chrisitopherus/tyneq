@@ -17,7 +17,7 @@ import { TyneqError } from "./TyneqError";
  * @group Errors
  */
 export class KeyNotFoundError extends TyneqError {
-    constructor(message = "The given key was not present in the dictionary.", inner?: Error) {
+    public constructor(message = "The given key was not present in the dictionary.", inner?: Error) {
         super(message, { inner });
     }
 }

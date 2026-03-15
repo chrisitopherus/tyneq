@@ -15,7 +15,7 @@ export class NullGuards {
      * Asserts that `value` is not `null`.
      * @throws {ArgumentNullError}
      */
-    static checkNotNull<T>(value: Nullable<T>, paramName: string): asserts value is T {
+    public static checkNotNull<T>(value: Nullable<T>, paramName: string): asserts value is T {
         if (value === null) {
             throw new ArgumentNullError(paramName);
         }
@@ -25,7 +25,7 @@ export class NullGuards {
      * Asserts that `value` is not `undefined`.
      * @throws {ArgumentError}
      */
-    static checkNotUndefined<T>(value: Undefinedable<T>, paramName: string): asserts value is T {
+    public static checkNotUndefined<T>(value: Undefinedable<T>, paramName: string): asserts value is T {
         if (value === undefined) {
             throw new ArgumentError(`'${paramName}' cannot be undefined.`, paramName);
         }
@@ -36,7 +36,7 @@ export class NullGuards {
      * @throws {ArgumentNullError} When `null`.
      * @throws {ArgumentError} When `undefined`.
      */
-    static checkNotOptional<T>(value: Optional<T>, paramName: string): asserts value is T {
+    public static checkNotOptional<T>(value: Optional<T>, paramName: string): asserts value is T {
         NullGuards.checkNotNull(value, paramName);
         NullGuards.checkNotUndefined(value, paramName);
     }
@@ -46,7 +46,7 @@ export class NullGuards {
      * @throws {ArgumentNullError} When `null`.
      * @throws {ArgumentError} When `length === 0`.
      */
-    static checkNotNullOrEmpty<T extends HasLength>(value: Nullable<T>, paramName: string): asserts value is T {
+    public static checkNotNullOrEmpty<T extends HasLength>(value: Nullable<T>, paramName: string): asserts value is T {
         NullGuards.checkNotNull(value, paramName);
         if (value.length === 0) {
             throw new ArgumentError(`'${paramName}' cannot be empty.`, paramName);
@@ -58,7 +58,7 @@ export class NullGuards {
      * @throws {ArgumentNullError} When `null`.
      * @throws {ArgumentError} When `undefined` or `length === 0`.
      */
-    static checkNotOptionalOrEmpty<T extends HasLength>(value: Optional<T>, paramName: string): asserts value is T {
+    public static checkNotOptionalOrEmpty<T extends HasLength>(value: Optional<T>, paramName: string): asserts value is T {
         NullGuards.checkNotOptional(value, paramName);
         if (value.length === 0) {
             throw new ArgumentError(`'${paramName}' cannot be empty.`, paramName);

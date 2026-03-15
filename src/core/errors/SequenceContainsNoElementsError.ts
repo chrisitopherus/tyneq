@@ -25,7 +25,7 @@ import { InvalidOperationError } from "./InvalidOperationError";
  * @group Errors
  */
 export class SequenceContainsNoElementsError extends InvalidOperationError {
-    constructor(inner?: Error) {
+    public constructor(inner?: Error) {
         super("Sequence contains no elements.", inner);
     }
 }

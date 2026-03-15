@@ -17,8 +17,7 @@ export class TypeGuards {
      * Asserts that `value` is a function.
      * @throws {ArgumentTypeError}
      */
-     
-    static checkFunction(value: unknown, paramName: string): asserts value is Function {
+    public static checkFunction(value: unknown, paramName: string): asserts value is Function {
         if (typeof value !== "function") {
             throw new ArgumentTypeError(paramName, "function", typeof value);
         }
@@ -28,7 +27,7 @@ export class TypeGuards {
      * Asserts that `value` is iterable (has a callable `[Symbol.iterator]`).
      * @throws {ArgumentTypeError}
      */
-    static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
+    public static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
         if (!TypeGuardUtility.isIterable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
             throw new ArgumentTypeError(paramName, "iterable", actualType);
@@ -39,7 +38,7 @@ export class TypeGuards {
      * Asserts that `value` is an iterator (has a callable `next()`).
      * @throws {ArgumentTypeError}
      */
-    static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
+    public static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
         if (!TypeGuardUtility.isIterator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
             throw new ArgumentTypeError(paramName, "iterator", actualType);
@@ -50,7 +49,7 @@ export class TypeGuards {
      * Asserts that `value` is an {@link IEnumerable}.
      * @throws {ArgumentTypeError}
      */
-    static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
+    public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
             throw new ArgumentTypeError(paramName, "IEnumerable", actualType);
@@ -61,7 +60,7 @@ export class TypeGuards {
      * Asserts that `value` is an {@link IEnumerator}.
      * @throws {ArgumentTypeError}
      */
-    static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
+    public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
             throw new ArgumentTypeError(paramName, "IEnumerator", actualType);
@@ -72,7 +71,7 @@ export class TypeGuards {
      * Asserts that `value` is an instance of `constructor`.
      * @throws {ArgumentTypeError}
      */
-    static checkInstanceOf<T>(
+    public static checkInstanceOf<T>(
         value: unknown,
         constructor: new (...args: any[]) => T,
         paramName: string
@@ -88,7 +87,7 @@ export class TypeGuards {
      * Asserts that `value` has a numeric `length` property.
      * @throws {ArgumentTypeError}
      */
-    static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
+    public static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
         if (typeof value !== "object" || value === null || typeof (value as any).length !== "number") {
             throw new ArgumentTypeError(paramName, "object with numeric length property", typeof value);
         }
@@ -98,7 +97,7 @@ export class TypeGuards {
      * Asserts that `value` satisfies a custom predicate.
      * @throws {ArgumentError}
      */
-    static check<T>(value: T, paramName: string, predicate: (v: T) => boolean, message: string): void {
+    public static check<T>(value: T, paramName: string, predicate: (v: T) => boolean, message: string): void {
         if (!predicate(value)) {
             throw new ArgumentError(message, paramName);
         }

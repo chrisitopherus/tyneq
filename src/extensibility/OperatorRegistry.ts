@@ -94,7 +94,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static register(input: OperatorEntryInput): void {
+    public static register(input: OperatorEntryInput): void {
         const entry: OperatorEntry = {
             metadata: { source: "external", ...input.metadata } as OperatorMetadata,
             impl: input.impl,
@@ -134,7 +134,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static unregister(name: string): boolean {
+    public static unregister(name: string): boolean {
         if (!this._entries.has(name)) return false;
         this._entries.delete(name);
         delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
@@ -165,7 +165,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static onRegister(hook: (entry: OperatorEntry) => void): () => void {
+    public static onRegister(hook: (entry: OperatorEntry) => void): () => void {
         this._registrationHooks.push(hook);
         return () => {
             const i = this._registrationHooks.indexOf(hook);
@@ -201,7 +201,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static addGuard(guard: (entry: OperatorEntry) => void): () => void {
+    public static addGuard(guard: (entry: OperatorEntry) => void): () => void {
         this._registrationGuards.push(guard);
         return () => {
             const i = this._registrationGuards.indexOf(guard);
@@ -218,7 +218,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static has(name: string): boolean {
+    public static has(name: string): boolean {
         return this._entries.has(name);
     }
 
@@ -229,7 +229,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static get(name: string): OperatorMetadata | undefined {
+    public static get(name: string): OperatorMetadata | undefined {
         return this._entries.get(name)?.metadata;
     }
 
@@ -238,7 +238,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static list(): readonly OperatorMetadata[] {
+    public static list(): readonly OperatorMetadata[] {
         return [...this._entries.values()].map((e) => e.metadata);
     }
 
@@ -249,7 +249,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static listByKind(kind: OperatorMetadata["kind"]): readonly OperatorMetadata[] {
+    public static listByKind(kind: OperatorMetadata["kind"]): readonly OperatorMetadata[] {
         return this.list().filter((m) => m.kind === kind);
     }
 
@@ -258,7 +258,7 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static count(): number {
+    public static count(): number {
         return this._entries.size;
     }
 }
