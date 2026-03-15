@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that bypasses a specified number of elements from the beginning of a sequence.

@@ -1,4 +1,4 @@
-import { createGeneratorOperator } from "../../extensibility/createOperator";
+import { createGeneratorOperator } from "../../extensibility/createGeneratorOperator";
 
 /**
  * Yields all source elements, or a single default value if the source is empty.

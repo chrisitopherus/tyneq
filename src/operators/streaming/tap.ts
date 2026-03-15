@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that executes a side-effect action on each element without modifying the sequence.

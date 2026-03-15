@@ -2,7 +2,7 @@ import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that combines two sequences pairwise using a selector function.

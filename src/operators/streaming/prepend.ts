@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that prepends a single element to the beginning of a sequence.

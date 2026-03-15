@@ -1,4 +1,4 @@
-import { createGeneratorOperator } from "../../extensibility/createOperator";
+import { createGeneratorOperator } from "../../extensibility/createGeneratorOperator";
 
 /**
  * Places a delimiter element between every pair of consecutive source elements.

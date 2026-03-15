@@ -1,6 +1,6 @@
 import { InvalidOperationError } from "../../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/operatorDecorators";
+import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";

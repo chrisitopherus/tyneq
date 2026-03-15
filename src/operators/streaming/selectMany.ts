@@ -2,7 +2,7 @@ import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that projects each element to a nested sequence and flattens the results.

@@ -3,7 +3,7 @@
  *
  * Public API for extending Tyneq with custom operators.
  *
- * ## Three registration mechanisms — pick what fits:
+ * ## Registration mechanisms — pick what fits:
  *
  * | Mechanism                   | When to use                                          | Requires |
  * |-----------------------------|------------------------------------------------------|----------|
@@ -35,7 +35,10 @@
  * For library-provided operators, type signatures are declared directly on
  * `ITyneqEnumerable` in `src/types/core.ts`.
  */
-export { operator, terminal } from "./operatorDecorators";
-export { createOperator, createGeneratorOperator, createTerminalOperator } from "./createOperator";
+export { operator } from "./operator";
+export { terminal } from "./terminal";
+export { createOperator } from "./createOperator";
+export { createGeneratorOperator } from "./createGeneratorOperator";
+export { createTerminalOperator } from "./createTerminalOperator";
 export { OperatorRegistry } from "./OperatorRegistry";
 export type { OperatorMetadata, OperatorEntry, OperatorEntryInput } from "./OperatorRegistry";

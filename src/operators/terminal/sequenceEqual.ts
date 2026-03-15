@@ -1,5 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/operatorDecorators";
+import { terminal } from "../../extensibility/terminal";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { IEnumerable, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";

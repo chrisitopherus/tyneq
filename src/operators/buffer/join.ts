@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operatorDecorators";
+import { operator } from "../../extensibility/operator";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";

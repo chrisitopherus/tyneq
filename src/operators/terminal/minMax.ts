@@ -1,5 +1,5 @@
 import { IEnumerable, MinMaxResult } from "../../types/core";
-import { terminal } from "../../extensibility/operatorDecorators";
+import { terminal } from "../../extensibility/terminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
 import { SequenceContainsNoElementsError } from "../../core/errors/SequenceContainsNoElementsError";
 
