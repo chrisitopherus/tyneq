@@ -6,7 +6,7 @@ import { tyneqQueryNode } from '../../types/queryplan';
 import type { IQueryNode } from '../../types/queryplan';
 import { QueryNode } from '../../queryplan/QueryNode';
 import { TyneqEnumerable } from "../TyneqEnumerable";
-import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
+import { OrderByEnumerator } from "../../operators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -110,7 +110,8 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('thenBy', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
+        const thenByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
+        const node = new QueryNode('thenBy', thenByArgs, this[tyneqQueryNode], 'buffer');
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,
@@ -139,7 +140,8 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     public thenByDescending<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('thenByDescending', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
+        const thenByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
+        const node = new QueryNode('thenByDescending', thenByDescArgs, this[tyneqQueryNode], 'buffer');
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,

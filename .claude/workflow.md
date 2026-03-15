@@ -1,52 +1,62 @@
-# Workflow Orchestration
+# Tyneq — Claude Workflow
 
-### 1. Plan Mode Default
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately — don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
+## Session Start Checklist
+1. Read `tasks/lessons.md` — don't re-derive patterns already documented
+2. Read `tasks/todo.md` — understand active work items and known bugs
+3. Check current branch (`git branch`) — implementation work goes on feature branches, not `main`
+4. Check `tasks/lessons.md` → "Architecture Decisions" before calling something a bug — many quirks are intentional trade-offs
 
-### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One task per subagent for focused execution
+---
 
-### 3. Self-Improvement Loop
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
+## Task Execution
 
-### 4. Verification Before Done
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
+### For any task with 3+ steps or an architectural decision
+→ Enter plan mode. Write the plan to `tasks/todo.md` as checkable items before touching code.
+→ Check in with the user before starting implementation.
 
-### 5. Demand Elegance (Balanced)
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes — don't over-engineer
-- Challenge your own work before presenting it
+### During implementation
+- Mark todo items complete as you finish each one — not in a batch at the end
+- If something goes sideways: STOP, re-plan, don't push through
+- One subagent per research/exploration concern — keep main context clean
 
-### 6. Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests — then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
+### Verification (never skip)
+- Run `npx tsc --noEmit` — catch type errors before running tests
+- Run `npm test` — confirm no regressions
+- Would a staff engineer approve this? If not, fix it first
 
-## Task Management
+---
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items  
-2. **Verify Plan**: Check in before starting implementation  
-3. **Track Progress**: Mark items complete as you go  
-4. **Explain Changes**: High-level summary at each step  
-5. **Document Results**: Add review section to `tasks/todo.md`  
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections  
+## Operator Work Rules
 
-## Core Principles
+Adding an operator requires **all four** of:
+1. Create operator file in the right folder (see `tasks/lessons.md` → "Where to put a new operator file")
+2. Add `validate` to the decorator/function (not in the constructor)
+3. Add side-effect import to `src/operators/extensions/index.ts`
+4. Add method signature to `ITyneqEnumerable` in `src/types/core.ts`
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+Missing any of these causes silent failures or type errors. See `tasks/lessons.md`.
+
+---
+
+## After a Correction
+1. Update `tasks/lessons.md` with the rule that would have prevented the mistake
+2. If it's a bug: add to `tasks/todo.md`
+3. If it's a known trade-off: document it inline in `tasks/lessons.md` → "Architecture Decisions", not in todo
+
+---
+
+## Key Commands
+```bash
+npx tsc --noEmit       # type-check (run first, it's fast)
+npm test               # full test suite
+npm run build          # tsup CJS + ESM + types
+npm run docs           # typedoc
+```
+
+---
+
+## Principles
+- **Root causes only** — no workarounds, no `--no-verify`, no temporary hacks
+- **Minimal impact** — touch only what the task requires
+- **Ask when blocked** — don't brute-force past an obstacle
+- **Elegant > clever** — for non-trivial changes, ask "is there a simpler way?" before finalizing

@@ -1,4 +1,4 @@
-import { MemoizeEnumerator } from "../../enumerators/buffer/memoize";
+import { MemoizeEnumerator } from "../../operators/buffer/memoize";
 import { CacheResult, ICachedEnumerable, IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
 import { tyneqQueryNode } from '../../types/queryplan';
 import type { IQueryNode } from '../../types/queryplan';

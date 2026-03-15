@@ -53,7 +53,8 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('orderBy', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
+        const orderByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
+        const node = new QueryNode('orderBy', orderByArgs, this[tyneqQueryNode], 'buffer');
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
@@ -84,7 +85,8 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
-        const node = new QueryNode('orderByDescending', [keySelector, comparer], this[tyneqQueryNode], 'buffer');
+        const orderByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
+        const node = new QueryNode('orderByDescending', orderByDescArgs, this[tyneqQueryNode], 'buffer');
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),

@@ -145,12 +145,6 @@ export type QueryPlanPrinterOutput = "console" | "none" | string;
  */
 export interface QueryPlanPrinterOptions {
     /**
-     * Where to send the output in addition to returning it.
-     * Defaults to `"console"`. See {@link QueryPlanPrinterOutput} for values.
-     */
-    output?: QueryPlanPrinterOutput;
-
-    /**
      * String prepended before the arrow on each non-root operator line.
      * Default: `"  "` (two spaces).
      */

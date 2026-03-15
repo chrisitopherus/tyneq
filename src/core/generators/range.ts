@@ -1,5 +1,5 @@
-import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
-import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
+import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
+import { ArgumentOutOfRangeError } from "../errors/argument/ArgumentOutOfRangeError";
 import { nameof } from "../../utility/nameof";
 
 /**
@@ -24,8 +24,10 @@ export class RangeEnumerator extends TyneqBaseEnumerator<number> {
      */
     public constructor(start: number, end: number) {
         super();
+        const [startName] = nameof({ start });
+        const [endName] = nameof({ end });
         if (start > end) {
-            throw new ArgumentOutOfRangeError(nameof({ start })[0], `Expected ${nameof({ start })[0]} to be less than or equal to ${nameof({ end })[0]}.`);
+            throw new ArgumentOutOfRangeError(startName, `Expected ${startName} to be less than or equal to ${endName}.`);
         }
 
         this.current = start;

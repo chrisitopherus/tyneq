@@ -1,4 +1,4 @@
-import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
+import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
 
 /**
  * Enumerator that generates a fixed-length sequence by calling a randomizer function.

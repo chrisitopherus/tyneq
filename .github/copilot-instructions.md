@@ -11,7 +11,7 @@
 ## Architecture
 
 - `src/core/` is the runtime kernel: enumerable base types, ordering, caching, errors, and query-node plumbing.
-- `src/enumerators/streaming/`, `src/enumerators/buffer/`, and `src/operators/terminal/` separate operator implementations by execution model.
+- `src/operators/streaming/`, `src/operators/buffer/`, and `src/operators/terminal/` separate all operator implementations by execution model. Streaming and buffer operators use class-based enumerators; terminal operators use `TyneqTerminalOperator` or functional factories.
 - `src/extensibility/` owns operator registration via decorators and functional factories. Route new operator registration through that layer instead of patching prototypes manually.
 - `src/queryplan/` contains query introspection types and printers. Preserve `QueryNode` threading when changing operator creation paths.
 - `tests/unit/operators/` contains per-operator tests. `tests/integration/pipeline.spec.ts` covers composed pipelines and re-iterability.
@@ -33,7 +33,7 @@
 
 ## Pitfalls
 
-- The `any[]` constructor constraints in operator decorators are intentional. Do not replace them with `unknown[]`; see `ATTENTION.md`.
+- The `any[]` constructor constraints in operator decorators are intentional. Do not replace them with `unknown[]`. TypeScript's contravariant parameter checking rejects `unknown[]` in decorator positions — `any[]` is the required decorator idiom, not a shortcut. Type safety is enforced through the typed `validate` parameter (`TArgs`) instead.
 - The repo intentionally supports both decorator-based and functional operator registration. Do not duplicate operator names across both paths.
 - `orderBy`, `orderByDescending`, `thenBy`, `thenByDescending`, and `memoize` are special cases that build `QueryNode` instances directly.
 - `QueryPlanPrinter` uses Node.js `fs`; avoid assuming it is browser-safe.

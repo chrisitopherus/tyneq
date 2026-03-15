@@ -38,7 +38,7 @@ the amount of structural ceremony you want.
 ### 3a. Write the enumerator class
 
 ```ts
-// src/enumerators/streaming/myOp.ts
+// src/operators/streaming/myOp.ts
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
 import { operator } from '../../extensibility/operatorDecorators';
 import { ArgumentUtility } from '../../utility/argumentUtility';
@@ -77,38 +77,68 @@ export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource, TSource> {
 The `@operator` decorator fires at class-evaluation time. The class module must be
 imported before the method is available on `TyneqEnumerableBase.prototype`.
 
-Add the import to the operator barrel file that is re-exported by `src/index.ts`:
+Add a **side-effect import** to the operator barrel file (`src/operators/extensions/index.ts`):
 
 ```ts
 // src/operators/extensions/index.ts
-export * from '../../enumerators/streaming/myOp';
+
+// @operator('myOp') — enumerator class
+import '../streaming/myOp';
 ```
+
+Note: this must be a bare side-effect import (`import '...'`), not `export * from '...'`.
+The decorator registers the operator as a side effect of module evaluation.
 
 ---
 
 ## 4. Path B — Functional with `createOperator`
 
+Use a config-object API. The three choices, in ascending order of ceremony:
+
 ```ts
-// src/operators/streaming/myOp.ts
+// src/operators/streaming/myOp.ts — createGeneratorOperator (lowest ceremony)
 import { createGeneratorOperator } from '../../extensibility/createOperator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
-createGeneratorOperator<[threshold: unknown]>(
-    'myOp',
-    (threshold) => {
+createGeneratorOperator({
+    name: 'myOp',
+    validate(threshold: unknown) {
         ArgumentUtility.checkNotOptional({ threshold });
     },
-    function* (source, threshold: number) {
+    *generator(source: Iterable<unknown>, threshold: number) {
         for (const item of source) {
             if (/* condition based on threshold */) {
                 yield item;
             }
         }
     }
-);
+});
 ```
 
-Add the import to the same barrel file so it runs at module-load time.
+```ts
+// src/operators/streaming/myOp.ts — createOperator (when you need full IEnumeratorFactory control)
+import { createOperator } from '../../extensibility/createOperator';
+
+createOperator({
+    name: 'myOp',
+    kind: 'streaming',   // or 'buffer'; defaults to 'streaming'
+    validate(threshold: unknown) { /* ... */ },
+    factory(source, threshold: number) {
+        return {
+            getEnumerator() { /* return IEnumerator<TResult> */ }
+        };
+    }
+});
+```
+
+Add the import to the barrel file so registration runs at module-load time:
+
+```ts
+// src/operators/extensions/index.ts
+
+// createGeneratorOperator('myOp') — generator shorthand
+import '../streaming/myOp';
+```
 
 ---
 

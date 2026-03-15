@@ -3,13 +3,7 @@ import { OperatorRegistry } from './OperatorRegistry';
 import { inferOperatorKind } from './inferKind';
 import { QueryNode } from '../queryplan/QueryNode';
 import { tyneqQueryNode } from '../types/queryplan';
-import type { IQueryNode } from '../types/queryplan';
-
-/** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
-interface IWithCreateEnumerable {
-    createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
-    readonly [tyneqQueryNode]: IQueryNode | null;
-}
+import type { IWithCreateEnumerable } from './_internal';
 
 /**
  * TC39 class decorator that registers a streaming or buffering operator on all
@@ -78,17 +72,14 @@ export function operator<TArgs extends unknown[] = never>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
+        const kind = inferOperatorKind(target);
         OperatorRegistry.register({
-            metadata: {
-                name,
-                kind: inferOperatorKind(target),
-            },
+            metadata: { name, kind, source: 'internal' },
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this;
                 const withCreate = this as unknown as IWithCreateEnumerable;
-                const kind = inferOperatorKind(target);
-                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind === 'streaming' ? 'streaming' : 'buffer');
+                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind);
                 return withCreate.createEnumerable({
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);
@@ -160,6 +151,7 @@ export function terminal<TArgs extends unknown[] = never>(
             metadata: {
                 name,
                 kind: 'terminal',
+                source: 'internal',
             },
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));

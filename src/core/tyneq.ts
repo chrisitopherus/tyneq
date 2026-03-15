@@ -1,5 +1,5 @@
-import { RangeEnumerator } from "../enumerators/streaming/range";
-import { RandomEnumerator } from "../enumerators/streaming/random";
+import { RangeEnumerator } from "./generators/range";
+import { RandomEnumerator } from "./generators/random";
 import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
@@ -137,7 +137,10 @@ export class Tyneq {
      * @see {@link from} for wrapping existing iterables.
      */
     public static empty<TSource>(): ITyneqEnumerable<TSource> {
-        return this.from<TSource>([]);
+        return new TyneqEnumerable<TSource>(
+            new EnumerableAdapter<TSource>([]),
+            new QueryNode('empty', [], null, 'source')
+        );
     }
 
     /**
@@ -155,7 +158,15 @@ export class Tyneq {
      * @see {@link from} for wrapping an iterable without index tracking.
      */
     public static enumerate<TSource>(source: Iterable<TSource>): IEnumerable<[number, TSource]> {
-        let index = 0;
-        return this.from(source).select(item => [index++, item] as [number, TSource]);
+        ArgumentUtility.checkNotOptional({ source });
+        ArgumentUtility.checkIterable({ source });
+        // A fresh `index` counter is created per enumeration via [Symbol.iterator],
+        // preventing the shared-counter bug that occurs when the result is re-enumerated.
+        return this.from({
+            *[Symbol.iterator]() {
+                let index = 0;
+                for (const item of source) yield [index++, item] as [number, TSource];
+            }
+        });
     }
 }

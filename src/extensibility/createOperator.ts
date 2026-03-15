@@ -3,7 +3,7 @@ import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
 import { OperatorRegistry } from './OperatorRegistry';
 import { QueryNode } from '../queryplan/QueryNode';
 import { tyneqQueryNode } from '../types/queryplan';
-import type { IQueryNode } from '../types/queryplan';
+import type { IWithCreateEnumerable } from './_internal';
 
 // Functional operator registration API
 //
@@ -15,12 +15,6 @@ import type { IQueryNode } from '../types/queryplan';
 //                                  (lowest ceremony, no class/constructor needed)
 //
 // All three route through OperatorRegistry.register().
-
-/** Minimal structural interface used to call `createEnumerable` without `protected` access errors. */
-interface IWithCreateEnumerable {
-    createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
-    readonly [tyneqQueryNode]: IQueryNode | null;
-}
 
 /**
  * Defines and immediately registers a streaming or buffering operator on all
@@ -72,7 +66,7 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
 }): void {
     const kind = config.kind ?? 'streaming';
     OperatorRegistry.register({
-        metadata: { name: config.name, kind },
+        metadata: { name: config.name, kind, source: 'internal' },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const withCreate = this as unknown as IWithCreateEnumerable;
@@ -130,7 +124,7 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
     validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: 'streaming' },
+        metadata: { name: config.name, kind: 'streaming', source: 'internal' },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const self = this;
@@ -190,7 +184,7 @@ export function createTerminalOperator<TSource, TArgs extends unknown[], TResult
     validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: 'terminal' },
+        metadata: { name: config.name, kind: 'terminal', source: 'internal' },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as IEnumerable<TSource>, ...(args as TArgs));

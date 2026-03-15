@@ -29,48 +29,49 @@
  * ## Operator registry
  *
  * ### Streaming operators
- * | Name           | Registration pattern        | Source file                          |
- * |----------------|-----------------------------|--------------------------------------|
- * | `where`        | `@operator` decorator       | `operators/streaming/where.ts`       |
- * | `select`       | `createGeneratorOperator()` | `operators/streaming/select.ts`      |
- * | `scan`         | `@operator` decorator       | `operators/streaming/scan.ts`        |
- * | `window`       | `createOperator()`          | `operators/streaming/window.ts`      |
- * | `intersperse`  | `createGeneratorOperator()` | `operators/streaming/intersperse.ts` |
- * | `append`       | `@operator` decorator       | `operators/streaming/append.ts`      |
- * | `chunk`        | `@operator` decorator       | `operators/streaming/chunk.ts`       |
- * | `concat`       | `@operator` decorator       | `operators/streaming/concat.ts`      |
- * | `pairwise`     | `@operator` decorator       | `operators/streaming/pairwise.ts`    |
- * | `populate`     | `@operator` decorator       | `operators/streaming/populate.ts`    |
- * | `prepend`      | `@operator` decorator       | `operators/streaming/prepend.ts`     |
- * | `selectMany`   | `@operator` decorator       | `operators/streaming/selectMany.ts`  |
- * | `skip`         | `@operator` decorator       | `operators/streaming/skip.ts`        |
- * | `skipLast`     | `@operator` decorator       | `operators/streaming/skipLast.ts`    |
- * | `skipWhile`    | `@operator` decorator       | `operators/streaming/skipWhile.ts`   |
- * | `split`        | `@operator` decorator       | `operators/streaming/split.ts`       |
- * | `take`         | `@operator` decorator       | `operators/streaming/take.ts`        |
- * | `takeWhile`    | `@operator` decorator       | `operators/streaming/takeWhile.ts`   |
- * | `tap`          | `@operator` decorator       | `operators/streaming/tap.ts`         |
- * | `tapIf`        | `@operator` decorator       | `operators/streaming/tapIf.ts`       |
- * | `throttle`     | `@operator` decorator       | `operators/streaming/throttle.ts`    |
- * | `zip`          | `@operator` decorator       | `operators/streaming/zip.ts`         |
+ * | Name              | Registration pattern        | Source file                             |
+ * |-------------------|-----------------------------|-----------------------------------------|
+ * | `where`           | `@operator` decorator       | `enumerators/streaming/where.ts`        |
+ * | `select`          | `@operator` decorator       | `enumerators/streaming/select.ts`       |
+ * | `scan`            | `@operator` decorator       | `enumerators/streaming/scan.ts`         |
+ * | `window`          | `createOperator()`          | `operators/streaming/window.ts`         |
+ * | `intersperse`     | `createGeneratorOperator()` | `operators/streaming/intersperse.ts`    |
+ * | `defaultIfEmpty`  | `createGeneratorOperator()` | `operators/streaming/defaultIfEmpty.ts` |
+ * | `append`          | `@operator` decorator       | `enumerators/streaming/append.ts`       |
+ * | `chunk`           | `@operator` decorator       | `enumerators/streaming/chunk.ts`        |
+ * | `concat`          | `@operator` decorator       | `enumerators/streaming/concat.ts`       |
+ * | `pairwise`        | `@operator` decorator       | `enumerators/streaming/pairwise.ts`     |
+ * | `populate`        | `@operator` decorator       | `enumerators/streaming/populate.ts`     |
+ * | `prepend`         | `@operator` decorator       | `enumerators/streaming/prepend.ts`      |
+ * | `selectMany`      | `@operator` decorator       | `enumerators/streaming/selectMany.ts`   |
+ * | `skip`            | `@operator` decorator       | `enumerators/streaming/skip.ts`         |
+ * | `skipLast`        | `@operator` decorator       | `enumerators/streaming/skipLast.ts`     |
+ * | `skipWhile`       | `@operator` decorator       | `enumerators/streaming/skipWhile.ts`    |
+ * | `split`           | `@operator` decorator       | `enumerators/streaming/split.ts`        |
+ * | `take`            | `@operator` decorator       | `enumerators/streaming/take.ts`         |
+ * | `takeWhile`       | `@operator` decorator       | `enumerators/streaming/takeWhile.ts`    |
+ * | `tap`             | `@operator` decorator       | `enumerators/streaming/tap.ts`          |
+ * | `tapIf`           | `@operator` decorator       | `enumerators/streaming/tapIf.ts`        |
+ * | `throttle`        | `@operator` decorator       | `enumerators/streaming/throttle.ts`     |
+ * | `zip`             | `@operator` decorator       | `enumerators/streaming/zip.ts`          |
  *
  * ### Buffer operators
- * | Name           | Registration pattern        | Source file                          |
- * |----------------|-----------------------------|--------------------------------------|
- * | `backsert`     | `@operator` decorator       | `operators/buffer/backsert.ts`       |
- * | `distinct`     | `createOperator()`          | `operators/buffer/distinct.ts`       |
- * | `distinctBy`   | `@operator` decorator       | `operators/buffer/distinctBy.ts`     |
- * | `except`       | `@operator` decorator       | `operators/buffer/except.ts`         |
- * | `exceptBy`     | `@operator` decorator       | `operators/buffer/exceptBy.ts`       |
- * | `groupBy`      | `@operator` decorator       | `operators/buffer/groupBy.ts`        |
- * | `groupJoin`    | `@operator` decorator       | `operators/buffer/groupJoin.ts`      |
- * | `intersect`    | `@operator` decorator       | `operators/buffer/intersect.ts`      |
- * | `intersectBy`  | `@operator` decorator       | `operators/buffer/intersectBy.ts`    |
- * | `join`         | `@operator` decorator       | `operators/buffer/join.ts`           |
- * | `reverse`      | `@operator` decorator       | `operators/buffer/reverse.ts`        |
- * | `shuffle`      | `@operator` decorator       | `operators/buffer/shuffle.ts`        |
- * | `union`        | `@operator` decorator       | `operators/buffer/union.ts`          |
- * | `unionBy`      | `@operator` decorator       | `operators/buffer/unionBy.ts`        |
+ * | Name           | Registration pattern        | Source file                             |
+ * |----------------|-----------------------------|-----------------------------------------|
+ * | `backsert`     | `@operator` decorator       | `enumerators/buffer/backsert.ts`        |
+ * | `distinct`     | `@operator` decorator       | `enumerators/buffer/distinct.ts`        |
+ * | `distinctBy`   | `@operator` decorator       | `enumerators/buffer/distinctBy.ts`      |
+ * | `except`       | `@operator` decorator       | `enumerators/buffer/except.ts`          |
+ * | `exceptBy`     | `@operator` decorator       | `enumerators/buffer/exceptBy.ts`        |
+ * | `groupBy`      | `@operator` decorator       | `enumerators/buffer/groupBy.ts`         |
+ * | `groupJoin`    | `@operator` decorator       | `enumerators/buffer/groupJoin.ts`       |
+ * | `intersect`    | `@operator` decorator       | `enumerators/buffer/intersect.ts`       |
+ * | `intersectBy`  | `@operator` decorator       | `enumerators/buffer/intersectBy.ts`     |
+ * | `join`         | `@operator` decorator       | `enumerators/buffer/join.ts`            |
+ * | `reverse`      | `@operator` decorator       | `enumerators/buffer/reverse.ts`         |
+ * | `shuffle`      | `@operator` decorator       | `enumerators/buffer/shuffle.ts`         |
+ * | `union`        | `@operator` decorator       | `enumerators/buffer/union.ts`           |
+ * | `unionBy`      | `@operator` decorator       | `enumerators/buffer/unionBy.ts`         |
  *
  * ### Terminal operators
  * | Name                   | Registration pattern  | Source file                                  |
@@ -83,7 +84,6 @@
  * | `contains`             | `@terminal` decorator | `operators/terminal/contains.ts`             |
  * | `count`                | `@terminal` decorator | `operators/terminal/count.ts`                |
  * | `countBy`              | `@terminal` decorator | `operators/terminal/countBy.ts`              |
- * | `defaultIfEmpty`       | `@terminal` decorator | `operators/terminal/defaultIfEmpty.ts`       |
  * | `elementAt`            | `@terminal` decorator | `operators/terminal/elementAt.ts`            |
  * | `elementAtOrDefault`   | `@terminal` decorator | `operators/terminal/elementAtOrDefault.ts`   |
  * | `first`                | `@terminal` decorator | `operators/terminal/first.ts`                |
@@ -120,14 +120,14 @@
 
 // ── Streaming operators ────────────────────────────────────────────────────────
 
-// @operator('where') — enumerator class
-import '../../enumerators/streaming/where';
+// @operator('where') — operator class
+import '../streaming/where';
 
-// @operator('select') — enumerator class
-import '../../enumerators/streaming/select';
+// @operator('select') — operator class
+import '../streaming/select';
 
-// @operator('scan') — enumerator class
-import '../../enumerators/streaming/scan';
+// @operator('scan') — operator class
+import '../streaming/scan';
 
 // createOperator('window') — functional API with generator (no enumerator class)
 import '../streaming/window';
@@ -135,100 +135,103 @@ import '../streaming/window';
 // createGeneratorOperator('intersperse') — generator shorthand (no enumerator class)
 import '../streaming/intersperse';
 
-// @operator('append') — enumerator class
-import '../../enumerators/streaming/append';
+// createGeneratorOperator('defaultIfEmpty') — generator shorthand (no enumerator class)
+import '../streaming/defaultIfEmpty';
 
-// @operator('chunk') — enumerator class
-import '../../enumerators/streaming/chunk';
+// @operator('append') — operator class
+import '../streaming/append';
 
-// @operator('concat') — enumerator class
-import '../../enumerators/streaming/concat';
+// @operator('chunk') — operator class
+import '../streaming/chunk';
 
-// @operator('pairwise') — enumerator class
-import '../../enumerators/streaming/pairwise';
+// @operator('concat') — operator class
+import '../streaming/concat';
 
-// @operator('populate') — enumerator class
-import '../../enumerators/streaming/populate';
+// @operator('pairwise') — operator class
+import '../streaming/pairwise';
 
-// @operator('prepend') — enumerator class
-import '../../enumerators/streaming/prepend';
+// @operator('populate') — operator class
+import '../streaming/populate';
 
-// @operator('selectMany') — enumerator class
-import '../../enumerators/streaming/selectMany';
+// @operator('prepend') — operator class
+import '../streaming/prepend';
 
-// @operator('skip') — enumerator class
-import '../../enumerators/streaming/skip';
+// @operator('selectMany') — operator class
+import '../streaming/selectMany';
 
-// @operator('skipLast') — enumerator class
-import '../../enumerators/streaming/skipLast';
+// @operator('skip') — operator class
+import '../streaming/skip';
 
-// @operator('skipWhile') — enumerator class
-import '../../enumerators/streaming/skipWhile';
+// @operator('skipLast') — operator class
+import '../streaming/skipLast';
 
-// @operator('split') — enumerator class
-import '../../enumerators/streaming/split';
+// @operator('skipWhile') — operator class
+import '../streaming/skipWhile';
 
-// @operator('take') — enumerator class
-import '../../enumerators/streaming/take';
+// @operator('split') — operator class
+import '../streaming/split';
 
-// @operator('takeWhile') — enumerator class
-import '../../enumerators/streaming/takeWhile';
+// @operator('take') — operator class
+import '../streaming/take';
 
-// @operator('tap') — enumerator class
-import '../../enumerators/streaming/tap';
+// @operator('takeWhile') — operator class
+import '../streaming/takeWhile';
 
-// @operator('tapIf') — enumerator class
-import '../../enumerators/streaming/tapIf';
+// @operator('tap') — operator class
+import '../streaming/tap';
 
-// @operator('throttle') — enumerator class
-import '../../enumerators/streaming/throttle';
+// @operator('tapIf') — operator class
+import '../streaming/tapIf';
 
-// @operator('zip') — enumerator class
-import '../../enumerators/streaming/zip';
+// @operator('throttle') — operator class
+import '../streaming/throttle';
+
+// @operator('zip') — operator class
+import '../streaming/zip';
 
 // ── Buffer operators ──────────────────────────────────────────────────────────
 
-// @operator('backsert') — enumerator class
-import '../../enumerators/buffer/backsert';
+// @operator('backsert') — operator class
+import '../buffer/backsert';
 
-// @operator('distinct') — enumerator class
-import '../../enumerators/buffer/distinct';
+// @operator('distinct') — operator class
+import '../buffer/distinct';
 
-// @operator('distinctBy') — enumerator class
-import '../../enumerators/buffer/distinctBy';
+// @operator('distinctBy') — operator class
+import '../buffer/distinctBy';
 
-// @operator('except') — enumerator class
-import '../../enumerators/buffer/except';
+// @operator('except') — operator class
+import '../buffer/except';
 
-// @operator('exceptBy') — enumerator class
-import '../../enumerators/buffer/exceptBy';
+// @operator('exceptBy') — operator class
+import '../buffer/exceptBy';
 
-// @operator('groupBy') — enumerator class
-import '../../enumerators/buffer/groupBy';
+// @operator('groupBy') — operator class
+import '../buffer/groupBy';
 
-// @operator('groupJoin') — enumerator class
-import '../../enumerators/buffer/groupJoin';
+// @operator('groupJoin') — operator class
+import '../buffer/groupJoin';
 
-// @operator('intersect') — enumerator class
-import '../../enumerators/buffer/intersect';
+// @operator('intersect') — operator class
+import '../buffer/intersect';
 
-// @operator('intersectBy') — enumerator class
-import '../../enumerators/buffer/intersectBy';
+// @operator('intersectBy') — operator class
+import '../buffer/intersectBy';
 
-// @operator('join') — enumerator class
-import '../../enumerators/buffer/join';
+// @operator('join') — operator class
+import '../buffer/join';
 
-// @operator('reverse') — enumerator class
-import '../../enumerators/buffer/reverse';
+// @operator('reverse') — operator class
+import '../buffer/reverse';
 
-// @operator('shuffle') — enumerator class
-import '../../enumerators/buffer/shuffle';
+// @operator('shuffle') — operator class
+import '../buffer/shuffle';
 
-// @operator('union') — enumerator class
-import '../../enumerators/buffer/union';
+// @operator('union') — operator class
+import '../buffer/union';
 
-// @operator('unionBy') — enumerator class
-import '../../enumerators/buffer/unionBy';
+// @operator('unionBy') — operator class
+import '../buffer/unionBy';
 
 // ── Terminal operators ────────────────────────────────────────────────────────
 
@@ -255,9 +258,6 @@ import '../terminal/count';
 
 // @terminal('countBy') — class decorator, extends TyneqTerminalOperator
 import '../terminal/countBy';
-
-// createGeneratorOperator('defaultIfEmpty') — generator shorthand
-import '../terminal/defaultIfEmpty';
 
 // @terminal('elementAt') — class decorator, extends TyneqTerminalOperator
 import '../terminal/elementAt';

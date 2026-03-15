@@ -96,7 +96,7 @@ export class OperatorRegistry {
      */
     static register(input: OperatorEntryInput): void {
         const entry: OperatorEntry = {
-            metadata: { source: 'internal', ...input.metadata } as OperatorMetadata,
+            metadata: { source: 'external', ...input.metadata } as OperatorMetadata,
             impl: input.impl,
         };
         const { name } = entry.metadata;
@@ -185,21 +185,28 @@ export class OperatorRegistry {
      * for that call are not executed.
      *
      * @param guard - Callback receiving the candidate entry. Throw to block.
+     * @returns An unsubscribe function. Call it to remove the guard.
      *
      * @example
      * ```ts
      * // Enforce camelCase naming convention
-     * OperatorRegistry.addGuard(entry => {
+     * const removeGuard = OperatorRegistry.addGuard(entry => {
      *     if (!/^[a-z][a-zA-Z0-9]*$/.test(entry.metadata.name)) {
      *         throw new Error(`Operator name '${entry.metadata.name}' must be camelCase`);
      *     }
      * });
+     * // later:
+     * removeGuard();
      * ```
      *
      * @group Registry
      */
-    static addGuard(guard: (entry: OperatorEntry) => void): void {
+    static addGuard(guard: (entry: OperatorEntry) => void): () => void {
         this._registrationGuards.push(guard);
+        return () => {
+            const i = this._registrationGuards.indexOf(guard);
+            if (i !== -1) this._registrationGuards.splice(i, 1);
+        };
     }
 
     // ── Introspection ─────────────────────────────────────────────────────────
