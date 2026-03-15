@@ -1,10 +1,10 @@
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 import { TyneqEnumerableSorter } from "./TyneqEnumerableSorter";
-import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../../types/core';
-import { tyneqQueryNode } from '../../types/queryplan';
-import type { IQueryNode } from '../../types/queryplan';
-import { QueryNode } from '../../queryplan/QueryNode';
+import type { IEnumerator, IEnumeratorFactory, IOrderedEnumerable, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
+import { tyneqQueryNode } from "../../types/queryplan";
+import type { IQueryNode } from "../../types/queryplan";
+import { QueryNode } from "../../queryplan/QueryNode";
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { OrderByEnumerator } from "../../operators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
@@ -111,7 +111,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         comparer?: ((a: UKey, b: UKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
         const thenByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
-        const node = new QueryNode('thenBy', thenByArgs, this[tyneqQueryNode], 'buffer');
+        const node = new QueryNode("thenBy", thenByArgs, this[tyneqQueryNode], "buffer");
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,
@@ -141,7 +141,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined): ITyneqOrderedEnumerable<TSource> {
         const thenByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
-        const node = new QueryNode('thenByDescending', thenByDescArgs, this[tyneqQueryNode], 'buffer');
+        const node = new QueryNode("thenByDescending", thenByDescArgs, this[tyneqQueryNode], "buffer");
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,

@@ -15,7 +15,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[guard: unknown]>('ofType', (guard) => {
+@operator<[guard: unknown]>("ofType", (guard) => {
     ArgumentUtility.checkNotOptional({ guard });
 })
 export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {

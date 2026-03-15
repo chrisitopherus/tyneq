@@ -1,5 +1,5 @@
-import type { KeyValuePair } from '../../types/core';
-import { nameof } from '../nameof';
+import type { KeyValuePair } from "../../types/core";
+import { nameof } from "../nameof";
 
 /**
  * Extracts the parameter name and value from either invocation style.

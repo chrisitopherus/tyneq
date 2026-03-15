@@ -1,4 +1,4 @@
-import { ArgumentError } from './ArgumentError';
+import { ArgumentError } from "./ArgumentError";
 
 /**
  * Thrown when multiple validation checks fail simultaneously.
@@ -50,7 +50,7 @@ export class ValidationError extends ArgumentError {
      */
     constructor(errors: readonly string[]) {
         super(
-            `${errors.length} validation error(s):\n${errors.map((e, i) => `  ${i + 1}. ${e}`).join('\n')}`
+            `${errors.length} validation error(s):\n${errors.map((e, i) => `  ${i + 1}. ${e}`).join("\n")}`
         );
         this.errors = errors;
     }

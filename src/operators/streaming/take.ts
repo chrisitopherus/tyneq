@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields a specified number of elements from the beginning of a sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('take')
+@operator("take")
 export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private takenCount = 0;

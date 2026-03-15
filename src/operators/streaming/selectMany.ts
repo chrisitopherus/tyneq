@@ -1,8 +1,8 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { Nullable } from '../../types/utility';
+import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that projects each element to a nested sequence and flattens the results.
@@ -16,7 +16,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[selector: unknown]>('selectMany', (selector) => {
+@operator<[selector: unknown]>("selectMany", (selector) => {
     ArgumentUtility.checkNotOptional({ selector });
 })
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {

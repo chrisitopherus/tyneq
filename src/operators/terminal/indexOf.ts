@@ -21,7 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('indexOf')
+@terminal("indexOf")
 export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: (item: T) => boolean;
     private readonly startIndex: number;

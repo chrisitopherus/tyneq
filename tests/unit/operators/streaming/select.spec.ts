@@ -3,20 +3,20 @@ import { Tyneq } from "../../../../src";
 
 describe("select", () => {
   it("projects each element", () => {
-    expect(Tyneq.from([1, 2, 3]).select(x => x * x).toArray()).toEqual([1, 4, 9]);
+    expect(Tyneq.from([1, 2, 3]).select((x) => x * x).toArray()).toEqual([1, 4, 9]);
   });
 
   it("returns empty sequence when source is empty", () => {
-    expect(Tyneq.from<number>([]).select(x => x * 2).toArray()).toEqual([]);
+    expect(Tyneq.from<number>([]).select((x) => x * 2).toArray()).toEqual([]);
   });
 
   it("supports type transformation", () => {
-    expect(Tyneq.from([1, 2, 3]).select(x => x.toString()).toArray()).toEqual(["1", "2", "3"]);
+    expect(Tyneq.from([1, 2, 3]).select((x) => x.toString()).toArray()).toEqual(["1", "2", "3"]);
   });
 
   it("projects object properties", () => {
     const input = [{ name: "alice", age: 30 }, { name: "bob", age: 25 }];
-    expect(Tyneq.from(input).select(x => x.name).toArray()).toEqual(["alice", "bob"]);
+    expect(Tyneq.from(input).select((x) => x.name).toArray()).toEqual(["alice", "bob"]);
   });
 
   it("throws when selector is null and sequence is iterated", () => {

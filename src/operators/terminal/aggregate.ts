@@ -23,7 +23,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('aggregate')
+@terminal("aggregate")
 export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     private readonly seed: UAccumulate;
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;

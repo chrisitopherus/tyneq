@@ -1,4 +1,4 @@
-import { ValidationError } from '../core/errors/argument/ValidationError';
+import { ValidationError } from "../core/errors/argument/ValidationError";
 
 /**
  * Fluent builder that collects **all** validation failures before throwing.

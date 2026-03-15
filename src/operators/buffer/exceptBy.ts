@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields elements whose keys are not present in an excluded-keys sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[excludedKeys: unknown, keySelector: unknown]>('exceptBy', 'buffer', (excludedKeys, keySelector) => {
+@operator<[excludedKeys: unknown, keySelector: unknown]>("exceptBy", "buffer", (excludedKeys, keySelector) => {
     ArgumentUtility.checkNotOptional({ excludedKeys });
     ArgumentUtility.checkIterable({ excludedKeys });
     ArgumentUtility.checkNotOptional({ keySelector });

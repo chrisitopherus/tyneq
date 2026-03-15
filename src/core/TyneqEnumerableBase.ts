@@ -1,8 +1,8 @@
 import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
-import { tyneqQueryNode } from '../types/queryplan';
-import type { IQueryNode } from '../types/queryplan';
-import { QueryNode } from '../queryplan/QueryNode';
+import { tyneqQueryNode } from "../types/queryplan";
+import type { IQueryNode } from "../types/queryplan";
+import { QueryNode } from "../queryplan/QueryNode";
 
 /**
  * Abstract base class providing the complete LINQ-style operator surface for enumerable sequences.
@@ -54,7 +54,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
         const orderByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
-        const node = new QueryNode('orderBy', orderByArgs, this[tyneqQueryNode], 'buffer');
+        const node = new QueryNode("orderBy", orderByArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
@@ -86,7 +86,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
         const orderByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
-        const node = new QueryNode('orderByDescending', orderByDescArgs, this[tyneqQueryNode], 'buffer');
+        const node = new QueryNode("orderByDescending", orderByDescArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
             keySelector,
             comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
@@ -96,7 +96,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     }
 
     public memoize(): ITyneqCachedEnumerable<TSource> {
-        const node = new QueryNode('memoize', [], this[tyneqQueryNode], 'buffer');
+        const node = new QueryNode("memoize", [], this[tyneqQueryNode], "buffer");
         return this.createCachedEnumerable(this, node);
     }
 

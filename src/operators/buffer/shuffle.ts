@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields elements in randomized order.
@@ -14,7 +14,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('shuffle', 'buffer')
+@operator("shuffle", "buffer")
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;

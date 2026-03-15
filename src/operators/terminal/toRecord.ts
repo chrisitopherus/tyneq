@@ -22,7 +22,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Terminal
  * @internal
  */
-@terminal('toRecord')
+@terminal("toRecord")
 export class ToRecordOperator<TSource, TKey extends string | number | symbol, TValue> extends TyneqTerminalOperator<TSource, Record<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 

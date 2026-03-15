@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that conditionally executes a side-effect action on each element.
@@ -17,7 +17,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[action: unknown, predicate: unknown]>('tapIf', (action, predicate) => {
+@operator<[action: unknown, predicate: unknown]>("tapIf", (action, predicate) => {
     ArgumentUtility.checkNotOptional({ action });
     ArgumentUtility.checkNotOptional({ predicate });
 })

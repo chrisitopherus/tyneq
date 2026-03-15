@@ -1,5 +1,5 @@
-import { IEnumerable, IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
+import { IEnumerable, IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Adapts any `Iterable<TSource>` into an {@link IEnumerable} by delegating

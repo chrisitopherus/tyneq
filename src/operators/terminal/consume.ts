@@ -16,7 +16,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('consume')
+@terminal("consume")
 export class ConsumeOperator<T> extends TyneqTerminalOperator<T, void> {
     public constructor(source: IEnumerable<T>) {
         super(source);

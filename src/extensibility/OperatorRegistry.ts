@@ -1,4 +1,4 @@
-import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OperatorRegistry — central registry for all Tyneq operators
@@ -27,12 +27,12 @@ export interface OperatorMetadata {
      * - `'buffer'` — materialises part or all of the sequence (O(n) space)
      * - `'terminal'` — evaluates the sequence and returns a concrete value
      */
-    readonly kind: 'streaming' | 'buffer' | 'terminal';
+    readonly kind: "streaming" | "buffer" | "terminal";
     /**
      * Whether the operator was registered by the Tyneq library itself (`'internal'`)
      * or by a third-party consumer (`'external'`).
      */
-    readonly source: 'internal' | 'external';
+    readonly source: "internal" | "external";
     /** Open index signature — third-party operators may attach arbitrary metadata. */
     readonly [key: string]: unknown;
 }
@@ -54,7 +54,7 @@ export interface OperatorEntry {
  * @group Registry
  */
 export interface OperatorEntryInput {
-    readonly metadata: Omit<OperatorMetadata, 'source'> & { readonly source?: 'internal' | 'external' };
+    readonly metadata: Omit<OperatorMetadata, "source"> & { readonly source?: "internal" | "external" };
     readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
 }
 
@@ -96,7 +96,7 @@ export class OperatorRegistry {
      */
     static register(input: OperatorEntryInput): void {
         const entry: OperatorEntry = {
-            metadata: { source: 'external', ...input.metadata } as OperatorMetadata,
+            metadata: { source: "external", ...input.metadata } as OperatorMetadata,
             impl: input.impl,
         };
         const { name } = entry.metadata;
@@ -239,7 +239,7 @@ export class OperatorRegistry {
      * @group Registry
      */
     static list(): readonly OperatorMetadata[] {
-        return [...this._entries.values()].map(e => e.metadata);
+        return [...this._entries.values()].map((e) => e.metadata);
     }
 
     /**
@@ -249,8 +249,8 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    static listByKind(kind: OperatorMetadata['kind']): readonly OperatorMetadata[] {
-        return this.list().filter(m => m.kind === kind);
+    static listByKind(kind: OperatorMetadata["kind"]): readonly OperatorMetadata[] {
+        return this.list().filter((m) => m.kind === kind);
     }
 
     /**

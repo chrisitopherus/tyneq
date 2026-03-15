@@ -21,7 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('elementAtOrDefault')
+@terminal("elementAtOrDefault")
 export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly index: number;
     private readonly defaultValue: TSource;

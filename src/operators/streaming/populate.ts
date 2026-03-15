@@ -1,6 +1,6 @@
-import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operatorDecorators';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that replaces every source element with a constant value.
@@ -13,7 +13,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('populate')
+@operator("populate")
 export class PopulateEnumerator<TSource, TValue> extends TyneqEnumerator<TSource, TValue> {
     private readonly value: TValue;
 

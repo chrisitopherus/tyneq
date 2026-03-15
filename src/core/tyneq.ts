@@ -4,8 +4,8 @@ import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEn
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./adapter/EnumerableAdapter";
-import { TyneqEnumerable } from './TyneqEnumerable';
-import { QueryNode } from '../queryplan/QueryNode';
+import { TyneqEnumerable } from "./TyneqEnumerable";
+import { QueryNode } from "../queryplan/QueryNode";
 
 /**
  * Provides static factory methods for creating queryable sequences.
@@ -56,7 +56,7 @@ export class Tyneq {
         ArgumentUtility.checkIterable({ source });
 
         const adapter = new EnumerableAdapter(source);
-        return new TyneqEnumerable<TSource>(adapter, new QueryNode('from', [source], null, 'source'));
+        return new TyneqEnumerable<TSource>(adapter, new QueryNode("from", [source], null, "source"));
     }
 
     /**
@@ -81,7 +81,7 @@ export class Tyneq {
 
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new RandomEnumerator<TSource>(count, randomizer)
-        }, new QueryNode('random', [count], null, 'source'));
+        }, new QueryNode("random", [count], null, "source"));
     }
 
     /**
@@ -125,7 +125,7 @@ export class Tyneq {
         const end = start + count - 1;
         return new TyneqEnumerable<number>({
             getEnumerator: () => new RangeEnumerator(start, end)
-        }, new QueryNode('range', [start, count], null, 'source'));
+        }, new QueryNode("range", [start, count], null, "source"));
     }
 
     /**
@@ -139,7 +139,7 @@ export class Tyneq {
     public static empty<TSource>(): ITyneqEnumerable<TSource> {
         return new TyneqEnumerable<TSource>(
             new EnumerableAdapter<TSource>([]),
-            new QueryNode('empty', [], null, 'source')
+            new QueryNode("empty", [], null, "source")
         );
     }
 

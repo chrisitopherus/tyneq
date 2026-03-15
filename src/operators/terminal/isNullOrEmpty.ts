@@ -18,7 +18,7 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @category Terminal
  * @internal
  */
-@terminal('isNullOrEmpty')
+@terminal("isNullOrEmpty")
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>) {
         super(source);

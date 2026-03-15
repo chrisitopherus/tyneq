@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields consecutive overlapping pairs from a sequence.
@@ -14,7 +14,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator('pairwise')
+@operator("pairwise")
 export class PairwiseEnumerator<T> extends TyneqEnumerator<T, [T, T]> {
     private hasPrevious = false;
     private previous!: T;

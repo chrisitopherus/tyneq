@@ -16,7 +16,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('contains')
+@terminal("contains")
 export class ContainsOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly value: TSource;
 

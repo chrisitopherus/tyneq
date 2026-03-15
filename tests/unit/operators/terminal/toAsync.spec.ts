@@ -38,7 +38,7 @@ describe("toAsync", () => {
 
   it("preserves elements after chaining streaming operators", async () => {
     const result = await collect(
-      Tyneq.from([1, 2, 3, 4, 5]).where(x => x % 2 === 0).select(x => x * 10).toAsync()
+      Tyneq.from([1, 2, 3, 4, 5]).where((x) => x % 2 === 0).select((x) => x * 10).toAsync()
     );
     expect(result).toEqual([20, 40]);
   });

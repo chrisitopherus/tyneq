@@ -1,9 +1,9 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 import { TyneqMap } from "../../utility/map";
-import { TyneqEnumerable } from '../../core/TyneqEnumerable';
+import { TyneqEnumerable } from "../../core/TyneqEnumerable";
 import { Tyneq } from "../..";
 
 /**
@@ -18,7 +18,7 @@ import { Tyneq } from "../..";
  * @group Enumerators
  * @internal
  */
-@operator<[keySelector: unknown, valueSelector: unknown, resultSelector: unknown]>('groupBy', 'buffer', (keySelector, valueSelector, resultSelector) => {
+@operator<[keySelector: unknown, valueSelector: unknown, resultSelector: unknown]>("groupBy", "buffer", (keySelector, valueSelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ keySelector });
     ArgumentUtility.checkNotOptional({ valueSelector });
     ArgumentUtility.checkNotOptional({ resultSelector });

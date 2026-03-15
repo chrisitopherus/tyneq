@@ -22,7 +22,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('lastOrDefault')
+@terminal("lastOrDefault")
 export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
     private readonly defaultValue: TSource;

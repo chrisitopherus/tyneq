@@ -1,5 +1,5 @@
-import { tyneqQueryNode } from '../types/queryplan';
-import type { IQueryNode } from '../types/queryplan';
+import { tyneqQueryNode } from "../types/queryplan";
+import type { IQueryNode } from "../types/queryplan";
 
 /**
  * Minimal structural interface used internally by operator registration to call

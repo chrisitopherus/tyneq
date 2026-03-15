@@ -1,6 +1,6 @@
-import { ArgumentError } from '../../core/errors/argument/ArgumentError';
-import { ArgumentNullError } from '../../core/errors/argument/ArgumentNullError';
-import type { HasLength, Nullable, Optional, Undefinedable } from '../../types/utility';
+import { ArgumentError } from "../../core/errors/argument/ArgumentError";
+import { ArgumentNullError } from "../../core/errors/argument/ArgumentNullError";
+import type { HasLength, Nullable, Optional, Undefinedable } from "../../types/utility";
 
 /**
  * Static assertion class for null/undefined/empty checks.

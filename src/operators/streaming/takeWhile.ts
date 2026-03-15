@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields elements while a predicate is true, then stops.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[predicate: unknown]>('takeWhile', (predicate) => {
+@operator<[predicate: unknown]>("takeWhile", (predicate) => {
     ArgumentUtility.checkNotOptional({ predicate });
 })
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {

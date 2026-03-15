@@ -8,9 +8,9 @@ describe("groupJoin", () => {
 
     const result = Tyneq.from(users).groupJoin(
       posts,
-      u => u.id,
-      p => p.userId,
-      (u, group) => ({ id: u.id, posts: group.select(p => p.t).toArray() })
+      (u) => u.id,
+      (p) => p.userId,
+      (u, group) => ({ id: u.id, posts: group.select((p) => p.t).toArray() })
     ).toArray();
 
     expect(result).toEqual([
@@ -22,8 +22,8 @@ describe("groupJoin", () => {
   it("returns empty group for outer elements with no inner matches", () => {
     const result = Tyneq.from([1, 2, 3]).groupJoin(
       [],
-      x => x,
-      x => x,
+      (x) => x,
+      (x) => x,
       (outer, group) => ({ outer, count: group.count() })
     ).toArray();
 
@@ -37,8 +37,8 @@ describe("groupJoin", () => {
   it("returns empty sequence when outer is empty", () => {
     const result = Tyneq.from<number>([]).groupJoin(
       [1, 2],
-      x => x,
-      x => x,
+      (x) => x,
+      (x) => x,
       (outer, group) => ({ outer, count: group.count() })
     ).toArray();
 
@@ -48,8 +48,8 @@ describe("groupJoin", () => {
   it("groups multiple inner elements per outer key", () => {
     const result = Tyneq.from([10, 20]).groupJoin(
       [10, 10, 20],
-      x => x,
-      x => x,
+      (x) => x,
+      (x) => x,
       (outer, group) => group.count()
     ).toArray();
 
@@ -61,9 +61,9 @@ describe("groupJoin", () => {
     const inner = [{ id: 1, v: "x" }];
     const seq = Tyneq.from(outer).groupJoin(
       inner,
-      o => o.id,
-      i => i.id,
-      (o, g) => g.select(i => i.v).toArray()
+      (o) => o.id,
+      (i) => i.id,
+      (o, g) => g.select((i) => i.v).toArray()
     );
     expect(seq.toArray()).toEqual([["x"]]);
     expect(seq.toArray()).toEqual([["x"]]);
@@ -71,25 +71,25 @@ describe("groupJoin", () => {
 
   it("throws ArgumentNullError when innerSource is null", () => {
     expect(() =>
-      Tyneq.from([1]).groupJoin(null as any, x => x, x => x, (o, g) => o)
+      Tyneq.from([1]).groupJoin(null as any, (x) => x, (x) => x, (o, g) => o)
     ).toThrow(ArgumentNullError);
   });
 
   it("throws ArgumentError when innerSource is undefined", () => {
     expect(() =>
-      Tyneq.from([1]).groupJoin(undefined as any, x => x, x => x, (o, g) => o)
+      Tyneq.from([1]).groupJoin(undefined as any, (x) => x, (x) => x, (o, g) => o)
     ).toThrow(ArgumentError);
   });
 
   it("throws ArgumentNullError when outerKeySelector is null", () => {
     expect(() =>
-      Tyneq.from([1]).groupJoin([], null as any, x => x, (o, g) => o)
+      Tyneq.from([1]).groupJoin([], null as any, (x) => x, (o, g) => o)
     ).toThrow(ArgumentNullError);
   });
 
   it("throws ArgumentNullError when resultSelector is null", () => {
     expect(() =>
-      Tyneq.from([1]).groupJoin([], x => x, x => x, null as any)
+      Tyneq.from([1]).groupJoin([], (x) => x, (x) => x, null as any)
     ).toThrow(ArgumentNullError);
   });
 });

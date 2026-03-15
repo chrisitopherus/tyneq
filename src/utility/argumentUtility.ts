@@ -1,11 +1,11 @@
-import type { KeyValuePair } from '../types/core';
-import type { HasLength, Nullable, Optional, Undefinedable } from '../types/utility';
-import { extractParameter } from './guards/extractParameter';
-import { NullGuards } from './guards/nullGuards';
-import { StringGuards } from './guards/stringGuards';
-import { NumericGuards } from './guards/numericGuards';
-import { TypeGuards } from './guards/typeGuards';
-import type { IEnumerable, IEnumerator } from '../types/core';
+import type { KeyValuePair } from "../types/core";
+import type { HasLength, Nullable, Optional, Undefinedable } from "../types/utility";
+import { extractParameter } from "./guards/extractParameter";
+import { NullGuards } from "./guards/nullGuards";
+import { StringGuards } from "./guards/stringGuards";
+import { NumericGuards } from "./guards/numericGuards";
+import { TypeGuards } from "./guards/typeGuards";
+import type { IEnumerable, IEnumerator } from "../types/core";
 
 /**
  * Static utility class centralising argument validation for the Tyneq library.
@@ -274,7 +274,7 @@ export class ArgumentUtility {
         paramNameOrArrayLength?: string | number,
         arrayLength?: number
     ): void {
-        const hasExplicitParamName = typeof paramNameOrArrayLength === 'string';
+        const hasExplicitParamName = typeof paramNameOrArrayLength === "string";
         const { key, value } = hasExplicitParamName
             ? this.extractParameter(param as number, paramNameOrArrayLength)
             : this.extractParameter(param as Record<string, number>);
@@ -289,9 +289,9 @@ export class ArgumentUtility {
      *
      * @throws {ArgumentTypeError} When value is not a function.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+     
     public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, Function>;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+     
     public static checkFunction(param: unknown, paramName: string): asserts param is Function;
     public static checkFunction(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
@@ -406,7 +406,7 @@ export class ArgumentUtility {
         predicateOrMessage: ((v: T) => boolean) | string,
         message?: string
     ): void {
-        const hasExplicitParamName = typeof paramNameOrPredicate === 'string';
+        const hasExplicitParamName = typeof paramNameOrPredicate === "string";
         const predicate = (hasExplicitParamName ? predicateOrMessage : paramNameOrPredicate) as (v: T) => boolean;
         const validationMessage = (hasExplicitParamName ? message : predicateOrMessage) as string;
         const { key, value } = hasExplicitParamName

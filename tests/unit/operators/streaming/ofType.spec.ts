@@ -29,7 +29,7 @@ describe("ofType", () => {
     const mixed: (string | number)[] = ["x", 1, "y", 2];
     const result = Tyneq.from(mixed)
       .ofType(isNumber)
-      .select(n => n * 10)
+      .select((n) => n * 10)
       .toArray();
     expect(result).toEqual([10, 20]);
   });

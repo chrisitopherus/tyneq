@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that projects each element through a selector function.
@@ -14,7 +14,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[selector: unknown]>('select', (selector) => {
+@operator<[selector: unknown]>("select", (selector) => {
     ArgumentUtility.checkNotOptional({ selector });
 })
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {

@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operatorDecorators';
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
@@ -18,7 +18,7 @@ import { TyneqMap } from "../../utility/map";
  * @group Enumerators
  * @internal
  */
-@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>('join', 'buffer', (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
+@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>("join", "buffer", (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
     ArgumentUtility.checkNotOptional({ innerSource });
     ArgumentUtility.checkIterable({ innerSource });
     ArgumentUtility.checkNotOptional({ outerKeySelector });

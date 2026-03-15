@@ -1,5 +1,5 @@
 import { IEnumerator } from "../types/core";
-import { Optional } from '../types/utility';
+import { Optional } from "../types/utility";
 
 /**
  * Internal helpers for working with {@link IEnumerator} instances.

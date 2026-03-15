@@ -1,9 +1,9 @@
-import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
-import { OperatorRegistry } from './OperatorRegistry';
-import { inferOperatorKind } from './inferKind';
-import { QueryNode } from '../queryplan/QueryNode';
-import { tyneqQueryNode } from '../types/queryplan';
-import type { IWithCreateEnumerable } from './_internal';
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { OperatorRegistry } from "./OperatorRegistry";
+import { inferOperatorKind } from "./inferKind";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import type { IWithCreateEnumerable } from "./_internal";
 
 /**
  * TC39 class decorator that registers a streaming or buffering operator on all
@@ -80,20 +80,20 @@ import type { IWithCreateEnumerable } from './_internal';
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
-    kindOrValidate?: 'streaming' | 'buffer' | ((...args: TArgs) => void),
+    kindOrValidate?: "streaming" | "buffer" | ((...args: TArgs) => void),
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        const kind: 'streaming' | 'buffer' = typeof kindOrValidate === 'string'
+        const kind: "streaming" | "buffer" = typeof kindOrValidate === "string"
             ? kindOrValidate
             : inferOperatorKind(target);
         const actualValidate: ((...args: TArgs) => void) | undefined =
-            typeof kindOrValidate === 'function' ? kindOrValidate : validate;
+            typeof kindOrValidate === "function" ? kindOrValidate : validate;
         OperatorRegistry.register({
-            metadata: { name, kind, source: 'internal' },
+            metadata: { name, kind, source: "internal" },
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 actualValidate?.(...(userArgs as TArgs));
                 const base = this;
@@ -169,8 +169,8 @@ export function terminal<TArgs extends unknown[] = never>(
         OperatorRegistry.register({
             metadata: {
                 name,
-                kind: 'terminal',
-                source: 'internal',
+                kind: "terminal",
+                source: "internal",
             },
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));

@@ -21,7 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal<[(item: unknown) => boolean]>('first', (predicate) => {
+@terminal<[(item: unknown) => boolean]>("first", (predicate) => {
     ArgumentUtility.checkNotOptional({ predicate });
 })
 export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {

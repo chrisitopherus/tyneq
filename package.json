@@ -26,6 +26,8 @@
     "docs:preview": "vitepress preview docs",
     "docs:check": "npm run docs:build",
     "docs:publish": "npm run docs:build:pages && gh-pages -d docs/.vitepress/dist -b gh-pages",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -42,13 +44,16 @@
   "homepage": "https://github.com/chrisitopherus/tyneq#readme",
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.3",
+    "gh-pages": "^6.3.0",
+    "jiti": "^2.6.1",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.13",
     "typedoc-plugin-markdown": "^4.9.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0",
     "vitepress": "^1.6.4",
-    "gh-pages": "^6.3.0",
     "vitest": "^4.0.18"
   }
 }

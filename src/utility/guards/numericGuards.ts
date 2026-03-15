@@ -1,5 +1,5 @@
-import { ArgumentError } from '../../core/errors/argument/ArgumentError';
-import { ArgumentOutOfRangeError } from '../../core/errors/argument/ArgumentOutOfRangeError';
+import { ArgumentError } from "../../core/errors/argument/ArgumentError";
+import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
 
 /**
  * Static assertion class for numeric range and type checks.

@@ -1,11 +1,11 @@
-import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from '../types/core';
+import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../types/core";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
-import { tyneqQueryNode } from '../types/queryplan';
-import type { IQueryNode } from '../types/queryplan';
+import { tyneqQueryNode } from "../types/queryplan";
+import type { IQueryNode } from "../types/queryplan";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
-import { TyneqCachedEnumerable } from './cache/TyneqCachedEnumerable';
-import { TyneqOrderedEnumerable } from './ordering/TyneqOrderedEnumerable';
+import { TyneqCachedEnumerable } from "./cache/TyneqCachedEnumerable";
+import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 
 /**
  * Standard concrete implementation of a queryable enumerable sequence.

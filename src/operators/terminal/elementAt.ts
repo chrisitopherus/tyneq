@@ -21,7 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal<[index: unknown]>('elementAt', (index) => {
+@terminal<[index: unknown]>("elementAt", (index) => {
     ArgumentUtility.checkNonNegative({ index: index as number });
 })
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {

@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that executes a side-effect action on each element without modifying the sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[action: unknown]>('tap', (action) => {
+@operator<[action: unknown]>("tap", (action) => {
     ArgumentUtility.checkNotOptional({ action });
 })
 export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {

@@ -22,6 +22,7 @@
 ### Verification (never skip)
 - Run `npx tsc --noEmit` — catch type errors before running tests
 - Run `npm test` — confirm no regressions
+- Run `npm run lint` — confirm no style violations (quotes, semis)
 - Would a staff engineer approve this? If not, fix it first
 
 ---
@@ -49,6 +50,8 @@ Missing any of these causes silent failures or type errors. See `tasks/lessons.m
 ```bash
 npx tsc --noEmit       # type-check (run first, it's fast)
 npm test               # full test suite
+npm run lint           # check style (quotes, semis)
+npm run lint:fix       # auto-fix style violations
 npm run build          # tsup CJS + ESM + types
 npm run docs           # typedoc
 ```

@@ -20,7 +20,7 @@ import { Nullable } from "../../types/utility";
  * @category Terminal
  * @internal
  */
-@terminal('max')
+@terminal("max")
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 

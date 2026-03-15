@@ -1,7 +1,7 @@
 import { MemoizeEnumerator } from "../../operators/buffer/memoize";
 import { CacheResult, ICachedEnumerable, IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
-import { tyneqQueryNode } from '../../types/queryplan';
-import type { IQueryNode } from '../../types/queryplan';
+import { tyneqQueryNode } from "../../types/queryplan";
+import type { IQueryNode } from "../../types/queryplan";
 import { Nullable } from "../../types/utility";
 import { TyneqOrderedEnumerable } from "../ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "../TyneqEnumerable";

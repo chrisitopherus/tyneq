@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operatorDecorators";
  * @group Enumerators
  * @internal
  */
-@operator('cast')
+@operator("cast")
 export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     /**
      * @param sourceEnumerator - The upstream enumerator to wrap.

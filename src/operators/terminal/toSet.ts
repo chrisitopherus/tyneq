@@ -16,7 +16,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('toSet')
+@terminal("toSet")
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     /**
      * @param source - The source sequence.

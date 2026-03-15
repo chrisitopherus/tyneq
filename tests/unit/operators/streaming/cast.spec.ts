@@ -19,7 +19,7 @@ describe("cast", () => {
   it("can be used in a chain", () => {
     const result = Tyneq.from([1, 2, 3, 4])
       .cast<number>()
-      .where(x => x % 2 === 0)
+      .where((x) => x % 2 === 0)
       .toArray();
     expect(result).toEqual([2, 4]);
   });

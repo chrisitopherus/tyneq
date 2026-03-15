@@ -16,11 +16,14 @@ Before any implementation:
 ```bash
 npx tsc --noEmit       # type-check first — fast, catches most mistakes
 npm test               # full test suite (vitest)
+npm run lint           # check style (quotes, semis)
+npm run lint:fix       # auto-fix style violations
 npm run build          # tsup CJS + ESM + types
 npm run docs           # typedoc generation
 ```
 
 Always run `npx tsc --noEmit` before `npm test`. Fix type errors first.
+Run `npm run lint:fix` when adding new files to keep quote style consistent.
 
 ---
 

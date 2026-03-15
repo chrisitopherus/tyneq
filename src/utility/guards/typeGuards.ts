@@ -1,8 +1,8 @@
-import { ArgumentError } from '../../core/errors/argument/ArgumentError';
-import { ArgumentTypeError } from '../../core/errors/argument/ArgumentTypeError';
-import type { IEnumerable, IEnumerator } from '../../types/core';
-import type { HasLength } from '../../types/utility';
-import { TypeGuardUtility } from '../typeGuardUtility';
+import { ArgumentError } from "../../core/errors/argument/ArgumentError";
+import { ArgumentTypeError } from "../../core/errors/argument/ArgumentTypeError";
+import type { IEnumerable, IEnumerator } from "../../types/core";
+import type { HasLength } from "../../types/utility";
+import { TypeGuardUtility } from "../typeGuardUtility";
 
 /**
  * Static assertion class for function, iterable, iterator, enumerable, and custom predicate checks.
@@ -17,10 +17,10 @@ export class TypeGuards {
      * Asserts that `value` is a function.
      * @throws {ArgumentTypeError}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+     
     static checkFunction(value: unknown, paramName: string): asserts value is Function {
-        if (typeof value !== 'function') {
-            throw new ArgumentTypeError(paramName, 'function', typeof value);
+        if (typeof value !== "function") {
+            throw new ArgumentTypeError(paramName, "function", typeof value);
         }
     }
 
@@ -30,8 +30,8 @@ export class TypeGuards {
      */
     static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
         if (!TypeGuardUtility.isIterable<T>(value)) {
-            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'iterable', actualType);
+            const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
+            throw new ArgumentTypeError(paramName, "iterable", actualType);
         }
     }
 
@@ -41,8 +41,8 @@ export class TypeGuards {
      */
     static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
         if (!TypeGuardUtility.isIterator<T>(value)) {
-            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'iterator', actualType);
+            const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
+            throw new ArgumentTypeError(paramName, "iterator", actualType);
         }
     }
 
@@ -52,8 +52,8 @@ export class TypeGuards {
      */
     static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
-            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'IEnumerable', actualType);
+            const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
+            throw new ArgumentTypeError(paramName, "IEnumerable", actualType);
         }
     }
 
@@ -63,8 +63,8 @@ export class TypeGuards {
      */
     static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
-            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
-            throw new ArgumentTypeError(paramName, 'IEnumerator', actualType);
+            const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
+            throw new ArgumentTypeError(paramName, "IEnumerator", actualType);
         }
     }
 
@@ -78,8 +78,8 @@ export class TypeGuards {
         paramName: string
     ): asserts value is T {
         if (!(value instanceof constructor)) {
-            const constructorName = constructor.name || 'unknown';
-            const actualType = value === null ? 'null' : value === undefined ? 'undefined' : typeof value;
+            const constructorName = constructor.name || "unknown";
+            const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
             throw new ArgumentTypeError(paramName, constructorName, actualType);
         }
     }
@@ -89,8 +89,8 @@ export class TypeGuards {
      * @throws {ArgumentTypeError}
      */
     static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
-        if (typeof value !== 'object' || value === null || typeof (value as any).length !== 'number') {
-            throw new ArgumentTypeError(paramName, 'object with numeric length property', typeof value);
+        if (typeof value !== "object" || value === null || typeof (value as any).length !== "number") {
+            throw new ArgumentTypeError(paramName, "object with numeric length property", typeof value);
         }
     }
 

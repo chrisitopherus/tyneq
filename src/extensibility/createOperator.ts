@@ -1,9 +1,9 @@
-import type { IEnumerable, IEnumerator, IEnumeratorFactory } from '../types/core';
-import { TyneqEnumerableBase } from '../core/TyneqEnumerableBase';
-import { OperatorRegistry } from './OperatorRegistry';
-import { QueryNode } from '../queryplan/QueryNode';
-import { tyneqQueryNode } from '../types/queryplan';
-import type { IWithCreateEnumerable } from './_internal';
+import type { IEnumerable, IEnumerator, IEnumeratorFactory } from "../types/core";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { OperatorRegistry } from "./OperatorRegistry";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import type { IWithCreateEnumerable } from "./_internal";
 
 // Functional operator registration API
 //
@@ -60,13 +60,13 @@ import type { IWithCreateEnumerable } from './_internal';
  */
 export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    kind?: 'streaming' | 'buffer';
+    kind?: "streaming" | "buffer";
     factory: (source: IEnumerable<TSource>, ...args: TArgs) => IEnumeratorFactory<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
-    const kind = config.kind ?? 'streaming';
+    const kind = config.kind ?? "streaming";
     OperatorRegistry.register({
-        metadata: { name: config.name, kind, source: 'internal' },
+        metadata: { name: config.name, kind, source: "internal" },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const withCreate = this as unknown as IWithCreateEnumerable;
@@ -124,12 +124,12 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
     validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: 'streaming', source: 'internal' },
+        metadata: { name: config.name, kind: "streaming", source: "internal" },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const self = this;
             const withCreate = this as unknown as IWithCreateEnumerable;
-            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], 'streaming');
+            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], "streaming");
             return withCreate.createEnumerable({
                 getEnumerator(): IEnumerator<unknown> {
                     // IterableIterator<T> is structurally compatible with IEnumerator<T>
@@ -184,7 +184,7 @@ export function createTerminalOperator<TSource, TArgs extends unknown[], TResult
     validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: 'terminal', source: 'internal' },
+        metadata: { name: config.name, kind: "terminal", source: "internal" },
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as IEnumerable<TSource>, ...(args as TArgs));

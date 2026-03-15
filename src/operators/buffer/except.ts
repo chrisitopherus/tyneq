@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operatorDecorators';
-import { ArgumentUtility } from '../../utility/argumentUtility';
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Enumerator that yields elements from the source that are not present in an excluded-values sequence.
@@ -15,7 +15,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator<[excludedValues: unknown]>('except', 'buffer', (excludedValues) => {
+@operator<[excludedValues: unknown]>("except", "buffer", (excludedValues) => {
     ArgumentUtility.checkNotOptional({ excludedValues });
 })
 export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {

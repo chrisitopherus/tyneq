@@ -1,4 +1,4 @@
-import { createGeneratorOperator } from '../../extensibility/createOperator';
+import { createGeneratorOperator } from "../../extensibility/createOperator";
 
 /**
  * Places a delimiter element between every pair of consecutive source elements.
@@ -16,7 +16,7 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * @internal
  */
 createGeneratorOperator({
-    name: 'intersperse',
+    name: "intersperse",
     *generator(source: Iterable<unknown>, delimiter: unknown): IterableIterator<unknown> {
         let first = true;
         for (const item of source) {

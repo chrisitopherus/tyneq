@@ -1,7 +1,7 @@
-import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields every Nth element from a sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[count: unknown]>('throttle', (count) => {
+@operator<[count: unknown]>("throttle", (count) => {
     ArgumentUtility.checkSafeInteger({ count: count as number });
     ArgumentUtility.checkPositive({ count: count as number });
 })

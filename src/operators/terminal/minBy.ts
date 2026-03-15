@@ -25,7 +25,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('minBy')
+@terminal("minBy")
 export class MinByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TKey, b: TKey) => number;
     private readonly keySelector: (element: TSource) => TKey;

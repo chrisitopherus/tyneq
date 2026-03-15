@@ -21,7 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('startsWith')
+@terminal("startsWith")
 export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
     private readonly sequence: Iterable<T>;
 

@@ -6,7 +6,7 @@ describe("consume", () => {
     const seen: number[] = [];
 
     Tyneq.from([1, 2, 3])
-      .tap(x => seen.push(x))
+      .tap((x) => seen.push(x))
       .consume();
 
     expect(seen).toEqual([1, 2, 3]);

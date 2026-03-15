@@ -22,7 +22,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Terminal
  * @internal
  */
-@terminal('toMap')
+@terminal("toMap")
 export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<TSource, Map<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 

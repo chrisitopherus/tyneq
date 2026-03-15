@@ -1,8 +1,8 @@
-import { TyneqEnumerableEnumerator } from './TyneqEnumerableEnumerator';
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
-import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
+import { TyneqEnumerableEnumerator } from "./TyneqEnumerableEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
+import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
 
 /**
  * Abstract base class for enumerators that transform elements from an upstream `IEnumerator`.

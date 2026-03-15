@@ -1,4 +1,4 @@
-import { createGeneratorOperator } from '../../extensibility/createOperator';
+import { createGeneratorOperator } from "../../extensibility/createOperator";
 
 /**
  * Yields all source elements, or a single default value if the source is empty.
@@ -13,7 +13,7 @@ import { createGeneratorOperator } from '../../extensibility/createOperator';
  * @internal
  */
 createGeneratorOperator({
-    name: 'defaultIfEmpty',
+    name: "defaultIfEmpty",
     *generator(source: Iterable<unknown>, defaultValue: unknown): IterableIterator<unknown> {
         let hasElements = false;
         for (const item of source) {

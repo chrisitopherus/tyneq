@@ -1,7 +1,7 @@
-import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operatorDecorators';
-import { ArgumentUtility } from '../../utility/argumentUtility';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Enumerator that emits a running accumulation of elements.
@@ -20,7 +20,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator<[seed: unknown, accumulator: unknown]>('scan', (_seed, accumulator) => {
+@operator<[seed: unknown, accumulator: unknown]>("scan", (_seed, accumulator) => {
     ArgumentUtility.checkNotOptional({ accumulator });
 })
 export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {

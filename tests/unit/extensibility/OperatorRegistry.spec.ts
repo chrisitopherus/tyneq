@@ -146,7 +146,7 @@ describe("OperatorRegistry.onRegister", () => {
 
   it("passes the full OperatorEntry to the hook", () => {
     let received: any;
-    hooks.push(OperatorRegistry.onRegister(entry => { received = entry; }));
+    hooks.push(OperatorRegistry.onRegister((entry) => { received = entry; }));
 
     const name = nextName("hookEntry");
     registered.push(name);
@@ -274,27 +274,27 @@ describe("OperatorRegistry introspection", () => {
 
   it("list() includes all registered operator metadata", () => {
     // Real operators registered by the library are present
-    const names = OperatorRegistry.list().map(m => m.name);
+    const names = OperatorRegistry.list().map((m) => m.name);
     expect(names).toContain("where");
     expect(names).toContain("select");
     expect(names).toContain("toArray");
   });
 
   it("listByKind('streaming') returns only streaming operators", () => {
-    const kinds = OperatorRegistry.listByKind("streaming").map(m => m.kind);
-    expect(kinds.every(k => k === "streaming")).toBe(true);
+    const kinds = OperatorRegistry.listByKind("streaming").map((m) => m.kind);
+    expect(kinds.every((k) => k === "streaming")).toBe(true);
     expect(kinds.length).toBeGreaterThan(0);
   });
 
   it("listByKind('terminal') returns only terminal operators", () => {
-    const kinds = OperatorRegistry.listByKind("terminal").map(m => m.kind);
-    expect(kinds.every(k => k === "terminal")).toBe(true);
+    const kinds = OperatorRegistry.listByKind("terminal").map((m) => m.kind);
+    expect(kinds.every((k) => k === "terminal")).toBe(true);
     expect(kinds.length).toBeGreaterThan(0);
   });
 
   it("listByKind('buffer') returns only buffer operators", () => {
-    const kinds = OperatorRegistry.listByKind("buffer").map(m => m.kind);
-    expect(kinds.every(k => k === "buffer")).toBe(true);
+    const kinds = OperatorRegistry.listByKind("buffer").map((m) => m.kind);
+    expect(kinds.every((k) => k === "buffer")).toBe(true);
     expect(kinds.length).toBeGreaterThan(0);
   });
 

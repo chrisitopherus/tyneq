@@ -1,11 +1,11 @@
-import { IEnumerable, MinMaxResult } from '../../types/core';
-import { terminal } from '../../extensibility/operatorDecorators';
-import { TyneqTerminalOperator } from '../../core/operator/TyneqTerminalOperator';
-import { SequenceContainsNoElementsError } from '../../core/errors/SequenceContainsNoElementsError';
+import { IEnumerable, MinMaxResult } from "../../types/core";
+import { terminal } from "../../extensibility/operatorDecorators";
+import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { SequenceContainsNoElementsError } from "../../core/errors/SequenceContainsNoElementsError";
 
 // MinMaxResult is defined in types/core.ts to avoid a circular dependency.
 // Re-export it from there so consumers can import it from either location.
-export type { MinMaxResult } from '../../types/core';
+export type { MinMaxResult } from "../../types/core";
 
 /** Default comparer: uses JS relational operators (works for numbers and strings). */
 function defaultCompare<T>(a: T, b: T): number {
@@ -30,7 +30,7 @@ function defaultCompare<T>(a: T, b: T): number {
  * @category Terminal
  * @internal
  */
-@terminal('minMax')
+@terminal("minMax")
 export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>> {
 
     private readonly comparer: (a: T, b: T) => number;

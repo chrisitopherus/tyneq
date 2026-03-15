@@ -1,7 +1,7 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
 import { Nullable } from "./utility";
-import { tyneqQueryNode } from './queryplan';
-import type { IQueryNode } from './queryplan';
+import { tyneqQueryNode } from "./queryplan";
+import type { IQueryNode } from "./queryplan";
 
 /**
  * Represents an iterator that traverses a sequence of elements.

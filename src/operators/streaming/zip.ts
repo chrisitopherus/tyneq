@@ -2,7 +2,7 @@ import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that combines two sequences pairwise using a selector function.
@@ -17,7 +17,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[other: unknown, selector: unknown]>('zip', (other, selector) => {
+@operator<[other: unknown, selector: unknown]>("zip", (other, selector) => {
     ArgumentUtility.checkNotOptional({ other });
     ArgumentUtility.checkIterable({ other });
     ArgumentUtility.checkNotOptional({ selector });

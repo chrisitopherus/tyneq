@@ -22,7 +22,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('sequenceEqual')
+@terminal("sequenceEqual")
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly other: Iterable<TSource>;
     private readonly equalityComparer: (a: TSource, b: TSource) => boolean;

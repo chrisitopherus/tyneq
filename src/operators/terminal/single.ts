@@ -23,7 +23,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('single')
+@terminal("single")
 export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
 

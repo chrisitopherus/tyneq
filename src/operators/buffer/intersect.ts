@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields elements present in both the source and another sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown]>('intersect', 'buffer', (otherValues) => {
+@operator<[otherValues: unknown]>("intersect", "buffer", (otherValues) => {
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkIterable({ otherValues });
 })

@@ -1,5 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from '../../extensibility/operatorDecorators';
+import { terminal } from "../../extensibility/operatorDecorators";
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
@@ -14,7 +14,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('toArray')
+@terminal("toArray")
 export class ToArrayOperator<TSource> extends TyneqTerminalOperator<TSource, TSource[]> {
     /**
      * @param source - The source sequence.

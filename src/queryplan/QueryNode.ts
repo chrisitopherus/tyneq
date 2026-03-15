@@ -1,4 +1,4 @@
-import type { IQueryNode, IQueryPlanVisitor, OperatorCategory } from '../types/queryplan';
+import type { IQueryNode, IQueryPlanVisitor, OperatorCategory } from "../types/queryplan";
 
 /**
  * Standard immutable implementation of {@link IQueryNode}.

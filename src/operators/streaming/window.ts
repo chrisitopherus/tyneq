@@ -1,6 +1,6 @@
-import { IEnumerable, IEnumerator, IEnumeratorFactory } from '../../types/core';
-import { createOperator } from '../../extensibility/createOperator';
-import { ArgumentUtility } from '../../utility/argumentUtility';
+import { IEnumerable, IEnumerator, IEnumeratorFactory } from "../../types/core";
+import { createOperator } from "../../extensibility/createOperator";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Generator that produces sliding windows of exactly `size` elements.
@@ -45,7 +45,7 @@ function* windowGenerator<T>(source: Iterator<T>, size: number): IterableIterato
  * @internal
  */
 createOperator({
-    name: 'window',
+    name: "window",
     factory(source: IEnumerable<unknown>, size: number): IEnumeratorFactory<unknown> {
         return {
             getEnumerator(): IEnumerator<unknown> {

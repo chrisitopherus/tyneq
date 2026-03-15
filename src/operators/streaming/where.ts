@@ -1,7 +1,7 @@
-import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that filters elements based on a predicate.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[predicate: unknown]>('where', (predicate) => {
+@operator<[predicate: unknown]>("where", (predicate) => {
     ArgumentUtility.checkNotOptional({ predicate });
 })
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {

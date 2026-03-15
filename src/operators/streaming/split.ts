@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that splits a sequence into sub-arrays at delimiter elements.
@@ -16,7 +16,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[splitOn: unknown]>('split', (splitOn) => {
+@operator<[splitOn: unknown]>("split", (splitOn) => {
     ArgumentUtility.checkNotOptional({ splitOn });
 })
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {

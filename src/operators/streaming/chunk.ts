@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that splits a sequence into fixed-size chunks.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[size: unknown]>('chunk', (size) => {
+@operator<[size: unknown]>("chunk", (size) => {
     ArgumentUtility.checkSafeInteger({ size: size as number });
     ArgumentUtility.checkPositive({ size: size as number });
 })

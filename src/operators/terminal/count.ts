@@ -18,7 +18,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('count')
+@terminal("count")
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     /**
      * @param source - The source sequence.

@@ -74,7 +74,7 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
      * @param j - Original index of the second element.
      */
     public override compareKeys(i: number, j: number): number {
-        let result = this.comparer(this.keys[i], this.keys[j]) * this.descending;
+        const result = this.comparer(this.keys[i], this.keys[j]) * this.descending;
         if (result !== 0) {
             return result;
         }

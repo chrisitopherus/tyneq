@@ -1,5 +1,5 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from '../../extensibility/operatorDecorators';
+import { terminal } from "../../extensibility/operatorDecorators";
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
@@ -16,7 +16,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal('toAsync')
+@terminal("toAsync")
 export class ToAsyncOperator<TSource> extends TyneqTerminalOperator<TSource, AsyncIterable<TSource>> {
     /**
      * @param source - The source sequence.

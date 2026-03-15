@@ -1,7 +1,7 @@
-import { IEnumerable, IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { nameof } from '../../utility/nameof';
-import { TyneqBaseEnumerator } from './TyneqBaseEnumerator';
+import { IEnumerable, IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { nameof } from "../../utility/nameof";
+import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
 
 /**
  * Abstract base class for enumerators that transform elements from an `IEnumerable` source.

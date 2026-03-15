@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operatorDecorators';
-import { ArgumentUtility } from '../../utility/argumentUtility';
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operatorDecorators";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Enumerator that yields elements whose keys appear in both the source and another key sequence.
@@ -15,7 +15,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown, keySelector: unknown]>('intersectBy', 'buffer', (otherValues, keySelector) => {
+@operator<[otherValues: unknown, keySelector: unknown]>("intersectBy", "buffer", (otherValues, keySelector) => {
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkNotOptional({ keySelector });
 })

@@ -1,5 +1,5 @@
-import { IEnumerator } from '../../types/core';
-import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
+import { IEnumerator } from "../../types/core";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**
  * Abstract base class providing the core lifecycle and state management for all enumerators.

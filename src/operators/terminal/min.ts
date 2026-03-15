@@ -20,7 +20,7 @@ import { Nullable } from "../../types/utility";
  * @category Terminal
  * @internal
  */
-@terminal('min')
+@terminal("min")
 export class MinOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 

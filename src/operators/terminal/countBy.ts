@@ -18,7 +18,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('countBy')
+@terminal("countBy")
 export class CountByOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: (item: T) => boolean;
 

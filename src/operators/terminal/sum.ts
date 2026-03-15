@@ -20,7 +20,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('sum')
+@terminal("sum")
 export class SumOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 

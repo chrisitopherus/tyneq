@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator } from '../../types/core';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import { operator } from '../../extensibility/operatorDecorators';
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operatorDecorators";
 
 /**
  * Enumerator that yields unique elements from both the source and a second sequence.
@@ -15,7 +15,7 @@ import { operator } from '../../extensibility/operatorDecorators';
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown]>('union', 'buffer', (otherValues) => {
+@operator<[otherValues: unknown]>("union", "buffer", (otherValues) => {
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkIterable({ otherValues });
 })

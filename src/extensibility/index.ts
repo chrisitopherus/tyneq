@@ -35,7 +35,7 @@
  * For library-provided operators, type signatures are declared directly on
  * `ITyneqEnumerable` in `src/types/core.ts`.
  */
-export { operator, terminal } from './operatorDecorators';
-export { createOperator, createGeneratorOperator, createTerminalOperator } from './createOperator';
-export { OperatorRegistry } from './OperatorRegistry';
-export type { OperatorMetadata, OperatorEntry, OperatorEntryInput } from './OperatorRegistry';
+export { operator, terminal } from "./operatorDecorators";
+export { createOperator, createGeneratorOperator, createTerminalOperator } from "./createOperator";
+export { OperatorRegistry } from "./OperatorRegistry";
+export type { OperatorMetadata, OperatorEntry, OperatorEntryInput } from "./OperatorRegistry";

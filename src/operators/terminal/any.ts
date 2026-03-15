@@ -20,7 +20,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal('any')
+@terminal("any")
 export class AnyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     private readonly predicate: (item: T) => boolean;
 

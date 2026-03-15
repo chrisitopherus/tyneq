@@ -1,4 +1,4 @@
-import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from '../types/queryplan';
+import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
 
 /**
  * A {@link IQueryPlanVisitor} that renders a query plan as a human-readable string.
@@ -37,8 +37,8 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
     protected readonly maxInlineArrayItems: number;
 
     public constructor(options: QueryPlanPrinterOptions = {}) {
-        this.indent = options.indent ?? '  ';
-        this.arrow = options.arrow ?? '→';
+        this.indent = options.indent ?? "  ";
+        this.arrow = options.arrow ?? "→";
         this.maxInlineArrayItems = options.maxInlineArrayItems ?? 3;
     }
 
@@ -84,18 +84,18 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
      * @returns A display string for the argument.
      */
     protected formatArg(arg: unknown): string {
-        if (typeof arg === 'function') return '<fn>';
-        if (arg === null) return 'null';
-        if (arg === undefined) return 'undefined';
-        if (typeof arg === 'string') return `"${arg}"`;
+        if (typeof arg === "function") return "<fn>";
+        if (arg === null) return "null";
+        if (arg === undefined) return "undefined";
+        if (typeof arg === "string") return `"${arg}"`;
         if (Array.isArray(arg)) {
-            if (arg.length === 0) return '[]';
+            if (arg.length === 0) return "[]";
             if (arg.length <= this.maxInlineArrayItems) {
-                return `[${arg.map(a => this.formatArg(a)).join(', ')}]`;
+                return `[${arg.map((a) => this.formatArg(a)).join(", ")}]`;
             }
             return `[...${arg.length} items]`;
         }
-        if (typeof arg === 'object') return '{...}';
+        if (typeof arg === "object") return "{...}";
         return String(arg);
     }
 
@@ -111,7 +111,7 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
      * @returns The formatted line string, without a trailing newline.
      */
     protected formatLine(name: string, argStr: string, isRoot: boolean): string {
-        const prefix = isRoot ? '' : `${this.indent}${this.arrow} `;
+        const prefix = isRoot ? "" : `${this.indent}${this.arrow} `;
         return `${prefix}${name}(${argStr})`;
     }
 
@@ -120,10 +120,10 @@ export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
     private buildPlan(node: IQueryNode): string {
         const nodes = this.collectNodes(node);
         const lines = nodes.map((n, index) => {
-            const argStr = n.args.map(a => this.formatArg(a)).join(', ');
+            const argStr = n.args.map((a) => this.formatArg(a)).join(", ");
             return this.formatLine(n.operatorName, argStr, index === 0);
         });
-        return lines.join('\n');
+        return lines.join("\n");
     }
 
     /** Walks the `source` chain iteratively and returns nodes in root-to-leaf order. */
