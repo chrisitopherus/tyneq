@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, createOperator, createGeneratorOperator, createTerminalOperator } from "../../../src";
+import { Tyneq, createOperator, createGeneratorOperator, createTerminalOperator, ArgumentError } from "../../../src";
 
 // Each test needs a unique operator name because registrations permanently mutate
 // TyneqEnumerableBase.prototype for the lifetime of the process.
@@ -48,6 +48,33 @@ describe("createOperator", () => {
     expect(result).toEqual([3, 4]);
   });
 
+  it("validate fires at call site before any source iteration", () => {
+    const name = nextName("opValidate");
+    createOperator<number, number, [number]>({
+      name,
+      factory(source, _multiplier) {
+        return {
+          getEnumerator() {
+            function* gen() { for (const item of source) yield item; }
+            return gen() as any;
+          }
+        };
+      },
+      validate(multiplier) {
+        if (multiplier <= 0) throw new ArgumentError("multiplier must be positive", "multiplier");
+      }
+    });
+
+    let iterated = false;
+    const source = (function* () {
+      iterated = true;
+      yield 1;
+    })();
+
+    expect(() => (Tyneq.from(source) as any)[name](-1)).toThrow(ArgumentError);
+    expect(iterated).toBe(false);
+  });
+
   it("throws an Error when registering a duplicate operator name", () => {
     const name = nextName("opDup");
     createOperator({ name, factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) });
@@ -93,6 +120,26 @@ describe("createGeneratorOperator", () => {
     const seq = (Tyneq.from([1, 2, 3]) as any)[name]();
     expect(seq.toArray()).toEqual([2, 4, 6]);
     expect(seq.toArray()).toEqual([2, 4, 6]);
+  });
+
+  it("validate fires at call site before any source iteration", () => {
+    const name = nextName("genOpValidate");
+    createGeneratorOperator<number, number, [number]>({
+      name,
+      *generator(source, _addend) { yield* source; },
+      validate(addend) {
+        if (typeof addend !== "number") throw new ArgumentError("addend must be a number", "addend");
+      }
+    });
+
+    let iterated = false;
+    const source = (function* () {
+      iterated = true;
+      yield 1;
+    })();
+
+    expect(() => (Tyneq.from(source) as any)[name]("bad" as any)).toThrow(ArgumentError);
+    expect(iterated).toBe(false);
   });
 
   it("throws an Error when registering a duplicate generator operator name", () => {
@@ -143,6 +190,29 @@ describe("createTerminalOperator", () => {
 
     const result = (Tyneq.from([1, 2, 3]) as any)[name](3);
     expect(result).toBe(18);
+  });
+
+  it("validate fires before execute (before source is consumed)", () => {
+    const name = nextName("termOpValidate");
+    createTerminalOperator<number, null, [number]>({
+      name,
+      execute(source, _factor) {
+        for (const _ of source) { /* consume */ }
+        return null;
+      },
+      validate(factor) {
+        if (factor <= 0) throw new ArgumentError("factor must be positive", "factor");
+      }
+    });
+
+    let iterated = false;
+    const source = (function* () {
+      iterated = true;
+      yield 1;
+    })();
+
+    expect(() => (Tyneq.from(source) as any)[name](-1)).toThrow(ArgumentError);
+    expect(iterated).toBe(false);
   });
 
   it("throws an Error when registering a duplicate terminal operator name", () => {

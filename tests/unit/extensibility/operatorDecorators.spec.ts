@@ -5,6 +5,7 @@ import {
   SequenceContainsNoElementsError,
   ArgumentNullError,
   ArgumentError,
+  ArgumentOutOfRangeError,
 } from "../../../src";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,6 +50,28 @@ describe("@operator decorator", () => {
       const seq = Tyneq.from([1, 2]).populate(99);
       expect(seq.toArray()).toEqual([99, 99]);
       expect(seq.toArray()).toEqual([99, 99]);
+    });
+  });
+
+  describe("validate fires at call site, not during iteration", () => {
+    it("chunk throws ArgumentOutOfRangeError immediately when size is invalid, before any iteration", () => {
+      let iterated = false;
+      const source = (function* () {
+        iterated = true;
+        yield 1;
+      })();
+
+      expect(() =>
+        Tyneq.from(source).chunk(-1)
+      ).toThrow(ArgumentOutOfRangeError);
+
+      expect(iterated).toBe(false);
+    });
+
+    it("chunk throws ArgumentOutOfRangeError immediately even with an eager array source", () => {
+      expect(() =>
+        Tyneq.from([1, 2, 3]).chunk(0)
+      ).toThrow(ArgumentOutOfRangeError);
     });
   });
 
@@ -146,6 +169,20 @@ describe("@terminal decorator", () => {
       expect(() =>
         Tyneq.from([1]).average(undefined as any)
       ).toThrow(ArgumentError);
+    });
+
+    it("validate fires before source is iterated: aggregate with null func does not consume the source", () => {
+      let iterated = false;
+      const source = (function* () {
+        iterated = true;
+        yield 1;
+      })();
+
+      expect(() =>
+        Tyneq.from(source).aggregate(0, null as any, (acc) => acc)
+      ).toThrow(ArgumentNullError);
+
+      expect(iterated).toBe(false);
     });
   });
 
