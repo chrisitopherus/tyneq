@@ -10,11 +10,16 @@ import { TyneqEnumerableEnumerator } from "../core/enumerators/TyneqEnumerableEn
  *
  * @remarks
  * Called only when `kind` is not passed explicitly to `@operator`. Walks the prototype
- * chain looking for `TyneqEnumerator.prototype` (→ `'streaming'`) or the legacy
+ * chain looking for `TyneqEnumerator.prototype` (→ `'streaming'`) or the deprecated
  * `TyneqEnumerableEnumerator.prototype` (→ `'buffer'`).
  *
- * Prefer passing `kind` explicitly for buffer operators:
- * `@operator('reverse', 'buffer')`.
+ * **In practice this function always returns `'streaming'` today.** All current operators
+ * extend `TyneqEnumerator` regardless of whether they are streaming or buffer operators.
+ * Buffer kind cannot be inferred from the prototype chain because both kinds share the same
+ * base class — it must be passed explicitly: `@operator('reverse', 'buffer')`.
+ *
+ * The `TyneqEnumerableEnumerator` branch exists for backward compatibility only; that class
+ * is deprecated and no built-in operator extends it.
  *
  * @param target - The enumerator class constructor to inspect.
  *

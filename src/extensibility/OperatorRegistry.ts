@@ -9,32 +9,80 @@ import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Describes the metadata associated with a registered operator.
+ * Structured metadata describing a registered operator.
  *
  * @remarks
- * The index signature `[key: string]: unknown` makes `OperatorMetadata` open for
- * extension — third-party operators can attach additional metadata (version,
- * deprecation notice, documentation URL, etc.) without modifying this interface.
+ * Construct via the static factory methods rather than directly:
+ * - {@link OperatorMetadata.streaming} — O(1)-space deferred operator
+ * - {@link OperatorMetadata.buffer} — O(n)-space deferred operator
+ * - {@link OperatorMetadata.terminal} — immediate, returns a value
+ *
+ * The `extensions` bag lets third-party operators attach arbitrary extra data
+ * (version, deprecation notice, documentation URL, etc.) without modifying
+ * this class:
+ *
+ * ```ts
+ * OperatorRegistry.register({
+ *     metadata: OperatorMetadata.streaming('myOp', {
+ *         version: '1.0',
+ *         docsUrl: 'https://example.com/myOp',
+ *     }),
+ *     impl: (source, ...args) => { ... }
+ * });
+ * ```
  *
  * @group Registry
  */
-export interface OperatorMetadata {
-    /** The method name registered on `TyneqEnumerableBase.prototype`. */
-    readonly name: string;
+export class OperatorMetadata {
     /**
-     * Operator category:
-     * - `'streaming'` — transforms elements one-at-a-time (O(1) space)
-     * - `'buffer'` — materialises part or all of the sequence (O(n) space)
-     * - `'terminal'` — evaluates the sequence and returns a concrete value
+     * @param name       - The method name registered on `TyneqEnumerableBase.prototype`.
+     * @param kind       - Execution category of this operator.
+     * @param source     - Whether the operator was registered internally or by a third party.
+     *   Defaults to `'external'`.
+     * @param extensions - Optional bag of arbitrary extra metadata. Defaults to `{}`.
      */
-    readonly kind: "streaming" | "buffer" | "terminal";
+    public constructor(
+        public readonly name: string,
+        public readonly kind: "streaming" | "buffer" | "terminal",
+        public readonly source: "internal" | "external" = "external",
+        public readonly extensions: Readonly<Record<string, unknown>> = {}
+    ) {}
+
     /**
-     * Whether the operator was registered by the Tyneq library itself (`'internal'`)
-     * or by a third-party consumer (`'external'`).
+     * Creates metadata for a streaming operator registered by external code.
+     *
+     * @param name       - The method name to register.
+     * @param extensions - Optional extra metadata bag.
+     *
+     * @group Registry
      */
-    readonly source: "internal" | "external";
-    /** Open index signature — third-party operators may attach arbitrary metadata. */
-    readonly [key: string]: unknown;
+    public static streaming(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
+        return new OperatorMetadata(name, "streaming", "external", extensions);
+    }
+
+    /**
+     * Creates metadata for a buffer operator registered by external code.
+     *
+     * @param name       - The method name to register.
+     * @param extensions - Optional extra metadata bag.
+     *
+     * @group Registry
+     */
+    public static buffer(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
+        return new OperatorMetadata(name, "buffer", "external", extensions);
+    }
+
+    /**
+     * Creates metadata for a terminal operator registered by external code.
+     *
+     * @param name       - The method name to register.
+     * @param extensions - Optional extra metadata bag.
+     *
+     * @group Registry
+     */
+    public static terminal(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
+        return new OperatorMetadata(name, "terminal", "external", extensions);
+    }
 }
 
 /**
@@ -44,17 +92,6 @@ export interface OperatorMetadata {
  */
 export interface OperatorEntry {
     readonly metadata: OperatorMetadata;
-    readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
-}
-
-/**
- * Input shape accepted by {@link OperatorRegistry.register}. Differs from `OperatorEntry`
- * in that `metadata.source` is optional — it defaults to `'internal'` when omitted.
- *
- * @group Registry
- */
-export interface OperatorEntryInput {
-    readonly metadata: Omit<OperatorMetadata, "source"> & { readonly source?: "internal" | "external" };
     readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
 }
 
@@ -87,6 +124,9 @@ export class OperatorRegistry {
      * Checks for duplicate names, runs guards in insertion order, stores the entry,
      * patches the prototype, then fires post-registration hooks in insertion order.
      *
+     * Pass an `OperatorMetadata` instance constructed via its static factory methods
+     * (`OperatorMetadata.streaming`, `.buffer`, `.terminal`) or directly via `new`.
+     *
      * @param input - The operator entry to register.
      *
      * @throws {Error} If `input.metadata.name` is already registered.
@@ -94,30 +134,26 @@ export class OperatorRegistry {
      *
      * @group Registry
      */
-    public static register(input: OperatorEntryInput): void {
-        const entry: OperatorEntry = {
-            metadata: { source: "external", ...input.metadata } as OperatorMetadata,
-            impl: input.impl,
-        };
-        const { name } = entry.metadata;
+    public static register(input: OperatorEntry): void {
+        const { name } = input.metadata;
 
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
             throw new Error(
-                `[tyneq] Cannot register '${name}' (${entry.metadata.kind}): ` +
+                `[tyneq] Cannot register '${name}' (${input.metadata.kind}): ` +
                 `already registered as '${existing.kind}' from source '${existing.source}'.`
             );
         }
 
         for (const guard of this._registrationGuards) {
-            guard(entry);
+            guard(input);
         }
 
-        this._entries.set(name, entry);
-        (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name] = entry.impl;
+        this._entries.set(name, input);
+        (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
-            hook(entry);
+            hook(input);
         }
     }
 
@@ -251,6 +287,18 @@ export class OperatorRegistry {
      */
     public static listByKind(kind: OperatorMetadata["kind"]): readonly OperatorMetadata[] {
         return this.list().filter((m) => m.kind === kind);
+    }
+
+    /**
+     * Returns a snapshot of operator metadata filtered by source.
+     *
+     * @param source - `'internal'` for built-in Tyneq operators; `'external'` for
+     *   operators registered by third-party code.
+     *
+     * @group Registry
+     */
+    public static listBySource(source: OperatorMetadata["source"]): readonly OperatorMetadata[] {
+        return this.list().filter((m) => m.source === source);
     }
 
     /**

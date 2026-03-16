@@ -1,6 +1,6 @@
 import type { IEnumerator, IEnumeratorFactory } from "../types/core";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry } from "./OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
 import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { IWithCreateEnumerable } from "./registrationShared";
@@ -48,9 +48,11 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
     name: string;
     generator: (source: Iterable<TSource>, ...args: TArgs) => IterableIterator<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
+    /** @internal */
+    source?: "internal" | "external";
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: "streaming", source: "internal" },
+        metadata: new OperatorMetadata(config.name, "streaming", config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const self = this;

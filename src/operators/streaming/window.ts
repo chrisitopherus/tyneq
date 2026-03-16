@@ -46,6 +46,7 @@ function* windowGenerator<T>(source: Iterator<T>, size: number): IterableIterato
  */
 createOperator({
     name: "window",
+    source: "internal",
     factory(source: IEnumerable<unknown>, size: number): IEnumeratorFactory<unknown> {
         return {
             getEnumerator(): IEnumerator<unknown> {

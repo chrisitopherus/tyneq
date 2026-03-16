@@ -12,10 +12,11 @@ Raised when arguments are missing, invalid, or outside the supported range.
 
 | Class | Thrown when |
 |---|---|
-| `ArgumentNullError` | A required function argument is `null` |
-| `ArgumentError` | A required function argument is `undefined` |
+| `ArgumentError` | A required argument is `undefined` (base class for the others below) |
+| `ArgumentNullError` | A required argument is `null` |
 | `ArgumentOutOfRangeError` | A numeric argument is outside the accepted range (e.g., negative index) |
 | `ArgumentTypeError` | An argument has an unexpected type |
+| `ValidationError` | Multiple argument violations detected at once (thrown by `ValidationBuilder`) |
 
 ### Sequence State Errors
 
@@ -32,6 +33,26 @@ Raised when an operation expects elements that are not present.
 |---|---|
 | `KeyNotFoundError` | A map or record lookup fails for a missing key |
 | `NotSupportedError` | An operation is attempted that is not valid under the current state |
+
+## Validating Multiple Arguments
+
+When an operator has several arguments to check, use `ValidationBuilder` to accumulate all failures and surface them in a single throw:
+
+```ts
+import { ValidationBuilder } from "tyneq";
+
+function validate(start: unknown, count: unknown) {
+    new ValidationBuilder()
+        .check(() => { if (typeof start !== "number") throw new TypeError("start must be a number"); })
+        .check(() => { if (typeof count !== "number" || count < 0) throw new RangeError("count must be >= 0"); })
+        .throwIfAny();
+    // throws ValidationError listing all failures if any check failed
+}
+```
+
+`check()` catches and records errors without throwing. `throwIfAny()` surfaces them all at once. This is how built-in operators with multiple arguments report validation failures.
+
+---
 
 ## Safe Usage Patterns
 

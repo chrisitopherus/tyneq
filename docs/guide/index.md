@@ -27,7 +27,7 @@ Task-oriented pages for common scenarios.
 
 | Page | What you will learn |
 |---|---|
-| [Examples](/guide/examples) | Complete, runnable pipeline patterns from simple to production-complexity |
+| [Examples](/guide/examples) | Complete, runnable pipeline patterns — filtering, grouping, joins, set operations, scan, async, and more |
 | [Error Handling](/guide/error-handling) | All error classes, when they are thrown, and safe usage patterns |
 | [vs. Other Libraries](/guide/differences) | Side-by-side comparisons to arrays, Lodash, IxJS, and other LINQ libraries; interop guidance |
 
@@ -35,7 +35,8 @@ Task-oriented pages for common scenarios.
 
 | Page | What you will learn |
 |---|---|
-| [Extensibility & Query Plans](/guide/extensibility) | Register custom operators, use the OperatorRegistry, traverse and analyze query plans with the visitor pattern |
+| [Custom Operators](/guide/extensibility) | Register custom streaming, buffering, and terminal operators with the functional and class-based APIs |
+| [Query Plan Inspection](/guide/query-plan) | Access and print the `IQueryNode` chain; traverse plans with the visitor pattern |
 
 ## Contributing
 
@@ -44,17 +45,20 @@ Task-oriented pages for common scenarios.
 | [Contributor Guide](/guide/contributing) | Repository setup, operator addition workflow, code conventions, testing guidelines |
 | [Docs Maintenance](/guide/documentation-maintenance) | How to keep API docs and guide pages in sync after changes |
 
+---
+
 ## Quick Entry Points
 
 - **New to Tyneq** → [What Is Tyneq](/guide/what-is-tyneq) then [Getting Started](/guide/getting-started)
-- **Need operator behavior details** → [Operators Overview](/guide/operators-overview) and [Querying & Deferred Execution](/guide/querying-and-deferred-execution)
+- **Understand operator behavior and timing** → [Operators Overview](/guide/operators-overview) and [Querying & Deferred Execution](/guide/querying-and-deferred-execution)
 - **Looking for practical patterns** → [Examples](/guide/examples)
 - **Handling runtime errors** → [Error Handling](/guide/error-handling)
 - **Comparing to alternatives / integrating with other libs** → [vs. Other Libraries](/guide/differences)
-- **Adding a custom operator** → [Extensibility & Query Plans](/guide/extensibility)
+- **Adding a custom operator** → [Custom Operators](/guide/extensibility)
+- **Inspecting or analyzing pipelines** → [Query Plan Inspection](/guide/query-plan)
 - **Contributing to the library** → [Contributor Guide](/guide/contributing)
 - **Full API signatures** → [API Reference](/api/reference/)
 
 ## Audience
 
-This guide is written for TypeScript developers who are comfortable with iterables and callbacks. No prior LINQ knowledge is required.
+This guide is written for TypeScript developers comfortable with iterables and callbacks. No prior LINQ knowledge is required.

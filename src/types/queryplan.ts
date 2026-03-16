@@ -41,7 +41,9 @@ export type OperatorCategory = "source" | "streaming" | "buffer" | "terminal";
  * recursing into `node.source` as needed.
  *
  * ```ts
- * const node = seq.queryNode;
+ * import { tyneqQueryNode } from 'tyneq';
+ *
+ * const node = seq[tyneqQueryNode];
  * // node describes the last operator applied to seq
  * // node.source describes the operator before it, and so on
  * ```
@@ -125,18 +127,6 @@ export interface IQueryPlanVisitor<T> {
      */
     visit(node: IQueryNode): T;
 }
-
-/**
- * Output destination for {@link QueryPlanPrinter}.
- *
- * @remarks
- * - `"console"` — writes the result to `console.log` (default).
- * - `"none"`    — no side-effect output; the string is only returned by `visit()`.
- * - Any other string — treated as a file path and overwrites that file with the result.
- *
- * @group QueryPlan
- */
-export type QueryPlanPrinterOutput = "console" | "none" | string;
 
 /**
  * Options for {@link QueryPlanPrinter}.

@@ -43,15 +43,15 @@ export abstract class TyneqEnumerableEnumerator<TInput, TOutput = TInput> extend
         this.sourceEnumerable = sourceEnumerable;
     }
 
-    protected dispose(value?: unknown): void {
+    protected override dispose(value?: unknown): void {
         this.disposeSource();
         this.disposeAdditional(value);
     }
 
-    protected disposeSource(): void {
+    protected override disposeSource(): void {
         if (this.sourceDisposed) return;
         this.sourceDisposed = true;
-
-        // no need for disposal
+        // IEnumerable itself has no disposal contract — only the IEnumerator instances
+        // it creates do, and those are managed by whoever calls getEnumerator().
     }
 }

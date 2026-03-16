@@ -52,9 +52,18 @@ export class NumericGuards {
 
     /**
      * Asserts that `value` is a finite number in the inclusive range `[min, max]`.
-     * @throws {ArgumentOutOfRangeError}
+     *
+     * @remarks
+     * `min` must be ≤ `max`. An inverted range is itself an argument error and throws
+     * immediately rather than silently producing a guard that always rejects.
+     *
+     * @throws {ArgumentError} If `min > max`.
+     * @throws {ArgumentOutOfRangeError} If `value` is not finite or is outside `[min, max]`.
      */
     public static checkInRange(value: number, min: number, max: number, paramName: string): void {
+        if (min > max) {
+            throw new ArgumentError(`'min' (${min}) must be ≤ 'max' (${max}).`, "min");
+        }
         if (!Number.isFinite(value) || value < min || value > max) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be in range [${min}, ${max}].`);
         }

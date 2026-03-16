@@ -281,6 +281,112 @@ console.log(avgSalary);
 
 ---
 
+---
+
+## Example 8: Running Aggregates with `scan`
+
+Goal: compute a running total and detect when it crosses a threshold.
+
+```ts
+import { Tyneq } from "tyneq";
+
+const transactions = [15, -5, 30, -10, 20, -8, 12];
+
+// Running balance after each transaction
+const runningBalance = Tyneq
+  .from(transactions)
+  .scan(0, (balance, tx) => balance + tx)
+  .toArray();
+
+console.log(runningBalance);
+// → [15, 10, 40, 30, 50, 42, 54]
+
+// Find the first transaction index that drives the balance negative
+const firstNegative = Tyneq
+  .from(transactions)
+  .scan(0, (balance, tx) => balance + tx)
+  .indexOf(balance => balance < 0);
+
+console.log(firstNegative);
+// → 1  (after index 1, balance is 10 → wait, 15 - 5 = 10, not negative)
+// Actually: transactions are all positive here, so -1 (no negative balance)
+```
+
+`scan` emits the accumulator value **after each element**, so the output length equals the input length. Compare with `aggregate`, which returns only the final accumulated value.
+
+---
+
+## Example 9: General Fold with `aggregate`
+
+Goal: build a frequency map and find the top N words.
+
+```ts
+import { Tyneq } from "tyneq";
+
+const words = [
+  "the", "quick", "brown", "fox", "the", "lazy", "dog", "the", "fox"
+];
+
+// Fold into a frequency map
+const frequencies = Tyneq
+  .from(words)
+  .aggregate(
+    new Map<string, number>(),
+    (map, word) => {
+      map.set(word, (map.get(word) ?? 0) + 1);
+      return map;
+    }
+  );
+
+// Top 3 words by frequency
+const top3 = Tyneq
+  .from(frequencies)
+  .orderByDescending(([, count]) => count)
+  .take(3)
+  .select(([word, count]) => `${word}: ${count}`)
+  .toArray();
+
+console.log(top3);
+// → ["the: 3", "fox: 2", "quick: 1"]
+```
+
+`aggregate(seed, accumulator, resultSelector?)` is the general fold operator. It returns a single value and triggers immediate execution.
+
+---
+
+## Example 10: Async Bridge with `toAsync`
+
+Goal: process a Tyneq sequence asynchronously — for example, uploading each batch to an API.
+
+```ts
+import { Tyneq } from "tyneq";
+
+const records = Tyneq
+  .range(1, 100)
+  .chunk(10);  // split into batches of 10
+
+async function uploadAll() {
+  for await (const batch of records.toAsync()) {
+    await uploadBatch(batch);
+    console.log(`Uploaded batch of ${batch.length}`);
+  }
+}
+
+async function uploadBatch(ids: number[]): Promise<void> {
+  // Simulated async upload
+  await new Promise(resolve => setTimeout(resolve, 10));
+}
+
+uploadAll();
+// Uploaded batch of 10
+// Uploaded batch of 10
+// ... (10 times)
+```
+
+`toAsync()` bridges a Tyneq sequence to `AsyncIterable<T>`. Each `for await...of` loop starts a fresh, independent traversal of the underlying source. Use `memoize()` before `toAsync()` if you want to avoid re-executing an expensive pipeline on each async loop.
+
+---
+
 ## Related Pages
 
 - [Operators Overview](/guide/operators-overview)

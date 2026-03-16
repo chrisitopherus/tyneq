@@ -23,11 +23,23 @@ export interface IEnumerator<T> extends Iterator<T> {
 
     /**
      * Signals early termination to the iterator.
+     *
+     * @remarks
+     * All concrete Tyneq enumerators implement this method. Calling it disposes upstream
+     * resources and marks the enumerator as completed. Safe to call multiple times.
      */
     return?(value?: unknown): IteratorResult<T>;
 
     /**
      * Injects an exception into the iterator.
+     *
+     * @remarks
+     * Declared optional to satisfy the JavaScript iterator protocol. **No Tyneq enumerator
+     * implements this method.** The Tyneq execution model does not support exception injection
+     * into pipelines — errors from operator logic propagate naturally through `next()`.
+     * If a consumer calls `throw()`, the method will not be present on the enumerator object
+     * and the call will be a no-op (or throw a "not a function" error). Handle errors at the
+     * consumer level with a standard `try/catch` around the iteration loop.
      */
     throw?(e?: unknown): IteratorResult<T>;
 }

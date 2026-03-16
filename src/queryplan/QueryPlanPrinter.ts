@@ -24,9 +24,12 @@ import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from "../
  *     .where(x => x > 1)
  *     .select(x => x * 2);
  *
- * QueryPlanPrinter.print(seq[tyneqQueryNode]!);                          // → console
- * const plan = QueryPlanPrinter.print(seq[tyneqQueryNode]!, { output: 'none' });
- * QueryPlanPrinter.print(seq[tyneqQueryNode]!, { output: './plan.txt' }); // → file
+ * // Render to a string:
+ * const plan = QueryPlanPrinter.print(seq[tyneqQueryNode]!);
+ * console.log(plan);
+ *
+ * // Custom indent and arrow:
+ * const compact = QueryPlanPrinter.print(seq[tyneqQueryNode]!, { indent: '  ', arrow: '->' });
  * ```
  *
  * @group QueryPlan

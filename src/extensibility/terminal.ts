@@ -1,5 +1,5 @@
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry } from "./OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
 
 /**
  * TC39 class decorator that registers a terminal operator on all `TyneqEnumerable`
@@ -57,11 +57,7 @@ export function terminal<TArgs extends unknown[] = never>(
         _context: ClassDecoratorContext
     ): TClass {
         OperatorRegistry.register({
-            metadata: {
-                name,
-                kind: "terminal",
-                source: "internal",
-            },
+            metadata: new OperatorMetadata(name, "terminal", "internal"),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 return new target(this, ...userArgs).process();

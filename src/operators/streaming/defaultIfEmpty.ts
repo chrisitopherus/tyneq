@@ -14,6 +14,7 @@ import { createGeneratorOperator } from "../../extensibility/createGeneratorOper
  */
 createGeneratorOperator({
     name: "defaultIfEmpty",
+    source: "internal",
     *generator(source: Iterable<unknown>, defaultValue: unknown): IterableIterator<unknown> {
         let hasElements = false;
         for (const item of source) {

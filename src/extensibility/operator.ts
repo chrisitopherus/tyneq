@@ -1,5 +1,5 @@
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry } from "./OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
 import { inferOperatorKind } from "./inferKind";
 import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
@@ -91,7 +91,7 @@ export function operator<TArgs extends unknown[] = never>(
         const actualValidate: ((...args: TArgs) => void) | undefined =
             typeof kindOrValidate === "function" ? kindOrValidate : validate;
         OperatorRegistry.register({
-            metadata: { name, kind, source: "internal" },
+            metadata: new OperatorMetadata(name, kind, "internal"),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 actualValidate?.(...(userArgs as TArgs));
                 const base = this;

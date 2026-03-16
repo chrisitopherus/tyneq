@@ -1,6 +1,6 @@
 import type { IEnumerable, IEnumeratorFactory } from "../types/core";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry } from "./OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
 import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { IWithCreateEnumerable } from "./registrationShared";
@@ -52,10 +52,12 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
     kind?: "streaming" | "buffer";
     factory: (source: IEnumerable<TSource>, ...args: TArgs) => IEnumeratorFactory<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
+    /** @internal */
+    source?: "internal" | "external";
 }): void {
     const kind = config.kind ?? "streaming";
     OperatorRegistry.register({
-        metadata: { name: config.name, kind, source: "internal" },
+        metadata: new OperatorMetadata(config.name, kind, config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const withCreate = this as unknown as IWithCreateEnumerable;

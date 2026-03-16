@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 // Import from the main entry point to trigger operator barrel registration as a side-effect.
 import "../../../src";
-import { OperatorRegistry } from "../../../src/extensibility/OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "../../../src/extensibility/OperatorRegistry";
 import { TyneqEnumerableBase } from "../../../src/core/TyneqEnumerableBase";
 
 // Each test that registers an operator must use a unique name because registrations
@@ -31,7 +31,7 @@ describe("OperatorRegistry.register", () => {
     const name = nextName("reg");
     registered.push(name);
 
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(OperatorRegistry.has(name)).toBe(true);
   });
@@ -41,16 +41,16 @@ describe("OperatorRegistry.register", () => {
     registered.push(name);
     const impl = vi.fn(function () { return 42; });
 
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl });
 
     expect(typeof (TyneqEnumerableBase.prototype as any)[name]).toBe("function");
   });
 
-  it("defaults source to 'external' when omitted", () => {
+  it("defaults source to 'external' when not passed to constructor", () => {
     const name = nextName("src");
     registered.push(name);
 
-    OperatorRegistry.register({ metadata: { name, kind: "terminal" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "terminal"), impl: noopImpl });
 
     expect(OperatorRegistry.get(name)?.source).toBe("external");
   });
@@ -59,7 +59,7 @@ describe("OperatorRegistry.register", () => {
     const name = nextName("srcInternal");
     registered.push(name);
 
-    OperatorRegistry.register({ metadata: { name, kind: "streaming", source: "internal" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "internal"), impl: noopImpl });
 
     expect(OperatorRegistry.get(name)?.source).toBe("internal");
   });
@@ -68,10 +68,10 @@ describe("OperatorRegistry.register", () => {
     const name = nextName("dup");
     registered.push(name);
 
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(() =>
-      OperatorRegistry.register({ metadata: { name, kind: "buffer" }, impl: noopImpl })
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "buffer"), impl: noopImpl })
     ).toThrow(Error);
   });
 
@@ -79,10 +79,10 @@ describe("OperatorRegistry.register", () => {
     const name = nextName("dupMsg");
     registered.push(name);
 
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(() =>
-      OperatorRegistry.register({ metadata: { name, kind: "terminal" }, impl: noopImpl })
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "terminal"), impl: noopImpl })
     ).toThrow(name);
   });
 });
@@ -94,7 +94,7 @@ describe("OperatorRegistry.register", () => {
 describe("OperatorRegistry.unregister", () => {
   it("returns true when the operator existed and was removed", () => {
     const name = nextName("unreg");
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(OperatorRegistry.unregister(name)).toBe(true);
   });
@@ -105,7 +105,7 @@ describe("OperatorRegistry.unregister", () => {
 
   it("removes the operator from the registry after unregister", () => {
     const name = nextName("unregRemove");
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     OperatorRegistry.unregister(name);
 
     expect(OperatorRegistry.has(name)).toBe(false);
@@ -113,7 +113,7 @@ describe("OperatorRegistry.unregister", () => {
 
   it("removes the method from TyneqEnumerableBase.prototype after unregister", () => {
     const name = nextName("unregProto");
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     OperatorRegistry.unregister(name);
 
     expect((TyneqEnumerableBase.prototype as any)[name]).toBeUndefined();
@@ -139,7 +139,7 @@ describe("OperatorRegistry.onRegister", () => {
 
     const name = nextName("hook");
     registered.push(name);
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(hook).toHaveBeenCalledTimes(1);
   });
@@ -150,7 +150,7 @@ describe("OperatorRegistry.onRegister", () => {
 
     const name = nextName("hookEntry");
     registered.push(name);
-    OperatorRegistry.register({ metadata: { name, kind: "buffer" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "buffer"), impl: noopImpl });
 
     expect(received?.metadata?.name).toBe(name);
     expect(received?.metadata?.kind).toBe("buffer");
@@ -164,7 +164,7 @@ describe("OperatorRegistry.onRegister", () => {
 
     const name = nextName("hookOrder");
     registered.push(name);
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(order).toEqual([1, 2, 3]);
   });
@@ -176,7 +176,7 @@ describe("OperatorRegistry.onRegister", () => {
 
     const name = nextName("hookUnsub");
     registered.push(name);
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
 
     expect(hook).not.toHaveBeenCalled();
   });
@@ -206,7 +206,7 @@ describe("OperatorRegistry.addGuard", () => {
     guards.push(OperatorRegistry.addGuard(noop));
 
     expect(() =>
-      OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl })
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl })
     ).not.toThrow();
 
     OperatorRegistry.unregister(name);
@@ -217,7 +217,7 @@ describe("OperatorRegistry.addGuard", () => {
     guards.push(OperatorRegistry.addGuard(() => { throw new Error("blocked by guard"); }));
 
     expect(() =>
-      OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl })
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl })
     ).toThrow("blocked by guard");
   });
 
@@ -226,7 +226,7 @@ describe("OperatorRegistry.addGuard", () => {
     guards.push(OperatorRegistry.addGuard(() => { throw new Error("blocked"); }));
 
     try {
-      OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     } catch { /* expected */ }
 
     expect(OperatorRegistry.has(name)).toBe(false);
@@ -239,7 +239,7 @@ describe("OperatorRegistry.addGuard", () => {
     removeGuard();
 
     const name = nextName("guardUnsub");
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     OperatorRegistry.unregister(name);
 
     expect(guard).not.toHaveBeenCalled();
@@ -252,7 +252,7 @@ describe("OperatorRegistry.addGuard", () => {
 
     const name = nextName("guardOrder");
     try {
-      OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     } catch { /* expected */ }
 
     expect(order).toEqual([1]);
@@ -260,7 +260,7 @@ describe("OperatorRegistry.addGuard", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Introspection: has(), get(), list(), listByKind(), count()
+// Introspection: has(), get(), list(), listByKind(), listBySource(), count()
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry introspection", () => {
@@ -298,6 +298,47 @@ describe("OperatorRegistry introspection", () => {
     expect(kinds.length).toBeGreaterThan(0);
   });
 
+  it("listBySource('internal') returns only built-in operators", () => {
+    const sources = OperatorRegistry.listBySource("internal").map((m) => m.source);
+    expect(sources.every((s) => s === "internal")).toBe(true);
+    expect(sources.length).toBeGreaterThan(0);
+  });
+
+  it("listBySource('external') returns only third-party operators", () => {
+    const name = nextName("extOp");
+    OperatorRegistry.register({ metadata: OperatorMetadata.streaming(name), impl: noopImpl });
+
+    const sources = OperatorRegistry.listBySource("external").map((m) => m.source);
+    expect(sources.every((s) => s === "external")).toBe(true);
+    expect(sources.length).toBeGreaterThan(0);
+
+    OperatorRegistry.unregister(name);
+  });
+
+  it("OperatorMetadata.streaming factory defaults source to 'external'", () => {
+    const meta = OperatorMetadata.streaming("test");
+    expect(meta.source).toBe("external");
+    expect(meta.kind).toBe("streaming");
+  });
+
+  it("OperatorMetadata.buffer factory defaults source to 'external'", () => {
+    const meta = OperatorMetadata.buffer("test");
+    expect(meta.source).toBe("external");
+    expect(meta.kind).toBe("buffer");
+  });
+
+  it("OperatorMetadata.terminal factory defaults source to 'external'", () => {
+    const meta = OperatorMetadata.terminal("test");
+    expect(meta.source).toBe("external");
+    expect(meta.kind).toBe("terminal");
+  });
+
+  it("OperatorMetadata preserves extensions bag", () => {
+    const meta = OperatorMetadata.streaming("test", { version: "1.0", deprecated: false });
+    expect(meta.extensions["version"]).toBe("1.0");
+    expect(meta.extensions["deprecated"]).toBe(false);
+  });
+
   it("'reverse' is registered with kind:'buffer'", () => {
     const meta = OperatorRegistry.get("reverse");
     expect(meta?.kind).toBe("buffer");
@@ -310,7 +351,7 @@ describe("OperatorRegistry introspection", () => {
 
   it("count() decreases by 1 after unregister", () => {
     const name = nextName("countUnreg");
-    OperatorRegistry.register({ metadata: { name, kind: "streaming" }, impl: noopImpl });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: noopImpl });
     const before = OperatorRegistry.count();
     OperatorRegistry.unregister(name);
     expect(OperatorRegistry.count()).toBe(before - 1);

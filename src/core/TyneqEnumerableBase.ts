@@ -53,6 +53,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const orderByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderBy", orderByArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
@@ -85,6 +86,7 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
     ): ITyneqOrderedEnumerable<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const orderByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderByDescending", orderByDescArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
@@ -95,6 +97,22 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
         );
     }
 
+    /**
+     * Caches the results of this sequence so repeated enumeration avoids re-executing the pipeline.
+     *
+     * @remarks
+     * Deferred. Source is not enumerated until the returned sequence is iterated for the first time.
+     *
+     * Results are cached incrementally as each element is produced. Subsequent enumerations
+     * replay from the cache without re-executing upstream operators. The cache is shared across
+     * all enumerations of the returned sequence — it is not per-caller.
+     *
+     * Call `refresh()` on the returned {@link ITyneqCachedEnumerable} to clear the cache and
+     * force re-execution of the pipeline on the next enumeration.
+     *
+     * @returns An {@link ITyneqCachedEnumerable} that exposes `refresh()` in addition to the
+     *   standard enumerable operators.
+     */
     public memoize(): ITyneqCachedEnumerable<TSource> {
         const node = new QueryNode("memoize", [], this[tyneqQueryNode], "buffer");
         return this.createCachedEnumerable(this, node);

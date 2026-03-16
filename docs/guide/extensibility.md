@@ -1,85 +1,90 @@
-# Extensibility and Query Plans
+# Custom Operators
 
-This page explains how to extend Tyneq with custom operators, how to use the `OperatorRegistry` for introspection, and how to apply the visitor pattern to query plans for analysis, optimization, and tooling.
+This page explains how to extend Tyneq with custom operators and how to use the `OperatorRegistry` for introspection and lifecycle management.
+
+> **Query plan inspection** is covered separately — see [Query Plan Inspection](/guide/query-plan).
 
 ## What This Page Covers
 
 | Section | What you will learn |
 |---|---|
-| [Custom Operators](#extending-tyneq-with-operators) | The three registration APIs and when to use each |
-| [OperatorRegistry](#the-operatorregistry) | Introspect registered operators, add guards, observe registrations |
-| [Query Plans](#query-plans) | Access and print the `IQueryNode` chain attached to every sequence |
-| [Visitor Pattern](#the-visitor-pattern) | Walk plans to collect, analyze, lint, optimize, or serialize |
-| [Design Notes](#design-notes) | Why the visitor uses a single `visit` method; node immutability |
-| [Interop with Other Libraries](#interop-and-extension-patterns) | Use custom operators with data from IxJS, generators, or any iterable |
+| [Registration APIs](#registration-apis) | The five registration paths and when to use each |
+| [Validation Contract](#validation-contract) | How and when argument validation runs |
+| [OperatorRegistry](#the-operatorregistry) | Introspect operators, add guards, observe registrations |
+| [Custom Metadata](#custom-metadata) | Attaching domain-specific metadata to operators |
+| [Packaging and Interop](#packaging-and-interop) | Sharing operators as modules; wrapping external iterables |
 
-## Extending Tyneq with Operators
+---
 
-Tyneq exposes a public registration API that lets you add operators without modifying the library source. All registration paths live in `tyneq/extensibility`.
+## Registration APIs
 
-### The Three Functional APIs
-
-Choose the API that matches the complexity of your operator:
+Tyneq exposes five registration paths. All route through `OperatorRegistry.register()` and patch the method onto every sequence instance at import time.
 
 | API | Output | Use when |
 |---|---|---|
 | `createGeneratorOperator` | `ITyneqEnumerable<T>` | Streaming operator expressible as a generator function |
-| `createOperator` | `ITyneqEnumerable<T>` | Streaming/buffering operator with a custom enumerator factory |
-| `createTerminalOperator` | A concrete value | Terminal operator — returns a scalar or collection |
+| `createOperator` | `ITyneqEnumerable<T>` | Streaming or buffering operator with a custom enumerator factory |
+| `createTerminalOperator` | A concrete value | Terminal — returns a scalar or collection, not a sequence |
+| `@operator` decorator | `ITyneqEnumerable<T>` | Class-based streaming/buffering (TypeScript 5.0+ required) |
+| `@terminal` decorator | A concrete value | Class-based terminal (TypeScript 5.0+ required) |
 
-All three register the operator as a method on every `TyneqEnumerable` instance immediately on import.
+Registration happens as a **side-effect of importing** the file. The operator is immediately available on all sequences; no further setup is needed.
+
+---
 
 ### Streaming Operator — Generator Style
 
+`createGeneratorOperator` is the quickest path for stateless, streaming transformations.
+
 ```ts
-import { createGeneratorOperator } from 'tyneq/extensibility';
+import { createGeneratorOperator } from "tyneq";
 
 createGeneratorOperator({
-    name: 'repeat',
+    name: "repeat",
     *generator(source: Iterable<unknown>, times: number): IterableIterator<unknown> {
         for (let i = 0; i < times; i++) {
             yield* source;
         }
     },
     validate(times) {
-        if (typeof times !== 'number' || times < 0) {
-            throw new RangeError('repeat: times must be a non-negative integer');
+        if (typeof times !== "number" || times < 0) {
+            throw new RangeError("repeat: times must be a non-negative integer");
         }
-    }
+    },
 });
 
-// Type augmentation so TypeScript knows about the new method
-declare module 'tyneq' {
+// Augment the type so TypeScript knows about the new method
+declare module "tyneq" {
     interface ITyneqEnumerable<TSource> {
         repeat(times: number): ITyneqEnumerable<TSource>;
     }
 }
 ```
 
-Registration happens as a **side-effect of importing** the file. The operator is available on all sequences immediately after import; no further setup is needed.
+---
 
 ### Streaming Operator — Factory Style
 
-Use `createOperator` when you need more control over the enumerator — for example, to maintain state between elements or to access the source as an `IEnumerable` rather than an `Iterable`.
+Use `createOperator` when you need more control over the enumerator — for example, to maintain state between elements or to access the source as `IEnumerable` rather than a plain `Iterable`.
 
 ```ts
-import { createOperator } from 'tyneq/extensibility';
-import type { IEnumerable, IEnumeratorFactory } from 'tyneq';
+import { createOperator } from "tyneq";
+import type { IEnumerable, IEnumeratorFactory } from "tyneq";
 
 createOperator({
-    name: 'stride',
+    name: "stride",
     factory(source: IEnumerable<unknown>, step: number): IEnumeratorFactory<unknown> {
         return {
             getEnumerator() {
                 return strideGenerator(source[Symbol.iterator](), step) as any;
-            }
+            },
         };
     },
     validate(step) {
-        if (typeof step !== 'number' || step < 1) {
-            throw new RangeError('stride: step must be >= 1');
+        if (typeof step !== "number" || step < 1) {
+            throw new RangeError("stride: step must be >= 1");
         }
-    }
+    },
 });
 
 function* strideGenerator<T>(iter: Iterator<T>, step: number): IterableIterator<T> {
@@ -92,29 +97,31 @@ function* strideGenerator<T>(iter: Iterator<T>, step: number): IterableIterator<
     }
 }
 
-declare module 'tyneq' {
+declare module "tyneq" {
     interface ITyneqEnumerable<TSource> {
         stride(step: number): ITyneqEnumerable<TSource>;
     }
 }
 ```
 
+---
+
 ### Terminal Operator
 
 ```ts
-import { createTerminalOperator } from 'tyneq/extensibility';
-import type { IEnumerable } from 'tyneq';
+import { createTerminalOperator } from "tyneq";
+import type { IEnumerable } from "tyneq";
 
 createTerminalOperator({
-    name: 'joinString',
+    name: "joinString",
     execute(source: IEnumerable<unknown>, separator: string): string {
         const parts: string[] = [];
         for (const item of source) parts.push(String(item));
         return parts.join(separator);
-    }
+    },
 });
 
-declare module 'tyneq' {
+declare module "tyneq" {
     interface ITyneqEnumerable<TSource> {
         joinString(separator: string): string;
     }
@@ -122,40 +129,111 @@ declare module 'tyneq' {
 ```
 
 ```ts
-Tyneq.from([1, 2, 3]).joinString(', ');
+Tyneq.from([1, 2, 3]).joinString(", ");
 // → "1, 2, 3"
 ```
 
-### Validation Contract
+---
 
-`validate` (or the decorator's second argument) runs **eagerly at the call site**, before any deferred factory is created. This means argument errors are thrown immediately when the user calls the method — not during iteration.
+### Class-Based Operators
 
-Keep validation runtime-defensive: use `unknown` parameter types in `validate` and narrow explicitly inside the body. TypeScript infers the types from the `factory`/`generator`/`execute` function signature, giving a fully-typed `validate` body with no extra annotations needed.
+Use the `@operator` and `@terminal` decorators for operators with complex internal state. Requires TypeScript 5.0+ and `"experimentalDecorators": false` (TC39 decorators).
+
+```ts
+import { operator } from "tyneq";
+import { TyneqEnumerator } from "tyneq";
+import type { IEnumerator } from "tyneq";
+
+@operator("everyOther")
+class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
+    private skip = false;
+
+    protected handleNext(enumerator: IEnumerator<T>): IteratorResult<T> {
+        while (true) {
+            const result = enumerator.next();
+            if (result.done) return result;
+            this.skip = !this.skip;
+            if (this.skip) return result;
+        }
+    }
+}
+
+declare module "tyneq" {
+    interface ITyneqEnumerable<TSource> {
+        everyOther(): ITyneqEnumerable<TSource>;
+    }
+}
+```
+
+Buffer operators use `@operator("name", "buffer")` with `initialize()` to fill the internal buffer:
+
+```ts
+import { operator } from "tyneq";
+import { TyneqEnumerator } from "tyneq";
+import type { IEnumerator } from "tyneq";
+
+@operator("cap", "buffer")
+class CapEnumerator<T> extends TyneqEnumerator<T, T> {
+    private buffer: T[] = [];
+    private index = 0;
+
+    protected initialize(enumerator: IEnumerator<T>): void {
+        let result = enumerator.next();
+        while (!result.done) {
+            this.buffer.push(result.value);
+            result = enumerator.next();
+        }
+        // e.g. sort in place here
+    }
+
+    protected handleNext(): IteratorResult<T> {
+        if (this.index >= this.buffer.length) return this.done();
+        return this.doneWithYield(this.buffer[this.index++]);
+    }
+}
+```
+
+---
+
+## Validation Contract
+
+`validate` (or the second argument to `@operator`) runs **eagerly at the call site**, before any deferred factory is created. This means argument errors are thrown immediately when the user calls the method — not during iteration.
+
+```ts
+const query = Tyneq.from([1, 2, 3]).stride(-1);
+// ↑ throws RangeError here, before any iteration
+```
+
+Keep validation runtime-defensive where needed. TypeScript infers argument types from the `factory`/`generator`/`execute` signature, so the `validate` body gets fully-typed parameters with no extra annotations.
 
 ---
 
 ## The OperatorRegistry
 
-`OperatorRegistry` is the central registry for all registered operators. Every registration path routes through it.
+`OperatorRegistry` is the central registry for all operators. Use it for introspection, lifecycle hooks, and test isolation.
 
 ### Introspection
 
 ```ts
-import { OperatorRegistry } from 'tyneq/extensibility';
+import { OperatorRegistry } from "tyneq";
 
-// List all registered operators
+// All registered operators
 OperatorRegistry.list();
-// → [{ name: 'where', kind: 'streaming', source: 'internal' }, ...]
+// → OperatorMetadata[]
 
 // Filter by kind
-OperatorRegistry.listByKind('terminal');
+OperatorRegistry.listByKind("terminal");
+
+// Filter by source — distinguish built-in from third-party
+OperatorRegistry.listBySource("internal");   // all built-in operators
+OperatorRegistry.listBySource("external");   // all third-party operators
 
 // Check if an operator exists
-OperatorRegistry.has('myCustomOp');
+OperatorRegistry.has("myCustomOp");
 
 // Get metadata for a specific operator
-const meta = OperatorRegistry.get('select');
-// → { name: 'select', kind: 'streaming', source: 'internal' }
+const meta = OperatorRegistry.get("select");
+// → OperatorMetadata { name: "select", kind: "streaming", source: "internal", extensions: {} }
 
 // Total count
 OperatorRegistry.count();
@@ -163,28 +241,32 @@ OperatorRegistry.count();
 
 ### Registration Guards
 
-A guard runs synchronously before every registration and may throw to block it. Use guards to enforce naming conventions or prevent conflicts in a plugin system.
+A guard runs synchronously before every registration and may throw to block it. Use guards to enforce naming conventions or prevent duplicate registrations in a plugin system.
 
 ```ts
-import { OperatorRegistry } from 'tyneq/extensibility';
+import { OperatorRegistry } from "tyneq";
 
-// Enforce a naming prefix for all third-party operators
-OperatorRegistry.addGuard(entry => {
-    if (entry.metadata.source === 'external' && !entry.metadata.name.startsWith('mylib_')) {
+const removeGuard = OperatorRegistry.addGuard(entry => {
+    if (entry.metadata.source === "external" && !entry.metadata.name.startsWith("mylib_")) {
         throw new Error(`External operators must be prefixed with 'mylib_'`);
     }
 });
+
+// Later — remove the guard
+removeGuard();
 ```
+
+`addGuard` returns an unsubscribe function. Call it to detach the guard.
 
 ### Post-Registration Hooks
 
 Hooks fire after each successful registration. They are observation-only — they cannot block registration.
 
 ```ts
-import { OperatorRegistry } from 'tyneq/extensibility';
+import { OperatorRegistry } from "tyneq";
 
 const unsubscribe = OperatorRegistry.onRegister(entry => {
-    console.log(`Operator registered: ${entry.metadata.name} (${entry.metadata.kind})`);
+    console.log(`Registered: ${entry.metadata.name} (${entry.metadata.kind})`);
 });
 
 // Later — detach the hook
@@ -193,11 +275,11 @@ unsubscribe();
 
 ### Test Isolation
 
-`OperatorRegistry.unregister` removes an operator from the registry and from `TyneqEnumerableBase.prototype`. Use it in `afterEach` to avoid polluting the prototype across tests:
+`OperatorRegistry.unregister` removes an operator from the registry and from the prototype. Use it in `afterEach` to avoid prototype pollution across tests.
 
 ```ts
-import { OperatorRegistry, createGeneratorOperator } from 'tyneq/extensibility';
-import { afterEach, it } from 'vitest';
+import { OperatorRegistry, createGeneratorOperator } from "tyneq";
+import { afterEach, it } from "vitest";
 
 let registeredName: string | null = null;
 
@@ -208,372 +290,119 @@ afterEach(() => {
     }
 });
 
-it('custom operator', () => {
-    registeredName = 'testOp_' + Date.now();
-    createGeneratorOperator({ name: registeredName, *generator(source) { yield* source as any; } });
+it("custom operator", () => {
+    registeredName = `testOp_${Date.now()}`;
+    createGeneratorOperator({
+        name: registeredName,
+        *generator(source) { yield* source as any; },
+    });
     // ...
 });
 ```
 
-### Attaching Custom Metadata
+---
 
-`OperatorMetadata` has an open index signature — you can attach arbitrary properties to any registered operator. Access them via `OperatorRegistry.get`.
+## Custom Metadata
+
+`OperatorMetadata` has an `extensions` bag — a `Readonly<Record<string, unknown>>` that lets third-party authors attach arbitrary metadata to their operators. Built-in operators have an empty `extensions` object.
+
+To attach custom metadata, use `OperatorRegistry.register()` directly with a constructed `OperatorMetadata`:
 
 ```ts
-createOperator({
-    name: 'myOp',
-    factory(source) { /* ... */ },
-    // Extra metadata on the registered entry:
-    kind: 'streaming',
-    mylib_version: '1.0.0',         // attached as metadata.mylib_version
-    mylib_stable: true
-} as any);
+import { OperatorRegistry, OperatorMetadata } from "tyneq";
 
-const meta = OperatorRegistry.get('myOp');
-console.log(meta?.mylib_version); // "1.0.0"
+// Register using OperatorMetadata.streaming() with a custom extensions bag
+OperatorRegistry.register({
+    metadata: OperatorMetadata.streaming("myOp", {
+        mylib_version: "1.0.0",
+        stable: true,
+    }),
+    impl(this: any, ...args: any[]) {
+        // implementation
+    },
+});
+
+// Read back
+const meta = OperatorRegistry.get("myOp");
+console.log(meta?.extensions.mylib_version); // "1.0.0"
+console.log(meta?.extensions.stable);        // true
 ```
 
 ---
 
-## Query Plans
+## Packaging and Interop
 
-Every sequence produced by a Tyneq operator carries an immutable `IQueryNode` that describes the operator and its arguments. Nodes are linked into a singly-linked list from the terminal node back to the root source node.
+### Sharing as a Module
 
-### Accessing the Query Plan
-
-```ts
-import { Tyneq, tyneqQueryNode } from 'tyneq';
-
-const seq = Tyneq
-    .from([1, 2, 3, 4, 5])
-    .where(x => x % 2 === 0)
-    .select(x => x * 10)
-    .take(3);
-
-const node = seq[tyneqQueryNode];   // IQueryNode | null
-console.log(node?.operatorName);    // 'take'
-console.log(node?.source?.operatorName); // 'select'
-```
-
-`null` is returned for sequences created via `.pipe()`, which bypasses the query-plan infrastructure.
-
-### Printing the Plan
-
-`QueryPlanPrinter` converts a node chain to a human-readable string:
+The idiomatic pattern for a reusable operator library is a dedicated file that registers as a side-effect of import:
 
 ```ts
-import { QueryPlanPrinter, tyneqQueryNode } from 'tyneq';
-
-const plan = QueryPlanPrinter.print(seq[tyneqQueryNode]!);
-console.log(plan);
-// from([...5 items])
-//   → where(<fn>)
-//   → select(<fn>)
-//   → take(3)
-```
-
-Output can be redirected to `'none'` (suppress console output) or to a file path:
-
-```ts
-// Just capture the string without printing
-const str = QueryPlanPrinter.print(node, { output: 'none' });
-
-// Write to a file
-QueryPlanPrinter.print(node, { output: './debug/plan.txt' });
-```
-
-Customize argument rendering by subclassing:
-
-```ts
-class VerbosePrinter extends QueryPlanPrinter {
-    protected override formatArg(arg: unknown): string {
-        if (typeof arg === 'function') return `<fn:${arg.name || 'anonymous'}>`;
-        return super.formatArg(arg);
-    }
-
-    // Optional: include operator category in the line
-    protected override formatLine(name: string, argStr: string, isRoot: boolean): string {
-        const base = super.formatLine(name, argStr, isRoot);
-        return base; // add category via node if needed
-    }
-}
-```
-
----
-
-## The Visitor Pattern
-
-`IQueryPlanVisitor<T>` is the interface for walking a query plan. Implement `visit(node)` to dispatch logic based on `node.operatorName`, `node.category`, or `node.args`. The visitor is responsible for recursing into `node.source`.
-
-```ts
-interface IQueryPlanVisitor<T> {
-    visit(node: IQueryNode): T;
-}
-```
-
-### Pattern: Collecting Queries
-
-Count all operators or collect all operator names in a pipeline:
-
-```ts
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
-
-class OperatorCollector implements IQueryPlanVisitor<string[]> {
-    visit(node: IQueryNode): string[] {
-        const upstream = node.source ? this.visit(node.source) : [];
-        return [...upstream, node.operatorName];
-    }
-}
-
-const names = seq[tyneqQueryNode]!.accept(new OperatorCollector());
-// → ['from', 'where', 'select', 'take']
-```
-
-### Pattern: Budget Checker
-
-Warn when a pipeline contains more than one buffering stage:
-
-```ts
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
-
-class BufferBudgetChecker implements IQueryPlanVisitor<string[]> {
-    visit(node: IQueryNode): string[] {
-        const upstream = node.source ? this.visit(node.source) : [];
-        if (node.category === 'buffer') return [...upstream, node.operatorName];
-        return upstream;
-    }
-}
-
-const bufferStages = seq[tyneqQueryNode]!.accept(new BufferBudgetChecker());
-if (bufferStages.length > 1) {
-    console.warn(`Pipeline has ${bufferStages.length} buffering stages: ${bufferStages.join(', ')}`);
-}
-```
-
-### Pattern: Query Optimizer
-
-Return a new `IQueryNode` from the visitor to produce a rewritten, optimized plan. Combine adjacent `where` predicates into a single node to reduce pass count:
-
-```ts
-import { QueryNode } from 'tyneq';
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
-
-class PredicateFuser implements IQueryPlanVisitor<IQueryNode> {
-    visit(node: IQueryNode): IQueryNode {
-        // Recursively optimize the upstream chain first
-        const optimizedSource = node.source ? this.visit(node.source) : null;
-
-        // Fuse adjacent where().where() into a single where()
-        if (
-            node.operatorName === 'where' &&
-            optimizedSource?.operatorName === 'where'
-        ) {
-            const [outer] = node.args as [(x: unknown) => boolean];
-            const [inner] = optimizedSource.args as [(x: unknown) => boolean];
-            // Combined predicate: must pass both tests
-            const fused = (x: unknown) => inner(x) && outer(x);
-            return new QueryNode('where', [fused], optimizedSource.source, 'streaming');
-        }
-
-        // Default: rebuild with the optimized source
-        return new QueryNode(
-            node.operatorName,
-            node.args,
-            optimizedSource,
-            node.category
-        );
-    }
-}
-```
-
-> **Note:** The optimizer rewrites the query **plan** (metadata). It does not re-execute the pipeline or alter existing enumerable objects. To apply an optimized plan to a live pipeline you would need to feed the rewritten plan back into a new operator chain.
-
-### Pattern: Serializer / Deserializer
-
-Serialize a query plan to JSON for logging, profiling, or remote debugging:
-
-```ts
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
-
-interface NodeJson {
-    op: string;
-    category: string;
-    argTypes: string[];
-    source: NodeJson | null;
-}
-
-class JsonSerializer implements IQueryPlanVisitor<NodeJson> {
-    visit(node: IQueryNode): NodeJson {
-        return {
-            op: node.operatorName,
-            category: node.category,
-            argTypes: node.args.map(a => typeof a),
-            source: node.source ? this.visit(node.source) : null,
-        };
-    }
-}
-
-const json = JSON.stringify(
-    seq[tyneqQueryNode]!.accept(new JsonSerializer()),
-    null, 2
-);
-```
-
-### Pattern: Linter
-
-Flag common pipeline anti-patterns — for instance, an `orderBy` placed after a `take`:
-
-```ts
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
-
-class PipelineLinter implements IQueryPlanVisitor<string[]> {
-    visit(node: IQueryNode): string[] {
-        const issues = node.source ? this.visit(node.source) : [];
-
-        if (node.operatorName === 'orderBy' || node.operatorName === 'orderByDescending') {
-            // Check if source is a take/skip — sorting after limiting is usually a bug
-            if (node.source?.operatorName === 'take') {
-                issues.push('orderBy placed after take — did you mean to sort before limiting?');
-            }
-        }
-
-        return issues;
-    }
-}
-
-const warnings = seq[tyneqQueryNode]!.accept(new PipelineLinter());
-warnings.forEach(w => console.warn(w));
-```
-
----
-
-## Design Notes
-
-### Why a Single `visit` Method?
-
-Operators are registered dynamically at runtime. A static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated every time a new operator is added or an external operator is registered. The single-method `IQueryPlanVisitor<T>` delegates operator-specific dispatch to `node.operatorName` inside the visitor body, keeping the interface stable regardless of which operators are registered.
-
-### Node Immutability
-
-`IQueryNode` is fully immutable. Visitors that transform query plans must construct new `QueryNode` instances (as in the optimizer example above) — they cannot mutate existing nodes. This guarantees that multiple visitors operating over the same chain don't interfere with each other.
-
-### Query Plan Coverage
-
-The query plan is built automatically by all registration paths: `@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`, and `createTerminalOperator`. Every operator registered through these paths contributes a node to the chain.
-
-Operators implemented directly on `TyneqEnumerableBase` (such as `orderBy`, `memoize`) create their `QueryNode` manually and thread it into the factory call — so they also appear in the plan.
-
-Sequences created via `.pipe()` opt out of the query-plan infrastructure. Their `[tyneqQueryNode]` value is `null`.
-
----
-
-## Interop and Extension Patterns
-
-Custom operators work with any iterable source — there is nothing Tyneq-specific about the input. This lets you wrap data from external libraries naturally.
-
-### Wrapping an IxJS iterable result
-
-```ts
-import { from as ixFrom } from 'ix/iterable';
-import { filter, map } from 'ix/iterable/operators';
-import { Tyneq } from 'tyneq';
-
-// Produce data with IxJS
-const ixResult = ixFrom([1, 2, 3, 4, 5]).pipe(
-  filter(x => x % 2 === 0),
-  map(x => x * 3)
-);
-
-// Wrap with Tyneq to use relational operators or custom extensions
-const result = Tyneq
-  .from(ixResult)         // ixResult is iterable — Tyneq accepts it
-  .stride(1)              // custom operator registered from extension file
-  .toArray();
-// → [6, 12]
-```
-
-### Packaging a custom operator as a module
-
-A good pattern for sharing custom operators is a dedicated module that registers the operator as a side effect of import:
-
-```ts
-// my-tyneq-extensions/sliding-percentile.ts
-import { createGeneratorOperator } from 'tyneq/extensibility';
-
-export {}; // mark as a module
+// my-extensions/sliding-percentile.ts
+import { createGeneratorOperator } from "tyneq";
 
 createGeneratorOperator({
-    name: 'slidingPercentile',
+    name: "slidingPercentile",
     *generator(source: Iterable<unknown>, windowSize: number, p: number): IterableIterator<unknown> {
         const buf: number[] = [];
         for (const val of source as Iterable<number>) {
             buf.push(val);
             if (buf.length > windowSize) buf.shift();
             const sorted = [...buf].sort((a, b) => a - b);
-            const idx = Math.floor(p * (sorted.length - 1));
-            yield sorted[idx];
+            yield sorted[Math.floor(p * (sorted.length - 1))];
         }
     },
     validate(windowSize, p) {
-        if (typeof windowSize !== 'number' || windowSize < 1) throw new RangeError('windowSize must be >= 1');
-        if (typeof p !== 'number' || p < 0 || p > 1) throw new RangeError('p must be between 0 and 1');
-    }
+        if (typeof windowSize !== "number" || windowSize < 1) throw new RangeError("windowSize must be >= 1");
+        if (typeof p !== "number" || p < 0 || p > 1) throw new RangeError("p must be between 0 and 1");
+    },
 });
 
-declare module 'tyneq' {
+declare module "tyneq" {
     interface ITyneqEnumerable<TSource> {
         slidingPercentile(windowSize: number, p: number): ITyneqEnumerable<TSource>;
     }
 }
 ```
 
-Consumers import the file once (typically in an entry point) and the operator is available everywhere:
+Consumers import the file once — typically in an application entry point:
 
 ```ts
 // app entry point
-import 'my-tyneq-extensions/sliding-percentile';
+import "my-extensions/sliding-percentile";
 
-// anywhere in the codebase
-import { Tyneq } from 'tyneq';
+// anywhere in the codebase — the method is available
+import { Tyneq } from "tyneq";
 
-const p90 = Tyneq
-  .from(readings)
-  .slidingPercentile(10, 0.9)
-  .toArray();
+const p90 = Tyneq.from(readings).slidingPercentile(10, 0.9).toArray();
 ```
 
-### Using the query plan for cross-library pipeline auditing
+### Wrapping External Iterables
 
-If your project uses both Tyneq and another library, you can inspect the query plan to produce a summary of what a Tyneq-side pipeline is doing before handing results off:
+`Tyneq.from` accepts any `Iterable<T>`, so results from other libraries wrap naturally:
 
 ```ts
-import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from 'tyneq';
+import { from as ixFrom } from "ix/iterable";
+import { filter, map } from "ix/iterable/operators";
+import { Tyneq } from "tyneq";
 
-function auditedToArray<T>(seq: ITyneqEnumerable<T>, label: string): T[] {
-    const node = seq[tyneqQueryNode];
-    if (node) {
-        const plan = QueryPlanPrinter.print(node, { output: 'none' });
-        console.debug(`[${label}] query plan:\n${plan}`);
-    }
-    return seq.toArray();
-}
-
-const result = auditedToArray(
-  Tyneq.from(data).where(x => x.active).orderByDescending(x => x.score).take(5),
-  'top-scores'
+const ixResult = ixFrom([1, 2, 3, 4, 5]).pipe(
+    filter(x => x % 2 === 0),
+    map(x => x * 3),
 );
-// [top-scores] query plan:
-// from([...N items])
-//   → where(<fn>)
-//   → orderByDescending(<fn>)
-//   → take(5)
+
+// Hand off to Tyneq for relational operators or custom extensions
+const result = Tyneq
+    .from(ixResult)
+    .orderByDescending(x => x)
+    .toArray();
+// → [12, 6]
 ```
 
 ---
 
 ## Related Pages
 
-- [Contributing](/guide/contributing)
+- [Query Plan Inspection](/guide/query-plan)
 - [Core Concepts](/guide/concepts)
-- [vs. Other Libraries](/guide/differences)
-- [API Reference — QueryPlan](/api/reference/)
+- [Contributor Guide](/guide/contributing)
+- [API Reference](/api/reference/)

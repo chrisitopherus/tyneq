@@ -1,15 +1,16 @@
 import { defineConfig } from "vitepress";
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+const base = isGitHubActions ? "/tyneq/" : "/";
 
 export default defineConfig({
   title: "Tyneq",
   description: "Typed Enumerable Queries for TypeScript",
-  base: isGitHubActions ? "/tyneq/" : "/",
+  base,
   cleanUrls: true,
   lastUpdated: true,
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: isGitHubActions ? "/tyneq/logo.svg" : "/logo.svg" }]
+    ["link", { rel: "icon", type: "image/svg+xml", href: `${base}logo.svg` }]
   ],
   themeConfig: {
     logo: "/logo.svg",
@@ -19,8 +20,8 @@ export default defineConfig({
     },
     nav: [
       { text: "Guide", link: "/guide/" },
-      { text: "API", link: "/api/" },
-      { text: "Contributing", link: "/guide/contributing" }
+      { text: "Reference", link: "/api/" },
+      { text: "GitHub", link: "https://github.com/chrisitopherus/tyneq" }
     ],
     sidebar: {
       "/guide/": [
@@ -51,7 +52,8 @@ export default defineConfig({
         {
           text: "Extending Tyneq",
           items: [
-            { text: "Extensibility & Query Plans", link: "/guide/extensibility" }
+            { text: "Custom Operators", link: "/guide/extensibility" },
+            { text: "Query Plan Inspection", link: "/guide/query-plan" }
           ]
         },
         {
@@ -64,9 +66,9 @@ export default defineConfig({
       ],
       "/api/": [
         {
-          text: "API",
+          text: "Reference",
           items: [
-            { text: "API Overview", link: "/api/" },
+            { text: "Overview", link: "/api/" },
             { text: "Generated Reference", link: "/api/reference/" }
           ]
         }

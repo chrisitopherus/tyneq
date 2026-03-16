@@ -41,4 +41,5 @@ export { createOperator } from "./createOperator";
 export { createGeneratorOperator } from "./createGeneratorOperator";
 export { createTerminalOperator } from "./createTerminalOperator";
 export { OperatorRegistry } from "./OperatorRegistry";
-export type { OperatorMetadata, OperatorEntry, OperatorEntryInput } from "./OperatorRegistry";
+export { OperatorMetadata } from "./OperatorRegistry";
+export type { OperatorEntry } from "./OperatorRegistry";

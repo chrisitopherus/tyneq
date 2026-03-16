@@ -28,9 +28,12 @@ export class ValidationBuilder {
      * Runs `fn` and, if it throws, records the error message.
      *
      * @remarks
-     * The check executes immediately. If `fn` throws an `Error`, its `message` is captured;
-     * if it throws a non-`Error` value, `String(value)` is used. Either way, execution
-     * continues so subsequent checks still run.
+     * **This method does NOT throw.** It intentionally catches any error thrown by `fn`,
+     * records its message, and returns `this` so that subsequent checks still run. Call
+     * {@link throwIfAny} at the end of the chain to surface all accumulated failures at once.
+     *
+     * If `fn` throws an `Error`, its `message` is captured; if it throws a non-`Error` value,
+     * `String(value)` is used.
      *
      * @param fn - A zero-argument function that throws if the check fails.
      * @returns `this` — enables fluent chaining.

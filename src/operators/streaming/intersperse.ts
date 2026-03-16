@@ -17,6 +17,7 @@ import { createGeneratorOperator } from "../../extensibility/createGeneratorOper
  */
 createGeneratorOperator({
     name: "intersperse",
+    source: "internal",
     *generator(source: Iterable<unknown>, delimiter: unknown): IterableIterator<unknown> {
         let first = true;
         for (const item of source) {

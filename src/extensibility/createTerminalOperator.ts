@@ -1,6 +1,6 @@
 import type { IEnumerable } from "../types/core";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry } from "./OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
 
 /**
  * Defines and immediately registers a terminal operator — one that evaluates
@@ -43,9 +43,11 @@ export function createTerminalOperator<TSource, TArgs extends unknown[], TResult
     name: string;
     execute: (source: IEnumerable<TSource>, ...args: TArgs) => TResult;
     validate?: (...args: NoInfer<TArgs>) => void;
+    /** @internal */
+    source?: "internal" | "external";
 }): void {
     OperatorRegistry.register({
-        metadata: { name: config.name, kind: "terminal", source: "internal" },
+        metadata: new OperatorMetadata(config.name, "terminal", config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as IEnumerable<TSource>, ...(args as TArgs));

@@ -10,7 +10,7 @@ Tyneq is written in TypeScript and ships with type definitions. No separate `@ty
 
 ## Requirements
 
-- TypeScript 4.7+ or a JavaScript project (types are optional but recommended)
+- TypeScript 5.x (with `"strictNullChecks": true`)
 - Any iterable data source — arrays, Sets, Maps, generators, custom iterators
 
 ## First Query

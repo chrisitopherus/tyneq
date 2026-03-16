@@ -13,7 +13,7 @@ Common operators:
 - `where` — filter by predicate
 - `select` — project each element
 - `selectMany` — flatten projected sequences
-- `take` / `takeLast` / `takeWhile` — limit from start, end, or condition
+- `take` / `takeWhile` — limit from the start or while a condition holds
 - `skip` / `skipLast` / `skipWhile` — discard from start, end, or condition
 - `append` / `prepend` — add elements at the tail or head
 - `concat` — append another sequence
@@ -26,6 +26,8 @@ Common operators:
 - `intersperse` — insert a delimiter between elements
 - `window` — produce overlapping sliding-window arrays
 - `scan` — running accumulation (prefix scan)
+- `cast` — assert each element satisfies a type (throws on mismatch)
+- `ofType` — filter elements using a type guard
 - `defaultIfEmpty` — fall back to a default if source is empty
 - `pipe` — apply a one-off custom factory
 
@@ -66,6 +68,7 @@ Terminal operators consume the query and return a concrete value or collection.
 Common operators:
 
 - `toArray`, `toSet`, `toMap`, `toRecord` — materialize to a collection
+- `toAsync` — bridge to `AsyncIterable<T>`
 - `count`, `countBy` — element counts
 - `sum`, `average` — numeric aggregations
 - `min`, `max`, `minBy`, `maxBy`, `minMax` — extrema
