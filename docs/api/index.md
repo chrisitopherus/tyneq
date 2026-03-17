@@ -1,22 +1,14 @@
 # API Reference
 
-The API reference is generated from TSDoc comments in the source using TypeDoc.
+Browse the full public API using the sidebar. Use the search bar to find specific symbols quickly.
 
-The reference is a standalone HTML site served at [/api/reference/](/api/reference/).
+## Full reference with internals
 
-Use the **"@internal"** filter checkbox in the TypeDoc sidebar to toggle visibility of internal
-symbols — useful for library contributors and anyone building custom operators.
-
-## Generate locally
+Contributors can generate a richer version locally that includes protected members and internal symbols,
+with toggle checkboxes to show or hide each category:
 
 ```bash
-npm run docs:api
+npm run docs:api:full
 ```
 
-Then open [/api/reference/](/api/reference/) in the dev server.
-
-## Workflow
-
-- Update TSDoc on public APIs when you change behaviour.
-- Run `npm run docs:api` to regenerate.
-- Run `npm run docs:build` to validate the full site builds correctly.
+Then open `api-reference/index.html` in your browser.

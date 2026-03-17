@@ -105,7 +105,8 @@ dist
 **/.vitepress/cache
 
 # generated API docs (TypeDoc)
-docs/public/api/reference
+docs/api/reference/
+api-reference/
 
 # Docusaurus cache and generated files
 .docusaurus

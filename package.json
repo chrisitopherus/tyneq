@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "docs:api": "typedoc --options typedoc.json",
+    "docs:api:full": "typedoc --options typedoc.dev.json",
     "docs:dev": "npm run docs:api && vitepress dev docs",
     "docs:build": "npm run docs:api && vitepress build docs",
     "docs:build:pages": "npm run docs:api && vitepress build docs --base /tyneq/",

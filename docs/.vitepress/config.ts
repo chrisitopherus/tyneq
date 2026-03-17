@@ -1,7 +1,36 @@
 import { defineConfig } from "vitepress";
+import { readFileSync, existsSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
+const __dir = dirname(fileURLToPath(import.meta.url));
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const base = isGitHubActions ? "/tyneq/" : "/";
+
+function buildApiSidebar() {
+  const navFile = resolve(__dir, "../api/reference/navigation.json");
+
+  if (!existsSync(navFile)) {
+    return [{ text: "Overview", link: "/api/reference/" }];
+  }
+
+  const groups = JSON.parse(readFileSync(navFile, "utf8")) as Array<{
+    title: string;
+    children: Array<{ title: string; path: string }>;
+  }>;
+
+  return [
+    { text: "Overview", link: "/api/reference/" },
+    ...groups.map(group => ({
+      text: group.title,
+      collapsed: true,
+      items: group.children.map(entry => ({
+        text: entry.title,
+        link: `/api/reference/${entry.path.replace(/\.md$/, "")}`
+      }))
+    }))
+  ];
+}
 
 export default defineConfig({
   title: "Tyneq",
@@ -66,6 +95,7 @@ export default defineConfig({
           ]
         }
       ],
+      "/api/": buildApiSidebar()
     },
     socialLinks: [
       { icon: "github", link: "https://github.com/chrisitopherus/tyneq" }
