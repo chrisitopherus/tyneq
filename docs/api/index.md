@@ -1,12 +1,11 @@
-# API Documentation
+# API Reference
 
-Tyneq API reference is generated automatically from source code using TypeDoc.
+The API reference is generated from TSDoc comments in the source using TypeDoc.
 
-## How it works
+The reference is a standalone HTML site served at [/api/reference/](/api/reference/).
 
-- Source of truth: exported symbols in `src/index.ts`
-- Metadata source: TSDoc comments in the codebase
-- Generation output: `docs/api/reference`
+Use the **"@internal"** filter checkbox in the TypeDoc sidebar to toggle visibility of internal
+symbols — useful for library contributors and anyone building custom operators.
 
 ## Generate locally
 
@@ -14,10 +13,10 @@ Tyneq API reference is generated automatically from source code using TypeDoc.
 npm run docs:api
 ```
 
-Then open the generated reference pages under [/api/reference/](/api/reference/).
+Then open [/api/reference/](/api/reference/) in the dev server.
 
-## Recommended workflow
+## Workflow
 
-- Update or add TSDoc on public APIs when you change behavior.
-- Run `npm run docs:api` to regenerate the reference.
-- Run `npm run docs:build` to validate all guide + API pages build correctly.
+- Update TSDoc on public APIs when you change behaviour.
+- Run `npm run docs:api` to regenerate.
+- Run `npm run docs:build` to validate the full site builds correctly.

@@ -15,7 +15,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @see {@link TyneqEnumerator} for the base class used by streaming and buffering enumerators.
  *
  * @group Classes
- * @internal
  */
 export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     protected readonly source: IEnumerable<TSource>;

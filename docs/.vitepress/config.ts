@@ -20,7 +20,7 @@ export default defineConfig({
     },
     nav: [
       { text: "Guide", link: "/guide/" },
-      { text: "Reference", link: "/api/" },
+      { text: "Reference", link: "/api/reference/" },
       { text: "GitHub", link: "https://github.com/chrisitopherus/tyneq" }
     ],
     sidebar: {
@@ -66,15 +66,6 @@ export default defineConfig({
           ]
         }
       ],
-      "/api/": [
-        {
-          text: "Reference",
-          items: [
-            { text: "Overview", link: "/api/" },
-            { text: "Generated Reference", link: "/api/reference/" }
-          ]
-        }
-      ]
     },
     socialLinks: [
       { icon: "github", link: "https://github.com/chrisitopherus/tyneq" }

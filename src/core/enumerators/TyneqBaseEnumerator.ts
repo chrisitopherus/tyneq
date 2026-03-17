@@ -71,7 +71,6 @@ import { IEnumerator } from "../../types/core";
  * @typeParam TOutput - The type of elements produced by this enumerator.
  *
  * @group Enumerators
- * @internal
  */
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
     private initialized = false;

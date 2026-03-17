@@ -22,7 +22,6 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism.
  *
  * @group Enumerators
- * @internal
  */
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
     protected readonly sourceEnumerator: IEnumerator<TInput>;
