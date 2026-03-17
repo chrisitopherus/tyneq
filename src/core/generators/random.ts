@@ -27,16 +27,6 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
         this.randomizer = randomizer;
     }
 
-    protected override dispose(value?: unknown): void {
-        this.disposeSource();
-        this.disposeAdditional(value);
-    }
-
-    protected override disposeSource(): void {
-        if (this.sourceDisposed) return;
-        this.sourceDisposed = true;
-    }
-
     protected override handleNext(): IteratorResult<TSource> {
         if (this.yieldedCount >= this.count) {
             return this.done();

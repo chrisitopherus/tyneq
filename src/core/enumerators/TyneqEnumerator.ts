@@ -39,11 +39,6 @@ export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBas
         this.sourceEnumerator = sourceEnumerator;
     }
 
-    protected override dispose(value?: unknown): void {
-        this.disposeSource();
-        this.disposeAdditional(value);
-    }
-
     protected override disposeSource(): void {
         if (this.sourceDisposed) return;
 

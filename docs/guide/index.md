@@ -29,6 +29,7 @@ Task-oriented pages for common scenarios.
 |---|---|
 | [Examples](/guide/examples) | Complete, runnable pipeline patterns — filtering, grouping, joins, set operations, scan, async, and more |
 | [Error Handling](/guide/error-handling) | All error classes, when they are thrown, and safe usage patterns |
+| [Common Pitfalls](/guide/pitfalls) | One-shot sources, mutable closures, buffer operator costs, resource leaks in custom operators, and more |
 | [vs. Other Libraries](/guide/differences) | Side-by-side comparisons to arrays, Lodash, IxJS, and other LINQ libraries; interop guidance |
 
 ## Extending Tyneq
@@ -36,6 +37,7 @@ Task-oriented pages for common scenarios.
 | Page | What you will learn |
 |---|---|
 | [Custom Operators](/guide/extensibility) | Register custom streaming, buffering, and terminal operators with the functional and class-based APIs |
+| [Building Custom Enumerators](/guide/custom-enumerators) | Class-based operator authoring with `TyneqEnumerator` — five patterns from filter to zip, with anti-patterns |
 | [Query Plan Inspection](/guide/query-plan) | Access and print the `IQueryNode` chain; traverse plans with the visitor pattern |
 
 ## Contributing
@@ -53,8 +55,10 @@ Task-oriented pages for common scenarios.
 - **Understand operator behavior and timing** → [Operators Overview](/guide/operators-overview) and [Querying & Deferred Execution](/guide/querying-and-deferred-execution)
 - **Looking for practical patterns** → [Examples](/guide/examples)
 - **Handling runtime errors** → [Error Handling](/guide/error-handling)
+- **Something unexpected is happening** → [Common Pitfalls](/guide/pitfalls)
 - **Comparing to alternatives / integrating with other libs** → [vs. Other Libraries](/guide/differences)
 - **Adding a custom operator** → [Custom Operators](/guide/extensibility)
+- **Building a class-based enumerator** → [Building Custom Enumerators](/guide/custom-enumerators)
 - **Inspecting or analyzing pipelines** → [Query Plan Inspection](/guide/query-plan)
 - **Contributing to the library** → [Contributor Guide](/guide/contributing)
 - **Full API signatures** → [API Reference](/api/reference/)

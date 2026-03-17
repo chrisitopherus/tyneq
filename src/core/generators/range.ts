@@ -34,16 +34,6 @@ export class RangeEnumerator extends TyneqBaseEnumerator<number> {
         this.end = end;
     }
 
-    protected override dispose(value?: unknown): void {
-        this.disposeSource();
-        this.disposeAdditional(value);
-    }
-
-    protected override disposeSource(): void {
-        if (this.sourceDisposed) return;
-        this.sourceDisposed = true;
-    }
-
     protected override handleNext(): IteratorResult<number> {
         if (this.current > this.end) {
             return this.done();

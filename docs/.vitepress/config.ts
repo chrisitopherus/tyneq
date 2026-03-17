@@ -46,6 +46,7 @@ export default defineConfig({
           items: [
             { text: "Examples", link: "/guide/examples" },
             { text: "Error Handling", link: "/guide/error-handling" },
+            { text: "Common Pitfalls", link: "/guide/pitfalls" },
             { text: "vs. Other Libraries", link: "/guide/differences" }
           ]
         },
@@ -53,6 +54,7 @@ export default defineConfig({
           text: "Extending Tyneq",
           items: [
             { text: "Custom Operators", link: "/guide/extensibility" },
+            { text: "Building Custom Enumerators", link: "/guide/custom-enumerators" },
             { text: "Query Plan Inspection", link: "/guide/query-plan" }
           ]
         },

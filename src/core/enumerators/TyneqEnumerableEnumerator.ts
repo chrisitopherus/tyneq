@@ -19,6 +19,11 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  *
  * @see {@link TyneqEnumerator} for working with enumerators directly.
  *
+ * @remarks
+ * `IEnumerable` itself carries no disposal contract — only the `IEnumerator` instances it
+ * creates do, and those are managed by whoever calls `getEnumerator()`. `disposeSource()`
+ * is therefore a no-op for this class and is inherited from {@link TyneqBaseEnumerator}.
+ *
  * @deprecated No built-in operator currently extends this class. All operators (including
  * those with buffer semantics) extend {@link TyneqEnumerator} and declare
  * `@operator('name', 'buffer')` to register with the correct kind. This class is kept for
@@ -43,15 +48,4 @@ export abstract class TyneqEnumerableEnumerator<TInput, TOutput = TInput> extend
         this.sourceEnumerable = sourceEnumerable;
     }
 
-    protected override dispose(value?: unknown): void {
-        this.disposeSource();
-        this.disposeAdditional(value);
-    }
-
-    protected override disposeSource(): void {
-        if (this.sourceDisposed) return;
-        this.sourceDisposed = true;
-        // IEnumerable itself has no disposal contract — only the IEnumerator instances
-        // it creates do, and those are managed by whoever calls getEnumerator().
-    }
 }

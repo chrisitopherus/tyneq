@@ -486,26 +486,24 @@ Similarly, `createGeneratorOperator` registers generator-based operators and `cr
 Use the `@operator` and `@terminal` decorators for operators with complex internal state:
 
 ```ts
-import { operator } from "tyneq";
-import { TyneqEnumerator } from "tyneq/core";
-import type { IEnumerator } from "tyneq";
+import { operator, TyneqEnumerator } from "tyneq";
 
 @operator("everyOther")
 class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
     private skip = false;
 
-    protected handleNext(enumerator: IEnumerator<T>): IteratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         while (true) {
-            const result = enumerator.next();
-            if (result.done) return result;
+            const result = this.sourceEnumerator.next();
+            if (result.done) return this.done();
             this.skip = !this.skip;
-            if (this.skip) return result;
+            if (this.skip) return this.yield(result.value);
         }
     }
 }
 ```
 
-See the [Operator Authoring guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for the full workflow, including validation patterns, multi-argument operators, and TypeScript augmentation.
+See the [Custom Operators guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for the full workflow, including validation patterns, multi-argument operators, and TypeScript augmentation. For a deep dive into the enumerator lifecycle — early termination, buffer patterns, secondary resources — see [Building Custom Enumerators](https://chrisitopherus.github.io/tyneq/guide/custom-enumerators).
 
 ---
 

@@ -139,21 +139,21 @@ Tyneq.from([1, 2, 3]).joinString(", ");
 
 Use the `@operator` and `@terminal` decorators for operators with complex internal state. Requires TypeScript 5.0+ and `"experimentalDecorators": false` (TC39 decorators).
 
+> **Deep dive:** [Building Custom Enumerators](/guide/custom-enumerators) walks through five operator patterns in detail — filter, early termination, type transform, buffer, and secondary resource — with the full lifecycle contract and common mistakes.
+
 ```ts
-import { operator } from "tyneq";
-import { TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import { operator, TyneqEnumerator } from "tyneq";
 
 @operator("everyOther")
 class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
     private skip = false;
 
-    protected handleNext(enumerator: IEnumerator<T>): IteratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         while (true) {
-            const result = enumerator.next();
-            if (result.done) return result;
+            const result = this.sourceEnumerator.next();
+            if (result.done) return this.done();
             this.skip = !this.skip;
-            if (this.skip) return result;
+            if (this.skip) return this.yield(result.value);
         }
     }
 }
@@ -168,27 +168,25 @@ declare module "tyneq" {
 Buffer operators use `@operator("name", "buffer")` with `initialize()` to fill the internal buffer:
 
 ```ts
-import { operator } from "tyneq";
-import { TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import { operator, TyneqEnumerator } from "tyneq";
 
 @operator("cap", "buffer")
 class CapEnumerator<T> extends TyneqEnumerator<T, T> {
     private buffer: T[] = [];
     private index = 0;
 
-    protected initialize(enumerator: IEnumerator<T>): void {
-        let result = enumerator.next();
+    protected override initialize(): void {
+        let result = this.sourceEnumerator.next();
         while (!result.done) {
             this.buffer.push(result.value);
-            result = enumerator.next();
+            result = this.sourceEnumerator.next();
         }
         // e.g. sort in place here
     }
 
-    protected handleNext(): IteratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         if (this.index >= this.buffer.length) return this.done();
-        return this.doneWithYield(this.buffer[this.index++]);
+        return this.yield(this.buffer[this.index++]);
     }
 }
 ```
@@ -402,6 +400,8 @@ const result = Tyneq
 
 ## Related Pages
 
+- [Building Custom Enumerators](/guide/custom-enumerators) — class-based operator patterns and the full enumerator lifecycle
+- [Common Pitfalls](/guide/pitfalls) — lazy evaluation traps and resource leak patterns
 - [Query Plan Inspection](/guide/query-plan)
 - [Core Concepts](/guide/concepts)
 - [Contributor Guide](/guide/contributing)
