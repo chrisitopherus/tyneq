@@ -29,20 +29,20 @@ import type { IWithCreateEnumerable } from "./registrationShared";
  *
  * @example
  * ```ts
- * // window.ts — importing this file registers the operator
+ * // everyNth.ts — importing this file registers the operator
  * import { createOperator } from '../extensibility/createOperator';
  *
  * createOperator({
- *     name: 'window',
- *     factory(source: IEnumerable<unknown>, size: number) {
+ *     name: 'everyNth',
+ *     factory(source: IEnumerable<unknown>, n: number) {
  *         return {
  *             getEnumerator() {
- *                 return windowGenerator(source[Symbol.iterator](), size) as unknown as IEnumerator<unknown>;
+ *                 return everyNthGenerator(source[Symbol.iterator](), n) as unknown as IEnumerator<unknown>;
  *             }
  *         };
  *     },
- *     validate(size) {  // size: number — inferred, no annotation needed
- *         ArgumentUtility.checkPositive({ size });
+ *     validate(n) {  // n: number — inferred, no annotation needed
+ *         ArgumentUtility.checkPositive({ n });
  *     }
  * });
  * ```

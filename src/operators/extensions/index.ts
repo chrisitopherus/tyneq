@@ -36,8 +36,6 @@
  * | `where`           | `@operator` decorator       | `operators/streaming/where.ts`        |
  * | `select`          | `@operator` decorator       | `operators/streaming/select.ts`       |
  * | `scan`            | `@operator` decorator       | `operators/streaming/scan.ts`         |
- * | `window`          | `createOperator()`          | `operators/streaming/window.ts`         |
- * | `intersperse`     | `createGeneratorOperator()` | `operators/streaming/intersperse.ts`    |
  * | `defaultIfEmpty`  | `createGeneratorOperator()` | `operators/streaming/defaultIfEmpty.ts` |
  * | `append`          | `@operator` decorator       | `operators/streaming/append.ts`       |
  * | `chunk`           | `@operator` decorator       | `operators/streaming/chunk.ts`        |
@@ -137,12 +135,6 @@ import "../streaming/select";
 
 // @operator('scan') — operator class
 import "../streaming/scan";
-
-// createOperator('window') — functional API with generator (no enumerator class)
-import "../streaming/window";
-
-// createGeneratorOperator('intersperse') — generator shorthand (no enumerator class)
-import "../streaming/intersperse";
 
 // createGeneratorOperator('defaultIfEmpty') — generator shorthand (no enumerator class)
 import "../streaming/defaultIfEmpty";

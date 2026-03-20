@@ -760,51 +760,6 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): ITyneqEnumerable<TResult>;
 
     /**
-     * Produces overlapping sliding windows of exactly `size` consecutive elements.
-     *
-     * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
-     *
-     * Only complete windows are emitted. Trailing elements that do not fill a full window
-     * are discarded. The sequence must contain at least `size` elements for any output to
-     * be produced.
-     *
-     * @param size - The number of elements per window (must be ≥ 1).
-     * @returns A sequence of arrays, each containing `size` consecutive elements.
-     *
-     * @example
-     * ```ts
-     * Tyneq.from([1, 2, 3, 4, 5])
-     *     .window(3)
-     *     .toArray();
-     * // → [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
-     * ```
-     */
-    window(size: number): ITyneqEnumerable<TSource[]>;
-
-    /**
-     * Places a `delimiter` element between every pair of consecutive elements.
-     *
-     * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
-     *
-     * The delimiter is only inserted between existing elements — it is never prepended or
-     * appended. An empty or single-element sequence passes through unchanged.
-     *
-     * @param delimiter - The value to insert between elements.
-     * @returns A sequence with `delimiter` inserted between each adjacent pair.
-     *
-     * @example
-     * ```ts
-     * Tyneq.from([1, 2, 3])
-     *     .intersperse(0)
-     *     .toArray();
-     * // → [1, 0, 2, 0, 3]
-     * ```
-     */
-    intersperse(delimiter: TSource): ITyneqEnumerable<TSource>;
-
-    /**
      * Returns both the minimum and maximum elements in a single enumeration pass.
      *
      * @remarks

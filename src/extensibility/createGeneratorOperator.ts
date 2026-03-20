@@ -28,18 +28,18 @@ import type { IWithCreateEnumerable } from "./registrationShared";
  *
  * @example
  * ```ts
- * // intersperse.ts
+ * // defaultIfEmpty.ts
  * import { createGeneratorOperator } from '../extensibility/createGeneratorOperator';
  *
  * createGeneratorOperator({
- *     name: 'intersperse',
- *     *generator(source: Iterable<unknown>, delimiter: unknown) {
- *         let first = true;
+ *     name: 'defaultIfEmpty',
+ *     *generator(source: Iterable<unknown>, defaultValue: unknown) {
+ *         let hasElements = false;
  *         for (const item of source) {
- *             if (!first) yield delimiter;
+ *             hasElements = true;
  *             yield item;
- *             first = false;
  *         }
+ *         if (!hasElements) yield defaultValue;
  *     }
  * });
  * ```

@@ -207,7 +207,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public declare chunk: (size: number) => ITyneqEnumerable<TSource[]>;
     public declare concat: (other: Iterable<TSource>) => ITyneqEnumerable<TSource>;
     public declare defaultIfEmpty: (defaultValue: TSource) => ITyneqEnumerable<TSource>;
-    public declare intersperse: (delimiter: TSource) => ITyneqEnumerable<TSource>;
     public declare pairwise: () => ITyneqEnumerable<[TSource, TSource]>;
     public declare populate: <TValue>(value: TValue) => ITyneqEnumerable<TValue>;
     public declare prepend: (item: TSource) => ITyneqEnumerable<TSource>;
@@ -224,7 +223,6 @@ export abstract class TyneqEnumerableBase<TSource> implements ITyneqEnumerable<T
     public declare tapIf: (action: (item: TSource) => void, predicate: () => boolean) => ITyneqEnumerable<TSource>;
     public declare throttle: (count: number) => ITyneqEnumerable<TSource>;
     public declare where: (predicate: (item: TSource) => boolean) => ITyneqEnumerable<TSource>;
-    public declare window: (size: number) => ITyneqEnumerable<TSource[]>;
     public declare zip: <TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult) => ITyneqEnumerable<TResult>;
 
     // ── Buffer operators ──────────────────────────────────────────────────────
