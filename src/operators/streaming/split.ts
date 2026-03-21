@@ -31,7 +31,7 @@ export class SplitEnumerator<TSource> extends TyneqSourceEnumerator<TSource, TSo
         this.splitOn = splitOn;
     }
 
-    protected handleNext(): IteratorResult<TSource[]> {
+    protected override handleNext(): IteratorResult<TSource[]> {
         const currentSplit: TSource[] = [];
 
         while (true) {
