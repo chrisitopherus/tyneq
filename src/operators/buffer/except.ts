@@ -17,6 +17,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  */
 @operator<[excludedValues: unknown]>("except", "buffer", (excludedValues) => {
     ArgumentUtility.checkNotOptional({ excludedValues });
+    ArgumentUtility.checkIterable({ excludedValues });
 })
 export class ExceptEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
