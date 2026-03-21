@@ -20,8 +20,10 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[seed: unknown, accumulator: unknown]>("scan", (_seed, accumulator) => {
+@operator<[seed: unknown, accumulator: unknown]>("scan", (seed, accumulator) => {
+    ArgumentUtility.checkNotOptional({ seed });
     ArgumentUtility.checkNotOptional({ accumulator });
+    ArgumentUtility.checkFunction({ accumulator });
 })
 export class ScanEnumerator<TSource, TResult> extends TyneqSourceEnumerator<TSource, TResult> {
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
