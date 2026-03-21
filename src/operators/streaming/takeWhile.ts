@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -18,7 +18,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[predicate: unknown]>("takeWhile", (predicate) => {
     ArgumentUtility.checkNotOptional({ predicate });
 })
-export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
+export class TakeWhileEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly predicate: (value: T) => boolean;
 
     /**

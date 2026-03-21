@@ -1,4 +1,4 @@
-import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
+import { TyneqEnumeratorCore } from "../enumerators/TyneqEnumeratorCore";
 import { ArgumentOutOfRangeError } from "../errors/argument/ArgumentOutOfRangeError";
 import { nameof } from "../../utility/nameof";
 
@@ -13,7 +13,7 @@ import { nameof } from "../../utility/nameof";
  * @group Enumerators
  * @internal
  */
-export class RangeEnumerator extends TyneqBaseEnumerator<number> {
+export class RangeEnumerator extends TyneqEnumeratorCore<number> {
     private current: number;
     private end: number;
 

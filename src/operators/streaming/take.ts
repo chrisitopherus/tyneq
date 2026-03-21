@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -16,7 +16,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("take")
-export class TakeEnumerator<T> extends TyneqEnumerator<T> {
+export class TakeEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private takenCount = 0;
 

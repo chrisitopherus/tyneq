@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -18,7 +18,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[action: unknown]>("tap", (action) => {
     ArgumentUtility.checkNotOptional({ action });
 })
-export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
+export class TapEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
 
     /**

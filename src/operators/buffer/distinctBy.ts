@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -17,7 +17,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[keySelector: unknown]>("distinctBy", "buffer", (keySelector) => {
     ArgumentUtility.checkNotOptional({ keySelector });
 })
-export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
+export class DistinctByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 

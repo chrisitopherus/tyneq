@@ -1,7 +1,7 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { IEnumerator, IOrderedEnumerable } from "../../types/core";
+import { IOrderedEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
+import { TyneqEnumeratorCore } from "../../core/enumerators/TyneqEnumeratorCore";
 
 /**
  * Enumerator that yields elements in sorted order.
@@ -16,18 +16,17 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
  * @group Enumerators
  * @internal
  */
-export class OrderByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
+export class OrderByEnumerator<TSource, TKey> extends TyneqEnumeratorCore<TSource> {
     private buffer: TSource[] = [];
     private indexMap: number[] = [];
     private currentIndex = 0;
     private readonly orderedEnumerable: IOrderedEnumerable<TSource>;
 
     /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
      * @param orderedEnumerable - The ordered enumerable carrying the sorting configuration.
      */
-    public constructor(sourceEnumerator: IEnumerator<TSource>, orderedEnumerable: IOrderedEnumerable<TSource>) {
-        super(sourceEnumerator);
+    public constructor(orderedEnumerable: IOrderedEnumerable<TSource>) {
+        super();
         this.orderedEnumerable = orderedEnumerable;
     }
 

@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 import { Nullable } from "../../types/utility";
@@ -25,7 +25,7 @@ import { TyneqMap } from "../../utility/map";
     ArgumentUtility.checkNotOptional({ innerKeySelector });
     ArgumentUtility.checkNotOptional({ resultSelector });
 })
-export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
+export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSourceEnumerator<TOuter, TResult> {
     private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;
     private readonly innerKeySelector: (inner: TInner) => TKey;

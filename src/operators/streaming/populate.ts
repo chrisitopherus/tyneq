@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -14,7 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("populate")
-export class PopulateEnumerator<TSource, TValue> extends TyneqEnumerator<TSource, TValue> {
+export class PopulateEnumerator<TSource, TValue> extends TyneqSourceEnumerator<TSource, TValue> {
     private readonly value: TValue;
 
     /**

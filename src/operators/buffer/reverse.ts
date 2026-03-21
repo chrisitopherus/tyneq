@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("reverse", "buffer")
-export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
+export class ReverseEnumerator<T> extends TyneqSourceEnumerator<T> {
     private buffer: T[] = [];
     private index: number = -1;
 

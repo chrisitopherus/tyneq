@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -21,7 +21,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkNotOptional({ action });
     ArgumentUtility.checkNotOptional({ predicate });
 })
-export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
+export class TapIfEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
     private readonly predicate: () => boolean;
 

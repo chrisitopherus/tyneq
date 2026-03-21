@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -18,7 +18,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[count: unknown]>("skip", (count) => {
     ArgumentUtility.checkNonNegative({ count: count as number });
 })
-export class SkipEnumerator<T> extends TyneqEnumerator<T> {
+export class SkipEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private skipped = false;
 

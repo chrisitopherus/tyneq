@@ -44,6 +44,6 @@ export { OperatorRegistry } from "./OperatorRegistry";
 export { OperatorMetadata } from "./OperatorRegistry";
 export type { OperatorEntry } from "./OperatorRegistry";
 // Base classes for class-based custom operators
-export { TyneqEnumerator } from "../core/enumerators/TyneqEnumerator";
-export { TyneqBaseEnumerator } from "../core/enumerators/TyneqBaseEnumerator";
+export { TyneqSourceEnumerator as TyneqEnumerator } from "../core/enumerators/TyneqSourceEnumerator";
+export { TyneqEnumeratorCore as TyneqBaseEnumerator } from "../core/enumerators/TyneqEnumeratorCore";
 export { TyneqTerminalOperator } from "../core/operator/TyneqTerminalOperator";

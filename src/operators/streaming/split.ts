@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -19,7 +19,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[splitOn: unknown]>("split", (splitOn) => {
     ArgumentUtility.checkNotOptional({ splitOn });
 })
-export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
+export class SplitEnumerator<TSource> extends TyneqSourceEnumerator<TSource, TSource[]> {
     private readonly splitOn: (item: TSource) => boolean;
 
     /**

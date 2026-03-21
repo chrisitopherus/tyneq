@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -19,7 +19,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("skipLast")
-export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
+export class SkipLastEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private readonly buffer: T[];
     private writeIndex: number = 0;

@@ -1,4 +1,4 @@
-import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
+import { TyneqEnumeratorCore } from "../enumerators/TyneqEnumeratorCore";
 
 /**
  * Enumerator that generates a fixed-length sequence by calling a randomizer function.
@@ -11,7 +11,7 @@ import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
  * @group Enumerators
  * @internal
  */
-export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
+export class RandomEnumerator<TSource> extends TyneqEnumeratorCore<TSource> {
     private readonly count: number;
     private readonly randomizer: () => TSource;
 

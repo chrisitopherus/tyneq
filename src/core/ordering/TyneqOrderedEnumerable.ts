@@ -73,7 +73,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     }
 
     public override getEnumerator(): IEnumerator<TSource> {
-        return new OrderByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this);
+        return new OrderByEnumerator<TSource, TKey>(this);
     }
 
     /**

@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("pairwise")
-export class PairwiseEnumerator<T> extends TyneqEnumerator<T, [T, T]> {
+export class PairwiseEnumerator<T> extends TyneqSourceEnumerator<T, [T, T]> {
     private hasPrevious = false;
     private previous!: T;
 

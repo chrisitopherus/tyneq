@@ -1,5 +1,5 @@
 import { TyneqCachedEnumerable } from "../../core/cache/TyneqCachedEnumerable";
-import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
+import { TyneqEnumeratorCore } from "../../core/enumerators/TyneqEnumeratorCore";
 
 /**
  * Enumerator that reads from a shared {@link TyneqCachedEnumerable}.
@@ -14,7 +14,7 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
  * @group Enumerators
  * @internal
  */
-export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
+export class MemoizeEnumerator<TSource> extends TyneqEnumeratorCore<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;
 

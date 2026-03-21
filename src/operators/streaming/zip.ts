@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
@@ -22,7 +22,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkIterable({ other });
     ArgumentUtility.checkNotOptional({ selector });
 })
-export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
+export class ZipEnumerator<T, U, V> extends TyneqSourceEnumerator<T, V> {
     private readonly otherEnumerator: IEnumerator<U>;
     private readonly selector: (first: T, second: U) => V;
 

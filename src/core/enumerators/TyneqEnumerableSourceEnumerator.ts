@@ -1,13 +1,13 @@
 import { IEnumerable, IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
-import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
+import { TyneqEnumeratorCore } from "./TyneqEnumeratorCore";
 
 /**
  * Abstract base class for enumerators that transform elements from an `IEnumerable` source.
  *
  * @remarks
- * Extends {@link TyneqBaseEnumerator} to hold an `IEnumerable<TInput>` rather than a raw
+ * Extends {@link TyneqEnumeratorCore} to hold an `IEnumerable<TInput>` rather than a raw
  * enumerator. Use this class when the operator needs to obtain a fresh enumerator on each
  * pass over the source. For operators that consume an enumerator directly, use
  * {@link TyneqEnumerator}.
@@ -22,7 +22,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * @remarks
  * `IEnumerable` itself carries no disposal contract — only the `IEnumerator` instances it
  * creates do, and those are managed by whoever calls `getEnumerator()`. `disposeSource()`
- * is therefore a no-op for this class and is inherited from {@link TyneqBaseEnumerator}.
+ * is therefore a no-op for this class and is inherited from {@link TyneqEnumeratorCore}.
  *
  * @deprecated No built-in operator currently extends this class. All operators (including
  * those with buffer semantics) extend {@link TyneqEnumerator} and declare
@@ -33,7 +33,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * @group Enumerators
  * @internal
  */
-export abstract class TyneqEnumerableEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
+export abstract class TyneqEnumerableSourceEnumerator <TInput, TOutput = TInput> extends TyneqEnumeratorCore<TOutput> {
     protected readonly sourceEnumerable: IEnumerable<TInput>;
 
     /**

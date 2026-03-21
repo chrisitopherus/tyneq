@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -20,7 +20,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkIterable({ otherValues });
     ArgumentUtility.checkNotOptional({ keySelector });
 })
-export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
+export class UnionByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private readonly bufferedKeys = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;

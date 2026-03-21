@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -18,7 +18,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkNotOptional({ other });
     ArgumentUtility.checkIterable({ other });
 })
-export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
+export class ConcatEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly otherEnumerator: IEnumerator<T>;
     private isSourceDone = false;
 

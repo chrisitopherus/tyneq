@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("shuffle", "buffer")
-export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
+export class ShuffleEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;
 

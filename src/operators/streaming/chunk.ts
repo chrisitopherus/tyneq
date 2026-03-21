@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -19,7 +19,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkSafeInteger({ size: size as number });
     ArgumentUtility.checkPositive({ size: size as number });
 })
-export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
+export class ChunkEnumerator<T> extends TyneqSourceEnumerator<T, T[]> {
     private readonly size: number;
     private currentChunk: T[] = [];
 

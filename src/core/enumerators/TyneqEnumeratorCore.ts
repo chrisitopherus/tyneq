@@ -72,7 +72,7 @@ import { IEnumerator } from "../../types/core";
  *
  * @group Enumerators
  */
-export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
+export abstract class TyneqEnumeratorCore<TInput, TOutput = TInput> implements IEnumerator<TOutput> {
     private initialized = false;
     protected sourceDisposed = false;
     protected completed = false;

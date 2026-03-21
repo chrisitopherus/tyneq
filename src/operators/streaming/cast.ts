@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -16,7 +16,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("cast")
-export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
+export class CastEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
     /**
      * @param sourceEnumerator - The upstream enumerator to wrap.
      */

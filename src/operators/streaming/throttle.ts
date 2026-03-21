@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -19,7 +19,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkSafeInteger({ count: count as number });
     ArgumentUtility.checkPositive({ count: count as number });
 })
-export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
+export class ThrottleEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
 

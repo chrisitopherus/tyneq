@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -20,7 +20,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkIterable({ excludedKeys });
     ArgumentUtility.checkNotOptional({ keySelector });
 })
-export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
+export class ExceptByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedKeys: Iterable<TKey>;
     private excludeSet = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;

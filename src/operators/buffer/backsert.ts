@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
@@ -24,7 +24,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkNotOptional({ other });
     ArgumentUtility.checkIterable({ other });
 })
-export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
+export class BacksertEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly other: Iterable<T>;
     private readonly backIndex: number;
     private buffer: T[] = [];

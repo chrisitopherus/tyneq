@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 
@@ -14,7 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @internal
  */
 @operator("prepend")
-export class PrependEnumerator<T> extends TyneqEnumerator<T> {
+export class PrependEnumerator<T> extends TyneqSourceEnumerator<T> {
     private prepended = false;
     private readonly item: T;
 

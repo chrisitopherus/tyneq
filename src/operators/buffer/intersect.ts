@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -19,7 +19,7 @@ import { operator } from "../../extensibility/operator";
     ArgumentUtility.checkNotOptional({ otherValues });
     ArgumentUtility.checkIterable({ otherValues });
 })
-export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
+export class IntersectEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private intersectionValues = new Set<TSource>();
     private bufferedValues = new Set<TSource>();

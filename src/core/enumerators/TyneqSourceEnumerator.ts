@@ -1,16 +1,16 @@
-import { TyneqEnumerableEnumerator } from "./TyneqEnumerableEnumerator";
+import { TyneqEnumerableSourceEnumerator  } from "./TyneqEnumerableSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
-import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
+import { TyneqEnumeratorCore } from "./TyneqEnumeratorCore";
 
 /**
  * Abstract base class for enumerators that transform elements from an upstream `IEnumerator`.
  *
  * @remarks
- * Extends {@link TyneqBaseEnumerator} to wrap a source enumerator directly. Use this class
+ * Extends {@link TyneqEnumeratorCore} to wrap a source enumerator directly. Use this class
  * for streaming operators where a single enumerator is threaded through the entire operator
- * chain. For operators that re-enumerate an `IEnumerable`, use {@link TyneqEnumerableEnumerator}.
+ * chain. For operators that re-enumerate an `IEnumerable`, use {@link TyneqEnumerableSourceEnumerator }.
  *
  * The source enumerator is validated in the constructor and safely disposed via
  * {@link EnumeratorUtility.tryDispose} when iteration ends or is cut short.
@@ -18,12 +18,12 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * @typeParam TInput - The type of elements produced by the source enumerator.
  * @typeParam TOutput - The type of elements yielded by this enumerator.
  *
- * @see {@link TyneqEnumerableEnumerator} for working with enumerables.
+ * @see {@link TyneqEnumerableSourceEnumerator } for working with enumerables.
  * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism.
  *
  * @group Enumerators
  */
-export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
+export abstract class TyneqSourceEnumerator<TInput, TOutput = TInput> extends TyneqEnumeratorCore<TOutput> {
     protected readonly sourceEnumerator: IEnumerator<TInput>;
 
     /**

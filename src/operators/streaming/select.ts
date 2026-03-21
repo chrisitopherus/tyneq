@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
@@ -17,7 +17,7 @@ import { operator } from "../../extensibility/operator";
 @operator<[selector: unknown]>("select", (selector) => {
     ArgumentUtility.checkNotOptional({ selector });
 })
-export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
+export class SelectEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 
     /**

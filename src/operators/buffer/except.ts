@@ -1,4 +1,4 @@
-import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -18,7 +18,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 @operator<[excludedValues: unknown]>("except", "buffer", (excludedValues) => {
     ArgumentUtility.checkNotOptional({ excludedValues });
 })
-export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
+export class ExceptEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
     private excludeSet = new Set<TSource>();
 
