@@ -6,7 +6,7 @@
 - Build the library with `npm run build`.
 - Run the test suite with `npm test` or `npm run test:coverage` when coverage matters.
 - Use `npm run docs:api` for API docs and `npm run docs:build` when changes affect docs.
-- There is no lint script in this repo. Do not assume ESLint or Prettier are part of the required workflow.
+- Run linting with `npm run lint` (or `npm run lint:fix` to apply auto-fixes) using the configured ESLint setup; do not introduce alternative linters without project-level discussion.
 
 ## Architecture
 
