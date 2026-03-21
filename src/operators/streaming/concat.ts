@@ -2,6 +2,7 @@ import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumera
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { operator } from "../../extensibility/operator";
+import { EnumeratorUtility } from "../../utility/enumeratorUtility";
 
 /**
  * Enumerator that concatenates two sequences.
@@ -29,6 +30,10 @@ export class ConcatEnumerator<T> extends TyneqSourceEnumerator<T> {
     public constructor(sourceEnumerator: IEnumerator<T>, other: Iterable<T>) {
         super(sourceEnumerator);
         this.otherEnumerator = other[Symbol.iterator]();
+    }
+
+    protected override disposeAdditional(): void {
+        EnumeratorUtility.tryDispose(this.otherEnumerator);
     }
 
     protected override handleNext(): IteratorResult<T> {
