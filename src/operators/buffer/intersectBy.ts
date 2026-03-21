@@ -17,6 +17,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  */
 @operator<[otherValues: unknown, keySelector: unknown]>("intersectBy", "buffer", (otherValues, keySelector) => {
     ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
     ArgumentUtility.checkNotOptional({ keySelector });
 })
 export class IntersectByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
