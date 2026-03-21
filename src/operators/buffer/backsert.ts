@@ -20,8 +20,21 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[backIndex: unknown, other: unknown]>("backsert", "buffer", (_backIndex, other) => {
-    ArgumentUtility.checkNotOptional({ other });
+@operator<[backIndex: unknown, other: unknown]>("backsert", "buffer", (backIndex, other) => {
+    ArgumentUtility.checkNotOptional({ backIndex, other });
+
+    if (typeof backIndex !== "number" || !Number.isFinite(backIndex)) {
+        throw new TypeError("backIndex must be a finite number.");
+    }
+
+    if (!Number.isSafeInteger(backIndex)) {
+        throw new RangeError("backIndex must be a safe integer.");
+    }
+
+    if (backIndex < 0) {
+        throw new RangeError("backIndex must be a non-negative integer.");
+    }
+
     ArgumentUtility.checkIterable({ other });
 })
 export class BacksertEnumerator<T> extends TyneqSourceEnumerator<T> {
