@@ -1,40 +1,45 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { WhereEnumerator } from "../../enumerators/streaming/where";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for filtering elements based on a predicate.
- * 
+ * Enumerator that filters elements based on a predicate.
+ *
  * @remarks
- * This is a streaming operator that yields only the elements that satisfy a predicate
- * function. Elements that fail the predicate are excluded from the result. Also known
- * as "filter". Delegates enumeration logic to {@link WhereEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link WhereEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.where} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Yields only those elements for which the predicate returns `true`. The predicate is evaluated
+ * for every element in the source sequence.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class WhereOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Predicate function to filter elements. */
-    private readonly predicate: (item: TSource) => boolean;
+@operator<[predicate: unknown]>("where", (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
+export class WhereEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private readonly predicate: (item: T) => boolean;
 
     /**
-     * Creates a new where (filter) operator.
-     * 
-     * @param source - The source sequence.
-     * @param predicate - Function to test each element for inclusion.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param predicate - Determines which elements to yield; only elements returning `true` are included.
      */
-    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
+        super(sourceEnumerator);
         this.predicate = predicate;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new WhereEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
+    protected override handleNext(): IteratorResult<T> {
+        while (true) {
+            const { value, done } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            if (this.predicate(value)) {
+                return this.yield(value);
+            }
+        }
     }
 }

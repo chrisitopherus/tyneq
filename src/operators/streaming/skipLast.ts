@@ -1,40 +1,67 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SkipLastEnumerator } from "../../enumerators/streaming/skipLast";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for skipping a specified number of elements from the end.
- * 
+ * Enumerator that bypasses a specified number of elements from the end of a sequence.
+ *
  * @remarks
- * This is a streaming operator that yields all elements except the last N elements.
- * Uses a rolling buffer to delay yielding elements until it knows which are not in
- * the last N. Delegates enumeration logic to {@link SkipLastEnumerator}.
- * 
- * **Performance**: O(count) space for the rolling buffer. O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements with minimal buffering (only count elements).
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link SkipLastEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.skipLast} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Uses a circular buffer of size `count` to hold a sliding window of the most-recent elements.
+ * Once the buffer is full, each incoming element displaces the oldest, which is then yielded.
+ * When the source is exhausted the buffered elements are discarded, achieving the skip-last effect.
+ *
+ * Negative values of `count` are treated as 0 (pass-through).
+ * If the source has fewer than `count` elements, the output is empty.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SkipLastOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The number of elements to skip from the end. */
+@operator("skipLast")
+export class SkipLastEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
+    private readonly buffer: T[];
+    private writeIndex: number = 0;
+    private filledCount: number = 0;
 
     /**
-     * Creates a new skipLast operator.
-     * 
-     * @param source - The source sequence.
-     * @param count - The number of elements to omit from the end.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param count - Number of elements to omit from the end; negative values treated as 0.
      */
-    public constructor(source: IEnumerable<TSource>, count: number) {
-        super(source);
-        this.count = count;
+    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
+        super(sourceEnumerator);
+        this.count = count < 0 ? 0 : count;
+        this.buffer = new Array<T>(this.count);
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new SkipLastEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
+    protected override handleNext(): IteratorResult<T> {
+        if (this.count === 0) {
+            const current = this.sourceEnumerator.next();
+            if (current.done) {
+                return this.done();
+            } else {
+                return this.yield(current.value);
+            }
+        }
+
+        while (true) {
+            const current = this.sourceEnumerator.next();
+            if (current.done) {
+                return this.done();
+            }
+
+            if (this.filledCount < this.count) {
+                this.buffer[this.writeIndex] = current.value;
+                this.writeIndex = (this.writeIndex + 1) % this.count;
+                this.filledCount++;
+                continue;
+            }
+
+            const oldest = this.buffer[this.writeIndex];
+            this.buffer[this.writeIndex] = current.value;
+            this.writeIndex = (this.writeIndex + 1) % this.count;
+            return this.yield(oldest);
+        }
     }
 }

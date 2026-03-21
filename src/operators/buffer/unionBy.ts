@@ -1,52 +1,62 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { UnionByEnumerator } from "../../enumerators/buffer/unionBy";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for set union operation based on key selector.
- * 
+ * Enumerator that yields elements from both the source and a second sequence whose keys are unique.
+ *
  * @remarks
- * This is a buffering operator that returns elements with distinct keys from both sequences.
- * For duplicate keys, the first occurrence (from source, then other) is kept. Delegates
- * enumeration logic to {@link UnionByEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is source length and m is other values length.
- * O(n + m) space to deduplicate by key using a hash set.
- * 
- * **Operator Category**: Buffering - builds a hash set of all unique keys before yielding.
- * 
- * @typeParam TSource - The type of elements in the sequences.
- * @typeParam TKey - The type of keys used for distinctness comparison.
- * 
- * @see {@link UnionByEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.unionBy} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Enumerates the source first, then the second sequence. Each unique key appears at most once
+ * in the output. The first element encountered for a given key is yielded.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class UnionByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
-    /** The second sequence to union with the source. */
+@operator<[otherValues: unknown, keySelector: unknown]>("unionBy", "buffer", (otherValues, keySelector) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
+export class UnionByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
-    /** Function to extract comparison keys from elements. */
+    private readonly bufferedKeys = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
+    private currentEnumerator: IEnumerator<TSource>;
+    private isSourceDone = false;
 
     /**
-     * Creates a new set union by key operator.
-     * 
-     * @param source - The source sequence.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      * @param otherValues - The second sequence to union with.
-     * @param keySelector - Function to extract keys for distinctness comparison.
-     * 
-     * @throws {@link ArgumentError} when `otherValues` or `keySelector` is undefined.
-     * @throws {@link ArgumentNullError} when `otherValues` or `keySelector` is null.
+     * @param keySelector - Extracts the comparison key from each element.
      */
-    public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
-        super(source);
-
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
+        super(sourceEnumerator);
         this.otherValues = otherValues;
+        this.currentEnumerator = this.sourceEnumerator;
         this.keySelector = keySelector;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new UnionByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this.otherValues, this.keySelector);
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.currentEnumerator.next();
+            if (done) {
+                if (this.isSourceDone) {
+                    return this.done();
+                }
+
+                this.isSourceDone = true;
+                this.currentEnumerator = this.otherValues[Symbol.iterator]();
+                continue;
+            }
+
+            const key = this.keySelector(value);
+            if (!this.bufferedKeys.has(key)) {
+                this.bufferedKeys.add(key);
+                return this.yield(value);
+            }
+        }
     }
 }

@@ -1,56 +1,59 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { IntersectByEnumerator } from "../../enumerators/buffer/intersectBy";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
 
 /**
- * Operator implementation for set intersection based on key selector.
- * 
+ * Enumerator that yields elements whose keys appear in both the source and another key sequence.
+ *
  * @remarks
- * This is a buffering operator that returns elements from the source whose extracted keys
- * appear in the intersected keys sequence. Delegates enumeration logic to
- * {@link IntersectByEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is source length and m is intersected keys length.
- * O(m) space to index the intersected keys in a hash set.
- * 
- * **Operator Category**: Buffering - builds a hash set of intersected keys before yielding.
- * 
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TKey - The type of keys used for intersection.
- * 
- * @see {@link IntersectByEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.intersectBy} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Buffers the other keys into a `Set` on first iteration. Each unique key appears at most once
+ * in the output.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class IntersectByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
-    /** Function to extract keys from source elements. */
+@operator<[otherValues: unknown, keySelector: unknown]>("intersectBy", "buffer", (otherValues, keySelector) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
+export class IntersectByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
+    private readonly otherValues: Iterable<TKey>;
     private readonly keySelector: (item: TSource) => TKey;
-    /** Sequence of keys that must be matched. */
-    private readonly intersectedKeys: Iterable<TKey>;
+    private intersectionKeys = new Set<TKey>();
+    private bufferedKeys = new Set<TKey>();
 
     /**
-     * Creates a new set intersection by key operator.
-     * 
-     * @param source - The source sequence.
-     * @param intersectedKeys - Sequence of keys to intersect with.
-     * @param keySelector - Function to extract keys from source elements.
-     * 
-     * @throws {@link ArgumentError} when `intersectedKeys` or `keySelector` is undefined.
-     * @throws {@link ArgumentNullError} when `intersectedKeys` or `keySelector` is null.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param otherValues - The keys to intersect with; buffered into a `Set` on first iteration.
+     * @param keySelector - Extracts the comparison key from each source element.
      */
-    public constructor(source: IEnumerable<TSource>, intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
-        super(source);
-
-        this.intersectedKeys = intersectedKeys;
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
+        super(sourceEnumerator);
+        this.otherValues = otherValues;
         this.keySelector = keySelector;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new IntersectByEnumerator<TSource, TKey>(
-            this.source[Symbol.iterator](),
-            this.intersectedKeys,
-            this.keySelector
-        );
+    protected override initialize(): void {
+        this.intersectionKeys = new Set<TKey>(this.otherValues);
+    }
+
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            const key = this.keySelector(value);
+
+            if (this.intersectionKeys.has(key) && !this.bufferedKeys.has(key)) {
+                this.bufferedKeys.add(key);
+                return this.yield(value);
+            }
+        }
     }
 }

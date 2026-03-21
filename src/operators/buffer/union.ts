@@ -1,47 +1,57 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { UnionEnumerator } from "../../enumerators/buffer/union";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for set union operation.
- * 
+ * Enumerator that yields unique elements from both the source and a second sequence.
+ *
  * @remarks
- * This is a buffering operator that returns distinct elements from both sequences,
- * removing duplicates. Uses element equality (===) for comparison. Delegates enumeration
- * logic to {@link UnionEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is source length and m is other values length.
- * O(n + m) space to deduplicate using a hash set.
- * 
- * **Operator Category**: Buffering - builds a hash set of all unique elements before yielding.
- * 
- * @typeParam TSource - The type of elements in the sequences.
- * 
- * @see {@link UnionEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.union} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Enumerates the source first, then the second sequence. Each value appears at most once in
+ * the output. Uniqueness is tracked in a Set accumulated across both sequences.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class UnionOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The second sequence to union with the source. */
+@operator<[otherValues: unknown]>("union", "buffer", (otherValues) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+})
+export class UnionEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
+    private bufferedValues = new Set<TSource>();
+    private currentEnumerator: IEnumerator<TSource>;
+    private isSourceDone = false;
 
     /**
-     * Creates a new set union operator.
-     * 
-     * @param source - The source sequence.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      * @param otherValues - The second sequence to union with.
-     * 
-     * @throws {@link ArgumentError} when `otherValues` is undefined.
-     * @throws {@link ArgumentNullError} when `otherValues` is null.
      */
-    public constructor(source: IEnumerable<TSource>, otherValues: Iterable<TSource>) {
-        super(source);
-
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
+        super(sourceEnumerator);
         this.otherValues = otherValues;
+        this.currentEnumerator = this.sourceEnumerator;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new UnionEnumerator<TSource>(this.source[Symbol.iterator](), this.otherValues);
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.currentEnumerator.next();
+            if (done) {
+                if (this.isSourceDone) {
+                    return this.done();
+                }
+
+                this.isSourceDone = true;
+                this.currentEnumerator = this.otherValues[Symbol.iterator]();
+                continue;
+            }
+
+            if (!this.bufferedValues.has(value)) {
+                this.bufferedValues.add(value);
+                return this.yield(value);
+            }
+        }
     }
 }

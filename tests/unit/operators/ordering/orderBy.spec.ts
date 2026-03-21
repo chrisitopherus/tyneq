@@ -10,9 +10,9 @@ describe("orderBy", () => {
     ];
 
     const result = Tyneq.from(source)
-      .orderBy(x => x.score)
-      .thenBy(x => x.team)
-      .select(x => `${x.score}-${x.team}-${x.name}`)
+      .orderBy((x) => x.score)
+      .thenBy((x) => x.team)
+      .select((x) => `${x.score}-${x.team}-${x.name}`)
       .toArray();
 
     expect(result).toEqual(["1-a-c", "2-a-b", "2-b-z"]);

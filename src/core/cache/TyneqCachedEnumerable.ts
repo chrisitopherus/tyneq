@@ -1,19 +1,41 @@
-import { MemoizeEnumerator } from "../../enumerators/buffer/memoize";
+import { MemoizeEnumerator } from "../../operators/buffer/memoize";
 import { CacheResult, ICachedEnumerable, IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../../types/core";
+import { tyneqQueryNode } from "../../types/queryplan";
+import type { IQueryNode } from "../../types/queryplan";
 import { Nullable } from "../../types/utility";
 import { TyneqOrderedEnumerable } from "../ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 
+/**
+ * Concrete implementation of a memoizing enumerable that caches source elements on first access.
+ *
+ * @remarks
+ * Returned by `memoize()`. Elements are fetched from the source lazily and stored in an
+ * internal array. Any subsequent enumeration replays cached elements without re-evaluating
+ * the source for the portion already fetched.
+ *
+ * A single source enumerator is shared across all concurrent enumerations of this instance.
+ * Call `refresh()` to discard the cache and restart evaluation from the source.
+ *
+ * @typeParam TSource - Element type of the sequence.
+ *
+ * @see {@link ITyneqCachedEnumerable} for the public interface.
+ * @see {@link ITyneqEnumerable.memoize} for the factory method.
+ *
+ * @group Classes
+ * @internal
+ */
 export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource> implements ITyneqCachedEnumerable<TSource>, ICachedEnumerable<TSource> {
     private source: ITyneqEnumerable<TSource>;
     private cache: TSource[] = [];
     private done: boolean = false;
     private sourceEnumerator: Nullable<IEnumerator<TSource>> = null;
 
-    public constructor(source: ITyneqEnumerable<TSource>) {
+    public constructor(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null) {
         super();
         this.source = source;
+        this[tyneqQueryNode] = node ?? null;
     }
 
     public getEnumerator(): IEnumerator<TSource> {
@@ -55,8 +77,10 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return { has: false };
     }
 
-    protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>): ITyneqEnumerable<TResult> {
-        return new TyneqEnumerable<TResult>(factory);
+    public readonly [tyneqQueryNode]: IQueryNode | null;
+
+    protected createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
+        return new TyneqEnumerable<TResult>(factory, node);
     }
     protected createOrderedEnumerable<TKey>(keySelector: (x: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean): ITyneqOrderedEnumerable<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(
@@ -67,7 +91,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         );
     }
 
-    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>): ITyneqCachedEnumerable<TSource> {
-        return new TyneqCachedEnumerable<TSource>(source);
+    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null): ITyneqCachedEnumerable<TSource> {
+        return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

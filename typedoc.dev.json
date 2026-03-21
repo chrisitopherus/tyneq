@@ -1,0 +1,26 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "tsconfig": "tsconfig.json",
+  "out": "api-reference",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "hideGenerator": true,
+  "categorizeByGroup": true,
+  "sort": ["source-order"],
+  "githubPages": false,
+  "visibilityFilters": {
+    "protected": false,
+    "@internal": false
+  },
+  "externalSymbolLinkMappings": {
+    "tyneq": {
+      "TyneqEnumerableEnumerator": "#",
+      "EnumeratorUtility.tryDispose": "#",
+      "BaseEnumerableSorter": "#",
+      "TyneqEnumerableBase": "#"
+    }
+  }
+}

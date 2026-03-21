@@ -1,41 +1,48 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SkipWhileEnumerator } from "../../enumerators/streaming/skipWhile";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for skipping elements while a predicate is true.
- * 
+ * Enumerator that bypasses elements from the beginning while a predicate is true, then yields all remaining elements.
+ *
  * @remarks
- * This is a streaming operator that bypasses elements from the start of the sequence
- * as long as a predicate returns true, then yields all remaining elements including
- * the first element that failed the predicate. Delegates enumeration logic to
- * {@link SkipWhileEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link SkipWhileEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.skipWhile} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Tests each element against the predicate until the first element that returns `false`.
+ * That element and all subsequent elements are yielded without further predicate evaluation.
+ * Once skipping ends it does not resume, even if later elements would satisfy the predicate.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SkipWhileOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Predicate function to test elements for skipping. */
-    private readonly predicate: (item: TSource) => boolean;
+@operator<[predicate: unknown]>("skipWhile", (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
+export class SkipWhileEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private readonly predicate: (item: T) => boolean;
+    private isSkipping = true;
 
     /**
-     * Creates a new skipWhile operator.
-     * 
-     * @param source - The source sequence.
-     * @param predicate - Function to test each element (stops skipping when false).
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param predicate - Elements are skipped while this returns `true`.
      */
-    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
+        super(sourceEnumerator);
         this.predicate = predicate;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new SkipWhileEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
+    protected override handleNext(): IteratorResult<T> {
+        while (true) {
+            const next = this.sourceEnumerator.next();
+            if (next.done) {
+                return this.done();
+            }
+
+            this.isSkipping = this.isSkipping && this.predicate(next.value);
+            if (!this.isSkipping) {
+                return this.yield(next.value);
+            }
+        }
     }
 }

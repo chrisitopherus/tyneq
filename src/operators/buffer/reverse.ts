@@ -1,35 +1,48 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ReverseEnumerator } from "../../enumerators/buffer/reverse";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for reversing element order.
- * 
+ * Enumerator that yields elements in reverse order.
+ *
  * @remarks
- * This is a buffering operator that inverts the order of elements in a sequence.
- * Delegates the actual enumeration logic to {@link ReverseEnumerator}.
- * 
- * **Performance**: O(n) time, O(n) space. Must buffer all elements to reverse order.
- * 
- * **Operator Category**: Buffering - materializes entire sequence into an array before yielding
- * elements in reverse order.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link ReverseEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.reverse} for the public API.
+ * Deferred. Source is fully buffered on first iteration.
+ *
+ * Consumes the entire source on first iteration to build a buffer, then yields elements
+ * from the end backwards.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ReverseOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
+@operator("reverse", "buffer")
+export class ReverseEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private buffer: T[] = [];
+    private index: number = -1;
+
     /**
-     * Creates a new reverse operator for the given source sequence.
-     * 
-     * @param source - The source sequence to reverse.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      */
-    public constructor(source: IEnumerable<TSource>) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>) {
+        super(sourceEnumerator);
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new ReverseEnumerator<TSource>(this.source[Symbol.iterator]());
+    protected override initialize(): void {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                this.index = this.buffer.length - 1;
+                break;
+            }
+
+            this.buffer.push(value);
+        }
+    }
+
+    protected override handleNext(): IteratorResult<T> {
+        if (this.index < 0) {
+            return this.done();
+        }
+
+        return this.yield(this.buffer[this.index--]);
     }
 }

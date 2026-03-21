@@ -1,55 +1,53 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { IntersectEnumerator } from "../../enumerators/buffer/intersect";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for set intersection operation.
- * 
+ * Enumerator that yields elements present in both the source and another sequence.
+ *
  * @remarks
- * This is a buffering operator that returns distinct elements that appear in both sequences.
- * Uses element equality (===) for comparison. Delegates enumeration logic to
- * {@link IntersectEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is source length and m is intersected values length.
- * O(m) space to index the intersected values in a hash set.
- * 
- * **Operator Category**: Buffering - builds a hash set of intersected values before yielding.
- * 
- * @typeParam TSource - The type of elements in the sequences.
- * 
- * @see {@link IntersectEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.intersect} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Buffers the other sequence into a `Set` on first iteration. Each value appears at most once
+ * in the output.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class IntersectOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Sequence of values that must appear in the result. */
-    private readonly intersectedValues: Iterable<TSource>;
+@operator<[otherValues: unknown]>("intersect", "buffer", (otherValues) => {
+    ArgumentUtility.checkNotOptional({ otherValues });
+    ArgumentUtility.checkIterable({ otherValues });
+})
+export class IntersectEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
+    private readonly otherValues: Iterable<TSource>;
+    private intersectionValues = new Set<TSource>();
+    private bufferedValues = new Set<TSource>();
 
     /**
-     * Creates a new set intersection operator.
-     * 
-     * @param source - The source sequence.
-     * @param intersectedValues - Sequence of values that must appear in results.
-     * 
-     * @throws {@link ArgumentError} when `intersectedValues` is undefined.
-     * @throws {@link ArgumentNullError} when `intersectedValues` is null.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param otherValues - The second sequence; buffered into a `Set` on first iteration.
      */
-    public constructor(source: IEnumerable<TSource>, intersectedValues: Iterable<TSource>) {
-        super(source);
-        
-        this.intersectedValues = intersectedValues;
+    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: Iterable<TSource>) {
+        super(sourceEnumerator);
+        this.otherValues = otherValues;
     }
 
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const intersectedValues = this.intersectedValues;
-        return () => {
-            return new IntersectEnumerator<TSource>(source[Symbol.iterator](), intersectedValues);
+    protected override initialize(): void {
+        this.intersectionValues = new Set<TSource>(this.otherValues);
+    }
+
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            if (this.intersectionValues.has(value) && !this.bufferedValues.has(value)) {
+                this.bufferedValues.add(value);
+                return this.yield(value);
+            }
         }
-    }
-
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new IntersectEnumerator<TSource>(this.source[Symbol.iterator](), this.intersectedValues);
     }
 }

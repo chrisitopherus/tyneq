@@ -7,11 +7,25 @@
   "entryFileName": "index.md",
   "readme": "none",
   "excludePrivate": true,
-  "excludeProtected": true,
+  "excludeProtected": false,
   "excludeInternal": true,
   "hideGenerator": true,
   "categorizeByGroup": true,
   "sort": ["source-order"],
   "githubPages": false,
-  "parametersFormat": "table"
+  "parametersFormat": "table",
+  "indexFormat": "table",
+  "interfacePropertiesFormat": "table",
+  "classPropertiesFormat": "table",
+  "enumMembersFormat": "table",
+  "navigationJson": "docs/api/reference/navigation.json",
+  "hideBreadcrumbs": false,
+  "externalSymbolLinkMappings": {
+    "tyneq": {
+      "TyneqEnumerableEnumerator": "#",
+      "EnumeratorUtility.tryDispose": "#",
+      "BaseEnumerableSorter": "#",
+      "TyneqEnumerableBase": "#"
+    }
+  }
 }

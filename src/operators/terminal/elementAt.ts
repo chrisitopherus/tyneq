@@ -1,39 +1,38 @@
 import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for retrieving an element at a specific index.
- * 
+ * Terminal operator that returns the element at a specified zero-based index.
+ *
  * @remarks
- * This is a terminal operator that returns the element at the specified zero-based index.
- * Throws an error if the index is out of bounds.
- * 
- * **Performance**: O(1) space. O(index) time (enumerates up to the target index).
- * 
- * **Operator Category**: Terminal - forces partial evaluation and returns an element.
- * 
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Enumerates the source up to the target index. Throws if the index is out of range.
+ *
  * @typeParam TSource - The type of elements in the sequence.
- * 
+ *
  * @see {@link ITyneqEnumerable.elementAt} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
+@terminal<[index: unknown]>("elementAt", (index) => {
+    ArgumentUtility.checkNonNegative({ index: index as number });
+})
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    /** The zero-based index of the element to retrieve. */
     private readonly index: number;
 
     /**
-     * Creates a new elementAt operator.
-     * 
      * @param source - The source sequence.
      * @param index - The zero-based index of the element to retrieve.
-     * @throws {ArgumentError} If index is negative.
      */
     public constructor(source: ITyneqEnumerable<TSource>, index: number) {
         super(source);
-        ArgumentUtility.checkNonNegative({ index });
-
         this.index = index;
     }
 

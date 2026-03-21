@@ -1,41 +1,56 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ConcatEnumerator } from "../../enumerators/streaming/concat";
-import type { IEnumerable, IEnumerator, IteratorFactory, ITyneqEnumerable } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
+import { EnumeratorUtility } from "../../utility/enumeratorUtility";
 
 /**
- * Operator implementation for concatenating two sequences.
- * 
+ * Enumerator that concatenates two sequences.
+ *
  * @remarks
- * This is a streaming operator that yields all elements from the first sequence,
- * followed by all elements from the second sequence. Delegates enumeration logic
- * to {@link ConcatEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n + m) time when fully enumerated,
- * where n is the length of the first sequence and m is the length of the second.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in both sequences.
- * 
- * @see {@link ConcatEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.concat} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Yields all source elements first, then all elements from the second sequence.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ConcatOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The second sequence to concatenate. */
-    private readonly other: Iterable<TSource>;
+@operator<[other: unknown]>("concat", (other) => {
+    ArgumentUtility.checkNotOptional({ other });
+    ArgumentUtility.checkIterable({ other });
+})
+export class ConcatEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private readonly otherEnumerator: IEnumerator<T>;
+    private isSourceDone = false;
 
     /**
-     * Creates a new concat operator.
-     * 
-     * @param source - The first sequence.
-     * @param other - The second sequence to append.
+     * @param sourceEnumerator - The first enumerator.
+     * @param other - The second sequence to concatenate after the source.
      */
-    public constructor(source: IEnumerable<TSource>, other: Iterable<TSource>) {
-        super(source);
-        this.other = other;
+    public constructor(sourceEnumerator: IEnumerator<T>, other: Iterable<T>) {
+        super(sourceEnumerator);
+        this.otherEnumerator = other[Symbol.iterator]();
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new ConcatEnumerator<TSource>(this.source[Symbol.iterator](), this.other[Symbol.iterator]());
+    protected override disposeAdditional(): void {
+        EnumeratorUtility.tryDispose(this.otherEnumerator);
+    }
+
+    protected override handleNext(): IteratorResult<T> {
+        if (!this.isSourceDone) {
+            const next = this.sourceEnumerator.next();
+            if (!next.done) {
+                return this.yield(next.value);
+            }
+
+            this.isSourceDone = true;
+        }
+
+        const next = this.otherEnumerator.next();
+        if (!next.done) {
+            return this.yield(next.value);
+        }
+
+        return this.done();
     }
 }

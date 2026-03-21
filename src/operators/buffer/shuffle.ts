@@ -1,39 +1,59 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ShuffleEnumerator } from "../../enumerators/buffer/shuffle";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for randomizing element order.
- * 
+ * Enumerator that yields elements in randomized order.
+ *
  * @remarks
- * This is a buffering operator that returns elements in random order using the
- * Fisher-Yates shuffle algorithm. Each enumeration produces a new random ordering.
- * Delegates the actual enumeration logic to {@link ShuffleEnumerator}.
- * 
- * **Performance**: O(n) time, O(n) space. Must buffer all elements to shuffle them.
- * 
- * **Operator Category**: Buffering - materializes entire sequence into an array before
- * applying Fisher-Yates shuffle and yielding.
- * 
- * **Randomness**: Uses `Math.random()` for randomization. Each enumeration produces
- * a different random order.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link ShuffleEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.shuffle} for the public API.
+ * Deferred. Source is fully buffered on first iteration.
+ *
+ * Consumes the entire source on first iteration, shuffles the buffer in-place using the
+ * Fisher-Yates algorithm, then yields elements in the shuffled order.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ShuffleOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
+@operator("shuffle", "buffer")
+export class ShuffleEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
+    private buffer: TSource[] = [];
+    private currentIndex = 0;
+
     /**
-     * Creates a new shuffle operator for the given source sequence.
-     * 
-     * @param source - The source sequence to shuffle.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      */
-    public constructor(source: IEnumerable<TSource>) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<TSource>) {
+        super(sourceEnumerator);
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new ShuffleEnumerator<TSource>(this.source[Symbol.iterator]());
+    protected override initialize(): void {
+        const buffer = Array.from(this.toIterable(this.sourceEnumerator));
+        this.shuffle(buffer);
+        this.buffer = buffer;
+    }
+
+    protected override handleNext(): IteratorResult<TSource> {
+        if (this.buffer.length <= this.currentIndex) {
+            return this.done();
+        }
+
+        const result = this.buffer[this.currentIndex];
+        this.currentIndex++;
+        return this.yield(result);
+    }
+
+    private shuffle<T>(array: T[]): T[] {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+
+        return array;
+    }
+
+    private toIterable(sourceEnumerator: IEnumerator<TSource>): Iterable<TSource> {
+        return {
+            [Symbol.iterator]: () => sourceEnumerator
+        };
     }
 }

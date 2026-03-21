@@ -1,41 +1,50 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ChunkEnumerator } from "../../enumerators/streaming/chunk";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for splitting a sequence into fixed-size chunks.
- * 
+ * Enumerator that splits a sequence into fixed-size chunks.
+ *
  * @remarks
- * This is a streaming operator that groups consecutive elements into arrays of the
- * specified size. The last chunk may contain fewer elements if the sequence length is
- * not evenly divisible. Delegates enumeration logic to {@link ChunkEnumerator}.
- * 
- * **Performance**: O(size) space per chunk. O(1) space overall (streaming).
- * O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - buffers only the current chunk, not the entire sequence.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link ChunkEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.chunk} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Groups consecutive elements into arrays of the specified size. The last chunk may contain
+ * fewer elements if the source length is not evenly divisible by `size`.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ChunkOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource, TSource[]> {
-    /** The maximum size of each chunk. */
+@operator<[size: unknown]>("chunk", (size) => {
+    ArgumentUtility.checkSafeInteger({ size: size as number });
+    ArgumentUtility.checkPositive({ size: size as number });
+})
+export class ChunkEnumerator<T> extends TyneqSourceEnumerator<T, T[]> {
     private readonly size: number;
+    private currentChunk: T[] = [];
 
     /**
-     * Creates a new chunk operator.
-     * 
-     * @param source - The source sequence.
-     * @param size - The maximum size of each chunk. Must be positive.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param size - Maximum number of elements per chunk; must be positive.
      */
-    public constructor(source: IEnumerable<TSource>, size: number) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, size: number) {
+        super(sourceEnumerator);
         this.size = size;
     }
 
-    public override getEnumerator(): IEnumerator<TSource[]> {
-        return new ChunkEnumerator<TSource>(this.source[Symbol.iterator](), this.size);
+    protected override handleNext(): IteratorResult<T[]> {
+        while (this.currentChunk.length < this.size) {
+            const next = this.sourceEnumerator.next();
+            if (next.done) break;
+            this.currentChunk.push(next.value);
+        }
+
+        if (this.currentChunk.length === 0) {
+            return this.done();
+        }
+
+        const chunk = this.currentChunk;
+        this.currentChunk = [];
+        return this.yield(chunk);
     }
 }

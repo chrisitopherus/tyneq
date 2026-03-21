@@ -1,26 +1,24 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
- * Terminal operator implementation for converting a sequence to a Set.
- * 
+ * Terminal operator that materializes a sequence into a JavaScript `Set`.
+ *
  * @remarks
- * This is a terminal operator that materializes the sequence into a JavaScript Set,
- * automatically removing any duplicate values. Useful for ensuring uniqueness or
- * performing set operations.
- * 
- * **Performance**: O(n) space (creates set). O(n) time (must enumerate all elements).
- * 
- * **Operator Category**: Terminal - forces full evaluation and returns a Set.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
+ * Immediate. Source is enumerated on call.
+ *
+ * Duplicate values are removed automatically by the `Set` constructor.
+ *
  * @see {@link ITyneqEnumerable.toSet} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
+@terminal("toSet")
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     /**
-     * Creates a new toSet operator.
-     * 
      * @param source - The source sequence.
      */
     public constructor(source: ITyneqEnumerable<TSource>) {

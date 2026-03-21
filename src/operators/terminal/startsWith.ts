@@ -1,35 +1,34 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/terminal";
 import { IEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for checking if a sequence starts with another sequence.
- * 
+ * Terminal operator that returns `true` if the source sequence begins with all elements of a prefix sequence.
+ *
  * @remarks
- * This is a terminal operator that determines whether the source sequence begins with all
- * elements from another sequence in the same order. Uses strict equality (===) for comparison.
- * Short-circuits as soon as the prefix is fully matched or a mismatch is found.
- * 
- * **Performance**: O(1) space. O(k) time where k is the length of the prefix sequence
- * (short-circuits on mismatch).
- * 
- * **Operator Category**: Terminal - forces partial evaluation and returns a boolean.
- * 
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Compares corresponding elements using strict equality (`===`). Short-circuits as soon as
+ * the prefix is fully matched or a mismatch is found.
+ *
  * @typeParam T - The type of elements in both sequences.
- * 
+ *
  * @see {@link ITyneqEnumerable.startsWith} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
+@terminal("startsWith")
 export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
-    /** The prefix sequence to check for. */
     private readonly sequence: Iterable<T>;
 
     /**
-     * Creates a new startsWith operator.
-     * 
      * @param source - The source sequence.
      * @param sequence - The prefix sequence to check for.
-     * @throws {ArgumentError} If sequence is null or undefined.
+     * @throws {ArgumentError} If `sequence` is null, undefined, or not iterable.
      */
     public constructor(source: IEnumerable<T>, sequence: Iterable<T>) {
         super(source);

@@ -1,39 +1,37 @@
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
+import { terminal } from "../../extensibility/terminal";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { IEnumerable, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 
 /**
- * Terminal operator implementation for comparing two sequences for equality.
- * 
+ * Terminal operator that returns `true` if two sequences contain equal elements in the same order.
+ *
  * @remarks
- * This is a terminal operator that determines whether two sequences contain equal elements
- * in the same order using an equality comparer. Enumerates both sequences in parallel and
- * verifies they have the same length and corresponding elements are equal.
- * 
- * **Performance**: O(1) space. O(min(n, m)) time where n and m are sequence lengths
- * (short-circuits on first mismatch).
- * 
- * **Operator Category**: Terminal - forces evaluation and returns a boolean.
- * 
+ * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ *
+ * Enumerates both sequences in parallel using `equalityComparer`. Short-circuits on the
+ * first mismatch or length difference.
+ *
  * @typeParam TSource - The type of elements in both sequences.
- * 
+ *
  * @see {@link ITyneqEnumerable.sequenceEqual} for the public API.
+ *
+ * @group Operators
+ * @category Terminal
+ * @internal
  */
+@terminal("sequenceEqual")
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
-    /** The sequence to compare against. */
     private readonly other: Iterable<TSource>;
-    /** Function to compare elements for equality. */
     private readonly equalityComparer: (a: TSource, b: TSource) => boolean;
 
     /**
-     * Creates a new sequenceEqual operator.
-     * 
-     * @param source - The first sequence.
+     * @param source - The source sequence.
      * @param other - The sequence to compare against.
-     * @param equalityComparer - Optional function to compare elements for equality.
-     * @throws {ArgumentError} If other is null or undefined.
+     * @param equalityComparer - The comparer used to test element equality; defaults to strict equality.
+     * @throws {ArgumentError} If `other` is null or undefined.
      */
     public constructor(source: ITyneqEnumerable<TSource>, other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
         super(source);

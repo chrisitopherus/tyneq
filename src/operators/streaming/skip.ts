@@ -1,40 +1,56 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SkipEnumerator } from "../../enumerators/streaming/skip";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for skipping a specified number of elements from the start.
- * 
+ * Enumerator that bypasses a specified number of elements from the beginning of a sequence.
+ *
  * @remarks
- * This is a streaming operator that bypasses the first N elements of the source
- * sequence and yields all remaining elements. Delegates enumeration logic to
- * {@link SkipEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link SkipEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.skip} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Skips the first `count` elements lazily on the first call to `handleNext`, then passes
+ * through all subsequent elements without buffering.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SkipOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The number of elements to skip from the beginning. */
+@operator<[count: unknown]>("skip", (count) => {
+    ArgumentUtility.checkNonNegative({ count: count as number });
+})
+export class SkipEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
+    private skipped = false;
 
     /**
-     * Creates a new skip operator.
-     * 
-     * @param source - The source sequence.
-     * @param count - The number of elements to bypass.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param count - Number of elements to skip from the beginning; must be non-negative.
      */
-    public constructor(source: IEnumerable<TSource>, count: number) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
+        super(sourceEnumerator);
         this.count = count;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new SkipEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
+    protected override handleNext(): IteratorResult<T> {
+        if (!this.skipped) {
+            let skippedCount = 0;
+            while (skippedCount < this.count) {
+                const sourceNext = this.sourceEnumerator.next();
+                if (sourceNext.done) {
+                    return this.done();
+                }
+
+                skippedCount++;
+            }
+
+            this.skipped = true;
+        }
+
+        const sourceNext = this.sourceEnumerator.next();
+        if (sourceNext.done) {
+            return this.done();
+        }
+
+        return this.yield(sourceNext.value);
     }
 }

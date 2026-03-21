@@ -1,16 +1,48 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ThrottleEnumerator } from "../../enumerators/streaming/throttle";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
-export class ThrottleOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
+/**
+ * Enumerator that yields every Nth element from a sequence.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * The element at index 0 is always yielded; subsequent elements are yielded at indices that are
+ * multiples of `count` (0, count, 2×count, …).
+ *
+ * @group Enumerators
+ * @internal
+ */
+@operator<[count: unknown]>("throttle", (count) => {
+    ArgumentUtility.checkSafeInteger({ count: count as number });
+    ArgumentUtility.checkPositive({ count: count as number });
+})
+export class ThrottleEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
+    private index: number = -1;
 
-    public constructor(source: IEnumerable<TSource>, count: number) {
-        super(source);
+    /**
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param count - Stride between yielded elements; must be a positive safe integer.
+     */
+    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
+        super(sourceEnumerator);
         this.count = count;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new ThrottleEnumerator<TSource>(this.source[Symbol.iterator](), this.count);
+    protected override handleNext(): IteratorResult<T> {
+        while (true) {
+            const { value, done } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            this.index++;
+            if (this.index % this.count === 0) {
+                return this.yield(value);
+            }
+        }
     }
 }

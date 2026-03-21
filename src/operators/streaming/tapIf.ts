@@ -1,44 +1,51 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { TapIfEnumerator } from "../../enumerators/streaming/tapIf";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for conditionally performing side effects on each element.
- * 
+ * Enumerator that conditionally executes a side-effect action on each element.
+ *
  * @remarks
- * This is a streaming operator that invokes an action for each element only if a
- * predicate condition is met, yielding the original elements unchanged. Combines
- * conditional logic with side effects. Delegates enumeration logic to {@link TapIfEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link TapIfEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.tapIf} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Evaluates `predicate` (which takes no arguments) for each element. When `predicate` returns `true`,
+ * `action` is invoked with the element. All elements are yielded unchanged regardless of the predicate result.
+ *
+ * The predicate represents a global condition (e.g., a debug flag) rather than an element-specific test.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class TapIfOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Side-effect action to invoke when predicate is true. */
+@operator<[action: unknown, predicate: unknown]>("tapIf", (action, predicate) => {
+    ArgumentUtility.checkNotOptional({ action });
+    ArgumentUtility.checkNotOptional({ predicate });
+})
+export class TapIfEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
-    /** Condition to evaluate before invoking action. */
     private readonly predicate: () => boolean;
 
     /**
-     * Creates a new tapIf operator.
-     * 
-     * @param source - The source sequence.
-     * @param action - Function to invoke for each element when predicate is true.
-     * @param predicate - Condition to test before invoking action.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param action - Invoked with each element when `predicate` returns `true`.
+     * @param predicate - A zero-argument function that controls whether `action` runs.
      */
-    public constructor(source: IEnumerable<TSource>, action: (item: TSource) => void, predicate: () => boolean) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void, predicate: () => boolean) {
+        super(sourceEnumerator);
         this.action = action;
         this.predicate = predicate;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new TapIfEnumerator<TSource>(this.source[Symbol.iterator](), this.action, this.predicate);
+    protected override handleNext(): IteratorResult<TSource> {
+        const next = this.sourceEnumerator.next();
+        if (next.done) {
+            return this.done();
+        }
+
+        if (this.predicate()) {
+            this.action(next.value);
+        }
+
+        return this.yield(next.value);
     }
 }

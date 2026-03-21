@@ -1,47 +1,58 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ZipEnumerator } from "../../enumerators/streaming/zip";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for combining two sequences element-wise using a selector.
- * 
+ * Enumerator that combines two sequences pairwise using a selector function.
+ *
  * @remarks
- * This is a streaming operator that pairs corresponding elements from two sequences
- * and applies a selector function to produce result elements. Enumeration stops when
- * either sequence is exhausted. Delegates enumeration logic to {@link ZipEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(min(n, m)) time when fully enumerated,
- * where n and m are the lengths of the two sequences.
- * 
- * **Operator Category**: Streaming - processes paired elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the first sequence.
- * @typeParam TOther - The type of elements in the second sequence.
- * @typeParam TResult - The type of elements in the result sequence.
- * 
- * @see {@link ZipEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.zip} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Pulls one element from each sequence per iteration and applies the selector to produce an output element.
+ * Terminates as soon as either sequence is exhausted (shortest-sequence semantics).
+ * Properly disposes the secondary enumerator on completion or early termination.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ZipOperatorEnumerable<TSource, TOther, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
-    /** The second sequence to combine with the source. */
-    private readonly other: Iterable<TOther>;
-    /** Function to combine paired elements from both sequences. */
-    private readonly selector: (first: TSource, second: TOther) => TResult;
+@operator<[other: unknown, selector: unknown]>("zip", (other, selector) => {
+    ArgumentUtility.checkNotOptional({ other });
+    ArgumentUtility.checkIterable({ other });
+    ArgumentUtility.checkNotOptional({ selector });
+})
+export class ZipEnumerator<T, U, V> extends TyneqSourceEnumerator<T, V> {
+    private readonly otherEnumerator: IEnumerator<U>;
+    private readonly selector: (first: T, second: U) => V;
 
     /**
-     * Creates a new zip operator.
-     * 
-     * @param source - The first sequence.
-     * @param other - The second sequence to combine with.
-     * @param selector - Function to combine corresponding elements from both sequences.
+     * @param sourceEnumerator - The first sequence to zip.
+     * @param other - The second sequence to zip with the source.
+     * @param selector - Combines one element from each sequence into the output element.
      */
-    public constructor(source: IEnumerable<TSource>, other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult) {
-        super(source);
-        this.other = other;
+    public constructor(sourceEnumerator: IEnumerator<T>, other: Iterable<U>, selector: (first: T, second: U) => V) {
+        super(sourceEnumerator);
+        this.otherEnumerator = other[Symbol.iterator]();
         this.selector = selector;
     }
 
-    public override getEnumerator(): IEnumerator<TResult> {
-        return new ZipEnumerator<TSource, TOther, TResult>(this.source[Symbol.iterator](), this.other[Symbol.iterator](), this.selector);
+    protected override handleNext(): IteratorResult<V> {
+        const first = this.sourceEnumerator.next();
+        if (first.done) {
+            this.disposeAdditional();
+            return this.done();
+        }
+
+        const second = this.otherEnumerator.next();
+        if (second.done) {
+            return this.earlyComplete();
+        }
+
+        return this.yield(this.selector(first.value, second.value));
+    }
+
+    protected override disposeAdditional(): void {
+        EnumeratorUtility.tryDispose(this.otherEnumerator);
     }
 }

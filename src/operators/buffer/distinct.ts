@@ -1,44 +1,40 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { DistinctEnumerator } from "../../enumerators/buffer/distinct";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for filtering distinct elements from a sequence.
- * 
+ * Enumerator that filters out duplicate values from a sequence.
+ *
  * @remarks
- * This is a buffering operator that removes duplicate elements, keeping only the first
- * occurrence of each unique value. Delegates the actual enumeration logic to
- * {@link DistinctEnumerator}.
- * 
- * **Performance**: O(n) time, O(n) space. Must buffer all unique values in a hash set.
- * 
- * **Operator Category**: Buffering - maintains a hash set of seen elements during enumeration.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link DistinctEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.distinct} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Tracks seen values in a `Set`. Yields each value at most once, in first-seen order.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class DistinctOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
+@operator("distinct", "buffer")
+export class DistinctEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
+    private readonly seenValues = new Set<TSource>();
+
     /**
-     * Creates a new distinct operator for the given source sequence.
-     * 
-     * @param source - The source sequence to filter for distinct elements.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
      */
-    public constructor(source: IEnumerable<TSource>) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<TSource>) {
+        super(sourceEnumerator);
     }
-    
-    /**
-     * Creates a new enumerator for distinct enumeration.
-     * 
-     * @remarks
-     * Delegates to {@link DistinctEnumerator} which maintains a hash set of seen values
-     * and yields only first occurrences.
-     * 
-     * @returns A new enumerator positioned before the first element.
-     */
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new DistinctEnumerator<TSource>(this.source[Symbol.iterator]());
+
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            if (!this.seenValues.has(value)) {
+                this.seenValues.add(value);
+                return this.yield(value);
+            }
+        }
     }
 }

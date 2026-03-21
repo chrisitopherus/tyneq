@@ -1,40 +1,42 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { TapEnumerator } from "../../enumerators/streaming/tap";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for performing side effects on each element without modifying the sequence.
- * 
+ * Enumerator that executes a side-effect action on each element without modifying the sequence.
+ *
  * @remarks
- * This is a streaming operator that invokes an action for each element as it passes
- * through, yielding the original elements unchanged. Useful for debugging, logging,
- * or other side effects. Delegates enumeration logic to {@link TapEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link TapEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.tap} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Invokes `action` on each element before yielding it unchanged. Useful for logging,
+ * debugging, or triggering external operations during enumeration.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class TapOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Side-effect action to invoke for each element. */
+@operator<[action: unknown]>("tap", (action) => {
+    ArgumentUtility.checkNotOptional({ action });
+})
+export class TapEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
 
     /**
-     * Creates a new tap operator.
-     * 
-     * @param source - The source sequence.
-     * @param action - Function to invoke for each element (for side effects only).
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param action - Called with each element as a side effect; must not be null or undefined.
      */
-    public constructor(source: IEnumerable<TSource>, action: (item: TSource) => void) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<TSource>, action: (item: TSource) => void) {
+        super(sourceEnumerator);
         this.action = action;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new TapEnumerator<TSource>(this.source[Symbol.iterator](), this.action);
+    protected override handleNext(): IteratorResult<TSource> {
+        const next = this.sourceEnumerator.next();
+        if (next.done) {
+            return this.done();
+        }
+
+        this.action(next.value);
+        return this.yield(next.value);
     }
 }

@@ -7,23 +7,33 @@ tagline: Typed Enumerable Queries for TypeScript
 
 hero:
   name: Tyneq
-  text: LINQ-style querying with strong typing and deferred execution
-  tagline: Build readable, composable, and predictable data pipelines in TypeScript.
+  text: LINQ-style querying for TypeScript
+  tagline: Build readable, composable, and predictable data pipelines over any iterable source.
+  image:
+    src: /logo.svg
+    alt: Tyneq
   actions:
     - theme: brand
-      text: Start with the Guide
+      text: Get Started
+      link: /guide/getting-started
+    - theme: alt
+      text: Browse the Guide
       link: /guide/
     - theme: alt
-      text: Browse API
+      text: API Reference
       link: /api/
 
 features:
   - title: Lazy by default
-    details: Compose queries as pipelines and execute only when you enumerate.
+    details: Compose queries as pipelines — no work happens until you enumerate. Chain dozens of operators without touching the source data.
   - title: Re-iterable sequences
-    details: Enumerate safely multiple times with consistent semantics.
-  - title: Rich operator set
-    details: Use streaming, buffering, and terminal operators with clear behavior.
+    details: Enumerate the same query multiple times safely. Results are consistent across passes; use memoize() to cache when re-execution is expensive.
+  - title: 50+ typed operators
+    details: Streaming, buffering, and terminal operators with explicit execution semantics. Every operator's timing and memory impact is documented.
   - title: TypeScript-first
-    details: Keep strong typing from source to result across complex query chains.
+    details: Types flow through the entire pipeline. Projections, groupings, and joins preserve strong typing from source to result.
+  - title: Fully extensible
+    details: Register custom streaming, buffering, or terminal operators using a public API. No library source modifications required.
+  - title: Open to contribute
+    details: Clear contributor guide, operator addition workflow, and test conventions. See the Contributing page to get started.
 ---

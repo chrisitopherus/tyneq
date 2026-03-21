@@ -1,0 +1,129 @@
+import { ArgumentError } from "../../core/errors/argument/ArgumentError";
+import { ArgumentOutOfRangeError } from "../../core/errors/argument/ArgumentOutOfRangeError";
+
+/**
+ * Static assertion class for numeric range and type checks.
+ *
+ * @group Utilities
+ * @internal
+ */
+export class NumericGuards {
+    private constructor() { }
+
+    /**
+     * Asserts that `value` is a finite number ≥ 0.
+     * @throws {ArgumentOutOfRangeError}
+     */
+    public static checkNonNegative(value: number, paramName: string): void {
+        if (!Number.isFinite(value) || value < 0) {
+            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-negative number.`);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite number > 0.
+     * @throws {ArgumentOutOfRangeError}
+     */
+    public static checkPositive(value: number, paramName: string): void {
+        if (!Number.isFinite(value) || value <= 0) {
+            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a positive number.`);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite number < 0.
+     * @throws {ArgumentOutOfRangeError}
+     */
+    public static checkNegative(value: number, paramName: string): void {
+        if (!Number.isFinite(value) || value >= 0) {
+            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a negative number.`, value);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite number ≤ 0.
+     * @throws {ArgumentOutOfRangeError}
+     */
+    public static checkNonPositive(value: number, paramName: string): void {
+        if (!Number.isFinite(value) || value > 0) {
+            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be a non-positive number.`, value);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite number in the inclusive range `[min, max]`.
+     *
+     * @remarks
+     * `min` must be ≤ `max`. An inverted range is itself an argument error and throws
+     * immediately rather than silently producing a guard that always rejects.
+     *
+     * @throws {ArgumentError} If `min > max`.
+     * @throws {ArgumentOutOfRangeError} If `value` is not finite or is outside `[min, max]`.
+     */
+    public static checkInRange(value: number, min: number, max: number, paramName: string): void {
+        if (min > max) {
+            throw new ArgumentError(`'min' (${min}) must be ≤ 'max' (${max}).`, "min");
+        }
+        if (!Number.isFinite(value) || value < min || value > max) {
+            throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be in range [${min}, ${max}].`);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite integer.
+     * @throws {ArgumentError}
+     */
+    public static checkInteger(value: number, paramName: string): void {
+        if (!Number.isFinite(value) || !Number.isInteger(value)) {
+            throw new ArgumentError(`'${paramName}' must be an integer.`, paramName);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a finite number (not `Infinity`, `-Infinity`, or `NaN`).
+     * @throws {ArgumentError}
+     */
+    public static checkFinite(value: number, paramName: string): void {
+        if (!Number.isFinite(value)) {
+            throw new ArgumentError(`'${paramName}' must be a finite number.`, paramName);
+        }
+    }
+
+    /**
+     * Asserts that `value` is not `NaN`. Allows `Infinity` and `-Infinity`.
+     * @throws {ArgumentError}
+     */
+    public static checkNotNaN(value: number, paramName: string): void {
+        if (Number.isNaN(value)) {
+            throw new ArgumentError(`'${paramName}' cannot be NaN.`, paramName);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a safe integer (within `[-(2^53 − 1), 2^53 − 1]`).
+     * @throws {ArgumentError}
+     */
+    public static checkSafeInteger(value: number, paramName: string): void {
+        if (!Number.isSafeInteger(value)) {
+            throw new ArgumentError(`'${paramName}' must be a safe integer.`, paramName);
+        }
+    }
+
+    /**
+     * Asserts that `value` is a valid zero-based index for an array of length `arrayLength`.
+     * @param arrayLength - Exclusive upper bound. If omitted, only checks for non-negative safe integer.
+     * @throws {ArgumentError} When not a safe integer.
+     * @throws {ArgumentOutOfRangeError} When `< 0` or `>= arrayLength`.
+     */
+    public static checkArrayIndex(value: number, paramName: string, arrayLength?: number): void {
+        NumericGuards.checkSafeInteger(value, paramName);
+        const maxLength = arrayLength ?? Number.MAX_SAFE_INTEGER;
+        if (value < 0 || value >= maxLength) {
+            throw new ArgumentOutOfRangeError(
+                paramName,
+                `'${paramName}' must be in range [0, ${maxLength}).`,
+                value
+            );
+        }
+    }
+}

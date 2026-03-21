@@ -1,41 +1,41 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SelectEnumerator } from "../../enumerators/streaming/select";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for projecting each element using a selector function.
- * 
+ * Enumerator that projects each element through a selector function.
+ *
  * @remarks
- * This is a streaming operator that applies a transformation function to each element,
- * producing a new sequence of transformed values. Delegates enumeration logic to
- * {@link SelectEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - transforms elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TResult - The type of elements in the result sequence.
- * 
- * @see {@link SelectEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.select} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Applies the selector to each source element in order, yielding the transformed value.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SelectOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
-    /** Function to transform each source element. */
-    private readonly selector: (item: TSource) => TResult
+@operator<[selector: unknown]>("select", (selector) => {
+    ArgumentUtility.checkNotOptional({ selector });
+})
+export class SelectEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
+    private readonly selector: (item: T) => U;
 
     /**
-     * Creates a new select (map/projection) operator.
-     * 
-     * @param source - The source sequence.
-     * @param selector - Function to transform each element.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param selector - Transforms each source element into the output type.
      */
-    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => TResult) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => U) {
+        super(sourceEnumerator);
         this.selector = selector;
     }
 
-    public override getEnumerator(): IEnumerator<TResult> {
-        return new SelectEnumerator<TSource, TResult>(this.source[Symbol.iterator](), this.selector);
+    protected override handleNext(): IteratorResult<U> {
+        const next = this.sourceEnumerator.next();
+        if (next.done) {
+            return this.done();
+        }
+
+        const value = next.value;
+        return this.yield(this.selector(value));
     }
 }

@@ -1,40 +1,56 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SplitEnumerator } from "../../enumerators/streaming/split";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for splitting a sequence into chunks based on a separator predicate.
- * 
+ * Enumerator that splits a sequence into sub-arrays at delimiter elements.
+ *
  * @remarks
- * This is a streaming operator that partitions the source sequence into arrays whenever
- * an element matches the separator predicate. Elements matching the predicate are excluded
- * from the result. Delegates enumeration logic to {@link SplitEnumerator}.
- * 
- * **Performance**: O(k) space where k is the size of each chunk. O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - yields chunks as they are completed without buffering entire sequence.
- * 
- * @typeParam TSource - The type of elements in the source sequence.
- * 
- * @see {@link SplitEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.split} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Elements for which the predicate returns `true` are treated as delimiters and are excluded from output.
+ * Consecutive delimiters do not produce empty arrays. A trailing delimiter produces no extra empty array.
+ * The final partial group is yielded when the source is exhausted.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SplitOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource, TSource[]> {
-    /** Predicate to identify separator elements (excluded from chunks). */
-    private readonly predicate: (item: TSource) => boolean;
+@operator<[splitOn: unknown]>("split", (splitOn) => {
+    ArgumentUtility.checkNotOptional({ splitOn });
+})
+export class SplitEnumerator<TSource> extends TyneqSourceEnumerator<TSource, TSource[]> {
+    private readonly splitOn: (item: TSource) => boolean;
 
     /**
-     * Creates a new split operator.
-     * 
-     * @param source - The source sequence.
-     * @param predicate - Function to identify separator elements.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param splitOn - Identifies delimiter elements; matching elements are consumed but not yielded.
      */
-    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
-        super(source);
-        this.predicate = predicate;
+    public constructor(sourceEnumerator: IEnumerator<TSource>, splitOn: (item: TSource) => boolean) {
+        super(sourceEnumerator);
+        this.splitOn = splitOn;
     }
 
-    public override getEnumerator(): IEnumerator<TSource[]> {
-        return new SplitEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
+    protected override handleNext(): IteratorResult<TSource[]> {
+        const currentSplit: TSource[] = [];
+
+        while (true) {
+            const { value, done } = this.sourceEnumerator.next();
+            if (done) {
+                if (currentSplit.length > 0) {
+                    return this.doneWithYield(currentSplit);
+                }
+
+                return this.done();
+            }
+
+            if (this.splitOn(value)) {
+                if (currentSplit.length > 0) {
+                    return this.yield(currentSplit);
+                }
+            } else {
+                currentSplit.push(value);
+            }
+        }
     }
 }

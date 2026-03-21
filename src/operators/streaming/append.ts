@@ -1,39 +1,48 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { AppendEnumerator } from "../../enumerators/streaming/append";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for appending a single element to the end of a sequence.
- * 
+ * Enumerator that appends a single element to the end of a sequence.
+ *
  * @remarks
- * This is a streaming operator that yields all source elements followed by the
- * appended item. Delegates enumeration logic to {@link AppendEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link AppendEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.append} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Yields all source elements first, then the appended item.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class AppendOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The element to append to the sequence. */
-    private readonly item: TSource;
+@operator("append")
+export class AppendEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private isSourceDone = false;
+    private appended = false;
+    private readonly item: T;
 
     /**
-     * Creates a new append operator.
-     * 
-     * @param source - The source sequence.
-     * @param item - The element to append to the end.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param item - The element to append after all source elements.
      */
-    public constructor(source: IEnumerable<TSource>, item: TSource) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, item: T) {
+        super(sourceEnumerator);
         this.item = item;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new AppendEnumerator<TSource>(this.source[Symbol.iterator](), this.item);
+    protected override handleNext(): IteratorResult<T> {
+        if (!this.isSourceDone) {
+            const sourceNext = this.sourceEnumerator.next();
+            if (!sourceNext.done) {
+                return this.yield(sourceNext.value);
+            }
+
+            this.isSourceDone = true;
+        }
+
+        if (!this.appended) {
+            this.appended = true;
+            return this.yield(this.item);
+        }
+
+        return this.done();
     }
 }

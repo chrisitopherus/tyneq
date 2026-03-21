@@ -1,23 +1,14 @@
-# API Documentation
+# API Reference
 
-Tyneq API reference is generated automatically from source code using TypeDoc.
+Browse the full public API using the sidebar. Use the search bar to find specific symbols quickly.
 
-## How it works
+## Full reference with internals
 
-- Source of truth: exported symbols in `src/index.ts`
-- Metadata source: TSDoc comments in the codebase
-- Generation output: `docs/api/reference`
-
-## Generate locally
+Contributors can generate a richer version locally that includes protected members and internal symbols,
+with toggle checkboxes to show or hide each category:
 
 ```bash
-npm run docs:api
+npm run docs:api:full
 ```
 
-Then open the generated reference pages under [/api/reference/](/api/reference/).
-
-## Recommended workflow
-
-- Update or add TSDoc on public APIs when you change behavior.
-- Run `npm run docs:api` to regenerate the reference.
-- Run `npm run docs:build` to validate all guide + API pages build correctly.
+Then open `api-reference/index.html` in your browser.

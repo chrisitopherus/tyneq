@@ -1,81 +1,57 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { ExceptByEnumerator } from "../../enumerators/buffer/exceptBy";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for set difference operation based on key selector.
- * 
+ * Enumerator that yields elements whose keys are not present in an excluded-keys sequence.
+ *
  * @remarks
- * This is a buffering operator that returns elements from the source sequence whose
- * extracted keys do not appear in the excluded keys sequence. Delegates the actual
- * enumeration logic to {@link ExceptByEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is source length and m is excluded keys length.
- * O(m) space to index the excluded keys in a hash set.
- * 
- * **Operator Category**: Buffering - builds a hash set of excluded keys before yielding.
- * 
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TKey - The type of keys used for comparison.
- * 
- * @see {@link ExceptByEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.exceptBy} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Buffers the excluded keys into a `Set` on first iteration. Each unique key appears at most
+ * once in the output (already-yielded keys are also added to the exclusion set).
+ *
+ * @group Enumerators
+ * @internal
  */
-export class ExceptByOperatorEnumerable<TSource, TKey> extends TyneqOperatorEnumerable<TSource> {
-    /** Sequence of keys to exclude. */
+@operator<[excludedKeys: unknown, keySelector: unknown]>("exceptBy", "buffer", (excludedKeys, keySelector) => {
+    ArgumentUtility.checkNotOptional({ excludedKeys });
+    ArgumentUtility.checkIterable({ excludedKeys });
+    ArgumentUtility.checkNotOptional({ keySelector });
+})
+export class ExceptByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedKeys: Iterable<TKey>;
-    /** Function to extract keys from source elements. */
+    private excludeSet = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 
     /**
-     * Creates a new set difference by key operator.
-     * 
-     * @param source - The source sequence.
-     * @param excludedKeys - Sequence of keys to exclude.
-     * @param keySelector - Function to extract keys from source elements.
-     * 
-     * @throws {@link ArgumentError} when `excludedKeys` or `keySelector` is undefined.
-     * @throws {@link ArgumentNullError} when `excludedKeys` or `keySelector` is null.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param excludedKeys - Keys to exclude; buffered into a `Set` on first iteration.
+     * @param keySelector - Extracts the comparison key from each source element.
      */
-    public constructor(source: IEnumerable<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
-        super(source);
-
+    public constructor(sourceEnumerator: IEnumerator<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
+        super(sourceEnumerator);
         this.excludedKeys = excludedKeys;
         this.keySelector = keySelector;
     }
 
-    /**
-     * Returns a factory function that creates fresh enumerators for this operation.
-     * 
-     * @remarks
-     * The factory captures the source, excluded keys, and key selector, returning a
-     * function that produces {@link ExceptByEnumerator} instances. Each enumerator
-     * maintains independent state.
-     * 
-     * @returns A factory function producing except-by-key enumerators.
-     */
-    public getFactory(): IteratorFactory<TSource> {
-        const source = this.source;
-        const excludedKeys = this.excludedKeys;
-        const keySelector = this.keySelector;
-
-        return () => {
-            return new ExceptByEnumerator<TSource, TKey>(source[Symbol.iterator](), excludedKeys, keySelector);
-        }
+    protected override initialize(): void {
+        this.excludeSet = new Set<TKey>(this.excludedKeys);
     }
 
-    /**
-     * Creates a new enumerator for set difference by key enumeration.
-     * 
-     * @remarks
-     * Delegates to {@link ExceptByEnumerator} which builds a hash set of excluded keys
-     * and yields only source elements whose keys are not in that set.
-     * 
-     * @returns A new enumerator positioned before the first element.
-     */
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new ExceptByEnumerator<TSource, TKey>(this.source[Symbol.iterator](), this.excludedKeys, this.keySelector);
+    protected override handleNext(): IteratorResult<TSource> {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                return this.done();
+            }
+
+            const key = this.keySelector(value);
+            if (!this.excludeSet.has(key)) {
+                this.excludeSet.add(key);
+                return this.yield(value);
+            }
+        }
     }
 }

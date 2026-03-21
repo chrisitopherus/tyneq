@@ -1,13 +1,44 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { PairwiseEnumerator } from "../../enumerators/streaming/pairwise";
-import { IEnumerable, IEnumerator } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
-export class PairwiseOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource, [TSource, TSource]> {
-    public constructor(source: IEnumerable<TSource>) {
-        super(source);
+/**
+ * Enumerator that yields consecutive overlapping pairs from a sequence.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Each pair is `[previous, current]`. A sequence of n elements produces n-1 pairs.
+ * An empty or single-element sequence produces no output.
+ *
+ * @group Enumerators
+ * @internal
+ */
+@operator("pairwise")
+export class PairwiseEnumerator<T> extends TyneqSourceEnumerator<T, [T, T]> {
+    private hasPrevious = false;
+    private previous!: T;
+
+    public constructor(sourceEnumerator: IEnumerator<T>) {
+        super(sourceEnumerator);
     }
 
-    public override getEnumerator(): IEnumerator<[TSource, TSource]> {
-        return new PairwiseEnumerator<TSource>(this.source[Symbol.iterator]());
+    protected override handleNext(): IteratorResult<[T, T]> {
+        while (true) {
+            const next = this.sourceEnumerator.next();
+            if (next.done) {
+                return this.done();
+            }
+
+            if (!this.hasPrevious) {
+                this.previous = next.value;
+                this.hasPrevious = true;
+                continue;
+            }
+
+            const pair: [T, T] = [this.previous, next.value];
+            this.previous = next.value;
+            return this.yield(pair);
+        }
     }
 }

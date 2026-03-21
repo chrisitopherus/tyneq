@@ -1,41 +1,45 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { TakeWhileEnumerator } from "../../enumerators/streaming/takeWhile";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for taking elements while a predicate is true.
- * 
+ * Enumerator that yields elements while a predicate is true, then stops.
+ *
  * @remarks
- * This is a streaming operator that yields elements from the start of the sequence
- * as long as a predicate returns true. Stops enumeration at the first element that
- * fails the predicate. Delegates enumeration logic to {@link TakeWhileEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(k) time where k is the number of elements
- * that satisfy the predicate.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link TakeWhileEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.takeWhile} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Evaluates the predicate for each element. The first element that returns `false` causes early
+ * completion; that element and all subsequent elements are not yielded.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class TakeWhileOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** Predicate function to test elements for yielding. */
-    private readonly predicate: (item: TSource) => boolean;
+@operator<[predicate: unknown]>("takeWhile", (predicate) => {
+    ArgumentUtility.checkNotOptional({ predicate });
+})
+export class TakeWhileEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private readonly predicate: (value: T) => boolean;
 
     /**
-     * Creates a new takeWhile operator.
-     * 
-     * @param source - The source sequence.
-     * @param predicate - Function to test each element (stops at first false).
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param predicate - Elements are yielded while this returns `true`.
      */
-    public constructor(source: IEnumerable<TSource>, predicate: (item: TSource) => boolean) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (value: T) => boolean) {
+        super(sourceEnumerator);
         this.predicate = predicate;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new TakeWhileEnumerator<TSource>(this.source[Symbol.iterator](), this.predicate);
+    protected override handleNext(): IteratorResult<T> {
+        const result = this.sourceEnumerator.next();
+        if (result.done) {
+            return this.done();
+        }
+
+        if (this.predicate(result.value)) {
+            return this.yield(result.value);
+        }
+
+        return this.earlyComplete();
     }
 }

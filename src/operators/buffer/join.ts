@@ -1,85 +1,96 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { JoinEnumerator } from "../../enumerators/buffer/join";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
+import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { nameof } from "../../utility/nameof";
+import { TyneqMap } from "../../utility/map";
 
 /**
- * Operator implementation for inner join operation.
- * 
+ * Enumerator that correlates elements from two sequences based on matching keys (inner join).
+ *
  * @remarks
- * This is a buffering operator that correlates elements of two sequences based on matching
- * keys. For each pair of matching elements (by key), applies the result selector to produce
- * an output element. Delegates enumeration logic to {@link JoinEnumerator}.
- * 
- * **Performance**: O(n + m) time where n is outer length and m is inner length.
- * O(m) space to index the inner sequence by key.
- * 
- * **Operator Category**: Buffering - indexes inner sequence before yielding results.
- * 
- * @typeParam TSource - The type of elements in the outer (source) sequence.
- * @typeParam TInner - The type of elements in the inner sequence.
- * @typeParam TKey - The type of keys used for correlation.
- * @typeParam TResult - The type of result elements.
- * 
- * @see {@link JoinEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.join} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Buffers the entire inner sequence into a key-to-values lookup on first iteration. For each
+ * outer element, yields one result per matching inner element. Outer elements with no matches
+ * are skipped.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class JoinOperatorEnumerable<TSource, TInner, TKey, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
-    /** The inner sequence to join with. */
-    private readonly inner: Iterable<TInner>;
-    /** Function to extract keys from outer elements. */
-    private readonly outerKeySelector: (outer: TSource) => TKey
-    /** Function to extract keys from inner elements. */
+@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>("join", "buffer", (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
+    ArgumentUtility.checkNotOptional({ innerSource });
+    ArgumentUtility.checkIterable({ innerSource });
+    ArgumentUtility.checkNotOptional({ outerKeySelector });
+    ArgumentUtility.checkNotOptional({ innerKeySelector });
+    ArgumentUtility.checkNotOptional({ resultSelector });
+})
+export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSourceEnumerator<TOuter, TResult> {
+    private readonly innerSource: Iterable<TInner>;
+    private readonly outerKeySelector: (outer: TOuter) => TKey;
     private readonly innerKeySelector: (inner: TInner) => TKey;
-    /** Function to transform matching outer and inner elements into result. */
-    private readonly resultSelector: (outer: TSource, inner: TInner) => TResult;
+    private readonly resultSelector: (outer: TOuter, inner: TInner) => TResult;
+    private innerLookup = new TyneqMap<TKey, TInner[]>();
+    private pendingOuter!: TOuter;
+    private pendingMatches: Nullable<TInner[]> = null;
+    private pendingIndex = 0;
 
     /**
-     * Creates a new inner join operator.
-     * 
-     * @param source - The outer sequence.
-     * @param inner - The inner sequence to join with.
-     * @param outerKeySelector - Function to extract keys from outer elements.
-     * @param innerKeySelector - Function to extract keys from inner elements.
-     * @param resultSelector - Function to create results from matching pairs.
-     * 
-     * @throws {@link ArgumentError} when any parameter is undefined.
-     * @throws {@link ArgumentNullError} when any parameter is null.
+     * @param sourceEnumerator - The outer sequence enumerator.
+     * @param innerSource - The inner sequence to join against; fully buffered on first iteration.
+     * @param outerKeySelector - Extracts the join key from each outer element.
+     * @param innerKeySelector - Extracts the join key from each inner element.
+     * @param resultSelector - Combines a matching outer and inner element into a result.
+     * @throws {ArgumentError} If any required parameter is null or undefined.
      */
     public constructor(
-        source: IEnumerable<TSource>,
-        inner: Iterable<TInner>,
-        outerKeySelector: (outer: TSource) => TKey,
+        sourceEnumerator: IEnumerator<TOuter>,
+        innerSource: Iterable<TInner>,
+        outerKeySelector: (outer: TOuter) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
-        resultSelector: (outer: TSource, inner: TInner) => TResult
+        resultSelector: (outer: TOuter, inner: TInner) => TResult
     ) {
-        super(source);
-
-        this.inner = inner;
+        super(sourceEnumerator);
+        this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;
         this.innerKeySelector = innerKeySelector;
         this.resultSelector = resultSelector;
     }
 
-    public getFactory(): IteratorFactory<TResult> {
-        const source = this.source;
-        const innerSource = this.inner;
-        const outerKeySelector = this.outerKeySelector;
-        const innerKeySelector = this.innerKeySelector;
-        const resultSelector = this.resultSelector;
-        return () => {
-            return new JoinEnumerator<TSource, TInner, TKey, TResult>(source[Symbol.iterator](), innerSource, outerKeySelector, innerKeySelector, resultSelector);
+    protected override initialize(): void {
+        for (const innerItem of this.innerSource) {
+            const key = this.innerKeySelector(innerItem);
+            const bucket = this.innerLookup.getOrInit(key, () => []);
+            bucket.push(innerItem);
         }
     }
 
-    public override getEnumerator(): IEnumerator<TResult> {
-        return new JoinEnumerator<TSource, TInner, TKey, TResult>(
-            this.source[Symbol.iterator](),
-            this.inner,
-            this.outerKeySelector,
-            this.innerKeySelector,
-            this.resultSelector
-        );
+    protected override handleNext(): IteratorResult<TResult> {
+        while (true) {
+            if (this.pendingMatches !== null) {
+                if (this.pendingIndex < this.pendingMatches.length) {
+                    return this.yield(this.resultSelector(this.pendingOuter, this.pendingMatches[this.pendingIndex++]));
+                }
+
+                this.pendingMatches = null;
+            }
+
+            const nextOuter = this.sourceEnumerator.next();
+            if (nextOuter.done) {
+                return this.done();
+            }
+
+            const outerItem = nextOuter.value;
+            const outerKey = this.outerKeySelector(outerItem);
+            const innerItems = this.innerLookup.get(outerKey);
+
+            if (innerItems === undefined || innerItems.length === 0) {
+                continue;
+            }
+
+            this.pendingOuter = outerItem;
+            this.pendingMatches = innerItems;
+            this.pendingIndex = 0;
+        }
     }
 }

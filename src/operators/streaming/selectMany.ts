@@ -1,43 +1,54 @@
-import { IEnumerable, IEnumerator, IteratorFactory } from "../..";
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { SelectManyEnumerator } from "../../enumerators/streaming/selectMany";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { Nullable } from "../../types/utility";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for projecting and flattening nested sequences.
- * 
+ * Enumerator that projects each element to a nested sequence and flattens the results.
+ *
  * @remarks
- * This is a streaming operator that applies a selector function to each element,
- * obtaining a nested sequence, and flattens all nested sequences into a single
- * flat sequence. Also known as "flatMap". Delegates enumeration logic to
- * {@link SelectManyEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n + m) time when fully enumerated,
- * where n is source length and m is total length of all nested sequences.
- * 
- * **Operator Category**: Streaming - processes nested sequences one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TResult - The type of elements in the flattened result sequence.
- * 
- * @see {@link SelectManyEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.selectMany} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Applies the selector to each source element to obtain a nested sequence, then yields all
+ * elements of each nested sequence in order (flatMap semantics).
+ *
+ * @group Enumerators
+ * @internal
  */
-export class SelectManyOperatorEnumerable<TSource, TResult> extends TyneqOperatorEnumerable<TSource, TResult> {
-    /** Function to project each element to a nested sequence. */
-    private readonly selector: (item: TSource) => Iterable<TResult>;
+@operator<[selector: unknown]>("selectMany", (selector) => {
+    ArgumentUtility.checkNotOptional({ selector });
+})
+export class SelectManyEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
+    private readonly selector: (item: T) => Iterable<U>;
+    private innerEnumerator: Nullable<IEnumerator<U>> = null;
 
     /**
-     * Creates a new selectMany (flatMap) operator.
-     * 
-     * @param source - The source sequence.
-     * @param selector - Function to project each element to a nested sequence.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param selector - Maps each source element to a nested sequence to flatten.
      */
-    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => Iterable<TResult>) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => Iterable<U>) {
+        super(sourceEnumerator);
         this.selector = selector;
     }
 
-    public override getEnumerator(): IEnumerator<TResult> {
-        return new SelectManyEnumerator<TSource, TResult>(this.source[Symbol.iterator](), this.selector);
+    protected override handleNext(): IteratorResult<U> {
+        while (true) {
+            if (this.innerEnumerator !== null) {
+                const innerNext = this.innerEnumerator.next();
+                if (!innerNext.done) {
+                    return this.yield(innerNext.value);
+                }
+
+                this.innerEnumerator = null;
+            }
+
+            const sourceNext = this.sourceEnumerator.next();
+            if (sourceNext.done) {
+                return this.done();
+            }
+
+            this.innerEnumerator = this.selector(sourceNext.value)[Symbol.iterator]();
+        }
     }
 }

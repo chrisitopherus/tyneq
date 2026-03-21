@@ -1,39 +1,43 @@
-import { TyneqOperatorEnumerable } from "../../core/operator/TyneqOperatorEnumerable";
-import { PrependEnumerator } from "../../enumerators/streaming/prepend";
-import { IEnumerable, IEnumerator, IteratorFactory } from "../../types/core";
+import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
+import { IEnumerator } from "../../types/core";
+import { operator } from "../../extensibility/operator";
 
 /**
- * Operator implementation for prepending a single element to the beginning of a sequence.
- * 
+ * Enumerator that prepends a single element to the beginning of a sequence.
+ *
  * @remarks
- * This is a streaming operator that yields the prepended item first, followed by all
- * source elements. Delegates enumeration logic to {@link PrependEnumerator}.
- * 
- * **Performance**: O(1) space (streaming). O(n) time when fully enumerated.
- * 
- * **Operator Category**: Streaming - processes elements one-at-a-time without buffering.
- * 
- * @typeParam TSource - The type of elements in the sequence.
- * 
- * @see {@link PrependEnumerator} for the enumeration implementation.
- * @see {@link ITyneqEnumerable.prepend} for the public API.
+ * Deferred. Source is not enumerated until iteration begins.
+ *
+ * Yields the prepended item first, then all source elements.
+ *
+ * @group Enumerators
+ * @internal
  */
-export class PrependOperatorEnumerable<TSource> extends TyneqOperatorEnumerable<TSource> {
-    /** The element to prepend to the sequence. */
-    private readonly item: TSource;
+@operator("prepend")
+export class PrependEnumerator<T> extends TyneqSourceEnumerator<T> {
+    private prepended = false;
+    private readonly item: T;
 
     /**
-     * Creates a new prepend operator.
-     * 
-     * @param source - The source sequence.
-     * @param item - The element to prepend to the beginning.
+     * @param sourceEnumerator - The upstream enumerator to wrap.
+     * @param item - The element to yield before all source elements.
      */
-    public constructor(source: IEnumerable<TSource>, item: TSource) {
-        super(source);
+    public constructor(sourceEnumerator: IEnumerator<T>, item: T) {
+        super(sourceEnumerator);
         this.item = item;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
-        return new PrependEnumerator<TSource>(this.source[Symbol.iterator](), this.item);
+    protected override handleNext(): IteratorResult<T> {
+        if (!this.prepended) {
+            this.prepended = true;
+            return this.yield(this.item);
+        }
+
+        const nextItem = this.sourceEnumerator.next();
+        if (!nextItem.done) {
+            return this.yield(nextItem.value);
+        }
+
+        return this.done();
     }
 }
