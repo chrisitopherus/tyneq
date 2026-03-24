@@ -1,8 +1,8 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
-import { EnumeratorUtility } from "../../utility/enumeratorUtility";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**
  * Enumerator that concatenates two sequences.
@@ -15,10 +15,7 @@ import { EnumeratorUtility } from "../../utility/enumeratorUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[other: unknown]>("concat", (other) => {
-    ArgumentUtility.checkNotOptional({ other });
-    ArgumentUtility.checkIterable({ other });
-})
+@builtinOperator({ name: "concat", kind: "streaming" })
 export class ConcatEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly otherEnumerator: IEnumerator<T>;
     private isSourceDone = false;

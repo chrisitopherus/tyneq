@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields elements from both the source and a second sequence whose keys are unique.
@@ -15,11 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown, keySelector: unknown]>("unionBy", "buffer", (otherValues, keySelector) => {
-    ArgumentUtility.checkNotOptional({ otherValues });
-    ArgumentUtility.checkIterable({ otherValues });
-    ArgumentUtility.checkNotOptional({ keySelector });
-})
+@builtinOperator({ name: "unionBy", kind: "buffer" })
 export class UnionByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private readonly bufferedKeys = new Set<TKey>();

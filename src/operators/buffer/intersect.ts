@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields elements present in both the source and another sequence.
@@ -15,10 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown]>("intersect", "buffer", (otherValues) => {
-    ArgumentUtility.checkNotOptional({ otherValues });
-    ArgumentUtility.checkIterable({ otherValues });
-})
+@builtinOperator({ name: "intersect", kind: "buffer" })
 export class IntersectEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private intersectionValues = new Set<TSource>();

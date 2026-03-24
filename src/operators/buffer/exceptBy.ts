@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields elements whose keys are not present in an excluded-keys sequence.
@@ -15,11 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[excludedKeys: unknown, keySelector: unknown]>("exceptBy", "buffer", (excludedKeys, keySelector) => {
-    ArgumentUtility.checkNotOptional({ excludedKeys });
-    ArgumentUtility.checkIterable({ excludedKeys });
-    ArgumentUtility.checkNotOptional({ keySelector });
-})
+@builtinOperator({ name: "exceptBy", kind: "buffer" })
 export class ExceptByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedKeys: Iterable<TKey>;
     private excludeSet = new Set<TKey>();

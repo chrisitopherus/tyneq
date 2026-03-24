@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
@@ -18,13 +18,7 @@ import { TyneqMap } from "../../utility/map";
  * @group Enumerators
  * @internal
  */
-@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>("join", "buffer", (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
-    ArgumentUtility.checkNotOptional({ innerSource });
-    ArgumentUtility.checkIterable({ innerSource });
-    ArgumentUtility.checkNotOptional({ outerKeySelector });
-    ArgumentUtility.checkNotOptional({ innerKeySelector });
-    ArgumentUtility.checkNotOptional({ resultSelector });
-})
+@builtinOperator({ name: "join", kind: "buffer" })
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSourceEnumerator<TOuter, TResult> {
     private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;

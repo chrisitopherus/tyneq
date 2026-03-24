@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields consecutive overlapping pairs from a sequence.
@@ -14,7 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("pairwise")
+@builtinOperator({ name: "pairwise", kind: "streaming" })
 export class PairwiseEnumerator<T> extends TyneqSourceEnumerator<T, [T, T]> {
     private hasPrevious = false;
     private previous!: T;

@@ -309,4 +309,54 @@ export class OperatorRegistry {
     public static count(): number {
         return this._entries.size;
     }
+
+    // ── Internal registration ─────────────────────────────────────────────────
+
+    /**
+     * Registers a built-in Tyneq operator in the registry **without** patching
+     * `TyneqEnumerableBase.prototype`.
+     *
+     * @remarks
+     * Built-in operators have their implementations declared directly on
+     * `TyneqEnumerableBase`, so prototype patching is not needed. This method
+     * exists purely to populate the registry for introspection
+     * (`list()`, `listBySource('internal')`, `has()`, etc.).
+     *
+     * Guards are NOT run — guards are meant to validate external registrations.
+     * Hooks ARE fired so tooling that observes all registrations receives a
+     * complete picture.
+     *
+     * @param name - The operator name (matches the method name on `ITyneqEnumerable`).
+     * @param kind - The execution category of the operator.
+     *
+     * @throws {Error} If an operator with the same name is already registered.
+     *
+     * @internal
+     */
+    public static registerBuiltin(name: string, kind: OperatorMetadata["kind"]): void {
+        if (this._entries.has(name)) {
+            const existing = this._entries.get(name)!.metadata;
+            throw new Error(
+                `[tyneq] Cannot register builtin '${name}' (${kind}): ` +
+                `already registered as '${existing.kind}' from source '${existing.source}'.`
+            );
+        }
+
+        // No-op impl: built-in operators live on TyneqEnumerableBase directly.
+        const noopImpl = function (this: TyneqEnumerableBase<unknown>, ..._args: unknown[]): unknown {
+            return undefined;
+        };
+
+        const entry: OperatorEntry = {
+            metadata: new OperatorMetadata(name, kind, "internal"),
+            impl: noopImpl,
+        };
+
+        // Do NOT patch prototype — the method is already on TyneqEnumerableBase.
+        this._entries.set(name, entry);
+
+        for (const hook of this._registrationHooks) {
+            hook(entry);
+        }
+    }
 }

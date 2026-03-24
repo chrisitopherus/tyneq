@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that performs an unchecked type cast on each element of a sequence.
@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("cast")
+@builtinOperator({ name: "cast", kind: "streaming" })
 export class CastEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
     /**
      * @param sourceEnumerator - The upstream enumerator to wrap.

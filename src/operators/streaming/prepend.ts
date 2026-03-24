@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that prepends a single element to the beginning of a sequence.
@@ -13,7 +13,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("prepend")
+@builtinOperator({ name: "prepend", kind: "streaming" })
 export class PrependEnumerator<T> extends TyneqSourceEnumerator<T> {
     private prepended = false;
     private readonly item: T;

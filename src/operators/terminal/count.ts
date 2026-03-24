@@ -1,6 +1,6 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { IEnumerable } from "../../types/core";
 
 /**
@@ -18,7 +18,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal("count")
+@builtinTerminal({ name: "count" })
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     /**
      * @param source - The source sequence.

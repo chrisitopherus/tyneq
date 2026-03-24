@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, createOperator, createGeneratorOperator, createTerminalOperator, ArgumentError } from "../../../src";
+import { Tyneq, createOperator, createGeneratorOperator, createTerminalOperator, ArgumentError } from "../../..";
 
 // Each test needs a unique operator name because registrations permanently mutate
 // TyneqEnumerableBase.prototype for the lifetime of the process.

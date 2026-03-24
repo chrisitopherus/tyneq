@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that filters out duplicate values from a sequence.
@@ -13,7 +13,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("distinct", "buffer")
+@builtinOperator({ name: "distinct", kind: "buffer" })
 export class DistinctEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
 

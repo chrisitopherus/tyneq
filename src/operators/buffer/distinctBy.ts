@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that filters out elements with duplicate keys from a sequence.
@@ -14,9 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[keySelector: unknown]>("distinctBy", "buffer", (keySelector) => {
-    ArgumentUtility.checkNotOptional({ keySelector });
-})
+@builtinOperator({ name: "distinctBy", kind: "buffer" })
 export class DistinctByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;

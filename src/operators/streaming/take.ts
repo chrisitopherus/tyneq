@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields a specified number of elements from the beginning of a sequence.
@@ -15,7 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("take")
+@builtinOperator({ name: "take", kind: "streaming" })
 export class TakeEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private takenCount = 0;

@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -22,7 +22,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal("lastOrDefault")
+@builtinTerminal({ name: "lastOrDefault" })
 export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
     private readonly defaultValue: TSource;

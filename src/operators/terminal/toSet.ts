@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 
 /**
@@ -16,7 +16,7 @@ import { ITyneqEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal("toSet")
+@builtinTerminal({ name: "toSet" })
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     /**
      * @param source - The source sequence.

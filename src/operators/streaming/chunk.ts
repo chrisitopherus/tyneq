@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that splits a sequence into fixed-size chunks.
@@ -15,10 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[size: unknown]>("chunk", (size) => {
-    ArgumentUtility.checkSafeInteger({ size: size as number });
-    ArgumentUtility.checkPositive({ size: size as number });
-})
+@builtinOperator({ name: "chunk", kind: "streaming" })
 export class ChunkEnumerator<T> extends TyneqSourceEnumerator<T, T[]> {
     private readonly size: number;
     private currentChunk: T[] = [];

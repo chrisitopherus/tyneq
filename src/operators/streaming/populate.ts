@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that replaces every source element with a constant value.
@@ -13,7 +13,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("populate")
+@builtinOperator({ name: "populate", kind: "streaming" })
 export class PopulateEnumerator<TSource, TValue> extends TyneqSourceEnumerator<TSource, TValue> {
     private readonly value: TValue;
 

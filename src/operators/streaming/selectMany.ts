@@ -1,8 +1,8 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that projects each element to a nested sequence and flattens the results.
@@ -16,9 +16,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[selector: unknown]>("selectMany", (selector) => {
-    ArgumentUtility.checkNotOptional({ selector });
-})
+@builtinOperator({ name: "selectMany", kind: "streaming" })
 export class SelectManyEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
     private readonly selector: (item: T) => Iterable<U>;
     private innerEnumerator: Nullable<IEnumerator<U>> = null;

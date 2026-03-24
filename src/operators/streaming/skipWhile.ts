@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that bypasses elements from the beginning while a predicate is true, then yields all remaining elements.
@@ -16,9 +16,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[predicate: unknown]>("skipWhile", (predicate) => {
-    ArgumentUtility.checkNotOptional({ predicate });
-})
+@builtinOperator({ name: "skipWhile", kind: "streaming" })
 export class SkipWhileEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
     private isSkipping = true;

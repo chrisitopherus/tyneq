@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that appends a single element to the end of a sequence.
@@ -13,7 +13,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("append")
+@builtinOperator({ name: "append", kind: "streaming" })
 export class AppendEnumerator<T> extends TyneqSourceEnumerator<T> {
     private isSourceDone = false;
     private appended = false;

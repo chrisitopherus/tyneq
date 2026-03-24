@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { IEnumerable } from "../../types/core";
 
 /**
@@ -16,7 +16,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal("contains")
+@builtinTerminal({ name: "contains" })
 export class ContainsOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly value: TSource;
 

@@ -1,6 +1,6 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { InvalidOperationError } from "../../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
@@ -21,9 +21,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal<[(item: unknown) => boolean]>("first", (predicate) => {
-    ArgumentUtility.checkNotOptional({ predicate });
-})
+@builtinTerminal({ name: "first" })
 export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
 

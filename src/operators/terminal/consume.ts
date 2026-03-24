@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { IEnumerable } from "../../types/core";
 
 /**
@@ -16,7 +16,7 @@ import { IEnumerable } from "../../types/core";
  * @category Terminal
  * @internal
  */
-@terminal("consume")
+@builtinTerminal({ name: "consume" })
 export class ConsumeOperator<T> extends TyneqTerminalOperator<T, void> {
     public constructor(source: IEnumerable<T>) {
         super(source);

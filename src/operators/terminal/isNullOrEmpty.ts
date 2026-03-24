@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { IEnumerable } from "../../types/core";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
@@ -18,7 +18,7 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @category Terminal
  * @internal
  */
-@terminal("isNullOrEmpty")
+@builtinTerminal({ name: "isNullOrEmpty" })
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: IEnumerable<T>) {
         super(source);
