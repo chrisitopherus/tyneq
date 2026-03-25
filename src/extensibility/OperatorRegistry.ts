@@ -171,9 +171,16 @@ export class OperatorRegistry {
      * @group Registry
      */
     public static unregister(name: string): boolean {
-        if (!this._entries.has(name)) return false;
+        const entry = this._entries.get(name);
+        if (!entry) {
+            return false;
+        }
+        
         this._entries.delete(name);
-        delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
+        if (entry.metadata.source !== "internal") {
+            delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
+        }
+
         return true;
     }
 
