@@ -6,14 +6,14 @@ This guide walks through building class-based operators from scratch using `Tyne
 
 ## When to Use the Class-Based API
 
-The functional APIs (`createGeneratorOperator`, `createOperator`) cover most cases. Reach for `TyneqEnumerator` when:
+The functional APIs (`createStreamingOperator`, `createOperator`) cover most cases. Reach for `TyneqEnumerator` when:
 
 - You need early termination that triggers upstream disposal (`take`, `first`).
 - You buffer the full source in `initialize()` before yielding (`orderBy`, `reverse`).
 - You hold a secondary resource (a second enumerator, a large lookup set) that must be released on disposal.
 - The logic is complex enough that a class with named fields is cleaner than a closure.
 
-For simple stateless transforms, `createGeneratorOperator` is less ceremony.
+For simple stateless transforms, `createStreamingOperator` is less ceremony.
 
 ---
 
@@ -21,7 +21,7 @@ For simple stateless transforms, `createGeneratorOperator` is less ceremony.
 
 ```
 TyneqBaseEnumerator<TInput, TOutput>   ← root; manages lifecycle state
-  └── TyneqEnumerator<TInput, TOutput>  ← wraps an upstream IEnumerator; use this
+  └── TyneqEnumerator<TInput, TOutput>  ← wraps an upstream Enumerator; use this
 ```
 
 You will almost always extend `TyneqEnumerator`. It adds:
@@ -39,7 +39,7 @@ Every class-based operator follows this template:
 
 ```ts
 import { operator, TyneqEnumerator, ArgumentUtility } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import type { Enumerator } from "tyneq";
 
 @operator<[/* arg types */]>("myOp", (/* args */) => {
     // Validate args here — runs eagerly at the call site before any iteration.
@@ -48,7 +48,7 @@ import type { IEnumerator } from "tyneq";
 export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource> {
     // Store operator arguments as fields.
 
-    public constructor(sourceEnumerator: IEnumerator<TSource> /*, args */) {
+    public constructor(sourceEnumerator: Enumerator<TSource> /*, args */) {
         super(sourceEnumerator);         // always first — validates sourceEnumerator
         // Assign this.myArg = myArg.  Do NOT re-validate here.
     }
@@ -92,7 +92,7 @@ The simplest pattern: inspect each upstream element and either pass it through o
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import type { Enumerator } from "tyneq";
 
 @operator<[predicate: unknown]>("myWhere", (predicate) => {
     if (typeof predicate !== "function") throw new TypeError("myWhere: predicate must be a function");
@@ -100,7 +100,7 @@ import type { IEnumerator } from "tyneq";
 export class MyWhereEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
+    public constructor(sourceEnumerator: Enumerator<T>, predicate: (item: T) => boolean) {
         super(sourceEnumerator);
         this.predicate = predicate;
     }
@@ -116,8 +116,8 @@ export class MyWhereEnumerator<T> extends TyneqEnumerator<T> {
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        myWhere(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        myWhere(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
     }
 }
 ```
@@ -135,7 +135,7 @@ declare module "tyneq" {
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import type { Enumerator } from "tyneq";
 
 @operator<[count: unknown]>("myTake", (count) => {
     if (typeof count !== "number" || count < 0) throw new RangeError("myTake: count must be a non-negative number");
@@ -144,7 +144,7 @@ export class MyTakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private emitted = 0;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
+    public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;
     }
@@ -162,8 +162,8 @@ export class MyTakeEnumerator<T> extends TyneqEnumerator<T> {
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        myTake(count: number): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        myTake(count: number): TyneqSequence<TSource>;
     }
 }
 ```
@@ -183,7 +183,7 @@ When `TInput ≠ TOutput`, declare both type parameters on `TyneqEnumerator<TInp
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import type { Enumerator } from "tyneq";
 
 @operator<[selector: unknown]>("mySelect", (selector) => {
     if (typeof selector !== "function") throw new TypeError("mySelect: selector must be a function");
@@ -191,7 +191,7 @@ import type { IEnumerator } from "tyneq";
 export class MySelectEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly selector: (item: TSource) => TResult;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, selector: (item: TSource) => TResult) {
+    public constructor(sourceEnumerator: Enumerator<TSource>, selector: (item: TSource) => TResult) {
         super(sourceEnumerator);
         this.selector = selector;
     }
@@ -204,8 +204,8 @@ export class MySelectEnumerator<TSource, TResult> extends TyneqEnumerator<TSourc
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        mySelect<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    interface TyneqSequence<TSource> {
+        mySelect<TResult>(selector: (item: TSource) => TResult): TyneqSequence<TResult>;
     }
 }
 ```
@@ -223,14 +223,14 @@ Buffer operators must see the **full** source before producing any output. Overr
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
-import type { IEnumerator } from "tyneq";
+import type { Enumerator } from "tyneq";
 
 @operator("myReverse", "buffer", null)   // null = no arguments to validate
 export class MyReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private index = 0;
 
-    public constructor(sourceEnumerator: IEnumerator<T>) {
+    public constructor(sourceEnumerator: Enumerator<T>) {
         super(sourceEnumerator);
     }
 
@@ -256,8 +256,8 @@ export class MyReverseEnumerator<T> extends TyneqEnumerator<T> {
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        myReverse(): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        myReverse(): TyneqSequence<TSource>;
     }
 }
 ```
@@ -276,22 +276,22 @@ Some operators hold a **second** enumerator alongside the primary source. That s
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
-import type { IEnumerable, IEnumerator } from "tyneq";
+import type { Enumerable, Enumerator } from "tyneq";
 
 @operator<[other: unknown]>("myZip", (other) => {
     if (other == null) throw new TypeError("myZip: other must not be null or undefined");
 })
 export class MyZipEnumerator<T, U> extends TyneqEnumerator<T, [T, U]> {
-    private readonly other: IEnumerable<U>;
-    private otherEnumerator: IEnumerator<U> | null = null;
+    private readonly other: Enumerable<U>;
+    private otherEnumerator: Enumerator<U> | null = null;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, other: IEnumerable<U>) {
+    public constructor(sourceEnumerator: Enumerator<T>, other: Enumerable<U>) {
         super(sourceEnumerator);
         this.other = other;
     }
 
     protected override initialize(): void {
-        this.otherEnumerator = this.other[Symbol.iterator]() as IEnumerator<U>;
+        this.otherEnumerator = this.other[Symbol.iterator]() as Enumerator<U>;
     }
 
     protected override handleNext(): IteratorResult<[T, U]> {
@@ -310,8 +310,8 @@ export class MyZipEnumerator<T, U> extends TyneqEnumerator<T, [T, U]> {
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        myZip<TOther>(other: ITyneqEnumerable<TOther>): ITyneqEnumerable<[TSource, TOther]>;
+    interface TyneqSequence<TSource> {
+        myZip<TOther>(other: TyneqSequence<TOther>): TyneqSequence<[TSource, TOther]>;
     }
 }
 ```
@@ -320,7 +320,7 @@ declare module "tyneq" {
 - The secondary enumerator is created in `initialize()` — not the constructor — because `initialize()` runs at the moment iteration begins, which matches the lazy contract.
 - When either sequence runs out first, `earlyComplete()` is correct: the other sequence may still have elements and must be released.
 - `disposeAdditional()` calls `return()` on the secondary enumerator. `disposeSource()` (inherited from `TyneqEnumerator`) handles the primary source.
-- Note the optional chaining `return?.()` — `IEnumerator.return` is optional per the iterator protocol.
+- Note the optional chaining `return?.()` — `Enumerator.return` is optional per the iterator protocol.
 
 ---
 
@@ -370,7 +370,7 @@ protected override handleNext(): IteratorResult<T> {
 
 ```ts
 // ❌ Wrong — error fires during factory construction (deferred), not at call site
-public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
+public constructor(sourceEnumerator: Enumerator<T>, count: number) {
     super(sourceEnumerator);
     if (count < 0) throw new RangeError("count must be >= 0");
 }
@@ -395,14 +395,14 @@ public constructor(sourceEnumerator: IEnumerator<T>, count: number) {
 
 ```ts
 // ❌ Wrong — breaks lazy contract; the secondary sequence is iterated at construction time
-public constructor(sourceEnumerator: IEnumerator<T>, other: IEnumerable<U>) {
+public constructor(sourceEnumerator: Enumerator<T>, other: Enumerable<U>) {
     super(sourceEnumerator);
-    this.otherEnumerator = other[Symbol.iterator]() as IEnumerator<U>;
+    this.otherEnumerator = other[Symbol.iterator]() as Enumerator<U>;
 }
 
 // ✅ Correct — allocate in initialize(), which runs at the start of iteration
 protected override initialize(): void {
-    this.otherEnumerator = this.other[Symbol.iterator]() as IEnumerator<U>;
+    this.otherEnumerator = this.other[Symbol.iterator]() as Enumerator<U>;
 }
 ```
 

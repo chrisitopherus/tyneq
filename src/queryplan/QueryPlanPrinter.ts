@@ -1,7 +1,7 @@
-import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
+import type { IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
 
 /**
- * A {@link IQueryPlanVisitor} that renders a query plan as a human-readable string.
+ * A {@link QueryPlanVisitor} that renders a query plan as a human-readable string.
  *
  * @remarks
  * `visit()` walks the `source` chain from the root source node to the terminal node,
@@ -34,7 +34,7 @@ import type { IQueryNode, IQueryPlanVisitor, QueryPlanPrinterOptions } from "../
  *
  * @group QueryPlan
  */
-export class QueryPlanPrinter implements IQueryPlanVisitor<string> {
+export class QueryPlanPrinter implements QueryPlanVisitor<string> {
     protected readonly indent: string;
     protected readonly arrow: string;
     protected readonly maxInlineArrayItems: number;

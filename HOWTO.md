@@ -26,7 +26,7 @@ Two APIs are available and both route through `OperatorRegistry`:
 | API | When to use |
 |---|---|
 | `@operator` / `@terminal` decorator | You already have a class with constructor logic (most library operators) |
-| `createOperator` / `createGeneratorOperator` / `createTerminalOperator` | Simple one-off or third-party operators; generator functions preferred |
+| `createOperator` / `createStreamingOperator` / `createTerminalOperator` | Simple one-off or third-party operators; generator functions preferred |
 
 The two are interchangeable in terms of runtime behaviour. Pick whichever fits
 the amount of structural ceremony you want.
@@ -38,9 +38,9 @@ the amount of structural ceremony you want.
 ### 3a. Write the enumerator class
 
 ```ts
-// src/operators/streaming/myOp.ts
+// src/enumerators/streaming/myOp.ts
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { operator } from '../../extensibility/operator';
+import { operator } from '../../extensions/operator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
 @operator<[threshold: unknown]>('myOp', (threshold) => {
@@ -50,7 +50,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
 export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource, TSource> {
     private readonly threshold: number;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, threshold: number) {
+    public constructor(sourceEnumerator: Enumerator<TSource>, threshold: number) {
         super(sourceEnumerator);
         // Do NOT re-validate threshold here — it was already validated by @operator.
         this.threshold = threshold;
@@ -63,7 +63,7 @@ export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource, TSource> {
 ```
 
 **Key rules for the constructor**:
-- The first parameter must be `sourceEnumerator: IEnumerator<TSource>` (infrastructure — never validate it).
+- The first parameter must be `sourceEnumerator: Enumerator<TSource>` (infrastructure — never validate it).
 - User arguments come after; do NOT re-validate them — `@operator`'s `validate` runs first.
 - Throw `ArgumentError` / `ArgumentNullError` / `ArgumentOutOfRangeError` from `validate`, not from the constructor.
 
@@ -76,10 +76,10 @@ export class MyOpEnumerator<TSource> extends TyneqEnumerator<TSource, TSource> {
 `initialize()` to fill their buffer before `handleNext()` is called:
 
 ```ts
-// src/operators/buffer/myBufferOp.ts
+// src/enumerators/buffer/myBufferOp.ts
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { IEnumerator } from '../../types/core';
-import { operator } from '../../extensibility/operator';
+import { Enumerator } from '../../types/core';
+import { operator } from '../../extensions/operator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { EnumeratorUtility } from '../../utility/EnumeratorUtility';
 
@@ -91,7 +91,7 @@ export class MyBufferOpEnumerator<TSource, TKey> extends TyneqEnumerator<TSource
     private buffer: TSource[] = [];
     private index = 0;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, selector: (item: TSource) => TKey) {
+    public constructor(sourceEnumerator: Enumerator<TSource>, selector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.selector = selector;
     }
@@ -120,17 +120,24 @@ The only difference from a streaming operator is the `'buffer'` kind argument an
 The `@operator` decorator fires at class-evaluation time. The class module must be
 imported before the method is available on `TyneqEnumerableBase.prototype`.
 
-Add a **side-effect import** to the operator barrel file (`src/operators/extensions/index.ts`):
+Add a **named import** to `src/core/TyneqEnumerableBase.ts`:
 
 ```ts
-// src/operators/extensions/index.ts
-
-// @operator('myOp') — enumerator class
-import '../streaming/myOp';
+// src/core/TyneqEnumerableBase.ts — streaming enumerators section
+import { MyOpEnumerator } from '../enumerators/streaming/myOp';
 ```
 
-Note: this must be a bare side-effect import (`import '...'`), not `export * from '...'`.
-The decorator registers the operator as a side effect of module evaluation.
+Then add the method body that delegates to the enumerator:
+
+```ts
+public myOp(threshold: number): TyneqSequence<TSource> {
+    const node = this.createOperatorNode(MyOpEnumerator, [threshold]);
+    return this.createEnumerable(
+        { getEnumerator: () => new MyOpEnumerator<TSource>(this.getEnumerator(), threshold) },
+        node
+    );
+}
+```
 
 ---
 
@@ -139,11 +146,11 @@ The decorator registers the operator as a side effect of module evaluation.
 Use a config-object API. The three choices, in ascending order of ceremony:
 
 ```ts
-// src/operators/streaming/myOp.ts — createGeneratorOperator (lowest ceremony)
-import { createGeneratorOperator } from '../../extensibility/createGeneratorOperator';
+// src/enumerators/streaming/myOp.ts — createStreamingOperator (lowest ceremony)
+import { createStreamingOperator } from '../../extensions/createStreamingOperator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
-createGeneratorOperator({
+createStreamingOperator({
     name: 'myOp',
     validate(threshold: unknown) {
         ArgumentUtility.checkNotOptional({ threshold });
@@ -159,8 +166,8 @@ createGeneratorOperator({
 ```
 
 ```ts
-// src/operators/streaming/myOp.ts — createOperator (when you need full IEnumeratorFactory control)
-import { createOperator } from '../../extensibility/createOperator';
+// src/enumerators/streaming/myOp.ts — createOperator (when you need full EnumeratorFactory control)
+import { createOperator } from '../../extensions/createOperator';
 
 createOperator({
     name: 'myOp',
@@ -168,19 +175,17 @@ createOperator({
     validate(threshold: unknown) { /* ... */ },
     factory(source, threshold: number) {
         return {
-            getEnumerator() { /* return IEnumerator<TResult> */ }
+            getEnumerator() { /* return Enumerator<TResult> */ }
         };
     }
 });
 ```
 
-Add the import to the barrel file so registration runs at module-load time:
+Add a **named import** to `src/core/TyneqEnumerableBase.ts` so the registration runs at module-load time:
 
 ```ts
-// src/operators/extensions/index.ts
-
-// createGeneratorOperator('myOp') — generator shorthand
-import '../streaming/myOp';
+// src/core/TyneqEnumerableBase.ts — streaming enumerators section
+import '../enumerators/streaming/myOp';
 ```
 
 ---
@@ -189,8 +194,8 @@ import '../streaming/myOp';
 
 ```ts
 // src/operators/terminal/myTerminal.ts
-import { terminal } from '../../extensibility/terminal';
-import { TyneqTerminalOperator } from '../../core/operator/TyneqTerminalOperator';
+import { terminal } from '../../extensions/terminal';
+import { TyneqTerminalOperator } from '../../core/TyneqTerminalOperator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
 @terminal<[selector: unknown]>('myTerminal', (selector) => {
@@ -200,7 +205,7 @@ import { ArgumentUtility } from '../../utility/argumentUtility';
 export class MyTerminalOperator<TSource> extends TyneqTerminalOperator<TSource, number> {
     private readonly selector: (item: TSource) => number;
 
-    public constructor(source: IEnumerable<TSource>, selector: (item: TSource) => number) {
+    public constructor(source: Enumerable<TSource>, selector: (item: TSource) => number) {
         super(source);
         this.selector = selector;
     }
@@ -230,7 +235,7 @@ TypeScript needs a `declare` stub so the IDE and type-checker know the method ex
 // src/core/TyneqEnumerableBase.ts — in the appropriate section
 
 // ── Streaming operators ───────────────────────────────────────────────────
-declare myOp: (threshold: number) => ITyneqEnumerable<TSource>;
+declare myOp: (threshold: number) => TyneqSequence<TSource>;
 
 // ── Terminal operators ────────────────────────────────────────────────────
 declare myTerminal: (selector: (item: TSource) => number) => number;
@@ -279,7 +284,7 @@ If you add a method directly to the base class (bypassing `@operator`), you must
 the `QueryNode` manually:
 
 ```ts
-public myDirectMethod(arg: number): ITyneqEnumerable<TSource> {
+public myDirectMethod(arg: number): TyneqSequence<TSource> {
     const node = new QueryNode('myDirectMethod', [arg], this[tyneqQueryNode], 'streaming');
     return this.createEnumerable({
         getEnumerator: () => new MyDirectEnumerator(this.getEnumerator(), arg)
@@ -289,7 +294,7 @@ public myDirectMethod(arg: number): ITyneqEnumerable<TSource> {
 
 ---
 
-## 8. IQueryPlanVisitor — integrating ordered and cached enumerables
+## 8. QueryPlanVisitor — integrating ordered and cached enumerables
 
 `TyneqOrderedEnumerable` and `TyneqCachedEnumerable` now carry a real `queryNode`. Their
 nodes appear in the chain just like any other operator's node. No special visitor handling
@@ -337,18 +342,18 @@ from([...3 items])
   → select(<fn>)
 ```
 
-For a custom visitor (optimizer, serializer, linter), implement `IQueryPlanVisitor<T>`:
+For a custom visitor (optimizer, serializer, linter), implement `QueryPlanVisitor<T>`:
 
 ```ts
-import type { IQueryNode, IQueryPlanVisitor } from 'tyneq';
+import type { IQueryNode, QueryPlanVisitor } from 'tyneq';
 
-class OperatorCounter implements IQueryPlanVisitor<number> {
+class OperatorCounter implements QueryPlanVisitor<number> {
     visit(node: IQueryNode): number {
         return 1 + (node.source ? this.visit(node.source) : 0);
     }
 }
 
-const depth = seq.queryNode!.accept(new OperatorCounter());
+const depth = seq[tyneqQueryNode]!.accept(new OperatorCounter());
 ```
 
 ---
@@ -360,7 +365,7 @@ errors before throwing. This gives the caller all problems at once rather than f
 to fix one at a time.
 
 ```ts
-import { operator } from '../../extensibility/operator';
+import { operator } from '../../extensions/operator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
 import { ValidationBuilder } from '../../utility/ValidationBuilder';
 
@@ -391,10 +396,10 @@ External packages can extend Tyneq without modifying the library. The pattern ha
 
 ```ts
 // my-tyneq-operators/src/repeatEach.ts
-import { createGeneratorOperator, OperatorMetadata } from 'tyneq/extensibility';
+import { createStreamingOperator, OperatorMetadata } from 'tyneq/extensions';
 import { ArgumentUtility } from 'tyneq/utility';  // if exported; otherwise use own validation
 
-createGeneratorOperator({
+createStreamingOperator({
     name: 'repeatEach',
     // source defaults to 'external' — no need to specify
     validate(times: unknown) {
@@ -411,7 +416,7 @@ createGeneratorOperator({
 Register with extra metadata using the `extensions` bag:
 
 ```ts
-createGeneratorOperator({
+createStreamingOperator({
     name: 'repeatEach',
     ...
 });
@@ -426,13 +431,13 @@ OperatorRegistry.register({
 ### 11b. Augment the TypeScript type surface
 
 Registration patches the prototype at runtime, but TypeScript won't know about the new
-method until you augment `ITyneqEnumerable`:
+method until you augment `TyneqSequence`:
 
 ```ts
 // my-tyneq-operators/src/repeatEach.ts (continued)
 declare module 'tyneq' {
-    interface ITyneqEnumerable<TSource> {
-        repeatEach(times: number): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        repeatEach(times: number): TyneqSequence<TSource>;
     }
 }
 ```
@@ -451,15 +456,16 @@ Tyneq.from([1, 2, 3]).repeatEach(2);  // → [1, 1, 2, 2, 3, 3]
 ## 12. Troubleshooting
 
 **"My operator isn't showing up / method does not exist at runtime"**
-→ Confirm the operator file is imported as a side-effect in `src/operators/extensions/index.ts`
+→ Confirm the operator file is imported as a named import in `src/core/TyneqEnumerableBase.ts`
   (for library operators) or in the consumer's entry point (for third-party operators).
   The `@operator` decorator and `createOperator` only run when the module is imported —
   a missing import means the prototype is never patched.
 
 **"TypeScript says the method doesn't exist (`Property 'myOp' does not exist`)"**
-→ For library operators: confirm the `declare` stub is in `TyneqEnumerableBase` in the
-  correct section, and the signature is in `ITyneqEnumerable` in `src/types/core.ts`.
-→ For third-party operators: confirm you added the `declare module 'tyneq'` augmentation.
+→ For library operators: confirm the method body is in `TyneqEnumerableBase` in the
+  correct section, and the signature is in `TyneqSequence` in `src/types/core.ts`.
+→ For third-party operators: confirm you added the `declare module 'tyneq'` augmentation
+  augmenting `TyneqSequence`.
 
 **"Validation fires too late — error thrown during iteration, not at the call site"**
 → The validation logic is in the constructor instead of in the `validate` callback.
@@ -469,8 +475,8 @@ Tyneq.from([1, 2, 3]).repeatEach(2);  // → [1, 1, 2, 2, 3, 3]
 **"I get `[tyneq] Cannot register '...' already registered` on hot-reload"**
 → Common in test environments or dev servers that re-import modules. Use
   `OperatorRegistry.unregister(name)` in `afterEach` / `beforeAll` teardown, or check
-  that the barrel (`src/operators/extensions/index.ts`) isn't imported twice through
-  different paths (which causes the module to execute twice).
+  that the operator file isn't imported twice through different paths (which causes the
+  module to execute twice).
 
 **"My buffer operator is registered as `kind: 'streaming'`"**
 → All operators extend `TyneqEnumerator`, so kind inference always returns `'streaming'`.
@@ -485,7 +491,7 @@ Tyneq.from([1, 2, 3]).repeatEach(2);  // → [1, 1, 2, 2, 3, 3]
 - [ ] `validate` runs eagerly; constructor does NOT re-validate user args
 - [ ] Constructor only validates `sourceEnumerator` being present (infrastructure check)
 - [ ] `declare` stub added to `TyneqEnumerableBase` in the correct section
-- [ ] Module imported in the correct barrel (`src/operators/extensions/index.ts`)
+- [ ] Named import added to `src/core/TyneqEnumerableBase.ts`; method body delegates to the operator class
 - [ ] QueryNode is threaded (automatic for `@operator`; manual for base-class methods)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Tests added for the new operator

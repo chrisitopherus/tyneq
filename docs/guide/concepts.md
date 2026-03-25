@@ -4,7 +4,7 @@ This page defines the semantic model used throughout Tyneq documentation.
 
 ## Sequence
 
-A sequence is any value that implements `IEnumerable<T>` — the base re-iterable contract in Tyneq. Each call to `Symbol.iterator` (or `getEnumerator()`) creates a fresh, independent iterator. No mutable state is shared across enumerations.
+A sequence is any value that implements `Enumerable<T>` — the base re-iterable contract in Tyneq. Each call to `Symbol.iterator` (or `getEnumerator()`) creates a fresh, independent iterator. No mutable state is shared across enumerations.
 
 Key properties:
 

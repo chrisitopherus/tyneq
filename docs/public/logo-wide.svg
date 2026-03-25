@@ -1,71 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 72">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="100%" stop-color="#0C1828"/>
+      <stop offset="0%" stop-color="#0C1A2E"/>
+      <stop offset="100%" stop-color="#0A1520"/>
     </linearGradient>
-    <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#1E3A5F" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+    <linearGradient id="markGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2.5" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="1.5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="textShadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#3B82F6" flood-opacity="0.3"/>
-    </filter>
-    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#E2E8F0"/>
-      <stop offset="100%" stop-color="#CBD5E1"/>
-    </linearGradient>
-    <linearGradient id="taglineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#60A5FA"/>
-      <stop offset="100%" stop-color="#06B6D4"/>
-    </linearGradient>
   </defs>
 
   <!-- Background -->
-  <rect width="320" height="80" rx="14" fill="url(#bgGrad)"/>
-  <rect width="320" height="80" rx="14" fill="url(#innerGlow)"/>
+  <rect width="280" height="72" rx="14" fill="url(#bgGrad)"/>
 
-  <!-- Icon (scaled from 100x100 to 60x60, offset to 10,10) -->
-  <g transform="translate(10, 10) scale(0.6)">
-    <!-- Node 1 -->
-    <circle cx="16" cy="50" r="9.5" fill="#0F2040" stroke="#60A5FA" stroke-width="2.5" filter="url(#glow)"/>
-    <circle cx="16" cy="50" r="3.5" fill="#60A5FA" opacity="0.8" filter="url(#softGlow)"/>
-    <!-- Connector 1 -->
-    <line x1="26" y1="50" x2="36" y2="50" stroke="#4B8CF5" stroke-width="2" stroke-linecap="round"/>
-    <path d="M 34 46 L 40 50 L 34 54" fill="none" stroke="#4B8CF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Node 2 -->
-    <circle cx="50" cy="50" r="9.5" fill="#142952" stroke="#38BDF8" stroke-width="1.5"/>
-    <circle cx="50" cy="50" r="5.5" fill="#38BDF8" filter="url(#glow)"/>
-    <!-- Connector 2 -->
-    <line x1="60" y1="50" x2="70" y2="50" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round"/>
-    <path d="M 68 46 L 74 50 L 68 54" fill="none" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Node 3 -->
-    <circle cx="84" cy="50" r="9.5" fill="#0E7490"/>
-    <circle cx="84" cy="50" r="6" fill="#06B6D4" filter="url(#glow)"/>
-    <circle cx="84" cy="50" r="2.5" fill="#BAF4FF" opacity="0.6"/>
+  <!-- Icon: |> scaled to fit ~48x48 at position (12, 12) -->
+  <g transform="translate(12, 12) scale(0.48)">
+    <rect x="22" y="22" width="11" height="56" rx="5.5" fill="url(#markGrad)" filter="url(#glow)"/>
+    <polyline
+      points="43,22 72,50 43,78"
+      fill="none"
+      stroke="url(#markGrad)"
+      stroke-width="11"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      filter="url(#glow)"
+    />
   </g>
 
-  <!-- Title: tyneq -->
-  <text x="82" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
-        font-size="30" font-weight="700" letter-spacing="-0.5"
-        fill="url(#textGrad)" filter="url(#textShadow)">tyneq</text>
-
-  <!-- Tagline -->
-  <text x="83" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
-        font-size="12" font-weight="400" letter-spacing="0.3"
-        fill="url(#taglineGrad)" opacity="0.85">Typed Enumerable Queries for TypeScript</text>
+  <!-- Wordmark: tyneq -->
+  <text
+    x="74"
+    y="46"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+    font-size="32"
+    font-weight="700"
+    letter-spacing="-1"
+    fill="url(#textGrad)"
+  >tyneq</text>
 </svg>

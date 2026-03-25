@@ -117,10 +117,10 @@ const plan = new VerbosePrinter().visit(seq[tyneqQueryNode]!);
 
 ## The Visitor Pattern
 
-`IQueryPlanVisitor<T>` is the interface for walking a query plan. Implement `visit(node)` to dispatch logic based on `node.operatorName`, `node.category`, or `node.args`. The visitor is responsible for recursing into `node.source`.
+`QueryPlanVisitor<T>` is the interface for walking a query plan. Implement `visit(node)` to dispatch logic based on `node.operatorName`, `node.category`, or `node.args`. The visitor is responsible for recursing into `node.source`.
 
 ```ts
-interface IQueryPlanVisitor<T> {
+interface QueryPlanVisitor<T> {
     visit(node: IQueryNode): T;
 }
 ```
@@ -134,9 +134,9 @@ const result = seq[tyneqQueryNode]!.accept(new MyVisitor());
 ### Pattern: Collecting Operator Names
 
 ```ts
-import type { IQueryNode, IQueryPlanVisitor } from "tyneq";
+import type { IQueryNode, QueryPlanVisitor } from "tyneq";
 
-class OperatorCollector implements IQueryPlanVisitor<string[]> {
+class OperatorCollector implements QueryPlanVisitor<string[]> {
     public visit(node: IQueryNode): string[] {
         const upstream = node.source ? this.visit(node.source) : [];
         return [...upstream, node.operatorName];
@@ -152,9 +152,9 @@ const names = seq[tyneqQueryNode]!.accept(new OperatorCollector());
 Warn when a pipeline contains more than one buffering stage:
 
 ```ts
-import type { IQueryNode, IQueryPlanVisitor } from "tyneq";
+import type { IQueryNode, QueryPlanVisitor } from "tyneq";
 
-class BufferBudgetChecker implements IQueryPlanVisitor<string[]> {
+class BufferBudgetChecker implements QueryPlanVisitor<string[]> {
     public visit(node: IQueryNode): string[] {
         const upstream = node.source ? this.visit(node.source) : [];
         if (node.category === "buffer") return [...upstream, node.operatorName];
@@ -173,9 +173,9 @@ if (bufferStages.length > 1) {
 Flag common anti-patterns — for example, an `orderBy` placed after a `take`:
 
 ```ts
-import type { IQueryNode, IQueryPlanVisitor } from "tyneq";
+import type { IQueryNode, QueryPlanVisitor } from "tyneq";
 
-class PipelineLinter implements IQueryPlanVisitor<string[]> {
+class PipelineLinter implements QueryPlanVisitor<string[]> {
     public visit(node: IQueryNode): string[] {
         const issues = node.source ? this.visit(node.source) : [];
 
@@ -199,7 +199,7 @@ warnings.forEach(w => console.warn(w));
 Serialize a plan to JSON for logging, profiling, or remote debugging:
 
 ```ts
-import type { IQueryNode, IQueryPlanVisitor } from "tyneq";
+import type { IQueryNode, QueryPlanVisitor } from "tyneq";
 
 interface NodeJson {
     op: string;
@@ -208,7 +208,7 @@ interface NodeJson {
     source: NodeJson | null;
 }
 
-class JsonSerializer implements IQueryPlanVisitor<NodeJson> {
+class JsonSerializer implements QueryPlanVisitor<NodeJson> {
     public visit(node: IQueryNode): NodeJson {
         return {
             op: node.operatorName,
@@ -228,9 +228,9 @@ Return a new `IQueryNode` to produce a rewritten plan. The example below fuses a
 
 ```ts
 import { QueryNode } from "tyneq";
-import type { IQueryNode, IQueryPlanVisitor } from "tyneq";
+import type { IQueryNode, QueryPlanVisitor } from "tyneq";
 
-class PredicateFuser implements IQueryPlanVisitor<IQueryNode> {
+class PredicateFuser implements QueryPlanVisitor<IQueryNode> {
     public visit(node: IQueryNode): IQueryNode {
         const optimizedSource = node.source ? this.visit(node.source) : null;
 
@@ -258,7 +258,7 @@ class PredicateFuser implements IQueryPlanVisitor<IQueryNode> {
 
 ### Why a Single `visit` Method?
 
-Operators are registered dynamically at runtime. A static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated every time a new operator is added or an external operator is registered. The single-method `IQueryPlanVisitor<T>` delegates dispatch to `node.operatorName` inside the visitor body, keeping the interface stable regardless of which operators are registered.
+Operators are registered dynamically at runtime. A static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated every time a new operator is added or an external operator is registered. The single-method `QueryPlanVisitor<T>` delegates dispatch to `node.operatorName` inside the visitor body, keeping the interface stable regardless of which operators are registered.
 
 ### Node Immutability
 
@@ -266,7 +266,7 @@ Operators are registered dynamically at runtime. A static dispatch table (`visit
 
 ### Coverage
 
-The query plan is built automatically by all registration paths: `@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`, and `createTerminalOperator`. Operators implemented directly on `TyneqEnumerableBase` (such as `orderBy`, `memoize`) create their `QueryNode` manually.
+The query plan is built automatically by all registration paths: `@operator`, `@terminal`, `createOperator`, `createStreamingOperator`, and `createTerminalOperator`. Operators implemented directly on `TyneqEnumerableBase` (such as `orderBy`, `memoize`) create their `QueryNode` manually.
 
 Sequences created via `.pipe()` opt out of the query-plan infrastructure. Their `[tyneqQueryNode]` is always `null`.
 

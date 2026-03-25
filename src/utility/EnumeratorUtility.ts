@@ -1,8 +1,8 @@
-import { IEnumerator } from "../types/core";
+import { Enumerator } from "../types/core";
 import { Optional } from "../types/utility";
 
 /**
- * Internal helpers for working with {@link IEnumerator} instances.
+ * Internal helpers for working with {@link Enumerator} instances.
  *
  * @remarks
  * Static utility class; cannot be instantiated. All members are internal helpers used
@@ -24,7 +24,7 @@ export class EnumeratorUtility {
      *
      * @param enumerator - The enumerator to dispose. May be `null` or `undefined`.
      */
-    public static tryDispose<TSource>(enumerator: Optional<IEnumerator<TSource>>): void {
+    public static tryDispose<TSource>(enumerator: Optional<Enumerator<TSource>>): void {
         const enumeratorReturnFunc = enumerator?.return;
         if (!enumeratorReturnFunc) return;
 
@@ -46,7 +46,7 @@ export class EnumeratorUtility {
      * @param enumerator - The enumerator to wrap.
      * @returns A single-use `Iterable<TSource>` backed by `enumerator`.
      */
-    public static toIterable<TSource>(enumerator: IEnumerator<TSource>): Iterable<TSource> {
+    public static toIterable<TSource>(enumerator: Enumerator<TSource>): Iterable<TSource> {
         return {
             [Symbol.iterator]: () => enumerator
         };

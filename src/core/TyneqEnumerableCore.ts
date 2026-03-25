@@ -1,4 +1,4 @@
-import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { IQueryNode } from "../types/queryplan";
@@ -28,11 +28,11 @@ export abstract class TyneqEnumerableCore<TSource> {
 
     public abstract readonly [tyneqQueryNode]: IQueryNode | null;
 
-    public [Symbol.iterator](): IEnumerator<TSource> {
+    public [Symbol.iterator](): Enumerator<TSource> {
         return this.getEnumerator();
     }
 
-    public abstract getEnumerator(): IEnumerator<TSource>;
+    public abstract getEnumerator(): Enumerator<TSource>;
 
     /**
      * Sorts the sequence in ascending order by a key.
@@ -53,7 +53,7 @@ export abstract class TyneqEnumerableCore<TSource> {
     public orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
-    ): ITyneqOrderedEnumerable<TSource> {
+    ): TyneqOrderedSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const orderByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderBy", orderByArgs, this[tyneqQueryNode], "buffer");
@@ -86,7 +86,7 @@ export abstract class TyneqEnumerableCore<TSource> {
     public orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
-    ): ITyneqOrderedEnumerable<TSource> {
+    ): TyneqOrderedSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const orderByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderByDescending", orderByDescArgs, this[tyneqQueryNode], "buffer");
@@ -108,15 +108,15 @@ export abstract class TyneqEnumerableCore<TSource> {
      * replay from the cache without re-executing upstream operators. The cache is shared across
      * all enumerations of the returned sequence — it is not per-caller.
      *
-     * Call `refresh()` on the returned {@link ITyneqCachedEnumerable} to clear the cache and
+     * Call `refresh()` on the returned {@link TyneqCachedSequence} to clear the cache and
      * force re-execution of the pipeline on the next enumeration.
      *
-     * @returns An {@link ITyneqCachedEnumerable} that exposes `refresh()` in addition to the
+     * @returns An {@link TyneqCachedSequence} that exposes `refresh()` in addition to the
      *   standard enumerable operators.
      */
-    public memoize(): ITyneqCachedEnumerable<TSource> {
+    public memoize(): TyneqCachedSequence<TSource> {
         const node = new QueryNode("memoize", [], this[tyneqQueryNode], "buffer");
-        return this.createCachedEnumerable(this as unknown as ITyneqEnumerable<TSource>, node);
+        return this.createCachedEnumerable(this as unknown as TyneqSequence<TSource>, node);
     }
 
     /**
@@ -138,24 +138,24 @@ export abstract class TyneqEnumerableCore<TSource> {
      * @throws {ArgumentNullError} If `factory` is null.
      * @throws {ArgumentError} If `factory` is undefined.
      */
-    public pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult> {
+    public pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ factory });
         const self = this;
         return this.createEnumerable({
             getEnumerator() {
                 return factory(self as unknown as Iterable<TSource>);
             },
-        } satisfies IEnumeratorFactory<TResult>);
+        } satisfies EnumeratorFactory<TResult>);
     }
 
-    protected abstract createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult>;
+    protected abstract createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: IQueryNode | null): TyneqSequence<TResult>;
 
     protected abstract createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
         comparer: (a: TKey, b: TKey) => number,
         descending: boolean,
         node?: IQueryNode | null
-    ): ITyneqOrderedEnumerable<TSource>;
+    ): TyneqOrderedSequence<TSource>;
 
-    protected abstract createCachedEnumerable(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null): ITyneqCachedEnumerable<TSource>;
+    protected abstract createCachedEnumerable(source: TyneqSequence<TSource>, node?: IQueryNode | null): TyneqCachedSequence<TSource>;
 }

@@ -1,9 +1,9 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
-import { IEnumerable, IEnumerator, IEnumeratorFactory, IteratorFactory, ITyneqEnumerable } from "../types/core";
+import { Enumerable, Enumerator, EnumeratorFactory, IteratorFactory, TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
-import { EnumerableAdapter } from "./adapter/EnumerableAdapter";
+import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 
@@ -17,7 +17,7 @@ import { QueryNode } from "../queryplan/QueryNode";
  *
  * This class follows the static factory pattern and cannot be instantiated.
  *
- * @see {@link ITyneqEnumerable} for the operator surface of returned sequences.
+ * @see {@link TyneqSequence} for the operator surface of returned sequences.
  *
  * @group Classes
  *
@@ -51,7 +51,7 @@ export class Tyneq {
      *
      * @see {@link enumerate} for wrapping an iterable with index tracking.
      */
-    public static from<TSource>(source: Iterable<TSource>): ITyneqEnumerable<TSource> {
+    public static from<TSource>(source: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
 
@@ -71,7 +71,7 @@ export class Tyneq {
      *
      * @see {@link empty} for an empty sequence.
      */
-    public static random<TSource>(count: number, randomizer: () => TSource): ITyneqEnumerable<TSource> {
+    public static random<TSource>(count: number, randomizer: () => TSource): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkNotOptional({ randomizer });
 
@@ -114,7 +114,7 @@ export class Tyneq {
      *
      * @see {@link empty} for creating an empty sequence.
      */
-    public static range(start: number, count: number): ITyneqEnumerable<number> {
+    public static range(start: number, count: number): TyneqSequence<number> {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
 
@@ -136,7 +136,7 @@ export class Tyneq {
      * @see {@link range} for generating a sequence with a specific count.
      * @see {@link from} for wrapping existing iterables.
      */
-    public static empty<TSource>(): ITyneqEnumerable<TSource> {
+    public static empty<TSource>(): TyneqSequence<TSource> {
         return new TyneqEnumerable<TSource>(
             new EnumerableAdapter<TSource>([]),
             new QueryNode("empty", [], null, "source")
@@ -157,7 +157,7 @@ export class Tyneq {
      *
      * @see {@link from} for wrapping an iterable without index tracking.
      */
-    public static enumerate<TSource>(source: Iterable<TSource>): IEnumerable<[number, TSource]> {
+    public static enumerate<TSource>(source: Iterable<TSource>): Enumerable<[number, TSource]> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
         // A fresh `index` counter is created per enumeration via [Symbol.iterator],

@@ -26,13 +26,13 @@ npm run docs:dev    # serve docs locally with hot reload
 ```
 src/
   core/               — base classes, enumerators, errors, ordering
-  operators/
-    streaming/        — streaming operator implementations (createGeneratorOperator)
-    terminal/         — terminal operator implementations (@terminal / createTerminalOperator)
-    extensions/       — optional extension operators (imported on demand)
-  extensibility/      — public registration API (@operator, createOperator, OperatorRegistry)
+  enumerators/
+    streaming/        — streaming enumerator implementations (@builtinOperator)
+    buffer/           — buffering enumerator implementations (@builtinOperator)
+  operators/          — terminal operator implementations (@builtinTerminal) — flat, no subdirectory
+  extensions/         — public registration API (@operator, createOperator, OperatorRegistry)
   queryplan/          — QueryNode, QueryPlanPrinter
-  types/              — public TypeScript interfaces (ITyneqEnumerable, IQueryNode, …)
+  types/              — public TypeScript interfaces (TyneqSequence, IQueryNode, …)
   utility/            — internal argument validation helpers
 
 tests/
@@ -58,21 +58,21 @@ Use streaming unless sorting, set operations, or full-source knowledge is requir
 
 | API | When to use |
 |---|---|
-| `createGeneratorOperator` | Streaming operators that fit cleanly in a generator function |
+| `createStreamingOperator` | Streaming operators that fit cleanly in a generator function |
 | `createOperator` | Streaming/buffering operators with custom enumerator factory |
 | `createTerminalOperator` | Terminal operators expressed as a plain function |
 | `@operator` decorator | Class-based streaming/buffering (used for the library's own operators) |
 | `@terminal` decorator | Class-based terminal (used for the library's own operators) |
 
-For external/plugin operators, `createGeneratorOperator` and `createTerminalOperator` require the least ceremony. For operators complex enough to warrant a class, use the decorator approach.
+For external/plugin operators, `createStreamingOperator` and `createTerminalOperator` require the least ceremony. For operators complex enough to warrant a class, use the decorator approach.
 
 ### Step 3a — Functional streaming operator
 
 ```ts
-// src/operators/streaming/everyOther.ts
-import { createGeneratorOperator } from '../../extensibility/createOperator';
+// src/enumerators/streaming/everyOther.ts
+import { createStreamingOperator } from '../../extensions/createStreamingOperator';
 
-createGeneratorOperator({
+createStreamingOperator({
     name: 'everyOther',
     *generator(source: Iterable<unknown>): IterableIterator<unknown> {
         let skip = false;
@@ -89,7 +89,7 @@ No validation needed here (no user arguments). For operators with arguments, add
 ```ts
 import { ArgumentUtility } from '../../utility/argumentUtility';
 
-createGeneratorOperator({
+createStreamingOperator({
     name: 'takeEvery',
     *generator(source: Iterable<unknown>, step: number): IterableIterator<unknown> {
         let index = 0;
@@ -107,13 +107,13 @@ createGeneratorOperator({
 ### Step 3b — Functional terminal operator
 
 ```ts
-// src/operators/terminal/product.ts
-import { createTerminalOperator } from '../../extensibility/createOperator';
-import { IEnumerable } from '../../types/core';
+// src/operators/product.ts
+import { createTerminalOperator } from '../../extensions/createTerminalOperator';
+import { Enumerable } from '../../types/core';
 
 createTerminalOperator({
     name: 'product',
-    execute(source: IEnumerable<number>): number {
+    execute(source: Enumerable<number>): number {
         let result = 1;
         for (const item of source) result *= item;
         return result;
@@ -123,13 +123,13 @@ createTerminalOperator({
 
 ### Step 3c — Class-based operator with `@operator`
 
-Class-based operators extend `TyneqEnumerator` (streaming) or `TyneqEnumerableEnumerator` (buffering). The `@operator` decorator registers them and infers the operator kind from the base class.
+Class-based operators extend `TyneqEnumerator`. For buffering operators, pass `"buffer"` as the second argument to `@operator`. The decorator registers the class and patches the method onto all sequences.
 
 ```ts
 import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { operator } from '../../extensibility/operatorDecorators';
+import { operator } from '../../extensions/operator';
 import { ArgumentUtility } from '../../utility/argumentUtility';
-import type { IEnumerator } from '../../types/core';
+import type { Enumerator } from '../../types/core';
 
 @operator<[predicate: unknown]>('dropWhile', (predicate) => {
     ArgumentUtility.checkNotOptional({ predicate });
@@ -138,7 +138,7 @@ export class DropWhileEnumerator<T> extends TyneqEnumerator<T> {
     private dropping = true;
     private readonly predicate: (item: T) => boolean;
 
-    constructor(source: IEnumerator<T>, predicate: (item: T) => boolean) {
+    constructor(source: Enumerator<T>, predicate: (item: T) => boolean) {
         super(source);
         this.predicate = predicate;
     }
@@ -155,21 +155,33 @@ export class DropWhileEnumerator<T> extends TyneqEnumerator<T> {
 }
 ```
 
-### Step 4 — Export the implementation
+### Step 4 — Register the implementation
 
-Import the file in the appropriate barrel so it is registered when the library loads:
+Add a **named import** to `src/core/TyneqEnumerableBase.ts` in the appropriate section so the class module is loaded (and its decorator fires) when the library loads:
 
 ```ts
-// src/operators/streaming/index.ts  (or extensions/index.ts for extension operators)
-export * from './everyOther';
+// src/core/TyneqEnumerableBase.ts — streaming enumerators section
+import { EveryOtherEnumerator } from '../enumerators/streaming/everyOther';
 ```
 
-### Step 5 — Declare the method signature on `ITyneqEnumerable`
+Then add the method body that delegates to the enumerator:
+
+```ts
+public everyOther(): TyneqSequence<TSource> {
+    const node = this.createOperatorNode(EveryOtherEnumerator, []);
+    return this.createEnumerable(
+        { getEnumerator: () => new EveryOtherEnumerator<TSource>(this.getEnumerator()) },
+        node
+    );
+}
+```
+
+### Step 5 — Declare the method signature on `TyneqSequence`
 
 Runtime registration alone does not teach the TypeScript type system about the new method. Add a declaration to `src/types/core.ts` in the correct section:
 
 ```ts
-// In the STREAMING OPERATORS section of ITyneqEnumerable<TSource>:
+// In the STREAMING OPERATORS section of TyneqSequence<TSource>:
 
 /**
  * Yields every other element, discarding the in-between ones.
@@ -177,7 +189,7 @@ Runtime registration alone does not teach the TypeScript type system about the n
  * @remarks
  * Deferred. Source is not enumerated until the returned sequence is iterated.
  */
-everyOther(): ITyneqEnumerable<TSource>;
+everyOther(): TyneqSequence<TSource>;
 ```
 
 Follow the `DOCUMENTATION_GUIDELINES.md` in the repo root — every operator declaration needs the execution-model `@remarks`, and `@throws` where applicable.
@@ -187,7 +199,7 @@ Follow the `DOCUMENTATION_GUIDELINES.md` in the repo root — every operator dec
 Place tests under `tests/unit/operators/` or `tests/integration/` depending on scope.
 
 ```ts
-// tests/unit/operators/terminal/product.spec.ts
+// tests/unit/operators/product.spec.ts
 import { describe, expect, it } from "vitest";
 import { Tyneq } from "../../../src";
 
@@ -245,12 +257,12 @@ All are importable from `src/core/errors/`.
 
 ### TSDoc on operator implementations
 
-Operator implementation files that call registration functions (like `createGeneratorOperator(...)`) should be marked `@internal` and document:
+Operator enumerator/operator classes should be marked `@internal` and document:
 
 - A one-line summary.
 - `@remarks` with the standard execution-model phrase as the **first sentence**.
 - Any non-obvious behavioral guarantees beyond what the public interface declares.
-- `@see {@link ITyneqEnumerable.operatorName}` linking to the public API.
+- `@see {@link TyneqSequence.operatorName}` linking to the public API.
 
 ```ts
 /**
@@ -259,20 +271,21 @@ Operator implementation files that call registration functions (like `createGene
  * @remarks
  * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * @see {@link ITyneqEnumerable.everyOther} for the public API.
+ * @see {@link TyneqSequence.everyOther} for the public API.
  *
  * @group Operators
  * @category Streaming
  * @internal
  */
-createGeneratorOperator({ ... });
+@operator("everyOther")
+export class EveryOtherEnumerator<T> extends TyneqEnumerator<T> { ... }
 ```
 
 ## Documentation Requirements
 
 Every change to the public API surface requires:
 
-1. **TSDoc** on the `ITyneqEnumerable` interface member — execution model, `@throws`, edge cases.
+1. **TSDoc** on the `TyneqSequence` interface member — execution model, `@throws`, edge cases.
 2. **Operators Overview update** — add the operator to the correct category list.
 3. **TSDoc update** at the implementation call-site — mark as `@internal` with execution model.
 
@@ -284,7 +297,7 @@ See [Documentation Maintenance](/guide/documentation-maintenance) for the full m
 - Validate re-iteration: enumerate the same sequence object twice and confirm both results are identical.
 - For large or stateful tests, use `afterEach` + `OperatorRegistry.unregister` to clean up dynamically registered operators.
 
-> See `tests/unit/extensibility/createOperator.spec.ts` for real examples of test isolation with unique operator names per test run.
+> See `tests/unit/extensions/createOperator.spec.ts` for real examples of test isolation with unique operator names per test run.
 
 ## Related Pages
 

@@ -48,7 +48,7 @@ export interface IQueryNode {
     readonly args: readonly unknown[];          // the user args (for inspection)
     readonly source: IQueryNode | null;         // null = root (Tyneq.from, Tyneq.range)
     readonly category: OperatorCategory;
-    accept<T>(visitor: IQueryPlanVisitor<T>): T;
+    accept<T>(visitor: QueryPlanVisitor<T>): T;
 }
 
 export class QueryNode implements IQueryNode {
@@ -59,15 +59,15 @@ export class QueryNode implements IQueryNode {
         public readonly category: OperatorCategory
     ) {}
 
-    accept<T>(visitor: IQueryPlanVisitor<T>): T {
+    accept<T>(visitor: QueryPlanVisitor<T>): T {
         return visitor.visit(this);
     }
 }
 Step 2: The Visitor Interface
 
-// src/queryplan/IQueryPlanVisitor.ts
+// src/queryplan/QueryPlanVisitor.ts
 
-export interface IQueryPlanVisitor<T> {
+export interface QueryPlanVisitor<T> {
     visit(node: IQueryNode): T;
 }
 That's it. One method. The node passes itself in — the visitor decides what to do based on node.operatorName and node.category.
@@ -103,7 +103,7 @@ TyneqEnumerable gets a queryNode property. createEnumerable threads it through. 
 The Visitors You Can Now Write
 1. Query Plan Printer (debugging)
 
-class QueryPlanPrinter implements IQueryPlanVisitor<string> {
+class QueryPlanPrinter implements QueryPlanVisitor<string> {
     visit(node: IQueryNode): string {
         const argStr = node.args
             .map(a => typeof a === 'function' ? '<fn>' : String(a))
@@ -126,7 +126,7 @@ console.log(new QueryPlanPrinter().visit(chain.queryNode));
 //   → take(5)
 2. Redundancy Detector
 
-class RedundancyDetector implements IQueryPlanVisitor<string[]> {
+class RedundancyDetector implements QueryPlanVisitor<string[]> {
     visit(node: IQueryNode): string[] {
         const issues = node.source ? this.visit(node.source) : [];
 
@@ -145,7 +145,7 @@ class RedundancyDetector implements IQueryPlanVisitor<string[]> {
 
 const BUFFERING_OPS = new Set(['orderBy', 'thenBy', 'distinct', 'groupBy', 'reverse', 'chunk']);
 
-class MemoryCostEstimator implements IQueryPlanVisitor<'O(1)' | 'O(n)'> {
+class MemoryCostEstimator implements QueryPlanVisitor<'O(1)' | 'O(n)'> {
     visit(node: IQueryNode): 'O(1)' | 'O(n)' {
         if (BUFFERING_OPS.has(node.operatorName)) return 'O(n)';
         return node.source ? this.visit(node.source) : 'O(1)';
@@ -157,7 +157,7 @@ const cost = new MemoryCostEstimator().visit(chain.queryNode);
 // → 'O(n)' if there's an orderBy anywhere in the chain
 4. Query Optimizer (the where().where() merge)
 
-class QueryOptimizer implements IQueryPlanVisitor<IQueryNode> {
+class QueryOptimizer implements QueryPlanVisitor<IQueryNode> {
     visit(node: IQueryNode): IQueryNode {
         // First, recursively optimize the source
         const optimizedSource = node.source ? this.visit(node.source) : null;
@@ -192,7 +192,7 @@ Operators register dynamically at runtime via @operator. You don't know all oper
 
 This means:
 
-External users who write custom operators via createGeneratorOperator automatically get their nodes included in any visitor traversal — for free
+External users who write custom operators via createStreamingOperator automatically get their nodes included in any visitor traversal — for free
 Your optimization visitors don't need to be updated when new operators are added
 The Bigger Picture
 The real value is the Open/Closed Principle applied to query analysis:

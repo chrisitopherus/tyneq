@@ -22,10 +22,10 @@ Tyneq exposes five registration paths. All route through `OperatorRegistry.regis
 
 | API | Output | Use when |
 |---|---|---|
-| `createGeneratorOperator` | `ITyneqEnumerable<T>` | Streaming operator expressible as a generator function |
-| `createOperator` | `ITyneqEnumerable<T>` | Streaming or buffering operator with a custom enumerator factory |
+| `createStreamingOperator` | `TyneqSequence<T>` | Streaming operator expressible as a generator function |
+| `createOperator` | `TyneqSequence<T>` | Streaming or buffering operator with a custom enumerator factory |
 | `createTerminalOperator` | A concrete value | Terminal — returns a scalar or collection, not a sequence |
-| `@operator` decorator | `ITyneqEnumerable<T>` | Class-based streaming/buffering (TypeScript 5.0+ required) |
+| `@operator` decorator | `TyneqSequence<T>` | Class-based streaming/buffering (TypeScript 5.0+ required) |
 | `@terminal` decorator | A concrete value | Class-based terminal (TypeScript 5.0+ required) |
 
 Registration happens as a **side-effect of importing** the file. The operator is immediately available on all sequences; no further setup is needed.
@@ -34,12 +34,12 @@ Registration happens as a **side-effect of importing** the file. The operator is
 
 ### Streaming Operator — Generator Style
 
-`createGeneratorOperator` is the quickest path for stateless, streaming transformations.
+`createStreamingOperator` is the quickest path for stateless, streaming transformations.
 
 ```ts
-import { createGeneratorOperator } from "tyneq";
+import { createStreamingOperator } from "tyneq";
 
-createGeneratorOperator({
+createStreamingOperator({
     name: "repeat",
     *generator(source: Iterable<unknown>, times: number): IterableIterator<unknown> {
         for (let i = 0; i < times; i++) {
@@ -55,8 +55,8 @@ createGeneratorOperator({
 
 // Augment the type so TypeScript knows about the new method
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        repeat(times: number): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        repeat(times: number): TyneqSequence<TSource>;
     }
 }
 ```
@@ -65,15 +65,15 @@ declare module "tyneq" {
 
 ### Streaming Operator — Factory Style
 
-Use `createOperator` when you need more control over the enumerator — for example, to maintain state between elements or to access the source as `IEnumerable` rather than a plain `Iterable`.
+Use `createOperator` when you need more control over the enumerator — for example, to maintain state between elements or to access the source as `Enumerable` rather than a plain `Iterable`.
 
 ```ts
 import { createOperator } from "tyneq";
-import type { IEnumerable, IEnumeratorFactory } from "tyneq";
+import type { Enumerable, EnumeratorFactory } from "tyneq";
 
 createOperator({
     name: "stride",
-    factory(source: IEnumerable<unknown>, step: number): IEnumeratorFactory<unknown> {
+    factory(source: Enumerable<unknown>, step: number): EnumeratorFactory<unknown> {
         return {
             getEnumerator() {
                 return strideGenerator(source[Symbol.iterator](), step) as any;
@@ -98,8 +98,8 @@ function* strideGenerator<T>(iter: Iterator<T>, step: number): IterableIterator<
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        stride(step: number): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        stride(step: number): TyneqSequence<TSource>;
     }
 }
 ```
@@ -110,11 +110,11 @@ declare module "tyneq" {
 
 ```ts
 import { createTerminalOperator } from "tyneq";
-import type { IEnumerable } from "tyneq";
+import type { Enumerable } from "tyneq";
 
 createTerminalOperator({
     name: "joinString",
-    execute(source: IEnumerable<unknown>, separator: string): string {
+    execute(source: Enumerable<unknown>, separator: string): string {
         const parts: string[] = [];
         for (const item of source) parts.push(String(item));
         return parts.join(separator);
@@ -122,7 +122,7 @@ createTerminalOperator({
 });
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
+    interface TyneqSequence<TSource> {
         joinString(separator: string): string;
     }
 }
@@ -159,8 +159,8 @@ class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
 }
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        everyOther(): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        everyOther(): TyneqSequence<TSource>;
     }
 }
 ```
@@ -276,7 +276,7 @@ unsubscribe();
 `OperatorRegistry.unregister` removes an operator from the registry and from the prototype. Use it in `afterEach` to avoid prototype pollution across tests.
 
 ```ts
-import { OperatorRegistry, createGeneratorOperator } from "tyneq";
+import { OperatorRegistry, createStreamingOperator } from "tyneq";
 import { afterEach, it } from "vitest";
 
 let registeredName: string | null = null;
@@ -290,7 +290,7 @@ afterEach(() => {
 
 it("custom operator", () => {
     registeredName = `testOp_${Date.now()}`;
-    createGeneratorOperator({
+    createStreamingOperator({
         name: registeredName,
         *generator(source) { yield* source as any; },
     });
@@ -336,9 +336,9 @@ The idiomatic pattern for a reusable operator library is a dedicated file that r
 
 ```ts
 // my-extensions/sliding-percentile.ts
-import { createGeneratorOperator } from "tyneq";
+import { createStreamingOperator } from "tyneq";
 
-createGeneratorOperator({
+createStreamingOperator({
     name: "slidingPercentile",
     *generator(source: Iterable<unknown>, windowSize: number, p: number): IterableIterator<unknown> {
         const buf: number[] = [];
@@ -356,8 +356,8 @@ createGeneratorOperator({
 });
 
 declare module "tyneq" {
-    interface ITyneqEnumerable<TSource> {
-        slidingPercentile(windowSize: number, p: number): ITyneqEnumerable<TSource>;
+    interface TyneqSequence<TSource> {
+        slidingPercentile(windowSize: number, p: number): TyneqSequence<TSource>;
     }
 }
 ```

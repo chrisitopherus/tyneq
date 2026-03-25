@@ -32,8 +32,8 @@
 Adding an operator requires **all four** of:
 1. Create operator file in the right folder (see `tasks/lessons.md` → "Where to put a new operator file")
 2. Add `validate` to the decorator/function (not in the constructor)
-3. Add side-effect import to `src/operators/extensions/index.ts`
-4. Add method signature to `ITyneqEnumerable` in `src/types/core.ts`
+3. Add named import to `src/core/TyneqEnumerableBase.ts`; add method body delegating to the operator class
+4. Add method signature to `TyneqSequence` in `src/types/core.ts`
 
 Missing any of these causes silent failures or type errors. See `tasks/lessons.md`.
 

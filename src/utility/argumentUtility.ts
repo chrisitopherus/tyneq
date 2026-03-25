@@ -5,7 +5,7 @@ import { NullGuards } from "./guards/nullGuards";
 import { StringGuards } from "./guards/stringGuards";
 import { NumericGuards } from "./guards/numericGuards";
 import { TypeGuards } from "./guards/typeGuards";
-import type { IEnumerable, IEnumerator } from "../types/core";
+import type { Enumerable, Enumerator } from "../types/core";
 
 /**
  * Static utility class centralising argument validation for the Tyneq library.
@@ -323,24 +323,24 @@ export class ArgumentUtility {
     }
 
     /**
-     * Asserts that value is an {@link IEnumerable}.
+     * Asserts that value is an {@link Enumerable}.
      *
-     * @throws {ArgumentTypeError} When value is not an `IEnumerable`.
+     * @throws {ArgumentTypeError} When value is not an `Enumerable`.
      */
-    public static checkEnumerable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, IEnumerable<T>>;
-    public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerable<T>;
+    public static checkEnumerable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerable<T>>;
+    public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is Enumerable<T>;
     public static checkEnumerable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkEnumerable<T>(value, key);
     }
 
     /**
-     * Asserts that value is an {@link IEnumerator}.
+     * Asserts that value is an {@link Enumerator}.
      *
-     * @throws {ArgumentTypeError} When value is not an `IEnumerator`.
+     * @throws {ArgumentTypeError} When value is not an `Enumerator`.
      */
-    public static checkEnumerator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, IEnumerator<T>>;
-    public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is IEnumerator<T>;
+    public static checkEnumerator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerator<T>>;
+    public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is Enumerator<T>;
     public static checkEnumerator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkEnumerator<T>(value, key);

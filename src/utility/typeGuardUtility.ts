@@ -1,4 +1,4 @@
-import type { IEnumerable, IEnumerator } from "../types/core";
+import type { Enumerable, Enumerator } from "../types/core";
 
 /**
  * Internal type-guard predicates for runtime shape checking of iterator-protocol values.
@@ -49,13 +49,13 @@ export class TypeGuardUtility {
     }
 
     /**
-     * Returns `true` if `value` satisfies the {@link IEnumerator} contract.
+     * Returns `true` if `value` satisfies the {@link Enumerator} contract.
      *
      * @remarks
      * Checks that `value` is an `Iterator<T>` whose optional `return` and `throw` properties,
      * if present, are functions.
      */
-    public static isEnumerator<T = unknown>(value: unknown): value is IEnumerator<T> {
+    public static isEnumerator<T = unknown>(value: unknown): value is Enumerator<T> {
         if (!this.isIterator<T>(value)) return false;
 
         const candidate = value as { return?: unknown; throw?: unknown };
@@ -64,13 +64,13 @@ export class TypeGuardUtility {
     }
 
     /**
-     * Returns `true` if `value` satisfies the {@link IEnumerable} contract.
+     * Returns `true` if `value` satisfies the {@link Enumerable} contract.
      *
      * @remarks
      * Checks that `value` is a non-null `Iterable<T>` that also has a callable `getEnumerator`
      * property.
      */
-    public static isEnumerable<T = unknown>(value: unknown): value is IEnumerable<T> {
+    public static isEnumerable<T = unknown>(value: unknown): value is Enumerable<T> {
         if (value === null || value === undefined) return false;
 
         const candidate = value as { getEnumerator?: unknown };

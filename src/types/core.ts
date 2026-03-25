@@ -8,17 +8,17 @@ import type { IQueryNode } from "./queryplan";
  *
  * @remarks
  * Extends the standard JavaScript `Iterator<T>` interface with optional `return` and `throw`
- * methods. Enumerators created from {@link IEnumeratorFactory} can support re-iteration by
+ * methods. Enumerators created from {@link EnumeratorFactory} can support re-iteration by
  * creating fresh instances on each call to `getEnumerator()`.
  *
  * @typeParam T - The type of elements being enumerated.
  *
- * @see {@link IEnumeratorFactory} for creating enumerators.
- * @see {@link IEnumerable} for re-iterable sequences.
+ * @see {@link EnumeratorFactory} for creating enumerators.
+ * @see {@link Enumerable} for re-iterable sequences.
  *
  * @group Interfaces
  */
-export interface IEnumerator<T> extends Iterator<T> {
+export interface Enumerator<T> extends Iterator<T> {
     next(): IteratorResult<T>;
 
     /**
@@ -53,78 +53,78 @@ export interface IEnumerator<T> extends Iterator<T> {
  *
  * @typeParam T - The type of elements in the sequence.
  *
- * @see {@link IEnumerator} for the iterator type returned.
- * @see {@link IEnumerable} which combines this with the Iterable protocol.
+ * @see {@link Enumerator} for the iterator type returned.
+ * @see {@link Enumerable} which combines this with the Iterable protocol.
  *
  * @group Interfaces
  */
-export interface IEnumeratorFactory<T> {
+export interface EnumeratorFactory<T> {
     /**
      * Creates a new enumerator positioned before the first element.
      */
-    getEnumerator(): IEnumerator<T>;
+    getEnumerator(): Enumerator<T>;
 }
 
 /**
  * Represents a re-iterable sequence of elements.
  *
  * @remarks
- * Combines the standard JavaScript `Iterable<T>` protocol with the {@link IEnumeratorFactory}
+ * Combines the standard JavaScript `Iterable<T>` protocol with the {@link EnumeratorFactory}
  * pattern so that sequences can be enumerated multiple times. Each call to `Symbol.iterator`
  * returns a fresh, independent enumerator. This interface serves as the base for
- * {@link ITyneqEnumerable}, which extends it with LINQ-style query operators.
+ * {@link TyneqSequence}, which extends it with LINQ-style query operators.
  *
  * @typeParam T - The type of elements in the sequence.
  *
- * @see {@link IEnumerator} for the iterator type.
- * @see {@link IEnumeratorFactory} for the factory pattern.
- * @see {@link ITyneqEnumerable} for the full query operator interface.
+ * @see {@link Enumerator} for the iterator type.
+ * @see {@link EnumeratorFactory} for the factory pattern.
+ * @see {@link TyneqSequence} for the full query operator interface.
  *
  * @group Interfaces
  */
-export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
-    [Symbol.iterator](): IEnumerator<T>;
+export interface Enumerable<T> extends Iterable<T>, EnumeratorFactory<T> {
+    [Symbol.iterator](): Enumerator<T>;
 }
 
 /**
  * A factory function that creates a new enumerator.
  *
  * @remarks
- * Lightweight functional alternative to {@link IEnumeratorFactory}. Each invocation must
+ * Lightweight functional alternative to {@link EnumeratorFactory}. Each invocation must
  * produce a fresh, independent enumerator with no shared mutable state.
  *
  * @typeParam T - The type of elements produced by the enumerator.
  *
- * @see {@link IEnumerator} for the enumerator type returned.
- * @see {@link IEnumeratorFactory} for the interface-based equivalent.
+ * @see {@link Enumerator} for the enumerator type returned.
+ * @see {@link EnumeratorFactory} for the interface-based equivalent.
  *
  * @group Types
  */
-export type IteratorFactory<T> = () => IEnumerator<T>;
+export type IteratorFactory<T> = () => Enumerator<T>;
 
 /**
  * A factory function that creates a typed enumerable from an iterator factory.
  *
  * @remarks
- * Used internally to construct specific {@link ITyneqEnumerable} implementations so that
+ * Used internally to construct specific {@link TyneqSequence} implementations so that
  * query operators produce sequences of the same concrete type as the source.
  *
  * @typeParam TSource - The element type of the sequence.
  * @typeParam TEnumerable - The specific enumerable implementation type.
  *
- * @see {@link ITyneqEnumerable} for the base enumerable interface.
+ * @see {@link TyneqSequence} for the base enumerable interface.
  * @see {@link IteratorFactory} for the factory function type.
  *
  * @group Types
  * @internal
  */
-export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
+export type TyneqEnumerableFactory<TSource, TEnumerable extends TyneqSequence<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 /**
  * Represents a queryable sequence with LINQ-style operators.
  *
  * @remarks
- * Extends {@link IEnumerable} with terminal, streaming, and buffering operators. Streaming
+ * Extends {@link Enumerable} with terminal, streaming, and buffering operators. Streaming
  * operators transform elements one-at-a-time using deferred execution; buffering operators
  * buffer part or all of the source before producing results; terminal operators enumerate the
  * source immediately and return a concrete value. Sequences are re-iterable — each enumeration
@@ -132,12 +132,12 @@ export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
- * @see {@link IEnumerable} for the base iterable interface.
- * @see {@link ITyneqOrderedEnumerable} for ordered sequences with additional sorting operators.
+ * @see {@link Enumerable} for the base iterable interface.
+ * @see {@link TyneqOrderedSequence} for ordered sequences with additional sorting operators.
  *
  * @group Interfaces
  */
-export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
+export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     // ========================================================================
     // QUERY PLAN
     // ========================================================================
@@ -413,7 +413,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
-    append(item: TSource): ITyneqEnumerable<TSource>;
+    append(item: TSource): TyneqSequence<TSource>;
 
     /**
      * Casts every element to `U` via a compile-time-only double assertion.
@@ -423,7 +423,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      *
      * No runtime type checking is performed. Use {@link ofType} for runtime-safe filtering.
      */
-    cast<U>(): ITyneqEnumerable<U>;
+    cast<U>(): TyneqSequence<U>;
 
     /**
      * Splits the sequence into arrays of at most `size` elements. The last chunk may be smaller.
@@ -431,7 +431,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
-    chunk(size: number): ITyneqEnumerable<TSource[]>;
+    chunk(size: number): TyneqSequence<TSource[]>;
 
     /**
      * Yields all elements of this sequence followed by all elements of `other`.
@@ -439,7 +439,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
-    concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    concat(other: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns the sequence unchanged, or a single-element sequence containing `defaultValue` if empty.
@@ -447,7 +447,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
-    defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
+    defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource>;
 
     /**
      * Yields adjacent element pairs as `[previous, current]` tuples.
@@ -456,7 +456,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Deferred. Source is not enumerated until the returned sequence is iterated. Produces
      * no output for sequences with fewer than two elements.
      */
-    pairwise(): ITyneqEnumerable<[TSource, TSource]>;
+    pairwise(): TyneqSequence<[TSource, TSource]>;
 
     /**
      * Filters elements to those matching `guard`, narrowing the element type to `U`.
@@ -467,7 +467,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `guard` is null.
      * @throws {ArgumentError} When `guard` is undefined.
      */
-    ofType<U extends TSource>(guard: (value: TSource) => value is U): ITyneqEnumerable<U>;
+    ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U>;
 
     /**
      * Yields `item` followed by all source elements.
@@ -475,19 +475,19 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is not enumerated until the returned sequence is iterated.
      */
-    prepend(item: TSource): ITyneqEnumerable<TSource>;
+    prepend(item: TSource): TyneqSequence<TSource>;
 
     /**
      * Replaces every element with `value`, preserving the element count.
      */
-    populate<TValue>(value: TValue): ITyneqEnumerable<TValue>;
+    populate<TValue>(value: TValue): TyneqSequence<TValue>;
 
     /**
      * Projects each element using `selector`.
      *
      * @throws {ArgumentNullError} When `selector` is null.
      */
-    select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    select<TResult>(selector: (item: TSource) => TResult): TyneqSequence<TResult>;
 
     /**
      * Projects each element to a sequence and flattens the results.
@@ -495,17 +495,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `selector` is null.
      * @throws {ArgumentError} When `selector` is undefined.
      */
-    selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): ITyneqEnumerable<TResult>;
+    selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): TyneqSequence<TResult>;
 
     /**
      * Skips the first `count` elements. Negative or zero values skip nothing.
      */
-    skip(count: number): ITyneqEnumerable<TSource>;
+    skip(count: number): TyneqSequence<TSource>;
 
     /**
      * Skips the last `count` elements. Negative or zero values skip nothing.
      */
-    skipLast(count: number): ITyneqEnumerable<TSource>;
+    skipLast(count: number): TyneqSequence<TSource>;
 
     /**
      * Skips elements while the predicate returns `true`, then yields the remainder.
@@ -513,7 +513,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `predicate` is null.
      * @throws {ArgumentError} When `predicate` is undefined.
      */
-    skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 
     /**
      * Splits the sequence on elements where `splitOn` returns `true`. Split-point elements are excluded.
@@ -521,12 +521,12 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `splitOn` is null.
      * @throws {ArgumentError} When `splitOn` is undefined.
      */
-    split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]>;
+    split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]>;
 
     /**
      * Takes the first `count` elements. Negative or zero values return an empty sequence.
      */
-    take(count: number): ITyneqEnumerable<TSource>;
+    take(count: number): TyneqSequence<TSource>;
 
     /**
      * Yields elements while the predicate returns `true`, stopping at the first non-matching element.
@@ -534,40 +534,40 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `predicate` is null.
      * @throws {ArgumentError} When `predicate` is undefined.
      */
-    takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 
     /**
      * Invokes `action` on each element as a side effect, passing elements through unchanged.
      *
      * @throws {ArgumentNullError} When `action` is null.
      */
-    tap(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
+    tap(action: (item: TSource) => void): TyneqSequence<TSource>;
 
     /**
      * Invokes `action` on each element only if `predicate()` returns `true` at call time.
      *
      * @throws {ArgumentNullError} When `action` or `predicate` is null.
      */
-    tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
+    tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource>;
 
     /**
      * Yields every `count`-th element, discarding elements in between. A value of `1` yields every element.
      *
      * @param count - Sampling interval; must be a positive integer.
      */
-    throttle(count: number): ITyneqEnumerable<TSource>;
+    throttle(count: number): TyneqSequence<TSource>;
 
     /**
      * Filters the sequence to elements where `predicate` returns `true`.
      *
      * @throws {ArgumentNullError} When `predicate` is null.
      */
-    where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    where(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 
     /**
      * Pairs elements from both sequences using `selector`. Stops when either sequence is exhausted.
      */
-    zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
+    zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): TyneqSequence<TResult>;
 
     // ========================================================================
     // BUFFERING OPERATORS
@@ -578,7 +578,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Returns distinct elements in order of first occurrence.
      */
-    distinct(): ITyneqEnumerable<TSource>;
+    distinct(): TyneqSequence<TSource>;
 
     /**
      * Returns elements with distinct keys in order of first key occurrence.
@@ -586,17 +586,17 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @throws {ArgumentNullError} When `keySelector` is null.
      * @throws {ArgumentError} When `keySelector` is undefined.
      */
-    distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     /**
      * Returns distinct elements from this sequence that do not appear in `excludedValues`.
      */
-    except(excludedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    except(excludedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns elements whose extracted key does not appear in `excludedKeys`.
      */
-    exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     /**
      * Groups elements by key and projects each group into a result.
@@ -608,8 +608,8 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
         valueSelector: (item: TSource) => TValue,
-        resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
-    ): ITyneqEnumerable<TResult>;
+        resultSelector: (key: TKey, values: TyneqSequence<TValue>) => TResult
+    ): TyneqSequence<TResult>;
 
     /**
      * Performs a left outer join, grouping inner matches under each outer element.
@@ -620,18 +620,18 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
-        resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
-    ): ITyneqEnumerable<TResult>;
+        resultSelector: (outer: TSource, group: TyneqSequence<TInner>) => TResult
+    ): TyneqSequence<TResult>;
 
     /**
      * Returns distinct elements that appear in both this sequence and `intersectedValues`.
      */
-    intersect(intersectedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns elements whose extracted key appears in `intersectedKeys`.
      */
-    intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     /**
      * Correlates elements by key equality (inner join). Only outer elements with at least one matching inner element are yielded.
@@ -644,7 +644,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, inner: TInner) => TResult
-    ): ITyneqEnumerable<TResult>;
+    ): TyneqSequence<TResult>;
 
     /**
      * Caches the sequence so that subsequent enumerations replay from the cache instead of re-evaluating the source.
@@ -657,7 +657,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @returns A cached enumerable that stores source elements on first access.
      * Call `refresh()` on the returned value to invalidate the cache.
      */
-    memoize(): ITyneqCachedEnumerable<TSource>;
+    memoize(): TyneqCachedSequence<TSource>;
 
     /**
      * Sorts elements in ascending order by `keySelector`.
@@ -670,7 +670,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
-    ): ITyneqOrderedEnumerable<TSource>;
+    ): TyneqOrderedSequence<TSource>;
 
     /**
      * Sorts elements in descending order by `keySelector`.
@@ -683,7 +683,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
-    ): ITyneqOrderedEnumerable<TSource>;
+    ): TyneqOrderedSequence<TSource>;
 
     /**
      * Yields elements in reverse order.
@@ -691,7 +691,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is fully buffered on the first iteration of the returned sequence.
      */
-    reverse(): ITyneqEnumerable<TSource>;
+    reverse(): TyneqSequence<TSource>;
 
     /**
      * Yields elements in a random order.
@@ -699,37 +699,37 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * @remarks
      * Deferred. Source is fully buffered on the first iteration of the returned sequence.
      */
-    shuffle(): ITyneqEnumerable<TSource>;
+    shuffle(): TyneqSequence<TSource>;
 
     /**
      * Inserts `other` at a position counted from the end. `index = 0` inserts at the very end.
      */
-    backsert(index: number, other: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns distinct elements from both sequences (set union).
      */
-    union(otherValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    union(otherValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns elements with distinct keys from both sequences, using `keySelector` for comparison.
      */
-    unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     // ========================================================================
     // EXTENSION / PLUGIN
-    // Advanced extensibility for custom operators.
+    // Advanced extensions for custom operators.
     // ========================================================================
 
     /**
      * Applies a custom transformation via a user-supplied factory function.
      */
-    pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
+    pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult>;
 
     // ========================================================================
     // EXTENSION OPERATORS
-    // Registered via the extensibility infrastructure (@operator, createOperator,
-    // createGeneratorOperator, @terminal, createTerminalOperator).
+    // Registered via the extensions infrastructure (@operator, createOperator,
+    // createStreamingOperator, @terminal, createTerminalOperator).
     // Requires importing 'tyneq/extensions' (or the operators/extensions barrel)
     // to trigger side-effect registration before using these operators.
     // ========================================================================
@@ -757,7 +757,7 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * // → [1, 3, 6, 10, 15]
      * ```
      */
-    scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): TyneqSequence<TResult>;
 
     /**
      * Returns both the minimum and maximum elements in a single enumeration pass.
@@ -781,37 +781,37 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
  * Represents an ordered sequence with additional ordering operators.
  *
  * @remarks
- * Returned by `orderBy()` and `orderByDescending()`. Extends {@link ITyneqEnumerable} with
+ * Returned by `orderBy()` and `orderByDescending()`. Extends {@link TyneqSequence} with
  * `thenBy()` and `thenByDescending()` for multi-level sorting. Each `thenBy` call adds a
  * secondary sort criterion without replacing the primary ordering. The sort is stable.
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
- * @see {@link ITyneqEnumerable} for the base enumerable interface.
+ * @see {@link TyneqSequence} for the base enumerable interface.
  *
  * @group Interfaces
  */
-export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
     /**
      * Adds a secondary sort in ascending order.
      *
      * @param comparer - Custom comparison function; if omitted, uses default ordering.
      */
-    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
 
     /**
      * Adds a secondary sort in descending order.
      *
      * @param comparer - Custom comparison function; if omitted, uses default ordering.
      */
-    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
 }
 
 /**
  * A cached sequence that replays already-fetched elements without re-evaluating the source.
  *
  * @remarks
- * Obtained by calling `memoize()` on any {@link ITyneqEnumerable}. Elements are fetched from
+ * Obtained by calling `memoize()` on any {@link TyneqSequence}. Elements are fetched from
  * the source on demand and stored in an internal cache. Subsequent enumerations replay cached
  * elements for the portion already evaluated.
  *
@@ -820,19 +820,19 @@ export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSour
  *
  * @typeParam TSource - Element type of the sequence.
  *
- * @see {@link ITyneqEnumerable.memoize} Factory method that returns this interface.
+ * @see {@link TyneqSequence.memoize} Factory method that returns this interface.
  *
  * @group Interfaces
  * @internal
  */
-export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
     /**
      * Discards the internal cache and resets the sequence to re-evaluate from the source on
      * the next iteration.
      *
      * @returns The same cached enumerable instance, now with an empty cache.
      */
-    refresh(): ITyneqCachedEnumerable<TSource>;
+    refresh(): TyneqCachedSequence<TSource>;
 }
 
 /**
@@ -843,7 +843,7 @@ export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSourc
  * @group Interfaces
  * @internal
  */
-export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
+export interface CachedEnumerable<TSource> extends Enumerable<TSource> {
     /**
      * Returns the element at `index` from the cache if available, or fetches the next element
      * from the source and caches it.
@@ -856,7 +856,7 @@ export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
 }
 
 /**
- * Result of a single cache lookup via {@link ICachedEnumerable.tryGetAtFromCache}.
+ * Result of a single cache lookup via {@link CachedEnumerable.tryGetAtFromCache}.
  *
  * @typeParam TSource - Element type of the sequence.
  *
@@ -874,19 +874,19 @@ export type CacheResult<TSource> = { has: true, value: TSource } | { has: false 
  *
  * @typeParam TSource - The type of elements in the sequence.
  *
- * @see {@link ITyneqOrderedEnumerable} for the public ordered enumerable interface.
+ * @see {@link TyneqOrderedSequence} for the public ordered enumerable interface.
  * @see {@link BaseEnumerableSorter} for the sorter implementation.
  *
  * @group Interfaces
  * @internal
  */
-export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
-    source: ITyneqEnumerable<TSource>;
+export interface OrderedEnumerable<TSource> extends Enumerable<TSource> {
+    source: TyneqSequence<TSource>;
 
     /**
      * The parent ordering in a multi-level sort chain, or `null` for the primary ordering.
      */
-    parent: Nullable<IOrderedEnumerable<TSource>>;
+    parent: Nullable<OrderedEnumerable<TSource>>;
 
     /**
      * Creates a sorter that applies this ordering and all parent orderings.
@@ -902,7 +902,7 @@ export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
  *
  * @typeParam T - Element type of the source sequence.
  *
- * @see {@link ITyneqEnumerable.minMax}
+ * @see {@link TyneqSequence.minMax}
  *
  * @group Types
  */
@@ -922,8 +922,8 @@ export type MinMaxResult<T> = {
  * @typeParam TKey - The type of the key.
  * @typeParam TValue - The type of the value.
  *
- * @see {@link ITyneqEnumerable.toMap}
- * @see {@link ITyneqEnumerable.toRecord}
+ * @see {@link TyneqSequence.toMap}
+ * @see {@link TyneqSequence.toRecord}
  *
  * @group Types
  */

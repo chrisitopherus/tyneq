@@ -27,7 +27,7 @@ Use exactly. No synonyms.
 
 | Term | Meaning |
 |---|---|
-| **sequence** | Any `IEnumerable<T>` value |
+| **sequence** | Any `Enumerable<T>` value |
 | **source** | The upstream sequence passed into an operator |
 | **element** | A single item produced by a sequence |
 | **predicate** | `(item: T) => boolean` |
@@ -148,7 +148,7 @@ memberName(): ReturnType;
  * @typeParam TResult - [Only if different from TSource and not obvious.]
  *
  * @see {@link CorrespondingEnumerator}
- * @see {@link ITyneqEnumerable.methodName}
+ * @see {@link TyneqSequence.methodName}
  *
  * @group Operators
  * @category Streaming
@@ -180,7 +180,7 @@ Same as streaming, with:
  *
  * **Performance:** O(n) time. O(1) space. [Adjust if buffering occurs.]
  *
- * @see {@link ITyneqEnumerable.methodName}
+ * @see {@link TyneqSequence.methodName}
  *
  * @group Operators
  * @category Terminal
@@ -261,10 +261,10 @@ No `@example`. No `@group`. Enumerators are contributor-facing only.
  * ```ts
  * \@operator('double')
  * export class DoubleOperator<T extends number> extends TyneqOperatorEnumerable<T> {
- *   constructor(source: IEnumerable<T>) { super(source); }
+ *   constructor(source: Enumerable<T>) { super(source); }
  *   getEnumerator() { return new DoubleEnumerator(this.source[Symbol.iterator]()); }
  * }
- * // seq.double() is now available on every ITyneqEnumerable
+ * // seq.double() is now available on every TyneqSequence
  * ```
  *
  * @throws {Error} When `name` is already registered.

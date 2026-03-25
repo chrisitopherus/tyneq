@@ -54,7 +54,7 @@ Buffering stages (`orderBy`, `groupBy`, `distinct`) must inspect a larger portio
 // This reads ALL items — orderBy must see everything before yielding the first sorted result.
 Tyneq.from(largeCollection)
     .orderBy(x => x.score)
-    .first(x => x.score > 50);
+    .elementAt(0); // the smallest-score element, after fully sorting the source
 ```
 
 Pipeline shape directly determines memory pressure and time-to-first-result.

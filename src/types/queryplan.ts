@@ -48,7 +48,7 @@ export type OperatorCategory = "source" | "streaming" | "buffer" | "terminal";
  * // node.source describes the operator before it, and so on
  * ```
  *
- * @see {@link IQueryPlanVisitor} for traversal.
+ * @see {@link QueryPlanVisitor} for traversal.
  *
  * @group QueryPlan
  */
@@ -78,7 +78,7 @@ export interface IQueryNode {
      * @param visitor - The visitor to dispatch to.
      * @returns The result of `visitor.visit(this)`.
      */
-    accept<T>(visitor: IQueryPlanVisitor<T>): T;
+    accept<T>(visitor: QueryPlanVisitor<T>): T;
 }
 
 /**
@@ -93,7 +93,7 @@ export interface IQueryNode {
  * `visitWhere` / `visitSelect` / … dispatch table is not feasible.
  *
  * ```ts
- * class QueryPlanPrinter implements IQueryPlanVisitor<string> {
+ * class QueryPlanPrinter implements QueryPlanVisitor<string> {
  *     visit(node: IQueryNode): string {
  *         const argStr = node.args
  *             .map(a => typeof a === "function" ? "<fn>" : String(a))
@@ -118,7 +118,7 @@ export interface IQueryNode {
  *
  * @group QueryPlan
  */
-export interface IQueryPlanVisitor<T> {
+export interface QueryPlanVisitor<T> {
     /**
      * Visits a single query node and returns a value of type `T`.
      *

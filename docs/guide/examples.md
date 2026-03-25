@@ -52,7 +52,7 @@ const leaderboard = Tyneq
     x => x.amount,
     (region, amounts) => ({
       region,
-      total: Tyneq.from(amounts).sum(x => x)
+      total: amounts.sum(x => x)
     })
   )
   .orderByDescending(x => x.total)
@@ -168,29 +168,31 @@ console.log(retained);
 
 ---
 
-## Example 5: Sliding Window Analysis
+## Example 5: Detect Changes with Pairwise
 
-Goal: compute a 3-element moving average over a time series.
+Goal: find consecutive readings that changed by 5 or more.
 
 ```ts
 import { Tyneq } from "tyneq";
 
 const readings = [10, 14, 11, 18, 22, 19, 25, 30];
 
-const movingAverage = Tyneq
+const spikes = Tyneq
   .from(readings)
-  .window(3)                                    // produce [10,14,11], [14,11,18], ...
-  .select(win => {
-    const avg = win.reduce((a, b) => a + b, 0) / win.length;
-    return Math.round(avg * 10) / 10;
-  })
+  .pairwise()                                              // [prev, curr] pairs
+  .where(([prev, curr]) => Math.abs(curr - prev) >= 5)
+  .select(([prev, curr]) => ({ from: prev, to: curr, delta: curr - prev }))
   .toArray();
 
-console.log(movingAverage);
-// → [11.7, 14.3, 17, 19.7, 22, 24.7]
+console.log(spikes);
+// → [
+//     { from: 11, to: 18, delta: 7 },
+//     { from: 19, to: 25, delta: 6 },
+//     { from: 25, to: 30, delta: 5 }
+//   ]
 ```
 
-**Operators used**: `window` (streaming — produces overlapping arrays), `select` (streaming), `toArray` (terminal).
+**Operators used**: `pairwise` (streaming — produces adjacent pairs), `where` (streaming), `select` (streaming), `toArray` (terminal).
 
 ---
 

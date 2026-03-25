@@ -120,15 +120,14 @@ pnpm add tyneq
 import { Tyneq } from "tyneq";
 
 const fromArray = Tyneq.from([1, 2, 3]);
-const fromRange = Tyneq.range(10, 5);       // [10, 11, 12, 13, 14]
-const random    = Tyneq.random(5, () => Math.floor(Math.random() * 101)); // 5 random integers in [0, 100]
+const fromRange = Tyneq.range(10, 5);        // [10, 11, 12, 13, 14]
+const random    = Tyneq.random(5, () => Math.floor(Math.random() * 101)); // 5 random values
 const empty     = Tyneq.empty<number>();
 
-// Indexed enumeration
-const indexed = Tyneq.enumerate(["a", "b", "c"])
-  .select(([i, value]) => `${i}: ${value}`)
-  .toArray();
-// ["0: a", "1: b", "2: c"]
+// Indexed enumeration — pairs each element with its zero-based index
+for (const [i, value] of Tyneq.enumerate(["a", "b", "c"])) {
+    console.log(`${i}: ${value}`); // 0: a, 1: b, 2: c
+}
 ```
 
 ### Compose lazily, execute explicitly
@@ -141,7 +140,7 @@ const query = Tyneq.range(1, 100)
   .select(n => n * n)
   .take(5);
 
-// Pipeline is defined — no iteration has happened.
+// Pipeline is defined — no iteration has happened yet.
 query.toArray(); // [4, 16, 36, 64, 100]
 ```
 
@@ -156,6 +155,17 @@ q.toArray(); // [10, 20, 30]
 q.toArray(); // [10, 20, 30]  ← same result, independent state
 ```
 
+### Works with standard iteration protocols
+
+Tyneq sequences implement `Iterable<T>`, so they plug directly into `for...of`, spread, and destructuring.
+
+```ts
+const seq = Tyneq.range(1, 5).where(n => n % 2 !== 0);
+
+for (const n of seq) console.log(n);  // 1, 3, 5
+const arr = [...seq];                  // [1, 3, 5]
+```
+
 ---
 
 ## Core Concepts
@@ -166,14 +176,14 @@ q.toArray(); // [10, 20, 30]  ← same result, independent state
 |---|---|---|---|
 | **Streaming** | One element at a time, lazily | O(1) | `where`, `select`, `take`, `scan` |
 | **Buffering** | Materializes full input before yielding | O(n) | `orderBy`, `groupBy`, `distinct`, `shuffle` |
-| **Terminal** | Executes the pipeline, returns a value | — | `toArray`, `first`, `count`, `sum` |
+| **Terminal** | Executes the pipeline, returns a value | — | `toArray`, `count`, `sum`, `any` |
 
 Understanding the kind of each operator lets you reason about performance and memory upfront.
 
 ### Re-iteration vs memoization
 
 ```ts
-// Re-iterable: re-executes the source pipeline each time
+// Re-iterable: re-executes the full pipeline on every terminal call
 const q = Tyneq.range(1, 1000).where(n => n % 3 === 0);
 q.toArray(); // runs the pipeline
 q.toArray(); // runs it again from scratch
@@ -187,18 +197,6 @@ m.refresh(); // invalidate the cache
 m.toArray(); // recomputes
 ```
 
-### Using standard iterables
-
-Tyneq sequences implement both `Iterable<T>` and `Iterator<T>`, so they plug directly into
-`for...of`, spread syntax, and destructuring with no conversion needed.
-
-```ts
-const seq = Tyneq.range(1, 5).where(n => n % 2 !== 0);
-
-for (const n of seq) console.log(n);  // 1, 3, 5
-const arr = [...seq];                  // [1, 3, 5]
-```
-
 ---
 
 ## Operator Reference
@@ -209,10 +207,10 @@ const arr = [...seq];                  // [1, 3, 5]
 
 | Operator | Description |
 |---|---|
-| `Tyneq.from(source)` | Wrap any `Iterable<T>` or `Array<T>` |
+| `Tyneq.from(source)` | Wrap any `Iterable<T>` |
 | `Tyneq.range(start, count)` | Integer sequence from `start` of length `count` |
 | `Tyneq.empty<T>()` | Empty sequence |
-| `Tyneq.enumerate(source)` | Pair each element with its zero-based index |
+| `Tyneq.enumerate(source)` | Pair each element with its zero-based index as `[number, T]` |
 | `Tyneq.random(count, randomizer)` | Sequence of `count` values produced by a callback |
 
 ---
@@ -223,32 +221,30 @@ const arr = [...seq];                  // [1, 3, 5]
 
 | Operator | Description |
 |---|---|
-| `select(fn)` | Project each element to a new value |
-| `selectMany(fn)` | Project and flatten nested iterables |
-| `where(predicate)` | Filter elements |
-| `take(n)` | Keep the first `n` elements |
-| `takeWhile(predicate)` | Keep elements while predicate holds |
-| `skip(n)` | Skip the first `n` elements |
-| `skipWhile(predicate)` | Skip elements while predicate holds |
-| `skipLast(n)` | Skip the last `n` elements |
-| `append(...items)` | Append elements to the end |
-| `prepend(...items)` | Prepend elements to the start |
-| `concat(other)` | Concatenate two sequences |
-| `zip(other, fn?)` | Pair elements from two sequences |
-| `scan(seed, fn)` | Running aggregate — emits intermediate accumulator values |
+| `select(selector)` | Project each element to a new value |
+| `selectMany(selector)` | Project each element to a sequence and flatten the results |
+| `where(predicate)` | Filter elements matching the predicate |
+| `take(count)` | Keep the first `count` elements |
+| `takeWhile(predicate)` | Keep elements while predicate holds, stop at first failure |
+| `skip(count)` | Skip the first `count` elements |
+| `skipWhile(predicate)` | Skip elements while predicate holds, yield the remainder |
+| `skipLast(count)` | Skip the last `count` elements |
+| `append(item)` | Yield all source elements followed by `item` |
+| `prepend(item)` | Yield `item` followed by all source elements |
+| `concat(other)` | Concatenate this sequence with another |
+| `zip(other, selector)` | Pair elements from two sequences using a selector; stops when either is exhausted |
+| `scan(seed, accumulator)` | Emit the running accumulator value after each element |
 | `pairwise()` | Emit overlapping `[prev, curr]` pairs |
-| `chunk(size)` | Split into fixed-size `Array<T>` chunks |
-| `window(size)` | Emit overlapping `Array<T>` sliding windows |
-| `split(predicate)` | Split into subsequences on a delimiter element |
-| `defaultIfEmpty(value)` | Emit a fallback if the source is empty |
-| `intersperse(separator)` | Insert a separator element between each pair |
-| `populate(value, count)` | Emit a value `count` times |
-| `cast<U>()` | Assert each element is `U` (throws on mismatch) |
-| `ofType<U>(guard)` | Filter elements to those matching a type guard |
-| `tap(fn)` | Side-effect per element without modifying the sequence |
-| `tapIf(predicate, fn)` | Conditional side-effect per element |
-| `throttle(n)` | Emit every `n`-th element |
-| `pipe(fn)` | Apply a custom transformation that returns a new sequence |
+| `chunk(size)` | Split into fixed-size `TSource[]` chunks; last chunk may be smaller |
+| `split(predicate)` | Split on elements matching the predicate; split-point elements are excluded |
+| `defaultIfEmpty(value)` | Yield the source unchanged, or a single `value` if the source is empty |
+| `populate(value)` | Replace every source element with `value`; preserves element count |
+| `cast<U>()` | Assert each element is of type `U` (compile-time only; no runtime check) |
+| `ofType<U>(guard)` | Filter and narrow elements to those passing a type guard |
+| `tap(action)` | Invoke a side-effect action per element; elements pass through unchanged |
+| `tapIf(action, predicate)` | Invoke `action` per element only when `predicate()` returns `true` at call time |
+| `throttle(count)` | Emit every `count`-th element, discarding elements in between |
+| `pipe(factory)` | Apply a custom transformation via a user-supplied factory function |
 
 ---
 
@@ -260,23 +256,23 @@ const arr = [...seq];                  // [1, 3, 5]
 |---|---|
 | `orderBy(keySelector, comparer?)` | Sort ascending by key |
 | `orderByDescending(keySelector, comparer?)` | Sort descending by key |
-| `thenBy(keySelector, comparer?)` | Secondary ascending sort (chains on ordered sequence) |
+| `thenBy(keySelector, comparer?)` | Secondary ascending sort (chains on `TyneqOrderedSequence`) |
 | `thenByDescending(keySelector, comparer?)` | Secondary descending sort |
-| `groupBy(keySelector, elementSelector?)` | Group elements into keyed subsequences |
-| `distinct(comparer?)` | Remove duplicate elements |
-| `distinctBy(keySelector, comparer?)` | Remove duplicates by projected key |
+| `groupBy(keySelector, valueSelector, resultSelector)` | Group elements by key, project values, and map each group to a result |
+| `distinct()` | Remove duplicate elements (by reference equality) |
+| `distinctBy(keySelector)` | Remove duplicates by projected key |
 | `reverse()` | Reverse the sequence |
 | `shuffle()` | Randomly permute the sequence |
-| `union(other, comparer?)` | Union with deduplication |
-| `unionBy(other, keySelector, comparer?)` | Union deduplicated by key |
-| `intersect(other, comparer?)` | Elements present in both sequences |
-| `intersectBy(other, keySelector, comparer?)` | Intersection by key |
-| `except(other, comparer?)` | Elements not present in `other` |
-| `exceptBy(other, keySelector, comparer?)` | Difference by key |
-| `join(inner, outerKey, innerKey, resultSelector)` | Inner join |
+| `union(other)` | Union with deduplication |
+| `unionBy(other, keySelector)` | Union deduplicated by projected key |
+| `intersect(other)` | Elements present in both sequences |
+| `intersectBy(other, keySelector)` | Intersection by projected key |
+| `except(other)` | Elements not present in `other` |
+| `exceptBy(other, keySelector)` | Difference by projected key |
+| `join(inner, outerKey, innerKey, resultSelector)` | Inner join on key equality |
 | `groupJoin(inner, outerKey, innerKey, resultSelector)` | Left outer join with grouped inner results |
-| `backsert(other, index)` | Insert another sequence at a given index |
-| `memoize()` | Cache results across re-enumerations; returns `ITyneqCachedEnumerable` |
+| `backsert(index, other)` | Insert `other` at a position counted from the end (`index = 0` appends) |
+| `memoize()` | Cache results across re-enumerations; returns `TyneqCachedSequence` |
 
 ---
 
@@ -288,35 +284,35 @@ const arr = [...seq];                  // [1, 3, 5]
 |---|---|
 | `toArray()` | Collect all elements into an `Array<T>` |
 | `toSet()` | Collect into a `Set<T>` |
-| `toMap(keySelector, valueSelector?)` | Collect into a `Map<K, V>` |
-| `toRecord(keySelector, valueSelector?)` | Collect into a plain `Record<K, V>` |
-| `toAsync()` | Bridge to `AsyncIterable<T>` |
-| `first(predicate?)` | First element (throws if empty) |
-| `firstOrDefault(predicate?, defaultValue?)` | First element or `undefined`/default |
-| `last(predicate?)` | Last element (throws if empty) |
-| `lastOrDefault(predicate?, defaultValue?)` | Last element or `undefined`/default |
-| `single(predicate?)` | Exactly one element (throws otherwise) |
-| `singleOrDefault(predicate?, defaultValue?)` | One element or `undefined`/default |
-| `elementAt(index)` | Element at index (throws if out of range) |
-| `elementAtOrDefault(index, defaultValue?)` | Element at index or `undefined`/default |
-| `count(predicate?)` | Number of elements (optionally matching predicate) |
-| `countBy(keySelector)` | Count per group key as a `Map<K, number>` |
-| `sum(selector?)` | Numeric sum |
-| `average(selector?)` | Arithmetic mean |
+| `toMap(selector)` | Collect into a `Map<K, V>` using a `{ key, value }` selector |
+| `toRecord(selector)` | Collect into a `Record<K, V>` using a `{ key, value }` selector |
+| `toAsync()` | Bridge to `AsyncIterable<T>`; each iteration produces a fresh traversal |
+| `first(predicate)` | First element matching predicate (throws if none match) |
+| `firstOrDefault(predicate, defaultValue)` | First element matching predicate, or `defaultValue` |
+| `last(predicate)` | Last element matching predicate (throws if none match) |
+| `lastOrDefault(predicate, defaultValue)` | Last element matching predicate, or `defaultValue` |
+| `single(predicate)` | Exactly one element matching predicate (throws if zero or more than one) |
+| `singleOrDefault(predicate, defaultValue)` | One element matching predicate, or `defaultValue` (throws if more than one) |
+| `elementAt(index)` | Element at zero-based index (throws if out of range) |
+| `elementAtOrDefault(index, defaultValue)` | Element at index or `defaultValue` |
+| `count()` | Number of elements |
+| `countBy(predicate)` | Number of elements matching predicate |
+| `sum(selector)` | Sum of values returned by `selector` |
+| `average(selector)` | Arithmetic mean of values returned by `selector` |
 | `min(comparer?)` | Minimum element |
 | `max(comparer?)` | Maximum element |
 | `minBy(keySelector, comparer?)` | Element with the minimum projected key |
 | `maxBy(keySelector, comparer?)` | Element with the maximum projected key |
-| `minMax(comparer?)` | Both minimum and maximum in one pass |
-| `aggregate(seed, fn, resultSelector?)` | General fold (reduce) |
-| `any(predicate?)` | `true` if any element matches |
+| `minMax(comparer?)` | Both minimum and maximum in a single pass; returns `{ min, max }` |
+| `aggregate(seed, fn, resultSelector)` | General fold: apply `fn` as a running accumulator, then transform with `resultSelector` |
+| `any(predicate)` | `true` if any element matches |
 | `all(predicate)` | `true` if all elements match |
-| `contains(value, comparer?)` | `true` if value is present |
-| `indexOf(value, comparer?)` | Zero-based index of value, or `-1` |
-| `sequenceEqual(other, comparer?)` | `true` if both sequences are equal element-wise |
-| `startsWith(other, comparer?)` | `true` if sequence begins with `other` |
-| `isNullOrEmpty()` | `true` if null, undefined, or empty |
-| `consume()` | Drain the sequence (side-effects only, returns `void`) |
+| `contains(value)` | `true` if value is present (by reference equality) |
+| `indexOf(predicate, startIndex?)` | Zero-based index of the first matching element, or `-1` |
+| `sequenceEqual(other, equalityComparer?)` | `true` if both sequences are element-wise equal |
+| `startsWith(other)` | `true` if the sequence begins with all elements of `other` in order |
+| `isNullOrEmpty()` | `true` if the sequence is empty |
+| `consume()` | Drain the sequence without materializing results (for side effects) |
 
 ---
 
@@ -367,20 +363,29 @@ const sorted = Tyneq.from([
 
 ### Grouping and aggregation
 
+`groupBy` requires a key selector, a value selector, and a result selector. The result selector receives each group key and a sequence of the projected values.
+
 ```ts
 const stats = Tyneq.from([
   { name: "Ada",   team: "core",  score: 84 },
   { name: "Grace", team: "core",  score: 97 },
   { name: "Linus", team: "infra", score: 92 },
 ])
-  .groupBy(p => p.team)
-  .select(g => ({
-    team:    g.key,
-    count:   g.count(),
-    average: g.average(p => p.score),
-    top:     g.orderByDescending(p => p.score).first().name,
-  }))
+  .groupBy(
+    p => p.team,            // key selector
+    p => p.score,           // value selector
+    (team, scores) => ({    // result selector — scores is TyneqSequence<number>
+      team,
+      count:   scores.count(),
+      average: scores.average(s => s),
+      highest: scores.max(),
+    })
+  )
   .toArray();
+// [
+//   { team: "core",  count: 2, average: 90.5, highest: 97 },
+//   { team: "infra", count: 1, average: 92,   highest: 92 },
+// ]
 ```
 
 ### Running aggregates with `scan`
@@ -403,6 +408,23 @@ const b = Tyneq.from([3, 4, 5, 6]);
 a.intersect(b).toArray(); // [3, 4]
 a.except(b).toArray();    // [1, 2]
 a.union(b).toArray();     // [1, 2, 3, 4, 5, 6]
+```
+
+### Collecting into maps and records
+
+`toMap` and `toRecord` take a single selector that returns a `{ key, value }` pair.
+
+```ts
+const users = Tyneq.from([
+  { id: 1, name: "Ada" },
+  { id: 2, name: "Grace" },
+]);
+
+const byId = users.toMap(u => ({ key: u.id, value: u.name }));
+// Map { 1 => "Ada", 2 => "Grace" }
+
+const record = users.toRecord(u => ({ key: u.id, value: u.name }));
+// { 1: "Ada", 2: "Grace" }
 ```
 
 ### Memoized pipelines
@@ -448,21 +470,22 @@ This model makes it straightforward to reason about when work happens and how mu
 
 ## Extensibility
 
-Tyneq has a first-class API for registering custom operators at runtime — no source modifications or monkey-patching required.
+Tyneq has a first-class API for registering custom operators at runtime — no source modifications required.
 
-### Functional API
+### `createStreamingOperator` — generator-based (simplest)
 
-`createOperator` is the easiest path for custom streaming or buffering operators:
+Write the operator as a generator function. The library handles the enumerator lifecycle.
 
 ```ts
-import { createOperator } from "tyneq";
-import type { IEnumerable } from "tyneq";
+import { createStreamingOperator } from "tyneq";
 
-// Register a streaming operator that repeats each element n times
-createOperator({
+// repeatEach.ts — importing this file registers the operator
+createStreamingOperator({
     name: "repeatEach",
-    factory(source: IEnumerable<unknown>, times: number) {
-        return source.selectMany(x => Tyneq.populate(x, times));
+    *generator(source: Iterable<unknown>, times: number) {
+        for (const item of source) {
+            for (let i = 0; i < times; i++) yield item;
+        }
     },
     validate(times) {
         if (times < 1) throw new Error("times must be >= 1");
@@ -471,23 +494,50 @@ createOperator({
 
 // Augment the type so TypeScript knows about the new method
 declare module "tyneq" {
-    interface ITyneqEnumerable<T> {
-        repeatEach(times: number): ITyneqEnumerable<T>;
+    interface TyneqSequence<T> {
+        repeatEach(times: number): TyneqSequence<T>;
     }
 }
 
 Tyneq.from([1, 2, 3]).repeatEach(2).toArray(); // [1, 1, 2, 2, 3, 3]
 ```
 
-Similarly, `createGeneratorOperator` registers generator-based operators and `createTerminalOperator` registers terminal operators that return a value.
+### `createTerminalOperator` — for operators that return a value
 
-### Class-based API
+```ts
+import { createTerminalOperator, Tyneq } from "tyneq";
+import type { Enumerable } from "tyneq";
 
-Use the `@operator` and `@terminal` decorators for operators with complex internal state:
+createTerminalOperator({
+    name: "joinString",
+    execute(source: Enumerable<unknown>, separator: string): string {
+        const parts: string[] = [];
+        for (const item of source) parts.push(String(item));
+        return parts.join(separator);
+    },
+});
+
+declare module "tyneq" {
+    interface TyneqSequence<T> {
+        joinString(separator: string): string;
+    }
+}
+
+Tyneq.from([1, 2, 3]).joinString(", "); // "1, 2, 3"
+```
+
+### `createOperator` — full control over the enumerator factory
+
+Use when you need to return a custom `EnumeratorFactory<T>` rather than a generator.
+
+### Class-based API (`@operator`, `@terminal`)
+
+Use the decorators for operators with complex internal state:
 
 ```ts
 import { operator, TyneqEnumerator } from "tyneq";
 
+// everyOther.ts — importing this file registers the operator
 @operator("everyOther")
 class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
     private skip = false;
@@ -501,9 +551,15 @@ class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
         }
     }
 }
+
+declare module "tyneq" {
+    interface TyneqSequence<T> {
+        everyOther(): TyneqSequence<T>;
+    }
+}
 ```
 
-See the [Custom Operators guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for the full workflow, including validation patterns, multi-argument operators, and TypeScript augmentation. For a deep dive into the enumerator lifecycle — early termination, buffer patterns, secondary resources — see [Building Custom Enumerators](https://chrisitopherus.github.io/tyneq/guide/custom-enumerators).
+See the [Custom Operators guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for the full workflow, including validation patterns, multi-argument operators, buffer operators, and TypeScript augmentation. For a deep dive into the enumerator lifecycle — early termination, buffer patterns, secondary resources — see [Building Custom Enumerators](https://chrisitopherus.github.io/tyneq/guide/custom-enumerators).
 
 ---
 
@@ -512,8 +568,7 @@ See the [Custom Operators guide](https://chrisitopherus.github.io/tyneq/guide/ex
 Every sequence carries a query plan tree that describes the operators applied to it. This is useful for logging, debugging, and building developer tools.
 
 ```ts
-import { Tyneq } from "tyneq";
-import { tyneqQueryNode, QueryPlanPrinter } from "tyneq";
+import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from "tyneq";
 
 const seq = Tyneq.from([1, 2, 3])
   .where(x => x > 1)
@@ -528,7 +583,7 @@ console.log(plan);
 //   → take(5)
 ```
 
-The printer is fully customizable via `indent`, `arrow`, and `maxInlineArrayItems` options, and can be subclassed to override `formatArg` or `formatLine` for custom rendering.
+The printer accepts `indent`, `arrow`, and `maxInlineArrayItems` options, and can be subclassed to override `formatArg` or `formatLine` for custom rendering. The query plan can also be traversed with any class implementing `QueryPlanVisitor<T>` — see the [query plan guide](https://chrisitopherus.github.io/tyneq/guide/query-plan) for visitor patterns and examples.
 
 ---
 
@@ -542,7 +597,9 @@ Full documentation, operator guides, and the API reference are available at:
 |---|---|
 | [Guide: Getting Started](https://chrisitopherus.github.io/tyneq/guide/getting-started) | Install and write your first query |
 | [Guide: Core Concepts](https://chrisitopherus.github.io/tyneq/guide/concepts) | Sequences, operators, and the execution model |
-| [Guide: Extensibility](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Custom operators and query plans |
+| [Guide: Extensibility](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Custom operators and the registry API |
+| [Guide: Custom Enumerators](https://chrisitopherus.github.io/tyneq/guide/custom-enumerators) | Enumerator lifecycle, buffer patterns, early termination |
+| [Guide: Query Plan](https://chrisitopherus.github.io/tyneq/guide/query-plan) | Query plan introspection and visitor patterns |
 | [API Reference](https://chrisitopherus.github.io/tyneq/api/) | Full generated API docs |
 
 ---

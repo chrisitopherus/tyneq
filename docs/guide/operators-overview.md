@@ -22,9 +22,8 @@ Common operators:
 - `tap` / `tapIf` — side-effect pass-through
 - `populate` — replace each element with a constant value
 - `split` — split on delimiter elements
+- `chunk` — split into fixed-size batches
 - `throttle` — sample every Nth element
-- `intersperse` — insert a delimiter between elements
-- `window` — produce overlapping sliding-window arrays
 - `scan` — running accumulation (prefix scan)
 - `cast` — assert each element satisfies a type (throws on mismatch)
 - `ofType` — filter elements using a type guard
@@ -51,7 +50,6 @@ Common operators:
 - `except`, `exceptBy` — set difference
 - `shuffle` — randomize order
 - `reverse` — reverse order
-- `chunk` — split into fixed-size batches
 - `backsert` — insert at a position from the end
 - `memoize` — cache results for repeated enumeration
 

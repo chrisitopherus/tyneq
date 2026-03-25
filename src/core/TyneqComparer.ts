@@ -5,8 +5,8 @@
  * Static utility class; cannot be instantiated. The defaults apply whenever an operator's
  * optional `comparer` or `equalityComparer` parameter is omitted.
  *
- * @see {@link ITyneqEnumerable.orderBy} for sorting operations.
- * @see {@link ITyneqEnumerable.distinct} for deduplication operations.
+ * @see {@link TyneqSequence.orderBy} for sorting operations.
+ * @see {@link TyneqSequence.distinct} for deduplication operations.
  *
  * @group Utilities
  */

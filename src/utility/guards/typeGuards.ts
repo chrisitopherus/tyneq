@@ -1,6 +1,6 @@
 import { ArgumentError } from "../../core/errors/argument/ArgumentError";
 import { ArgumentTypeError } from "../../core/errors/argument/ArgumentTypeError";
-import type { IEnumerable, IEnumerator } from "../../types/core";
+import type { Enumerable, Enumerator } from "../../types/core";
 import type { HasLength } from "../../types/utility";
 import { TypeGuardUtility } from "../typeGuardUtility";
 
@@ -46,24 +46,24 @@ export class TypeGuards {
     }
 
     /**
-     * Asserts that `value` is an {@link IEnumerable}.
+     * Asserts that `value` is an {@link Enumerable}.
      * @throws {ArgumentTypeError}
      */
-    public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerable<T> {
+    public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is Enumerable<T> {
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
-            throw new ArgumentTypeError(paramName, "IEnumerable", actualType);
+            throw new ArgumentTypeError(paramName, "Enumerable", actualType);
         }
     }
 
     /**
-     * Asserts that `value` is an {@link IEnumerator}.
+     * Asserts that `value` is an {@link Enumerator}.
      * @throws {ArgumentTypeError}
      */
-    public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is IEnumerator<T> {
+    public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is Enumerator<T> {
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
-            throw new ArgumentTypeError(paramName, "IEnumerator", actualType);
+            throw new ArgumentTypeError(paramName, "Enumerator", actualType);
         }
     }
 

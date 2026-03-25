@@ -234,25 +234,26 @@ console.log(disposed); // should be true if earlyComplete is used correctly
 // ❌ same array instance is reused across enumerations
 const accumulator = { values: [] as number[], sum: 0 };
 
-const query = Tyneq.from([1, 2, 3]).aggregate(
+const result = Tyneq.from([1, 2, 3]).aggregate(
     accumulator,
-    (acc, x) => { acc.values.push(x); acc.sum += x; return acc; }
+    (acc, x) => { acc.values.push(x); acc.sum += x; return acc; },
+    acc => acc
 );
-
-query;        // terminal — runs immediately, returns { values: [1,2,3], sum: 6 }
-// If this were re-run: accumulator is already modified
+// → { values: [1,2,3], sum: 6 }
+// But accumulator is now mutated — calling this again with the same seed is wrong
 ```
 
-**Why it happens:** `aggregate` is a terminal operator — it runs immediately. But the accumulator object is passed by reference. If the seed value is a mutated object, running the same aggregate again with the same seed produces incorrect results.
+**Why it happens:** `aggregate` is a terminal operator — it runs immediately and mutates the seed object in place. Calling `aggregate` again with the same mutable seed accumulates on top of the already-mutated state.
 
 **Fix — produce a fresh seed on every call:**
 
 ```ts
 // ✅ factory pattern: fresh seed per run
-function summarize(source: ITyneqEnumerable<number>) {
+function summarize(source: TyneqSequence<number>) {
     return source.aggregate(
         { values: [] as number[], sum: 0 },  // fresh object literal each call
-        (acc, x) => { acc.values.push(x); acc.sum += x; return acc; }
+        (acc, x) => { acc.values.push(x); acc.sum += x; return acc; },
+        acc => acc
     );
 }
 ```
@@ -263,7 +264,7 @@ This is the same issue as mutating a default parameter value in JavaScript. Trea
 
 ## Pitfall 8 — Confusing `first` and `firstOrDefault`
 
-`first(predicate?)` throws `NoMatchError` when no element satisfies the predicate (or the sequence is empty). `firstOrDefault(predicate?, defaultValue?)` returns `undefined` (or your default) instead of throwing.
+`first(predicate)` throws when no element satisfies the predicate. `firstOrDefault(predicate, defaultValue)` returns `defaultValue` instead of throwing. Both require a predicate argument.
 
 ```ts
 const items = Tyneq.from([1, 2, 3]);
@@ -271,13 +272,13 @@ const items = Tyneq.from([1, 2, 3]);
 // ❌ throws if no even numbers exist
 const even = items.first(x => x % 2 === 0);
 
-// ✅ returns undefined if no even numbers exist
-const even = items.firstOrDefault(x => x % 2 === 0);
+// ✅ returns 0 if no even numbers exist
+const even = items.firstOrDefault(x => x % 2 === 0, 0);
 ```
 
-The same distinction applies to `last`/`lastOrDefault`, `single`/`singleOrDefault`, and `elementAt`/`elementAtOrDefault`.
+The same throwing/non-throwing distinction applies to `last`/`lastOrDefault`, `single`/`singleOrDefault`, and `elementAt`/`elementAtOrDefault`.
 
-**Rule:** Use the `OrDefault` variant whenever the empty/no-match case is a normal outcome rather than a programming error.
+**Rule:** Use the `OrDefault` variant whenever the no-match case is a normal outcome rather than a programming error.
 
 ---
 
@@ -299,10 +300,10 @@ Tyneq.from(data)
 ### Use query plan inspection to understand pipeline structure
 
 ```ts
-import { QueryPlanPrinter } from "tyneq";
+import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from "tyneq";
 
 const query = Tyneq.from(data).where(pred).orderBy(fn).take(5);
-console.log(QueryPlanPrinter.print(query.queryPlan()));
+console.log(QueryPlanPrinter.print(query[tyneqQueryNode]!));
 ```
 
 The printed plan shows the operator tree in execution order and labels each operator's kind (`streaming`, `buffer`, `terminal`). Buffer operators in the plan are O(n) memory sites — review their position relative to limiting operators.

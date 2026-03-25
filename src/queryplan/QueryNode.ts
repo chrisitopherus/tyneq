@@ -1,18 +1,18 @@
-import type { IQueryNode, IQueryPlanVisitor, OperatorCategory } from "../types/queryplan";
+import type { IQueryNode, QueryPlanVisitor, OperatorCategory } from "../types/queryplan";
 
 /**
  * Standard immutable implementation of {@link IQueryNode}.
  *
  * @remarks
  * Instances are created automatically by the operator registration infrastructure
- * (`@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`) and by
+ * (`@operator`, `@terminal`, `createOperator`, `createStreamingOperator`) and by
  * `Tyneq.from` / `Tyneq.range` for root source nodes.
  *
  * Construct `QueryNode` directly only when producing modified nodes inside a
- * {@link IQueryPlanVisitor} — for example, in a query optimizer:
+ * {@link QueryPlanVisitor} — for example, in a query optimizer:
  *
  * ```ts
- * class QueryOptimizer implements IQueryPlanVisitor<IQueryNode> {
+ * class QueryOptimizer implements QueryPlanVisitor<IQueryNode> {
  *     visit(node: IQueryNode): IQueryNode {
  *         const optimizedSource = node.source ? this.visit(node.source) : null;
  *
@@ -44,7 +44,7 @@ export class QueryNode implements IQueryNode {
         public readonly category: OperatorCategory
     ) {}
 
-    public accept<T>(visitor: IQueryPlanVisitor<T>): T {
+    public accept<T>(visitor: QueryPlanVisitor<T>): T {
         return visitor.visit(this);
     }
 }

@@ -38,13 +38,13 @@ Tyneq is a LINQ-style lazy enumerable library for TypeScript. The core contract 
 | Path | Purpose |
 |------|---------|
 | `src/core/` | Runtime kernel: base types, ordering, caching, errors, query-node plumbing |
-| `src/operators/streaming/` | Streaming operator implementations |
-| `src/operators/buffer/` | Buffer operator implementations |
-| `src/operators/terminal/` | Terminal operator implementations |
-| `src/extensibility/` | `@operator`, `@terminal`, `createOperator`, `OperatorRegistry` |
+| `src/enumerators/streaming/` | Streaming enumerator implementations |
+| `src/enumerators/buffer/` | Buffer enumerator implementations |
+| `src/operators/` | Terminal operator implementations (flat — no subdirectory) |
+| `src/extensions/` | `@operator`, `@terminal`, `createOperator`, `OperatorRegistry` |
 | `src/queryplan/` | Query plan introspection types and printers |
 | `src/utility/` | `ArgumentUtility` facade + `src/utility/guards/` implementations |
-| `src/types/core.ts` | `ITyneqEnumerable` — the public method surface |
+| `src/types/core.ts` | `TyneqSequence` — the public method surface |
 | `tests/unit/operators/` | Per-operator unit tests |
 | `tests/integration/` | Composed pipeline and re-iterability tests |
 
@@ -56,8 +56,8 @@ All four steps are mandatory. Missing any causes silent failures or type errors.
 
 1. **Create the operator file** in the correct folder (see `tasks/lessons.md` → "Where to put a new operator file")
 2. **Add validation** to the `validate` arg of `@operator`/`@terminal`/`createOperator` — never in the constructor
-3. **Add the side-effect import** to `src/operators/extensions/index.ts`
-4. **Add the method signature** to `ITyneqEnumerable` in `src/types/core.ts`
+3. **Add a named import** to `src/core/TyneqEnumerableBase.ts` (streaming/buffer: import the enumerator class; terminal: import the operator class)
+4. **Add the method signature** to `TyneqSequence` in `src/types/core.ts`
 
 ---
 
@@ -77,7 +77,7 @@ All four steps are mandatory. Missing any causes silent failures or type errors.
 
 **`IWithCreateEnumerable` cast is intentional.** The double-cast exists to call a `protected` method from registration machinery. See `tasks/lessons.md` → "Architecture Decisions".
 
-**Never patch the prototype directly.** All registration must go through `@operator`, `@terminal`, `createOperator`, `createGeneratorOperator`, or `createTerminalOperator`.
+**Never patch the prototype directly.** All registration must go through `@operator`, `@terminal`, `createOperator`, `createStreamingOperator`, or `createTerminalOperator`.
 
 **Both registration styles are intentional.** Class-based (`@operator`) and functional (`createOperator`) both route through `OperatorRegistry`. Don't consolidate them.
 

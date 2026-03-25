@@ -87,9 +87,9 @@ A Tyneq query is a re-iterable value. You can call multiple terminal operators o
 ```ts
 const active = Tyneq.from(people).where(p => p.score >= 90);
 
-const count = active.count();                         // → 2
-const names = active.select(p => p.name).toArray();   // → ["Linus", "Grace"]
-const best  = active.orderByDescending(p => p.score).first(); // → { name: "Grace", ... }
+const count = active.count();                                          // → 2
+const names = active.select(p => p.name).toArray();                    // → ["Linus", "Grace"]
+const best  = active.orderByDescending(p => p.score).elementAt(0);    // → { name: "Grace", ... }
 ```
 
 Each terminal call re-runs the pipeline independently from the source. Use `memoize()` if re-execution is expensive.

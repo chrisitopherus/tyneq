@@ -1,0 +1,45 @@
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
+import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
+
+/**
+ * Abstract base class for enumerators that transform elements from an upstream `Enumerator`.
+ *
+ * @remarks
+ * Extends {@link TyneqBaseEnumerator} to wrap a source enumerator directly. Use this class
+ * for all pipeline operators (streaming and buffer) where a single enumerator is threaded
+ * through the operator chain.
+ *
+ * The source enumerator is validated in the constructor and safely disposed via
+ * {@link EnumeratorUtility.tryDispose} when iteration ends or is cut short.
+ *
+ * @typeParam TInput - The type of elements produced by the source enumerator.
+ * @typeParam TOutput - The type of elements yielded by this enumerator.
+ *
+ * @see {@link EnumeratorUtility.tryDispose} for the safe disposal mechanism.
+ *
+ * @group Enumerators
+ */
+export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
+    protected readonly sourceEnumerator: Enumerator<TInput>;
+
+    /**
+     * @param sourceEnumerator - The upstream enumerator to wrap. Must not be null or undefined.
+     * @throws {ArgumentNullError} If `sourceEnumerator` is null.
+     * @throws {ArgumentError} If `sourceEnumerator` is undefined.
+     */
+    public constructor(sourceEnumerator: Enumerator<TInput>) {
+        super();
+        ArgumentUtility.checkNotOptional({ sourceEnumerator });
+
+        this.sourceEnumerator = sourceEnumerator;
+    }
+
+    protected override disposeSource(): void {
+        if (this.sourceDisposed) return;
+
+        this.sourceDisposed = true;
+        EnumeratorUtility.tryDispose(this.sourceEnumerator);
+    }
+}
