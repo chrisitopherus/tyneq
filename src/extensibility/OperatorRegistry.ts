@@ -175,7 +175,7 @@ export class OperatorRegistry {
         if (!entry) {
             return false;
         }
-        
+
         this._entries.delete(name);
         if (entry.metadata.source !== "internal") {
             delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
@@ -359,7 +359,6 @@ export class OperatorRegistry {
             impl: noopImpl,
         };
 
-        // Do NOT patch prototype — the method is already on TyneqEnumerableBase.
         this._entries.set(name, entry);
 
         for (const hook of this._registrationHooks) {
