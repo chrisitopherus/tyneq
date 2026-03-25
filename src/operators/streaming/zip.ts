@@ -1,8 +1,8 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that combines two sequences pairwise using a selector function.
@@ -17,11 +17,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[other: unknown, selector: unknown]>("zip", (other, selector) => {
-    ArgumentUtility.checkNotOptional({ other });
-    ArgumentUtility.checkIterable({ other });
-    ArgumentUtility.checkNotOptional({ selector });
-})
+@builtinOperator({ name: "zip", kind: "streaming" })
 export class ZipEnumerator<T, U, V> extends TyneqSourceEnumerator<T, V> {
     private readonly otherEnumerator: IEnumerator<U>;
     private readonly selector: (first: T, second: U) => V;

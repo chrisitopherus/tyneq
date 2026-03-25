@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that conditionally executes a side-effect action on each element.
@@ -17,10 +17,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[action: unknown, predicate: unknown]>("tapIf", (action, predicate) => {
-    ArgumentUtility.checkNotOptional({ action });
-    ArgumentUtility.checkNotOptional({ predicate });
-})
+@builtinOperator({ name: "tapIf", kind: "streaming" })
 export class TapIfEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
     private readonly predicate: () => boolean;

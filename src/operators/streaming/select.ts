@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that projects each element through a selector function.
@@ -14,9 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[selector: unknown]>("select", (selector) => {
-    ArgumentUtility.checkNotOptional({ selector });
-})
+@builtinOperator({ name: "select", kind: "streaming" })
 export class SelectEnumerator<T, U> extends TyneqSourceEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 

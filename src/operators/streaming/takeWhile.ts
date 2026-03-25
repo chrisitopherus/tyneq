@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields elements while a predicate is true, then stops.
@@ -15,9 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[predicate: unknown]>("takeWhile", (predicate) => {
-    ArgumentUtility.checkNotOptional({ predicate });
-})
+@builtinOperator({ name: "takeWhile", kind: "streaming" })
 export class TakeWhileEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly predicate: (value: T) => boolean;
 

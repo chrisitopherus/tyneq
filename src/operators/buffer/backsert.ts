@@ -1,8 +1,8 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
-import { operator } from "../../extensibility/operator";
 
 // TODO: This implementation is not memory efficient. Consider implementing a more efficient version that does not require buffering the entire source and other enumerables.
 // TODO: Consider rethinking the API to allow for a more efficient implementation. For example, instead of specifying the back index, we could specify a predicate that determines where to insert the other enumerable.
@@ -20,23 +20,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[backIndex: unknown, other: unknown]>("backsert", "buffer", (backIndex, other) => {
-    ArgumentUtility.checkNotOptional({ backIndex, other });
-
-    if (typeof backIndex !== "number" || !Number.isFinite(backIndex)) {
-        throw new TypeError("backIndex must be a finite number.");
-    }
-
-    if (!Number.isSafeInteger(backIndex)) {
-        throw new RangeError("backIndex must be a safe integer.");
-    }
-
-    if (backIndex < 0) {
-        throw new RangeError("backIndex must be a non-negative integer.");
-    }
-
-    ArgumentUtility.checkIterable({ other });
-})
+@builtinOperator({ name: "backsert", kind: "buffer" })
 export class BacksertEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly other: Iterable<T>;
     private readonly backIndex: number;

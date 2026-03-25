@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that filters elements based on a predicate.
@@ -15,9 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[predicate: unknown]>("where", (predicate) => {
-    ArgumentUtility.checkNotOptional({ predicate });
-})
+@builtinOperator({ name: "where", kind: "streaming" })
 export class WhereEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
 

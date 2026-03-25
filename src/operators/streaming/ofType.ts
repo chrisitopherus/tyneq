@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
@@ -15,9 +15,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[guard: unknown]>("ofType", (guard) => {
-    ArgumentUtility.checkNotOptional({ guard });
-})
+@builtinOperator({ name: "ofType", kind: "streaming" })
 export class OfTypeEnumerator<T, U extends T> extends TyneqSourceEnumerator<T, U> {
     private readonly guard: (value: T) => value is U;
 

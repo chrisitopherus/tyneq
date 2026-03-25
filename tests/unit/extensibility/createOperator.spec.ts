@@ -10,7 +10,7 @@ const nextName = (tag: string): string => `__tyneqSpecTest_${tag}_${UID}_${count
 describe("createOperator", () => {
   it("registers a working streaming operator on TyneqEnumerableBase.prototype", () => {
     const name = nextName("op");
-    createOperator<number, number, [number]>({
+    createOperator<number, [number], number>({
       name,
       factory(source, multiplier) {
         return {
@@ -30,7 +30,7 @@ describe("createOperator", () => {
 
   it("the registered operator is accessible on a chained sequence", () => {
     const name = nextName("opChain");
-    createOperator<number, number, []>({
+    createOperator<number, [], number>({
       name,
       factory(source) {
         return {
@@ -50,7 +50,7 @@ describe("createOperator", () => {
 
   it("validate fires at call site before any source iteration", () => {
     const name = nextName("opValidate");
-    createOperator<number, number, [number]>({
+    createOperator<number, [number], number>({
       name,
       factory(source, _multiplier) {
         return {
@@ -97,7 +97,7 @@ describe("createOperator", () => {
 describe("createGeneratorOperator", () => {
   it("registers a working generator operator on TyneqEnumerableBase.prototype", () => {
     const name = nextName("genOp");
-    createGeneratorOperator<number, number, [number]>({
+    createGeneratorOperator<number, [number], number>({
       name,
       *generator(source, addend) {
         for (const item of source) yield item + addend;
@@ -110,7 +110,7 @@ describe("createGeneratorOperator", () => {
 
   it("registered generator operator produces results on repeated iteration", () => {
     const name = nextName("genOpReiter");
-    createGeneratorOperator<number, number, []>({
+    createGeneratorOperator<number, [], number>({
       name,
       *generator(source) {
         for (const item of source) yield item * 2;
@@ -124,7 +124,7 @@ describe("createGeneratorOperator", () => {
 
   it("validate fires at call site before any source iteration", () => {
     const name = nextName("genOpValidate");
-    createGeneratorOperator<number, number, [number]>({
+    createGeneratorOperator<number, [number], number>({
       name,
       *generator(source, _addend) { yield* source; },
       validate(addend) {
@@ -164,7 +164,7 @@ describe("createGeneratorOperator", () => {
 describe("createTerminalOperator", () => {
   it("registers a working terminal operator on TyneqEnumerableBase.prototype", () => {
     const name = nextName("termOp");
-    createTerminalOperator<number, number, []>({
+    createTerminalOperator<number, [], number>({
       name,
       execute(source) {
         let sum = 0;
@@ -179,7 +179,7 @@ describe("createTerminalOperator", () => {
 
   it("registered terminal operator receives user arguments correctly", () => {
     const name = nextName("termOpArgs");
-    createTerminalOperator<number, number, [number]>({
+    createTerminalOperator<number, [number], number>({
       name,
       execute(source, factor) {
         let sum = 0;
@@ -194,7 +194,7 @@ describe("createTerminalOperator", () => {
 
   it("validate fires before execute (before source is consumed)", () => {
     const name = nextName("termOpValidate");
-    createTerminalOperator<number, null, [number]>({
+    createTerminalOperator<number, [number], null>({
       name,
       execute(source, _factor) {
         for (const _ of source) { /* consume */ }

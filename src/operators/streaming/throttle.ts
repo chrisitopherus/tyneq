@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields every Nth element from a sequence.
@@ -15,10 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[count: unknown]>("throttle", (count) => {
-    ArgumentUtility.checkSafeInteger({ count: count as number });
-    ArgumentUtility.checkPositive({ count: count as number });
-})
+@builtinOperator({ name: "throttle", kind: "streaming" })
 export class ThrottleEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private index: number = -1;

@@ -1,7 +1,7 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that executes a side-effect action on each element without modifying the sequence.
@@ -15,9 +15,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator<[action: unknown]>("tap", (action) => {
-    ArgumentUtility.checkNotOptional({ action });
-})
+@builtinOperator({ name: "tap", kind: "streaming" })
 export class TapEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
 

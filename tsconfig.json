@@ -9,9 +9,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist"
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "exclude": ["src/dev.ts"]
 }

@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
@@ -20,11 +20,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[seed: unknown, accumulator: unknown]>("scan", (seed, accumulator) => {
-    ArgumentUtility.checkNotOptional({ seed });
-    ArgumentUtility.checkNotOptional({ accumulator });
-    ArgumentUtility.checkFunction({ accumulator });
-})
+@builtinOperator({ name: "scan", kind: "streaming" })
 export class ScanEnumerator<TSource, TResult> extends TyneqSourceEnumerator<TSource, TResult> {
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
     private current: TResult;

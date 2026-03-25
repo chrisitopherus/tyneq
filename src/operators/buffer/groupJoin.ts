@@ -1,9 +1,8 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator, ITyneqEnumerable } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
-import { Tyneq } from "../../core/tyneq";
 
 /**
  * Enumerator that correlates outer elements with inner groups via matching keys (left outer join).
@@ -17,18 +16,13 @@ import { Tyneq } from "../../core/tyneq";
  * @group Enumerators
  * @internal
  */
-@operator<[innerSource: unknown, outerKeySelector: unknown, innerKeySelector: unknown, resultSelector: unknown]>("groupJoin", "buffer", (innerSource, outerKeySelector, innerKeySelector, resultSelector) => {
-    ArgumentUtility.checkNotOptional({ innerSource });
-    ArgumentUtility.checkIterable({ innerSource });
-    ArgumentUtility.checkNotOptional({ outerKeySelector });
-    ArgumentUtility.checkNotOptional({ innerKeySelector });
-    ArgumentUtility.checkNotOptional({ resultSelector });
-})
+@builtinOperator({ name: "groupJoin", kind: "buffer" })
 export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSourceEnumerator<TOuter, TResult> {
     private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;
     private readonly innerKeySelector: (inner: TInner) => TKey;
     private readonly resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult;
+    private readonly groupFactory: (values: TInner[]) => ITyneqEnumerable<TInner>;
     private innerLookup = new TyneqMap<TKey, TInner[]>();
 
     /**
@@ -37,6 +31,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSou
      * @param outerKeySelector - Extracts the join key from each outer element.
      * @param innerKeySelector - Extracts the join key from each inner element.
      * @param resultSelector - Combines an outer element with its matching inner group.
+     * @param groupFactory - Creates an {@link ITyneqEnumerable} wrapping a group's inner array.
      * @throws {ArgumentError} If any required parameter is null or undefined.
      */
     public constructor(
@@ -44,13 +39,15 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSou
         innerSource: Iterable<TInner>,
         outerKeySelector: (outer: TOuter) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
-        resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult
+        resultSelector: (outer: TOuter, group: ITyneqEnumerable<TInner>) => TResult,
+        groupFactory: (values: TInner[]) => ITyneqEnumerable<TInner>
     ) {
         super(sourceEnumerator);
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;
         this.innerKeySelector = innerKeySelector;
         this.resultSelector = resultSelector;
+        this.groupFactory = groupFactory;
     }
 
     protected override initialize(): void {
@@ -70,7 +67,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqSou
         const outerKey = this.outerKeySelector(outerItem);
         const innerItems = this.innerLookup.get(outerKey) ?? [];
 
-        const resultItem = this.resultSelector(outerItem, Tyneq.from(innerItems));
+        const resultItem = this.resultSelector(outerItem, this.groupFactory(innerItems));
         return this.yield(resultItem);
     }
 }

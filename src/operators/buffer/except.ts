@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
@@ -15,10 +15,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[excludedValues: unknown]>("except", "buffer", (excludedValues) => {
-    ArgumentUtility.checkNotOptional({ excludedValues });
-    ArgumentUtility.checkIterable({ excludedValues });
-})
+@builtinOperator({ name: "except", kind: "buffer" })
 export class ExceptEnumerator<TSource> extends TyneqSourceEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
     private excludeSet = new Set<TSource>();

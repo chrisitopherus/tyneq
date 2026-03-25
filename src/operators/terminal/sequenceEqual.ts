@@ -1,5 +1,5 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { TyneqComparer } from "../../core/TyneqComparer";
 import { IEnumerable, ITyneqEnumerable } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -22,7 +22,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal("sequenceEqual")
+@builtinTerminal({ name: "sequenceEqual" })
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly other: Iterable<TSource>;
     private readonly equalityComparer: (a: TSource, b: TSource) => boolean;

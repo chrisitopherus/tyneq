@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that yields elements in reverse order.
@@ -14,7 +14,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("reverse", "buffer")
+@builtinOperator({ name: "reverse", kind: "buffer" })
 export class ReverseEnumerator<T> extends TyneqSourceEnumerator<T> {
     private buffer: T[] = [];
     private index: number = -1;

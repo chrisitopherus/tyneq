@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
@@ -15,11 +15,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @group Enumerators
  * @internal
  */
-@operator<[otherValues: unknown, keySelector: unknown]>("intersectBy", "buffer", (otherValues, keySelector) => {
-    ArgumentUtility.checkNotOptional({ otherValues });
-    ArgumentUtility.checkIterable({ otherValues });
-    ArgumentUtility.checkNotOptional({ keySelector });
-})
+@builtinOperator({ name: "intersectBy", kind: "buffer" })
 export class IntersectByEnumerator<TSource, TKey> extends TyneqSourceEnumerator<TSource> {
     private readonly otherValues: Iterable<TKey>;
     private readonly keySelector: (item: TSource) => TKey;

@@ -1,6 +1,6 @@
+import { builtinOperator } from "../../extensibility/builtinOperator";
 import { TyneqSourceEnumerator } from "../../core/enumerators/TyneqSourceEnumerator";
 import { IEnumerator } from "../../types/core";
-import { operator } from "../../extensibility/operator";
 
 /**
  * Enumerator that bypasses a specified number of elements from the end of a sequence.
@@ -18,7 +18,7 @@ import { operator } from "../../extensibility/operator";
  * @group Enumerators
  * @internal
  */
-@operator("skipLast")
+@builtinOperator({ name: "skipLast", kind: "streaming" })
 export class SkipLastEnumerator<T> extends TyneqSourceEnumerator<T> {
     private readonly count: number;
     private readonly buffer: T[];

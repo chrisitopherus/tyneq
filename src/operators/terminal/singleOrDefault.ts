@@ -1,6 +1,6 @@
+import { builtinTerminal } from "../../extensibility/builtinTerminal";
 import { InvalidOperationError } from "../../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../../core/operator/TyneqTerminalOperator";
-import { terminal } from "../../extensibility/terminal";
 import { ITyneqEnumerable } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -23,7 +23,7 @@ import { nameof } from "../../utility/nameof";
  * @category Terminal
  * @internal
  */
-@terminal("singleOrDefault")
+@builtinTerminal({ name: "singleOrDefault" })
 export class SingleOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
     private readonly defaultValue: TSource;
