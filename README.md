@@ -1,7 +1,7 @@
 <div align="center">
   <br />
   <a href="https://github.com/chrisitopherus/tyneq">
-    <img src="./docs/public/logo.svg" alt="Tyneq" width="100" height="100" />
+    <img src="./docs/public/logo.svg" alt="Tyneq" width="180" height="180" />
   </a>
   <h1>tyneq</h1>
   <p><strong>Typed Enumerable Queries for TypeScript</strong></p>
@@ -10,9 +10,6 @@
   <p>
     <a href="https://www.npmjs.com/package/tyneq">
       <img src="https://img.shields.io/npm/v/tyneq?style=flat-square&color=0ea5e9" alt="npm version" />
-    </a>
-    <a href="https://www.npmjs.com/package/tyneq">
-      <img src="https://img.shields.io/npm/dm/tyneq?style=flat-square&color=38bdf8" alt="npm downloads" />
     </a>
     <img src="https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/dependencies-zero-22c55e?style=flat-square" alt="zero dependencies" />
