@@ -1,8 +1,9 @@
-import { TyneqSequence } from "../types/core";
-import { QueryPlanNode } from "../types/queryplan";
-import { QueryPlanTransformer } from "./QueryPlanTransformer";
-import { Tyneq } from "../core/tyneq";
-import { OperatorRegistry } from "../plugin/OperatorRegistry";
+import { TyneqSequence } from "../../types/core";
+import { QueryPlanNode } from "../../types/queryplan";
+import { QueryPlanTransformer } from "../QueryPlanTransformer";
+import { Tyneq } from "../../core/tyneq";
+import { OperatorRegistry } from "../../plugin/OperatorRegistry";
+import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 
 export class QueryPlanCompiler {
     private readonly transformers: QueryPlanTransformer[];
@@ -44,6 +45,7 @@ export class QueryPlanCompiler {
     }
 
     private compileSource<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {
+        console.log(node.operatorName);
         switch (node.operatorName) {
             case "from":
                 return Tyneq.from(node.args[0] as Iterable<T>);
@@ -62,13 +64,19 @@ export class QueryPlanCompiler {
     }
 
     private applyOperator<T = unknown>(source: TyneqSequence<unknown>, node: QueryPlanNode): TyneqSequence<T> {
+        if (!(source instanceof TyneqEnumerableBase)) {
+            throw new Error(
+                `[tyneq] QueryPlanCompiler: source sequence for operator '${node.operatorName}' is not a Tyneq sequence.`
+            );
+        }
+
         const method = OperatorRegistry.get(node.operatorName)?.impl;
-        if (typeof method !== "function") {
+        if (typeof method !== "function" || method.name === "noopImpl") {
             throw new Error(
                 `[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
             );
         }
 
-        return (method as Function).apply(source, node.args) as TyneqSequence<T>;
+        return method.apply(source, node.args) as TyneqSequence<T>;
     }
 }
