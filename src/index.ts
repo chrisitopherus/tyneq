@@ -15,10 +15,13 @@ export * from "./core/errors/argument/ArgumentTypeError";
 export * from "./core/errors/argument/ValidationError";
 export * from "./utility/ValidationBuilder";
 // queryplan
-export type { OperatorCategory, IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
+export type { OperatorCategory, SourceKind, IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
 export { tyneqQueryNode } from "./types/queryplan";
 export { QueryNode } from "./queryplan/QueryNode";
 export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
+export { QueryPlanWalker } from "./queryplan/QueryPlanWalker";
+export { QueryPlanTransformer } from "./queryplan/QueryPlanTransformer";
+export { QueryPlanOptimizer } from "./queryplan/QueryPlanOptimizer";
 // plugin
 export { operator } from "./plugin/operator";
 export { terminal } from "./plugin/terminal";

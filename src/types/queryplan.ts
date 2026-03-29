@@ -20,6 +20,17 @@ export const tyneqQueryNode: unique symbol = Symbol("tyneq.queryNode");
 export type OperatorCategory = "source" | "streaming" | "buffer" | "terminal";
 
 /**
+ * The JavaScript collection type that backs a source node.
+ *
+ * @remarks
+ * Only populated on nodes whose {@link IQueryNode.category} is `"source"`.
+ * `undefined` on all other nodes.
+ *
+ * @group QueryPlan
+ */
+export type SourceKind = "array" | "set" | "map" | "string" | "other";
+
+/**
  * A node in the query plan tree representing one operator in a pipeline.
  *
  * @remarks
@@ -38,6 +49,14 @@ export interface IQueryNode {
     readonly source: IQueryNode | null;
 
     readonly category: OperatorCategory;
+
+    /**
+     * The backing JavaScript collection type for source nodes.
+     *
+     * @remarks
+     * Only set when `category === "source"`. `undefined` on all operator nodes.
+     */
+    readonly sourceKind?: SourceKind;
 
     /**
      * Accepts a visitor and returns its result.

@@ -6,6 +6,7 @@ import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
+import type { SourceKind } from "../types/queryplan";
 
 /**
  * Entry point for creating Tyneq sequences.
@@ -32,8 +33,18 @@ export class Tyneq {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
 
+        const sourceKind = Tyneq.resolveSourceKind(source);
         const adapter = new EnumerableAdapter(source);
-        return new TyneqEnumerable<TSource>(adapter, new QueryNode("from", [source], null, "source"));
+        return new TyneqEnumerable<TSource>(adapter, new QueryNode("from", [source], null, "source", sourceKind));
+    }
+
+    private static resolveSourceKind(source: Iterable<unknown>): SourceKind {
+        if (Array.isArray(source)) return "array";
+        if (source instanceof Set) return "set";
+        if (source instanceof Map) return "map";
+        if (typeof source === "string") return "string";
+
+        return "other";
     }
 
     /**
