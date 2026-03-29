@@ -3,19 +3,13 @@ import type { Optional } from "../../types/utility";
 import { NullGuards } from "./nullGuards";
 
 /**
- * Static assertion class for string checks.
+ * String-specific guard implementations. Called by `ArgumentUtility`.
  *
- * @group Utilities
  * @internal
  */
 export class StringGuards {
     private constructor() { }
 
-    /**
-     * Asserts that `value` is a non-null, non-undefined, non-whitespace string.
-     * @throws {ArgumentNullError} When `null`.
-     * @throws {ArgumentError} When `undefined`, empty, or whitespace-only.
-     */
     public static checkNotNullOrWhiteSpace(value: Optional<string>, paramName: string): asserts value is string {
         NullGuards.checkNotOptional(value, paramName);
         if (value.trim().length === 0) {

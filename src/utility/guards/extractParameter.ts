@@ -2,12 +2,8 @@ import type { KeyValuePair } from "../../types/core";
 import { nameof } from "../nameof";
 
 /**
- * Extracts the parameter name and value from either invocation style.
- *
- * - Shorthand: `extractParameter({ value })` — name inferred from object key.
- * - Explicit: `extractParameter(value, 'paramName')` — name passed directly.
- *
- * @returns A `KeyValuePair` where `key` is the parameter name and `value` is the parameter value.
+ * Normalises the two-overload pattern used by `ArgumentUtility`:
+ * either a `{ paramName: value }` object (name inferred) or a raw value + explicit name.
  *
  * @internal
  */

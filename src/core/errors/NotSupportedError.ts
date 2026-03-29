@@ -1,23 +1,15 @@
 import { TyneqError } from "./TyneqError";
 
 /**
- * Thrown when an operation is intentionally not supported.
- *
- * @remarks
- * Unlike {@link InvalidOperationError}, which signals a state-dependent failure,
- * `NotSupportedError` means the operation is unconditionally unsupported.
+ * Thrown when a requested operation is not supported.
  *
  * @example
  * ```ts
- * try {
- *   // some unsupported feature
- * } catch (e) {
- *   if (e instanceof NotSupportedError) {
- *     console.log(e.message);
- *   }
- * }
+ * try { iterator.throw?.(new Error()); }
+ * catch (e) { if (e instanceof NotSupportedError) { ... } }
  * ```
  *
+ * @see {@link TyneqError}
  * @group Errors
  */
 export class NotSupportedError extends TyneqError {

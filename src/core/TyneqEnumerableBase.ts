@@ -1,79 +1,96 @@
-import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable, KeyValuePair, MinMaxResult } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { IQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { getOperatorMetadata, IOperatorMetadataCarrier } from "../queryplan/operatorMetadata";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
-import { Nullable } from "../types/utility";
-import { EnumeratorUtility } from "../utility/EnumeratorUtility";
-import { TyneqComparer } from "./TyneqComparer";
-import { InvalidOperationError } from "./errors/InvalidOperationError";
-import { ArgumentOutOfRangeError } from "./errors/argument/ArgumentOutOfRangeError";
-import { SequenceContainsNoElementsError } from "./errors/SequenceContainsNoElementsError";
-// ── Streaming enumerators ─────────────────────────────────────────────────────
-import { AppendEnumerator } from "../operators/streaming/append";
-import { CastEnumerator } from "../operators/streaming/cast";
-import { ChunkEnumerator } from "../operators/streaming/chunk";
-import { ConcatEnumerator } from "../operators/streaming/concat";
-import { DefaultIfEmptyEnumerator } from "../operators/streaming/defaultIfEmpty";
-import { OfTypeEnumerator } from "../operators/streaming/ofType";
-import { PairwiseEnumerator } from "../operators/streaming/pairwise";
-import { PopulateEnumerator } from "../operators/streaming/populate";
-import { PrependEnumerator } from "../operators/streaming/prepend";
-import { ScanEnumerator } from "../operators/streaming/scan";
-import { SelectEnumerator } from "../operators/streaming/select";
-import { SelectManyEnumerator } from "../operators/streaming/selectMany";
-import { SkipEnumerator } from "../operators/streaming/skip";
-import { SkipLastEnumerator } from "../operators/streaming/skipLast";
-import { SkipWhileEnumerator } from "../operators/streaming/skipWhile";
-import { SplitEnumerator } from "../operators/streaming/split";
-import { TakeEnumerator } from "../operators/streaming/take";
-import { TakeWhileEnumerator } from "../operators/streaming/takeWhile";
-import { TapEnumerator } from "../operators/streaming/tap";
-import { TapIfEnumerator } from "../operators/streaming/tapIf";
-import { ThrottleEnumerator } from "../operators/streaming/throttle";
-import { WhereEnumerator } from "../operators/streaming/where";
-import { ZipEnumerator } from "../operators/streaming/zip";
-// ── Buffer enumerators ────────────────────────────────────────────────────────
-import { BacksertEnumerator } from "../operators/buffer/backsert";
-import { DistinctEnumerator } from "../operators/buffer/distinct";
-import { DistinctByEnumerator } from "../operators/buffer/distinctBy";
-import { ExceptEnumerator } from "../operators/buffer/except";
-import { ExceptByEnumerator } from "../operators/buffer/exceptBy";
-import { GroupByEnumerator } from "../operators/buffer/groupBy";
-import { GroupJoinEnumerator } from "../operators/buffer/groupJoin";
-import { IntersectEnumerator } from "../operators/buffer/intersect";
-import { IntersectByEnumerator } from "../operators/buffer/intersectBy";
-import { JoinEnumerator } from "../operators/buffer/join";
-import { ReverseEnumerator } from "../operators/buffer/reverse";
-import { ShuffleEnumerator } from "../operators/buffer/shuffle";
-import { UnionEnumerator } from "../operators/buffer/union";
-import { UnionByEnumerator } from "../operators/buffer/unionBy";
+// --- Terminal operators ---
+import { AggregateOperator } from "../operators/aggregate";
+import { AllOperator } from "../operators/all";
+import { AnyOperator } from "../operators/any";
+import { AverageOperator } from "../operators/average";
+import { ConsumeOperator } from "../operators/consume";
+import { ContainsOperator } from "../operators/contains";
+import { CountOperator } from "../operators/count";
+import { CountByOperator } from "../operators/countBy";
+import { ElementAtOperator } from "../operators/elementAt";
+import { ElementAtOrDefaultOperator } from "../operators/elementAtOrDefault";
+import { FirstOperator } from "../operators/first";
+import { FirstOrDefaultOperator } from "../operators/firstOrDefault";
+import { IndexOfOperator } from "../operators/indexOf";
+import { IsNullOrEmptyOperator } from "../operators/isNullOrEmpty";
+import { LastOperator } from "../operators/last";
+import { LastOrDefaultOperator } from "../operators/lastOrDefault";
+import { MaxOperator } from "../operators/max";
+import { MaxByOperator } from "../operators/maxBy";
+import { MinOperator } from "../operators/min";
+import { MinByOperator } from "../operators/minBy";
+import { MinMaxOperator } from "../operators/minMax";
+import { SequenceEqualOperator } from "../operators/sequenceEqual";
+import { SingleOperator } from "../operators/single";
+import { SingleOrDefaultOperator } from "../operators/singleOrDefault";
+import { StartsWithOperator } from "../operators/startsWith";
+import { SumOperator } from "../operators/sum";
+import { ToArrayOperator } from "../operators/toArray";
+import { ToAsyncOperator } from "../operators/toAsync";
+import { ToMapOperator } from "../operators/toMap";
+import { ToRecordOperator } from "../operators/toRecord";
+import { ToSetOperator } from "../operators/toSet";
+// --- Streaming enumerators ---
+import { AppendEnumerator } from "../enumerators/streaming/append";
+import { CastEnumerator } from "../enumerators/streaming/cast";
+import { ChunkEnumerator } from "../enumerators/streaming/chunk";
+import { ConcatEnumerator } from "../enumerators/streaming/concat";
+import { DefaultIfEmptyEnumerator } from "../enumerators/streaming/defaultIfEmpty";
+import { OfTypeEnumerator } from "../enumerators/streaming/ofType";
+import { PairwiseEnumerator } from "../enumerators/streaming/pairwise";
+import { PopulateEnumerator } from "../enumerators/streaming/populate";
+import { PrependEnumerator } from "../enumerators/streaming/prepend";
+import { ScanEnumerator } from "../enumerators/streaming/scan";
+import { SelectEnumerator } from "../enumerators/streaming/select";
+import { SelectManyEnumerator } from "../enumerators/streaming/selectMany";
+import { SkipEnumerator } from "../enumerators/streaming/skip";
+import { SkipLastEnumerator } from "../enumerators/streaming/skipLast";
+import { SkipWhileEnumerator } from "../enumerators/streaming/skipWhile";
+import { SplitEnumerator } from "../enumerators/streaming/split";
+import { TakeEnumerator } from "../enumerators/streaming/take";
+import { TakeWhileEnumerator } from "../enumerators/streaming/takeWhile";
+import { TapEnumerator } from "../enumerators/streaming/tap";
+import { TapIfEnumerator } from "../enumerators/streaming/tapIf";
+import { ThrottleEnumerator } from "../enumerators/streaming/throttle";
+import { WhereEnumerator } from "../enumerators/streaming/where";
+import { ZipEnumerator } from "../enumerators/streaming/zip";
+// --- Buffer enumerators ---
+import { BacksertEnumerator } from "../enumerators/buffer/backsert";
+import { DistinctEnumerator } from "../enumerators/buffer/distinct";
+import { DistinctByEnumerator } from "../enumerators/buffer/distinctBy";
+import { ExceptEnumerator } from "../enumerators/buffer/except";
+import { ExceptByEnumerator } from "../enumerators/buffer/exceptBy";
+import { GroupByEnumerator } from "../enumerators/buffer/groupBy";
+import { GroupJoinEnumerator } from "../enumerators/buffer/groupJoin";
+import { IntersectEnumerator } from "../enumerators/buffer/intersect";
+import { IntersectByEnumerator } from "../enumerators/buffer/intersectBy";
+import { JoinEnumerator } from "../enumerators/buffer/join";
+import { ReverseEnumerator } from "../enumerators/buffer/reverse";
+import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
+import { UnionEnumerator } from "../enumerators/buffer/union";
+import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
 
 /**
- * Abstract base class providing the complete LINQ-style operator surface for enumerable sequences.
+ * Abstract base class that implements all {@link TyneqSequence} operator methods.
  *
  * @remarks
- * Extends {@link TyneqEnumerableCore} (which owns `orderBy`, `orderByDescending`, `memoize`,
- * and `pipe`) and implements all remaining operators directly — terminal (immediate evaluation),
- * streaming (deferred, O(1) memory), and buffering (deferred, O(n) memory).
+ * All operator methods delegate to the corresponding operator class registered via
+ * `@operator`, `@terminal`, or the functional registration APIs.
+ * Subclasses implement `createEnumerable`, `createOrderedEnumerable`, and `createCachedEnumerable`
+ * to control which concrete sequence types are returned.
  *
- * Query pipelines are lazy — evaluation begins only when a terminal operator or the
- * `for...of` protocol is invoked. Sequences are re-iterable: each enumeration calls
- * {@link getEnumerator} for a fresh iterator.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqEnumerable} for the standard concrete implementation.
- * @see {@link TyneqOrderedEnumerable} for ordered sequence support.
- *
- * @group Classes
  * @internal
  */
 export abstract class TyneqEnumerableBase<TSource>
     extends TyneqEnumerableCore<TSource>
-    implements ITyneqEnumerable<TSource> {
+    implements TyneqSequence<TSource> {
 
     private createOperatorNode(
         operator: new (...args: any[]) => any,
@@ -83,359 +100,153 @@ export abstract class TyneqEnumerableBase<TSource>
         return new QueryNode(metadata.name, args, this[tyneqQueryNode], metadata.category);
     }
 
-    // ── Terminal operators ────────────────────────────────────────────────────
+    // --- Terminal operators ---
 
     public aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
         func: (accumulate: UAccumulate, item: TSource) => UAccumulate,
         resultSelector: (accumulate: UAccumulate) => VResult
     ): VResult {
-        ArgumentUtility.checkNotOptional({ func });
-        ArgumentUtility.checkNotOptional({ resultSelector });
-        let accumulate = seed;
-        for (const item of this) {
-            accumulate = func(accumulate, item);
-        }
-        return resultSelector(accumulate);
+        return new AggregateOperator<TSource, UAccumulate, VResult>(this, seed, func, resultSelector).process();
     }
 
     public all(predicate: (item: TSource) => boolean): boolean {
-        ArgumentUtility.checkNotOptional({ predicate });
-        for (const item of this) {
-            if (!predicate(item)) return false;
-        }
-        return true;
+        return new AllOperator(this, predicate).process();
     }
 
     public any(predicate: (item: TSource) => boolean): boolean {
-        ArgumentUtility.checkNotOptional({ predicate });
-        for (const item of this) {
-            if (predicate(item)) return true;
-        }
-        return false;
+        return new AnyOperator(this, predicate).process();
     }
 
     public average(selector: (item: TSource) => number): number {
-        ArgumentUtility.checkNotOptional({ selector });
-        let count = 0;
-        let sum = 0;
-        for (const item of this) {
-            sum += selector(item);
-            count++;
-        }
-        return count === 0 ? 0 : sum / count;
+        return new AverageOperator(this, selector).process();
     }
 
     public consume(): void {
-        for (const _ of this) { /* intentionally consume all elements */ }
+        new ConsumeOperator(this).process();
     }
 
     public contains(value: TSource): boolean {
-        for (const item of this) {
-            if (item === value) return true;
-        }
-        return false;
+        return new ContainsOperator(this, value).process();
     }
 
     public count(): number {
-        let n = 0;
-        for (const _ of this) { n++; }
-        return n;
+        return new CountOperator(this).process();
     }
 
     public countBy(predicate: (item: TSource) => boolean): number {
-        ArgumentUtility.checkNotOptional({ predicate });
-        let n = 0;
-        for (const item of this) {
-            if (predicate(item)) n++;
-        }
-        return n;
+        return new CountByOperator(this, predicate).process();
     }
 
     public elementAt(index: number): TSource {
         ArgumentUtility.checkNonNegative({ index });
-        let i = 0;
-        for (const element of this) {
-            if (i === index) return element;
-            i++;
-        }
-        throw new ArgumentOutOfRangeError("index");
+        return new ElementAtOperator(this, index).process();
     }
 
     public elementAtOrDefault(index: number, defaultValue: TSource): TSource {
-        ArgumentUtility.checkNonNegative({ index });
-        let i = 0;
-        for (const element of this) {
-            if (i === index) return element;
-            i++;
-        }
-        return defaultValue;
+        return new ElementAtOrDefaultOperator(this, index, defaultValue).process();
     }
 
     public first(predicate: (item: TSource) => boolean): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        for (const element of this) {
-            if (predicate(element)) return element;
-        }
-        throw new InvalidOperationError("Sequence contains no matching element");
+        return new FirstOperator(this, predicate).process();
     }
 
     public firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        for (const element of this) {
-            if (predicate(element)) return element;
-        }
-        return defaultValue;
+        return new FirstOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
     public indexOf(predicate: (item: TSource) => boolean, startIndex: number = 0): number {
-        ArgumentUtility.checkNotOptional({ predicate });
-        ArgumentUtility.checkNonNegative({ startIndex });
-        let idx = -1;
-        for (const item of this) {
-            idx++;
-            if (idx < startIndex) continue;
-            if (predicate(item)) return idx;
-        }
-        return -1;
+        return new IndexOfOperator(this, predicate, startIndex).process();
     }
 
     public isNullOrEmpty(): boolean {
-        const iterator = this.getEnumerator();
-        const first = iterator.next();
-        EnumeratorUtility.tryDispose(iterator);
-        return first.done === true;
+        return new IsNullOrEmptyOperator(this).process();
     }
 
     public last(predicate: (item: TSource) => boolean): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        let last: Nullable<TSource> = null;
-        let found = false;
-        for (const element of this) {
-            if (predicate(element)) {
-                last = element;
-                found = true;
-            }
-        }
-        if (!found) throw new InvalidOperationError("Sequence contains no matching element");
-        return last as TSource;
+        return new LastOperator(this, predicate).process();
     }
 
     public lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        let last: Nullable<TSource> = null;
-        let found = false;
-        for (const element of this) {
-            if (predicate(element)) {
-                last = element;
-                found = true;
-            }
-        }
-        return found ? (last as TSource) : defaultValue;
+        return new LastOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
     public max(comparer?: (a: TSource, b: TSource) => number): TSource {
-        const cmp = comparer ?? TyneqComparer.defaultComparer;
-        let maxElement: Nullable<TSource> = null;
-        let hasElement = false;
-        for (const element of this) {
-            if (!hasElement || cmp(element, maxElement!) > 0) {
-                maxElement = element;
-                hasElement = true;
-            }
-        }
-        if (!hasElement) throw new SequenceContainsNoElementsError();
-        return maxElement as TSource;
+        return new MaxOperator(this, comparer).process();
     }
 
     public maxBy<TKey>(
         keySelector: (element: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
     ): TSource {
-        ArgumentUtility.checkNotOptional({ keySelector });
-        const cmp = comparer ?? TyneqComparer.defaultComparer;
-        let maxElement: Nullable<TSource> = null;
-        let maxKey: Nullable<TKey> = null;
-        let hasElement = false;
-        for (const element of this) {
-            const key = keySelector(element);
-            if (!hasElement || cmp(key, maxKey!) > 0) {
-                maxElement = element;
-                maxKey = key;
-                hasElement = true;
-            }
-        }
-        if (!hasElement) throw new SequenceContainsNoElementsError();
-        return maxElement as TSource;
+        return new MaxByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
 
     public min(comparer?: (a: TSource, b: TSource) => number): TSource {
-        const cmp = comparer ?? TyneqComparer.defaultComparer;
-        let minElement: Nullable<TSource> = null;
-        let hasElement = false;
-        for (const element of this) {
-            if (!hasElement || cmp(element, minElement!) < 0) {
-                minElement = element;
-                hasElement = true;
-            }
-        }
-        if (!hasElement) throw new SequenceContainsNoElementsError();
-        return minElement as TSource;
+        return new MinOperator(this, comparer).process();
     }
 
     public minBy<TKey>(
         keySelector: (element: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
     ): TSource {
-        ArgumentUtility.checkNotOptional({ keySelector });
-        const cmp = comparer ?? TyneqComparer.defaultComparer;
-        let minElement: Nullable<TSource> = null;
-        let minKey: Nullable<TKey> = null;
-        let hasElement = false;
-        for (const element of this) {
-            const key = keySelector(element);
-            if (!hasElement || cmp(key, minKey!) < 0) {
-                minElement = element;
-                minKey = key;
-                hasElement = true;
-            }
-        }
-        if (!hasElement) throw new SequenceContainsNoElementsError();
-        return minElement as TSource;
+        return new MinByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
 
     public minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource> {
-        const cmp = comparer ?? TyneqComparer.defaultComparer;
-        let min: TSource | undefined;
-        let max: TSource | undefined;
-        let hasElements = false;
-        for (const item of this) {
-            if (!hasElements) {
-                min = item;
-                max = item;
-                hasElements = true;
-            } else {
-                if (cmp(item, min!) < 0) min = item;
-                if (cmp(item, max!) > 0) max = item;
-            }
-        }
-        if (!hasElements) throw new SequenceContainsNoElementsError();
-        return { min: min as TSource, max: max as TSource };
+        return new MinMaxOperator(this, comparer).process();
     }
 
     public sequenceEqual(
         other: Iterable<TSource>,
         equalityComparer?: (a: TSource, b: TSource) => boolean
     ): boolean {
-        ArgumentUtility.checkNotOptional({ other });
-        ArgumentUtility.checkNotNull({ equalityComparer });
-        const cmp = equalityComparer ?? TyneqComparer.defaultEqualityComparer;
-        const sourceIterator = this.getEnumerator();
-        const otherIterator = other[Symbol.iterator]();
-        while (true) {
-            const sourceNext = sourceIterator.next();
-            const otherNext = otherIterator.next();
-            if (sourceNext.done && otherNext.done) break;
-            if (sourceNext.done !== otherNext.done) return false;
-            if (!cmp(sourceNext.value, otherNext.value)) return false;
-        }
-        return true;
+        return new SequenceEqualOperator(this, other, equalityComparer).process();
     }
 
     public single(predicate: (item: TSource) => boolean): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        let found = false;
-        let single: Nullable<TSource> = null;
-        for (const element of this) {
-            if (predicate(element)) {
-                if (found) throw new InvalidOperationError("Sequence contains more than one matching element");
-                found = true;
-                single = element;
-            }
-        }
-        if (!found) throw new InvalidOperationError("Sequence contains no matching element");
-        return single as TSource;
+        return new SingleOperator(this, predicate).process();
     }
 
     public singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
-        ArgumentUtility.checkNotOptional({ predicate });
-        let found = false;
-        let single: Nullable<TSource> = null;
-        for (const element of this) {
-            if (predicate(element)) {
-                if (found) throw new InvalidOperationError("Sequence contains more than one matching element");
-                found = true;
-                single = element;
-            }
-        }
-        return found ? (single as TSource) : defaultValue;
+        return new SingleOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
     public startsWith(sequence: Iterable<TSource>): boolean {
-        ArgumentUtility.checkNotOptional({ sequence });
-        const sourceIterator = this.getEnumerator();
-        const sequenceIterator = sequence[Symbol.iterator]();
-        while (true) {
-            const { value: sourceValue, done: sourceDone } = sourceIterator.next();
-            const { value: sequenceValue, done: sequenceDone } = sequenceIterator.next();
-            if (sequenceDone) return true;
-            if (sourceDone || sourceValue !== sequenceValue) return false;
-        }
+        return new StartsWithOperator(this, sequence).process();
     }
 
     public sum(selector: (item: TSource) => number): number {
-        ArgumentUtility.checkNotOptional({ selector });
-        let total = 0;
-        for (const item of this) { total += selector(item); }
-        return total;
+        return new SumOperator(this, selector).process();
     }
 
     public toArray(): TSource[] {
-        return Array.from(this);
+        return new ToArrayOperator(this).process();
     }
 
     public toAsync(): AsyncIterable<TSource> {
-        const source = this;
-        return {
-            async *[Symbol.asyncIterator]() {
-                for (const item of source) {
-                    yield item;
-                }
-            },
-        };
+        return new ToAsyncOperator(this).process();
     }
 
     public toMap<TKey, TValue>(
         selector: (item: TSource) => KeyValuePair<TKey, TValue>
     ): Map<TKey, TValue> {
-        ArgumentUtility.checkNotOptional({ selector });
-        return new Map<TKey, TValue>(
-            Array.from(this, (item) => {
-                const pair = selector(item);
-                return [pair.key, pair.value] as [TKey, TValue];
-            })
-        );
+        return new ToMapOperator<TSource, TKey, TValue>(this, selector).process();
     }
 
     public toRecord<TKey extends string | number | symbol, TValue>(
         selector: (item: TSource) => KeyValuePair<TKey, TValue>
     ): Record<TKey, TValue> {
-        ArgumentUtility.checkNotOptional({ selector });
-        const result = {} as Record<TKey, TValue>;
-        for (const item of this) {
-            const pair = selector(item);
-            result[pair.key] = pair.value;
-        }
-        return result;
+        return new ToRecordOperator<TSource, TKey, TValue>(this, selector).process();
     }
 
     public toSet(): Set<TSource> {
-        return new Set(this);
+        return new ToSetOperator(this).process();
     }
 
-    // ── Streaming operators ───────────────────────────────────────────────────
+    // --- Streaming operators ---
 
-    public cast<U>(): ITyneqEnumerable<U> {
+    public cast<U>(): TyneqSequence<U> {
         const node = this.createOperatorNode(CastEnumerator, []);
         return this.createEnumerable(
             { getEnumerator: () => new CastEnumerator<TSource, U>(this.getEnumerator()) },
@@ -443,7 +254,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public ofType<U extends TSource>(guard: (value: TSource) => value is U): ITyneqEnumerable<U> {
+    public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {
         ArgumentUtility.checkNotOptional({ guard });
         const node = this.createOperatorNode(OfTypeEnumerator, [guard]);
         return this.createEnumerable(
@@ -452,7 +263,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public append(item: TSource): ITyneqEnumerable<TSource> {
+    public append(item: TSource): TyneqSequence<TSource> {
         const node = this.createOperatorNode(AppendEnumerator, [item]);
         return this.createEnumerable(
             { getEnumerator: () => new AppendEnumerator<TSource>(this.getEnumerator(), item) },
@@ -460,7 +271,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public chunk(size: number): ITyneqEnumerable<TSource[]> {
+    public chunk(size: number): TyneqSequence<TSource[]> {
         ArgumentUtility.checkSafeInteger({ size });
         ArgumentUtility.checkPositive({ size });
         const node = this.createOperatorNode(ChunkEnumerator, [size]);
@@ -470,7 +281,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public concat(other: Iterable<TSource>): ITyneqEnumerable<TSource> {
+    public concat(other: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
         const node = this.createOperatorNode(ConcatEnumerator, [other]);
@@ -480,7 +291,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource> {
+    public defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource> {
         const node = this.createOperatorNode(DefaultIfEmptyEnumerator, [defaultValue]);
         return this.createEnumerable(
             { getEnumerator: () => new DefaultIfEmptyEnumerator<TSource>(this.getEnumerator(), defaultValue) },
@@ -488,7 +299,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public pairwise(): ITyneqEnumerable<[TSource, TSource]> {
+    public pairwise(): TyneqSequence<[TSource, TSource]> {
         const node = this.createOperatorNode(PairwiseEnumerator, []);
         return this.createEnumerable(
             { getEnumerator: () => new PairwiseEnumerator<TSource>(this.getEnumerator()) },
@@ -496,7 +307,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public populate<TValue>(value: TValue): ITyneqEnumerable<TValue> {
+    public populate<TValue>(value: TValue): TyneqSequence<TValue> {
         const node = this.createOperatorNode(PopulateEnumerator, [value]);
         return this.createEnumerable(
             { getEnumerator: () => new PopulateEnumerator<TSource, TValue>(this.getEnumerator(), value) },
@@ -504,7 +315,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public prepend(item: TSource): ITyneqEnumerable<TSource> {
+    public prepend(item: TSource): TyneqSequence<TSource> {
         const node = this.createOperatorNode(PrependEnumerator, [item]);
         return this.createEnumerable(
             { getEnumerator: () => new PrependEnumerator<TSource>(this.getEnumerator(), item) },
@@ -515,7 +326,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public scan<TResult>(
         seed: TResult,
         accumulator: (acc: TResult, item: TSource) => TResult
-    ): ITyneqEnumerable<TResult> {
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ seed });
         ArgumentUtility.checkNotOptional({ accumulator });
         ArgumentUtility.checkFunction({ accumulator });
@@ -528,7 +339,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public select<TResult>(
         selector: (item: TSource) => TResult
-    ): ITyneqEnumerable<TResult> {
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ selector });
         const node = this.createOperatorNode(SelectEnumerator, [selector]);
         return this.createEnumerable(
@@ -539,7 +350,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public selectMany<TResult>(
         selector: (item: TSource) => Iterable<TResult>
-    ): ITyneqEnumerable<TResult> {
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ selector });
         const node = this.createOperatorNode(SelectManyEnumerator, [selector]);
         return this.createEnumerable(
@@ -548,7 +359,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public skip(count: number): ITyneqEnumerable<TSource> {
+    public skip(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
         const node = this.createOperatorNode(SkipEnumerator, [count]);
         return this.createEnumerable(
@@ -557,7 +368,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public skipLast(count: number): ITyneqEnumerable<TSource> {
+    public skipLast(count: number): TyneqSequence<TSource> {
         const node = this.createOperatorNode(SkipLastEnumerator, [count]);
         return this.createEnumerable(
             { getEnumerator: () => new SkipLastEnumerator<TSource>(this.getEnumerator(), count) },
@@ -565,7 +376,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+    public skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = this.createOperatorNode(SkipWhileEnumerator, [predicate]);
         return this.createEnumerable(
@@ -574,7 +385,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]> {
+    public split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]> {
         ArgumentUtility.checkNotOptional({ splitOn });
         const node = this.createOperatorNode(SplitEnumerator, [splitOn]);
         return this.createEnumerable(
@@ -583,7 +394,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public take(count: number): ITyneqEnumerable<TSource> {
+    public take(count: number): TyneqSequence<TSource> {
         const node = this.createOperatorNode(TakeEnumerator, [count]);
         return this.createEnumerable(
             { getEnumerator: () => new TakeEnumerator<TSource>(this.getEnumerator(), count) },
@@ -591,7 +402,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+    public takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = this.createOperatorNode(TakeWhileEnumerator, [predicate]);
         return this.createEnumerable(
@@ -600,7 +411,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public tap(action: (item: TSource) => void): ITyneqEnumerable<TSource> {
+    public tap(action: (item: TSource) => void): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
         const node = this.createOperatorNode(TapEnumerator, [action]);
         return this.createEnumerable(
@@ -609,7 +420,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource> {
+    public tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
         ArgumentUtility.checkNotOptional({ predicate });
         const node = this.createOperatorNode(TapIfEnumerator, [action, predicate]);
@@ -619,7 +430,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public throttle(count: number): ITyneqEnumerable<TSource> {
+    public throttle(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkSafeInteger({ count });
         ArgumentUtility.checkPositive({ count });
         const node = this.createOperatorNode(ThrottleEnumerator, [count]);
@@ -629,7 +440,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource> {
+    public where(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = this.createOperatorNode(WhereEnumerator, [predicate]);
         return this.createEnumerable(
@@ -641,7 +452,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public zip<TOther, TResult>(
         other: Iterable<TOther>,
         selector: (first: TSource, second: TOther) => TResult
-    ): ITyneqEnumerable<TResult> {
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
         ArgumentUtility.checkNotOptional({ selector });
@@ -652,20 +463,13 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    // ── Buffer operators ──────────────────────────────────────────────────────
+    // --- Buffer operators ---
 
-    public backsert(index: number, other: Iterable<TSource>): ITyneqEnumerable<TSource> {
-        ArgumentUtility.checkNotOptional({ index, other });
-        ArgumentUtility.checkNotNull({ other });
-        if (typeof index !== "number" || !Number.isFinite(index)) {
-            throw new TypeError("backIndex must be a finite number.");
-        }
-        if (!Number.isSafeInteger(index)) {
-            throw new RangeError("backIndex must be a safe integer.");
-        }
-        if (index < 0) {
-            throw new RangeError("backIndex must be a non-negative integer.");
-        }
+    public backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ index });
+        ArgumentUtility.checkNotOptional({ other });
+        ArgumentUtility.checkSafeInteger({ index });
+        ArgumentUtility.checkNonNegative({ index });
         ArgumentUtility.checkIterable({ other });
         const node = this.createOperatorNode(BacksertEnumerator, [index, other]);
         return this.createEnumerable(
@@ -674,7 +478,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public distinct(): ITyneqEnumerable<TSource> {
+    public distinct(): TyneqSequence<TSource> {
         const node = this.createOperatorNode(DistinctEnumerator, []);
         return this.createEnumerable(
             { getEnumerator: () => new DistinctEnumerator<TSource>(this.getEnumerator()) },
@@ -682,7 +486,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource> {
+    public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const node = this.createOperatorNode(DistinctByEnumerator, [keySelector]);
         return this.createEnumerable(
@@ -691,7 +495,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public except(excludedValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
+    public except(excludedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedValues });
         ArgumentUtility.checkIterable({ excludedValues });
         const node = this.createOperatorNode(ExceptEnumerator, [excludedValues]);
@@ -704,7 +508,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public exceptBy<TKey>(
         excludedKeys: Iterable<TKey>,
         keySelector: (item: TSource) => TKey
-    ): ITyneqEnumerable<TSource> {
+    ): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedKeys });
         ArgumentUtility.checkIterable({ excludedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
@@ -718,14 +522,14 @@ export abstract class TyneqEnumerableBase<TSource>
     public groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
         valueSelector: (item: TSource) => TValue,
-        resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
-    ): ITyneqEnumerable<TResult> {
+        resultSelector: (key: TKey, values: TyneqSequence<TValue>) => TResult
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ keySelector });
         ArgumentUtility.checkNotOptional({ valueSelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
         const node = this.createOperatorNode(GroupByEnumerator, [keySelector, valueSelector, resultSelector]);
-        const groupFactory = (values: TValue[]): ITyneqEnumerable<TValue> =>
-            this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as IEnumerator<TValue> });
+        const groupFactory = (values: TValue[]): TyneqSequence<TValue> =>
+            this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as Enumerator<TValue> });
         return this.createEnumerable(
             {
                 getEnumerator: () => new GroupByEnumerator<TSource, TKey, TValue, TResult>(
@@ -740,16 +544,16 @@ export abstract class TyneqEnumerableBase<TSource>
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
-        resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
-    ): ITyneqEnumerable<TResult> {
+        resultSelector: (outer: TSource, group: TyneqSequence<TInner>) => TResult
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ inner });
         ArgumentUtility.checkIterable({ inner });
         ArgumentUtility.checkNotOptional({ outerKeySelector });
         ArgumentUtility.checkNotOptional({ innerKeySelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
         const node = this.createOperatorNode(GroupJoinEnumerator, [inner, outerKeySelector, innerKeySelector, resultSelector]);
-        const groupFactory = (values: TInner[]): ITyneqEnumerable<TInner> =>
-            this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as IEnumerator<TInner> });
+        const groupFactory = (values: TInner[]): TyneqSequence<TInner> =>
+            this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as Enumerator<TInner> });
         return this.createEnumerable(
             {
                 getEnumerator: () => new GroupJoinEnumerator<TSource, TInner, TKey, TResult>(
@@ -760,7 +564,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public intersect(intersectedValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
+    public intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ intersectedValues });
         ArgumentUtility.checkIterable({ intersectedValues });
         const node = this.createOperatorNode(IntersectEnumerator, [intersectedValues]);
@@ -773,7 +577,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public intersectBy<TKey>(
         intersectedKeys: Iterable<TKey>,
         keySelector: (item: TSource) => TKey
-    ): ITyneqEnumerable<TSource> {
+    ): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ intersectedKeys });
         ArgumentUtility.checkIterable({ intersectedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
@@ -789,7 +593,7 @@ export abstract class TyneqEnumerableBase<TSource>
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, inner: TInner) => TResult
-    ): ITyneqEnumerable<TResult> {
+    ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ inner });
         ArgumentUtility.checkIterable({ inner });
         ArgumentUtility.checkNotOptional({ outerKeySelector });
@@ -806,7 +610,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public reverse(): ITyneqEnumerable<TSource> {
+    public reverse(): TyneqSequence<TSource> {
         const node = this.createOperatorNode(ReverseEnumerator, []);
         return this.createEnumerable(
             { getEnumerator: () => new ReverseEnumerator<TSource>(this.getEnumerator()) },
@@ -814,7 +618,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public shuffle(): ITyneqEnumerable<TSource> {
+    public shuffle(): TyneqSequence<TSource> {
         const node = this.createOperatorNode(ShuffleEnumerator, []);
         return this.createEnumerable(
             { getEnumerator: () => new ShuffleEnumerator<TSource>(this.getEnumerator()) },
@@ -822,7 +626,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    public union(otherValues: Iterable<TSource>): ITyneqEnumerable<TSource> {
+    public union(otherValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
         const node = this.createOperatorNode(UnionEnumerator, [otherValues]);
@@ -835,7 +639,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public unionBy<TKey>(
         otherValues: Iterable<TSource>,
         keySelector: (item: TSource) => TKey
-    ): ITyneqEnumerable<TSource> {
+    ): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
         ArgumentUtility.checkNotOptional({ keySelector });

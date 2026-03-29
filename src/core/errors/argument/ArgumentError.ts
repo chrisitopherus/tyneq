@@ -3,31 +3,17 @@ import { TyneqError } from "../TyneqError";
 /**
  * Thrown when a method argument fails validation.
  *
- * @remarks
- * Base class for all argument-related errors. The optional `paramName` property identifies
- * which parameter caused the failure.
- *
  * @example
  * ```ts
- * try {
- *   Tyneq.from(null);
- * } catch (e) {
- *   if (e instanceof ArgumentError) {
- *     console.log(`'${e.paramName}' failed: ${e.message}`);
- *   }
- * }
+ * try { Tyneq.from([]).take(-1); }
+ * catch (e) { if (e instanceof ArgumentError) { console.log(e.paramName); } }
  * ```
  *
- * @see {@link ArgumentNullError} for null argument errors.
- * @see {@link ArgumentOutOfRangeError} for out-of-range argument errors.
- * @see {@link ArgumentTypeError} for type mismatch errors.
- *
+ * @see {@link TyneqError}
  * @group Errors
  */
 export class ArgumentError extends TyneqError {
-    /**
-     * The name of the parameter that failed validation, if provided.
-     */
+    /** The name of the parameter that caused the error. */
     public readonly paramName?: string;
 
     public constructor(message: string, paramName?: string, inner?: Error) {

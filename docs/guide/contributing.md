@@ -1,24 +1,21 @@
 # Contributing
 
-This page explains how to contribute to Tyneq — adding new operators, writing tests, documenting changes, and keeping the codebase consistent.
-
-## Repository Setup
+## Setup
 
 ```bash
-git clone <repo>
+git clone https://github.com/chrisitopherus/tyneq
 cd tyneq
 npm install
-npm run build       # compile once
-npm test            # run the test suite
+npm run build
+npm test
 ```
 
-Other useful commands:
-
 ```bash
-npm run lint        # ESLint
-npm run docs:api    # regenerate API docs from TSDoc
-npm run docs:build  # build the documentation site
-npm run docs:dev    # serve docs locally with hot reload
+npm run lint          # ESLint
+npm run lint:fix      # auto-fix
+npm run docs:api      # regenerate API docs from TSDoc
+npm run docs:build    # build docs site
+npm run docs:dev      # local docs site with hot reload
 ```
 
 ## Project Structure
@@ -26,268 +23,194 @@ npm run docs:dev    # serve docs locally with hot reload
 ```
 src/
   core/               — base classes, enumerators, errors, ordering
-  operators/
-    streaming/        — streaming operator implementations (createGeneratorOperator)
-    terminal/         — terminal operator implementations (@terminal / createTerminalOperator)
-    extensions/       — optional extension operators (imported on demand)
-  extensibility/      — public registration API (@operator, createOperator, OperatorRegistry)
+  enumerators/
+    streaming/        — streaming enumerator implementations
+    buffer/           — buffering enumerator implementations
+  operators/          — terminal operator implementations (flat, no subdirectory)
+  plugin/             — public extension API (@operator, createOperator, OperatorRegistry)
   queryplan/          — QueryNode, QueryPlanPrinter
-  types/              — public TypeScript interfaces (ITyneqEnumerable, IQueryNode, …)
+  types/              — public TypeScript interfaces
   utility/            — internal argument validation helpers
 
 tests/
-  unit/               — per-operator and per-subsystem unit tests
+  unit/               — per-operator unit tests
   integration/        — end-to-end pipeline tests
-
-docs/guide/           — this documentation site
 ```
 
 ## Adding a New Operator
 
-### Step 1 — Choose a category
+### 1. Choose a category
 
-| Category | Description | Memory |
+| Category | When to use | Memory |
 |---|---|---|
-| **Streaming** | Yields one element at a time from a source enumerator | O(1) |
-| **Buffering** | Materializes all or part of the source before yielding | O(n) |
-| **Terminal** | Consumes the source and returns a value, not a sequence | — |
+| **Streaming** | One element at a time from the source | O(1) |
+| **Buffering** | Requires full or partial source before yielding | O(n) |
+| **Terminal** | Returns a value, not a sequence | — |
 
-Use streaming unless sorting, set operations, or full-source knowledge is required. Use terminal when the result is a scalar (`number`, `boolean`, etc.) or a materialized collection.
+### 2. Create the implementation file
 
-### Step 2 — Choose a registration API
-
-| API | When to use |
-|---|---|
-| `createGeneratorOperator` | Streaming operators that fit cleanly in a generator function |
-| `createOperator` | Streaming/buffering operators with custom enumerator factory |
-| `createTerminalOperator` | Terminal operators expressed as a plain function |
-| `@operator` decorator | Class-based streaming/buffering (used for the library's own operators) |
-| `@terminal` decorator | Class-based terminal (used for the library's own operators) |
-
-For external/plugin operators, `createGeneratorOperator` and `createTerminalOperator` require the least ceremony. For operators complex enough to warrant a class, use the decorator approach.
-
-### Step 3a — Functional streaming operator
+**Streaming or buffering** — in `src/enumerators/streaming/` or `src/enumerators/buffer/`:
 
 ```ts
-// src/operators/streaming/everyOther.ts
-import { createGeneratorOperator } from '../../extensibility/createOperator';
+// src/enumerators/streaming/dropWhile.ts
+import { builtinOperator } from "../../plugin/builtinOperator";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import type { Enumerator } from "../../types/core";
 
-createGeneratorOperator({
-    name: 'everyOther',
-    *generator(source: Iterable<unknown>): IterableIterator<unknown> {
-        let skip = false;
-        for (const item of source) {
-            if (!skip) yield item;
-            skip = !skip;
-        }
+@builtinOperator({ name: "dropWhile", kind: "streaming" })
+export class DropWhileEnumerator<T> extends TyneqEnumerator<T, T> {
+  private dropping = true;
+  private readonly predicate: (item: T) => boolean;
+
+  constructor(source: Enumerator<T>, predicate: (item: T) => boolean) {
+    super(source);
+    this.predicate = predicate;
+  }
+
+  protected handleNext(): IteratorResult<T> {
+    while (true) {
+      const next = this.sourceEnumerator.next();
+      if (next.done) return next;
+      if (this.dropping && this.predicate(next.value)) continue;
+      this.dropping = false;
+      return next;
     }
-});
-```
-
-No validation needed here (no user arguments). For operators with arguments, add a `validate` function:
-
-```ts
-import { ArgumentUtility } from '../../utility/argumentUtility';
-
-createGeneratorOperator({
-    name: 'takeEvery',
-    *generator(source: Iterable<unknown>, step: number): IterableIterator<unknown> {
-        let index = 0;
-        for (const item of source) {
-            if (index % step === 0) yield item;
-            index++;
-        }
-    },
-    validate(step) {    // step: number — TypeScript infers from generator signature
-        ArgumentUtility.checkPositive({ step });
-    }
-});
-```
-
-### Step 3b — Functional terminal operator
-
-```ts
-// src/operators/terminal/product.ts
-import { createTerminalOperator } from '../../extensibility/createOperator';
-import { IEnumerable } from '../../types/core';
-
-createTerminalOperator({
-    name: 'product',
-    execute(source: IEnumerable<number>): number {
-        let result = 1;
-        for (const item of source) result *= item;
-        return result;
-    }
-});
-```
-
-### Step 3c — Class-based operator with `@operator`
-
-Class-based operators extend `TyneqEnumerator` (streaming) or `TyneqEnumerableEnumerator` (buffering). The `@operator` decorator registers them and infers the operator kind from the base class.
-
-```ts
-import { TyneqEnumerator } from '../../core/enumerators/TyneqEnumerator';
-import { operator } from '../../extensibility/operatorDecorators';
-import { ArgumentUtility } from '../../utility/argumentUtility';
-import type { IEnumerator } from '../../types/core';
-
-@operator<[predicate: unknown]>('dropWhile', (predicate) => {
-    ArgumentUtility.checkNotOptional({ predicate });
-})
-export class DropWhileEnumerator<T> extends TyneqEnumerator<T> {
-    private dropping = true;
-    private readonly predicate: (item: T) => boolean;
-
-    constructor(source: IEnumerator<T>, predicate: (item: T) => boolean) {
-        super(source);
-        this.predicate = predicate;
-    }
-
-    protected handleNext(): IteratorResult<T> {
-        while (true) {
-            const next = this.sourceEnumerator.next();
-            if (next.done) return next;
-            if (this.dropping && this.predicate(next.value)) continue;
-            this.dropping = false;
-            return next;
-        }
-    }
+  }
 }
 ```
 
-### Step 4 — Export the implementation
-
-Import the file in the appropriate barrel so it is registered when the library loads:
+**Terminal** — in `src/operators/`:
 
 ```ts
-// src/operators/streaming/index.ts  (or extensions/index.ts for extension operators)
-export * from './everyOther';
+// src/operators/product.ts
+import { builtinTerminal } from "../plugin/builtinTerminal";
+import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import type { Enumerator } from "../types/core";
+
+@builtinTerminal({ name: "product" })
+export class ProductOperator extends TyneqTerminalOperator<number, number> {
+  process(enumerator: Enumerator<number>): number {
+    let result = 1;
+    let next = enumerator.next();
+    while (!next.done) { result *= next.value; next = enumerator.next(); }
+    return result;
+  }
+}
 ```
 
-### Step 5 — Declare the method signature on `ITyneqEnumerable`
+### 3. Register in `TyneqEnumerableBase`
 
-Runtime registration alone does not teach the TypeScript type system about the new method. Add a declaration to `src/types/core.ts` in the correct section:
+Add a named import in `src/core/TyneqEnumerableBase.ts` so the decorator fires at load time:
 
 ```ts
-// In the STREAMING OPERATORS section of ITyneqEnumerable<TSource>:
+import { DropWhileEnumerator } from "../enumerators/streaming/dropWhile";
+```
 
+Then add the method body:
+
+```ts
+public dropWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
+  ArgumentUtility.checkNotOptional({ predicate });
+  const node = this.createOperatorNode(DropWhileEnumerator, [predicate]);
+  return this.createEnumerable(
+    { getEnumerator: () => new DropWhileEnumerator<TSource>(this.getEnumerator(), predicate) },
+    node
+  );
+}
+```
+
+> **Validation placement:** Validate user-supplied arguments in the method body of `TyneqEnumerableBase` — before any lazy factory is created. Do not validate in enumerator constructors (deferred) or `handleNext()`.
+
+### 4. Add the method signature to `TyneqSequence`
+
+In `src/types/core.ts`:
+
+```ts
 /**
- * Yields every other element, discarding the in-between ones.
+ * Skips elements while `predicate` holds, then yields the rest.
  *
  * @remarks
  * Deferred. Source is not enumerated until the returned sequence is iterated.
+ *
+ * @throws {ArgumentNullError} if `predicate` is `null`
+ * @throws {ArgumentError} if `predicate` is `undefined`
  */
-everyOther(): ITyneqEnumerable<TSource>;
+dropWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 ```
 
-Follow the `DOCUMENTATION_GUIDELINES.md` in the repo root — every operator declaration needs the execution-model `@remarks`, and `@throws` where applicable.
+Every declaration needs a `@remarks` line with the execution-model phrase and `@throws` for each argument error.
 
-### Step 6 — Write tests
+### 5. Write tests
 
-Place tests under `tests/unit/operators/` or `tests/integration/` depending on scope.
+Place tests under `tests/unit/operators/streaming/` or `tests/unit/operators/terminal/` etc.
 
 ```ts
-// tests/unit/operators/terminal/product.spec.ts
+// tests/unit/operators/streaming/dropWhile.spec.ts
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../src";
+import { Tyneq, ArgumentNullError, ArgumentError } from "../../../../src";
 
-describe("product", () => {
-    it("returns 1 for an empty sequence", () => {
-        expect(Tyneq.from<number>([]).product()).toBe(1);
+describe("dropWhile", () => {
+  describe("normal usage", () => {
+    it("drops elements while predicate holds then yields the rest", () => {
+      expect(Tyneq.from([1, 2, 3, 1]).dropWhile(x => x < 3).toArray()).toEqual([3, 1]);
     });
-
-    it("multiplies all elements", () => {
-        expect(Tyneq.from([2, 3, 4]).product()).toBe(24);
+    it("yields all elements if predicate never holds", () => {
+      expect(Tyneq.from([3, 4, 5]).dropWhile(x => x < 1).toArray()).toEqual([3, 4, 5]);
     });
+    it("produces the same results on repeated iteration", () => {
+      const seq = Tyneq.from([1, 2, 3]).dropWhile(x => x < 2);
+      expect(seq.toArray()).toEqual(seq.toArray());
+    });
+  });
+  describe("invalid arguments", () => {
+    it("throws ArgumentNullError when predicate is null", () => {
+      expect(() => Tyneq.from([1]).dropWhile(null as any)).toThrow(ArgumentNullError);
+    });
+    it("throws ArgumentError when predicate is undefined", () => {
+      expect(() => Tyneq.from([1]).dropWhile(undefined as any)).toThrow(ArgumentError);
+    });
+  });
 });
 ```
 
-### Step 7 — Verify
+### 6. Verify
 
 ```bash
-npx tsc --noEmit    # type-check
+npx tsc --noEmit    # type-check first
 npm test            # all tests pass
-npm run docs:api    # confirm TSDoc renders correctly
+npm run docs:api    # TSDoc renders correctly
 ```
 
-## Code Conventions
+## Validation Utilities
 
-### Argument Validation
+Use `ArgumentUtility` in `src/utility/argumentUtility.ts`:
 
-All user-supplied function arguments must be validated eagerly (before any deferred factory is created). Use the helpers in `src/utility/argumentUtility.ts`:
+| Helper | Rejects | Error thrown |
+|---|---|---|
+| `ArgumentUtility.checkNotOptional({ arg })` | `null` and `undefined` | `ArgumentNullError` / `ArgumentError` |
+| `ArgumentUtility.checkNotNull({ arg })` | `null` only | `ArgumentNullError` |
+| `ArgumentUtility.checkPositive({ arg })` | `≤ 0` | `ArgumentOutOfRangeError` |
+| `ArgumentUtility.checkNonNegative({ arg })` | `< 0` | `ArgumentOutOfRangeError` |
+| `ArgumentUtility.checkSafeInteger({ arg })` | non-safe integers | `ArgumentError` |
+| `ArgumentUtility.checkFunction({ arg })` | non-functions | `ArgumentTypeError` |
 
-| Helper | Rejects |
-|---|---|
-| `ArgumentUtility.checkNotOptional({ arg })` | `null` and `undefined` |
-| `ArgumentUtility.checkNotNull({ arg })` | `null` only |
-| `ArgumentUtility.checkPositive({ arg })` | `≤ 0` |
-| `ArgumentUtility.checkNonNegative({ arg })` | `< 0` |
-
-Pass a single-property object so the error message includes the argument name automatically.
-
-### Validation placement
-
-- **Decorator-based operators (`@operator`, `@terminal`)**: validate in the decorator's second argument, not in the constructor.
-- **Functional operators (`createOperator*`)**: validate in `config.validate`.
-- **Direct base-class methods**: validate at the top of the method before creating any lazy factory.
-
-### Error classes
-
-Use Tyneq's specific error classes rather than the native `Error`:
-
-- `ArgumentNullError` — for `null` arguments
-- `ArgumentError` — for `undefined` arguments  
-- `ArgumentOutOfRangeError` — for out-of-range numerics
-- `InvalidOperationError` — for invalid sequence states
-- `SequenceContainsNoElementsError` — when a non-empty sequence is required
-
-All are importable from `src/core/errors/`.
-
-### TSDoc on operator implementations
-
-Operator implementation files that call registration functions (like `createGeneratorOperator(...)`) should be marked `@internal` and document:
-
-- A one-line summary.
-- `@remarks` with the standard execution-model phrase as the **first sentence**.
-- Any non-obvious behavioral guarantees beyond what the public interface declares.
-- `@see {@link ITyneqEnumerable.operatorName}` linking to the public API.
-
-```ts
-/**
- * Yields every other element, discarding the in-between ones.
- *
- * @remarks
- * Deferred. Source is not enumerated until the returned sequence is iterated.
- *
- * @see {@link ITyneqEnumerable.everyOther} for the public API.
- *
- * @group Operators
- * @category Streaming
- * @internal
- */
-createGeneratorOperator({ ... });
-```
-
-## Documentation Requirements
-
-Every change to the public API surface requires:
-
-1. **TSDoc** on the `ITyneqEnumerable` interface member — execution model, `@throws`, edge cases.
-2. **Operators Overview update** — add the operator to the correct category list.
-3. **TSDoc update** at the implementation call-site — mark as `@internal` with execution model.
-
-See [Documentation Maintenance](/guide/documentation-maintenance) for the full maintenance workflow.
+Pass a single-key object so the argument name appears automatically in error messages.
 
 ## Testing Guidelines
 
-- Each operator should have at minimum: empty-sequence behavior, single-element, multiple-elements, and exact-error-type tests for thrown errors.
-- Validate re-iteration: enumerate the same sequence object twice and confirm both results are identical.
-- For large or stateful tests, use `afterEach` + `OperatorRegistry.unregister` to clean up dynamically registered operators.
+Each operator should cover:
+- Empty source behavior
+- Normal usage (single element, multiple elements)
+- Edge cases (equal-length sequences, boundary indices, etc.)
+- Re-iteration: enumerate the same sequence twice and assert both results are identical
+- One test per error type for invalid arguments
 
-> See `tests/unit/extensibility/createOperator.spec.ts` for real examples of test isolation with unique operator names per test run.
+## Code Conventions
 
-## Related Pages
+- Error classes from `src/core/errors/` — never raw `Error`/`TypeError`/`RangeError`
+- Operator implementations are `@internal` — `@remarks` with the execution-model phrase as the first sentence
+- TSDoc on every `TyneqSequence` method: summary, `@remarks`, `@throws` per argument
 
-- [Extensibility and Query Plans](/guide/extensibility)
-- [Core Concepts](/guide/concepts)
-- [Documentation Maintenance](/guide/documentation-maintenance)
+## Bug Reports and Feature Requests
+
+[github.com/chrisitopherus/tyneq/issues](https://github.com/chrisitopherus/tyneq/issues)

@@ -1,38 +1,21 @@
+
 /**
- * Provides default comparison and equality comparison functions.
- *
- * @remarks
- * Static utility class; cannot be instantiated. The defaults apply whenever an operator's
- * optional `comparer` or `equalityComparer` parameter is omitted.
- *
- * @see {@link ITyneqEnumerable.orderBy} for sorting operations.
- * @see {@link ITyneqEnumerable.distinct} for deduplication operations.
+ * Default comparers used by ordering and equality operators.
  *
  * @group Utilities
+ * @internal
  */
 export class TyneqComparer {
     /**
-     * Default relational comparer for sorting operations.
+     * Natural-order comparer using `<` and `>`.
      *
-     * @remarks
-     * Uses JavaScript's `<` and `>` operators. Works for numbers, strings, and dates;
-     * custom types may require a dedicated comparer.
-     *
-     * @see {@link defaultEqualityComparer} for equality comparisons.
+     * @returns Negative if `a < b`, positive if `a > b`, `0` if equal.
      */
     public static defaultComparer<T>(a: T, b: T): number {
         return a > b ? 1 : a < b ? -1 : 0;
     }
 
-    /**
-     * Default equality comparer for deduplication and membership operations.
-     *
-     * @remarks
-     * Uses strict equality (`===`): primitives by value, objects by reference.
-     * For deep object equality, provide a custom comparer.
-     *
-     * @see {@link defaultComparer} for relational comparisons.
-     */
+    /** Strict equality comparer using `===`. */
     public static defaultEqualityComparer<T>(a: T, b: T): boolean {
         return a === b;
     }

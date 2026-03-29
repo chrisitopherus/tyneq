@@ -6,6 +6,7 @@ async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   for await (const item of iterable) {
     result.push(item);
   }
+
   return result;
 }
 
@@ -25,6 +26,7 @@ describe("toAsync", () => {
     for await (const item of Tyneq.from([10, 20, 30]).toAsync()) {
       collected.push(item);
     }
+
     expect(collected).toEqual([10, 20, 30]);
   });
 

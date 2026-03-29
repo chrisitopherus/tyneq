@@ -1,25 +1,15 @@
 import { TyneqError } from "./TyneqError";
 
 /**
- * Thrown when an operation cannot be performed in the current state of the sequence.
- *
- * @remarks
- * Common causes: retrieving an element from an empty sequence (`first()`, `last()`), or
- * calling `single()` when zero or more than one matching element exists.
+ * Thrown when a method call is invalid for the current state of the object.
  *
  * @example
  * ```ts
- * try {
- *   Tyneq.from([1, 2, 3]).single(x => x > 0);
- * } catch (e) {
- *   if (e instanceof InvalidOperationError) {
- *     console.log(e.message);
- *   }
- * }
+ * try { Tyneq.from([1, 2]).single(); }
+ * catch (e) { if (e instanceof InvalidOperationError) { ... } }
  * ```
  *
- * @see {@link SequenceContainsNoElementsError} for the specialized empty-sequence case.
- *
+ * @see {@link TyneqError}
  * @group Errors
  */
 export class InvalidOperationError extends TyneqError {

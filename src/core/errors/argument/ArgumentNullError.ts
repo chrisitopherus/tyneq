@@ -3,20 +3,13 @@ import { ArgumentError } from "./ArgumentError";
 /**
  * Thrown when a required argument is `null`.
  *
- * @remarks
- * Distinct from `undefined`; use {@link ArgumentError} with a custom message for undefined
- * checks, or {@link ArgumentOutOfRangeError} for range violations.
- *
- * The message is automatically formatted as `"${paramName} cannot be null."`.
- *
  * @example
  * ```ts
- * throw new ArgumentNullError("predicate");
- * // Message: "predicate cannot be null."
+ * try { Tyneq.from([1, 2]).select(null as any); }
+ * catch (e) { if (e instanceof ArgumentNullError) { console.log(e.paramName); } }
  * ```
  *
- * @see {@link ArgumentError} for general argument validation errors.
- *
+ * @see {@link ArgumentError}
  * @group Errors
  */
 export class ArgumentNullError extends ArgumentError {

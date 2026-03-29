@@ -14,5 +14,21 @@ export * from "./core/errors/argument/ArgumentOutOfRangeError";
 export * from "./core/errors/argument/ArgumentTypeError";
 export * from "./core/errors/argument/ValidationError";
 export * from "./utility/ValidationBuilder";
-export * from "./queryplan";
-export * from "./extensibility";
+// queryplan
+export type { OperatorCategory, IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
+export { tyneqQueryNode } from "./types/queryplan";
+export { QueryNode } from "./queryplan/QueryNode";
+export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
+// plugin
+export { operator } from "./plugin/operator";
+export { terminal } from "./plugin/terminal";
+export { createOperator } from "./plugin/createOperator";
+export { createStreamingOperator } from "./plugin/createStreamingOperator";
+export { createTerminalOperator } from "./plugin/createTerminalOperator";
+export { OperatorRegistry } from "./plugin/OperatorRegistry";
+export { OperatorMetadata } from "./plugin/OperatorRegistry";
+export type { OperatorEntry } from "./plugin/OperatorRegistry";
+// Base classes for class-based custom operators
+export { TyneqEnumerator } from "./core/enumerators/TyneqEnumerator";
+export { TyneqBaseEnumerator } from "./core/enumerators/TyneqBaseEnumerator";
+export { TyneqTerminalOperator } from "./core/TyneqTerminalOperator";

@@ -1,27 +1,12 @@
-import { TyneqEnumeratorCore } from "../enumerators/TyneqEnumeratorCore";
+import { TyneqBaseEnumerator } from "../enumerators/TyneqBaseEnumerator";
 import { ArgumentOutOfRangeError } from "../errors/argument/ArgumentOutOfRangeError";
 import { nameof } from "../../utility/nameof";
 
-/**
- * Enumerator that generates a sequence of consecutive integers from `start` to `end` inclusive.
- *
- * @remarks
- * Deferred. Values are generated on demand.
- *
- * Each call to `next()` yields the next integer in the range without buffering.
- *
- * @group Enumerators
- * @internal
- */
-export class RangeEnumerator extends TyneqEnumeratorCore<number> {
+export class RangeEnumerator extends TyneqBaseEnumerator<number> {
     private current: number;
     private end: number;
 
-    /**
-     * @param start - First integer in the range (inclusive).
-     * @param end - Last integer in the range (inclusive); must be >= `start`.
-     * @throws {ArgumentOutOfRangeError} If `start` is greater than `end`.
-     */
+    
     public constructor(start: number, end: number) {
         super();
         const [startName] = nameof({ start });

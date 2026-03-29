@@ -1,27 +1,15 @@
 import { InvalidOperationError } from "./InvalidOperationError";
 
 /**
- * Thrown when an operation requires at least one element but the sequence is empty.
- *
- * @remarks
- * A specialization of {@link InvalidOperationError} for the predicate-free case. When a
- * predicate is used and no matches exist, `InvalidOperationError` is thrown instead.
- *
- * Use the `*OrDefault` variants (`firstOrDefault`, `lastOrDefault`) to avoid this error.
+ * Thrown when an element is required from a sequence that contains no elements.
  *
  * @example
  * ```ts
- * try {
- *   Tyneq.from([]).first();
- * } catch (e) {
- *   if (e instanceof SequenceContainsNoElementsError) {
- *     console.log(e.message); // "Sequence contains no elements."
- *   }
- * }
+ * try { Tyneq.from([]).first(); }
+ * catch (e) { if (e instanceof SequenceContainsNoElementsError) { ... } }
  * ```
  *
- * @see {@link InvalidOperationError} for more general invalid-state errors.
- *
+ * @see {@link InvalidOperationError}
  * @group Errors
  */
 export class SequenceContainsNoElementsError extends InvalidOperationError {

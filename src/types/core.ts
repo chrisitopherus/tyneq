@@ -4,160 +4,93 @@ import { tyneqQueryNode } from "./queryplan";
 import type { IQueryNode } from "./queryplan";
 
 /**
- * Represents an iterator that traverses a sequence of elements.
+ * A pull-based iterator over a sequence.
  *
  * @remarks
- * Extends the standard JavaScript `Iterator<T>` interface with optional `return` and `throw`
- * methods. Enumerators created from {@link IEnumeratorFactory} can support re-iteration by
- * creating fresh instances on each call to `getEnumerator()`.
+ * Extends the native `Iterator<T>` protocol. `return()` disposes the iterator early;
+ * `throw()` is not supported and throws {@link NotSupportedError} if called.
  *
- * @typeParam T - The type of elements being enumerated.
- *
- * @see {@link IEnumeratorFactory} for creating enumerators.
- * @see {@link IEnumerable} for re-iterable sequences.
- *
+ * @typeParam T - Element type.
  * @group Interfaces
  */
-export interface IEnumerator<T> extends Iterator<T> {
+export interface Enumerator<T> extends Iterator<T> {
     next(): IteratorResult<T>;
 
     /**
-     * Signals early termination to the iterator.
+     * Terminates the iterator early and releases resources.
      *
      * @remarks
-     * All concrete Tyneq enumerators implement this method. Calling it disposes upstream
-     * resources and marks the enumerator as completed. Safe to call multiple times.
+     * Idempotent — safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
      */
     return?(value?: unknown): IteratorResult<T>;
 
     /**
-     * Injects an exception into the iterator.
-     *
-     * @remarks
-     * Declared optional to satisfy the JavaScript iterator protocol. **No Tyneq enumerator
-     * implements this method.** The Tyneq execution model does not support exception injection
-     * into pipelines — errors from operator logic propagate naturally through `next()`.
-     * If a consumer calls `throw()`, the method will not be present on the enumerator object
-     * and the call will be a no-op (or throw a "not a function" error). Handle errors at the
-     * consumer level with a standard `try/catch` around the iteration loop.
+     * Not supported. Throws {@link NotSupportedError} if called.
      */
     throw?(e?: unknown): IteratorResult<T>;
 }
 
 /**
- * Provides a factory method for creating enumerators.
+ * A factory that produces a fresh {@link Enumerator} on demand.
  *
- * @remarks
- * Each call to `getEnumerator()` must return a new, independent enumerator instance starting
- * from the beginning of the sequence with no shared iteration state.
- *
- * @typeParam T - The type of elements in the sequence.
- *
- * @see {@link IEnumerator} for the iterator type returned.
- * @see {@link IEnumerable} which combines this with the Iterable protocol.
- *
+ * @typeParam T - Element type.
  * @group Interfaces
  */
-export interface IEnumeratorFactory<T> {
-    /**
-     * Creates a new enumerator positioned before the first element.
-     */
-    getEnumerator(): IEnumerator<T>;
+export interface EnumeratorFactory<T> {
+    /** Returns a new, independent enumerator starting at the beginning of the sequence. */
+    getEnumerator(): Enumerator<T>;
 }
 
 /**
- * Represents a re-iterable sequence of elements.
+ * A lazy, re-iterable sequence.
  *
  * @remarks
- * Combines the standard JavaScript `Iterable<T>` protocol with the {@link IEnumeratorFactory}
- * pattern so that sequences can be enumerated multiple times. Each call to `Symbol.iterator`
- * returns a fresh, independent enumerator. This interface serves as the base for
- * {@link ITyneqEnumerable}, which extends it with LINQ-style query operators.
+ * Each call to `[Symbol.iterator]()` or `getEnumerator()` produces a fresh enumerator with
+ * independent state, allowing the same sequence to be iterated multiple times.
  *
- * @typeParam T - The type of elements in the sequence.
- *
- * @see {@link IEnumerator} for the iterator type.
- * @see {@link IEnumeratorFactory} for the factory pattern.
- * @see {@link ITyneqEnumerable} for the full query operator interface.
- *
+ * @typeParam T - Element type.
  * @group Interfaces
  */
-export interface IEnumerable<T> extends Iterable<T>, IEnumeratorFactory<T> {
-    [Symbol.iterator](): IEnumerator<T>;
+export interface Enumerable<T> extends Iterable<T>, EnumeratorFactory<T> {
+    [Symbol.iterator](): Enumerator<T>;
 }
 
 /**
- * A factory function that creates a new enumerator.
- *
- * @remarks
- * Lightweight functional alternative to {@link IEnumeratorFactory}. Each invocation must
- * produce a fresh, independent enumerator with no shared mutable state.
- *
- * @typeParam T - The type of elements produced by the enumerator.
- *
- * @see {@link IEnumerator} for the enumerator type returned.
- * @see {@link IEnumeratorFactory} for the interface-based equivalent.
+ * Function that produces a fresh {@link Enumerator} each time it is called.
  *
  * @group Types
  */
-export type IteratorFactory<T> = () => IEnumerator<T>;
+export type IteratorFactory<T> = () => Enumerator<T>;
 
 /**
- * A factory function that creates a typed enumerable from an iterator factory.
- *
- * @remarks
- * Used internally to construct specific {@link ITyneqEnumerable} implementations so that
- * query operators produce sequences of the same concrete type as the source.
- *
- * @typeParam TSource - The element type of the sequence.
- * @typeParam TEnumerable - The specific enumerable implementation type.
- *
- * @see {@link ITyneqEnumerable} for the base enumerable interface.
- * @see {@link IteratorFactory} for the factory function type.
+ * Function that wraps an iterator factory in a concrete `TyneqSequence` subclass.
  *
  * @group Types
  * @internal
  */
-export type TyneqEnumerableFactory<TSource, TEnumerable extends ITyneqEnumerable<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
+export type TyneqEnumerableFactory<TSource, TEnumerable extends TyneqSequence<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 /**
- * Represents a queryable sequence with LINQ-style operators.
+ * The primary public API for a lazy sequence — the type returned by all Tyneq operators.
  *
  * @remarks
- * Extends {@link IEnumerable} with terminal, streaming, and buffering operators. Streaming
- * operators transform elements one-at-a-time using deferred execution; buffering operators
- * buffer part or all of the source before producing results; terminal operators enumerate the
- * source immediately and return a concrete value. Sequences are re-iterable — each enumeration
- * creates a fresh iterator and re-executes the pipeline.
+ * Every operator method returns a new `TyneqSequence` without consuming the source.
+ * The source is not iterated until the returned sequence is iterated.
  *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link IEnumerable} for the base iterable interface.
- * @see {@link ITyneqOrderedEnumerable} for ordered sequences with additional sorting operators.
- *
+ * @typeParam TSource - Element type.
  * @group Interfaces
  */
-export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
+export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     // ========================================================================
     // QUERY PLAN
     // ========================================================================
 
     /**
-     * The query plan node for this step in the operator chain.
+     * The query plan node for this sequence, or `null` if no plan is available.
      *
      * @remarks
-     * Access via the {@link tyneqQueryNode} symbol — not a normal string-keyed property,
-     * so it does not appear in autocomplete. Import the symbol explicitly to opt in:
-     *
-     * ```ts
-     * import { tyneqQueryNode } from 'tyneq';
-     *
-     * const seq = Tyneq.from([1, 2, 3]).where(x => x > 0).select(x => x * 2);
-     * const node = seq[tyneqQueryNode]; // IQueryNode | null
-     * console.log(node?.operatorName);  // 'select'
-     * ```
-     *
-     * `null` for sequences created without query-plan support (e.g., `pipe()`).
+     * Use {@link QueryPlanPrinter} to render this as a string.
+     * Sequences created via `pipe()` always have `null` here.
      */
     readonly [tyneqQueryNode]: Nullable<IQueryNode>;
 
@@ -169,33 +102,36 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     /**
      * Returns `true` if any element satisfies the predicate.
      *
-     * @param predicate - Tests each element; return `true` to match.
-     * @returns `false` if the sequence is empty.
+     * @remarks
+     * Returns `false` for an empty sequence.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     any(predicate: (item: TSource) => boolean): boolean;
 
     /**
-     * Returns `true` if every element satisfies the predicate.
+     * Returns `true` if all elements satisfy the predicate.
      *
-     * @returns `true` if the sequence is empty.
+     * @remarks
+     * Returns `true` for an empty sequence (vacuous truth).
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     all(predicate: (item: TSource) => boolean): boolean;
 
     /**
-     * Returns `true` if the sequence contains `value`.
+     * Returns `true` if the sequence contains `value` using strict equality (`===`).
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called. Elements are compared
-     * with `===`. Returns `false` for an empty sequence. Short-circuits on the first match.
+     * Returns `false` for an empty sequence.
      */
     contains(value: TSource): boolean;
 
     /**
-     * Returns the number of elements in the sequence.
+     * Returns the number of elements.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called. Returns `0` for an
-     * empty sequence.
+     * Returns `0` for an empty sequence.
      */
     count(): number;
 
@@ -203,138 +139,155 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Returns the number of elements that satisfy the predicate.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * Returns `0` if no elements match or the sequence is empty.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     countBy(predicate: (item: TSource) => boolean): number;
 
     /**
-     * Forces immediate evaluation by fully consuming the sequence.
+     * Iterates the entire sequence and discards all elements.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called. Use to trigger
-     * side effects registered via `tap()` or `tapIf()` without materializing results.
+     * Useful for triggering side effects (e.g., after `tap`).
      */
     consume(): void;
 
     /**
-     * Returns `true` if the sequence is `null` or contains no elements.
-     *
-     * @remarks
-     * Immediate. Reads at most one element from the source.
+     * Returns `true` if the sequence is empty or if the first element is `null` or `undefined`.
      */
     isNullOrEmpty(): boolean;
 
     /**
-     * Returns the element at zero-based `index`.
+     * Returns the element at `index`.
      *
-     * @throws {InvalidOperationError} When the index is out of range.
+     * @throws {ArgumentOutOfRangeError} When `index` is negative or greater than or equal to the sequence length.
      */
     elementAt(index: number): TSource;
 
     /**
-     * Returns the element at zero-based `index`, or `defaultValue` if the index is out of range.
+     * Returns the element at `index`, or `defaultValue` if the index is out of range.
      */
     elementAtOrDefault(index: number, defaultValue: TSource): TSource;
 
     /**
-     * Returns the first element matching the predicate.
+     * Returns the first element that satisfies the predicate.
      *
-     * @throws {InvalidOperationError} When no element matches.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
     first(predicate: (item: TSource) => boolean): TSource;
 
     /**
-     * Returns the first element matching the predicate, or `defaultValue` if none matches.
+     * Returns the first element that satisfies the predicate, or `defaultValue` if none does.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
     /**
-     * Returns the zero-based index of the first element matching the predicate, or `-1` if not found.
+     * Returns the zero-based index of the first element that satisfies the predicate.
      *
-     * @param startIndex - Index to begin searching from; defaults to `0`.
-     * @throws {ArgumentNullError} When `predicate` is null.
-     * @throws {ArgumentError} When `predicate` is undefined.
+     * @remarks
+     * Returns `-1` if no element satisfies the predicate.
+     * When `startIndex` is provided, the search starts at that index.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     indexOf(predicate: (item: TSource) => boolean, startIndex?: number): number;
 
     /**
-     * Returns the last element matching the predicate.
+     * Returns the last element that satisfies the predicate.
      *
-     * @throws {InvalidOperationError} When no element matches.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
     last(predicate: (item: TSource) => boolean): TSource;
 
     /**
-     * Returns the last element matching the predicate, or `defaultValue` if none matches.
+     * Returns the last element that satisfies the predicate, or `defaultValue` if none does.
      *
-     * @throws {ArgumentNullError} When `predicate` is null.
-     * @throws {ArgumentError} When `predicate` is undefined.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
     /**
-     * Returns the maximum element.
+     * Returns the maximum element according to the comparer.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
-     * @throws {InvalidOperationError} When the sequence is empty.
+     * @remarks
+     * Uses the natural `>` operator when no comparer is provided.
+     *
+     * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      */
     max(comparer?: (a: TSource, b: TSource) => number): TSource;
 
     /**
-     * Returns the element with the largest key.
+     * Returns the element with the maximum key.
      *
-     * @param comparer - Custom comparison function for keys; if omitted, uses default ordering.
-     * @throws {InvalidOperationError} When the sequence is empty.
+     * @throws {SequenceContainsNoElementsError} When the sequence is empty.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
     maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
 
     /**
-     * Returns the minimum element.
+     * Returns the minimum element according to the comparer.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
-     * @throws {InvalidOperationError} When the sequence is empty.
+     * @remarks
+     * Uses the natural `<` operator when no comparer is provided.
+     *
+     * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      */
     min(comparer?: (a: TSource, b: TSource) => number): TSource;
 
     /**
-     * Returns the element with the smallest key.
+     * Returns the element with the minimum key.
      *
-     * @param comparer - Custom comparison function for keys; if omitted, uses default ordering.
-     * @throws {InvalidOperationError} When the sequence is empty.
+     * @throws {SequenceContainsNoElementsError} When the sequence is empty.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
     minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
 
     /**
-     * Returns `true` if both sequences contain the same elements in the same order.
+     * Returns `true` if this sequence and `other` have the same elements in the same order.
      *
-     * @param equalityComparer - Custom equality test; if omitted, uses `===`.
+     * @remarks
+     * Uses `equalityComparer` for element comparison, or `===` when omitted.
+     * Returns `true` if both sequences are empty.
      */
     sequenceEqual(other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean): boolean;
 
     /**
-     * Returns the only element matching the predicate.
+     * Returns the only element that satisfies the predicate.
      *
-     * @throws {InvalidOperationError} When no element matches, or more than one element matches.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
+     * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
     single(predicate: (item: TSource) => boolean): TSource;
 
     /**
-     * Returns the only element matching the predicate, or `defaultValue` if none matches.
+     * Returns the only element that satisfies the predicate, or `defaultValue` if none does.
      *
-     * @throws {InvalidOperationError} When more than one element matches.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
     singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
 
     /**
-     * Returns `true` if the sequence begins with all elements of `sequence`, in order.
+     * Returns `true` if this sequence starts with all elements of `sequence` in order.
+     *
+     * @remarks
+     * Uses `===` for element comparison. Returns `true` when `sequence` is empty.
      */
     startsWith(sequence: Iterable<TSource>): boolean;
 
     /**
-     * Returns the sum of values extracted by `selector`. Returns `0` for an empty sequence.
+     * Returns the sum of `selector` applied to each element.
      *
-     * @throws {ArgumentNullError} When `selector` is null.
-     * @throws {ArgumentError} When `selector` is undefined.
+     * @remarks
+     * Returns `0` for an empty sequence.
+     *
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
     sum(selector: (item: TSource) => number): number;
 
@@ -342,58 +295,55 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
      * Materializes the sequence into an array.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * Returns `[]` for an empty sequence.
      */
     toArray(): TSource[];
 
     /**
-     * Wraps the sequence as a native `AsyncIterable`, enabling `for await...of` consumption
-     * and piping to async sinks.
+     * Returns an `AsyncIterable` that iterates this sequence asynchronously.
      *
      * @remarks
-     * Deferred. The source is not enumerated until the returned `AsyncIterable` is iterated.
-     * Each iteration of the returned `AsyncIterable` produces a fresh traversal of the source.
+     * Deferred — each `for await...of` loop produces a fresh traversal of the source.
      */
     toAsync(): AsyncIterable<TSource>;
 
     /**
-     * Creates a `Map` by applying `selector` to each element.
+     * Materializes the sequence into a `Map`.
      *
-     * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
     toMap<TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Map<TKey, TValue>;
 
     /**
-     * Creates a plain record object by applying `selector` to each element.
+     * Materializes the sequence into a plain object record.
      *
-     * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
     toRecord<TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Record<TKey, TValue>;
 
     /**
-     * Materializes the sequence into a `Set`, deduplicating by reference equality.
+     * Materializes the sequence into a `Set`.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * Duplicate elements are deduplicated using `Set` identity semantics.
      */
     toSet(): Set<TSource>;
 
     /**
-     * Returns the arithmetic mean of values extracted by `selector`. Returns `0` for an empty sequence.
+     * Returns the arithmetic mean of `selector` applied to each element.
      *
-     * @throws {ArgumentNullError} When `selector` is null.
-     * @throws {ArgumentError} When `selector` is undefined.
+     * @throws {SequenceContainsNoElementsError} When the sequence is empty.
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
     average(selector: (item: TSource) => number): number;
 
     /**
-     * Applies `func` to each element with a running accumulator, then transforms the final value with `resultSelector`.
+     * Folds the sequence into a single result value.
      *
-     * @param seed - Initial accumulator value.
-     * @throws {ArgumentNullError} When `func` or `resultSelector` is null.
-     * @throws {ArgumentError} When `func` or `resultSelector` is undefined.
+     * @remarks
+     * Applies `func` to each element in order, starting from `seed`. Returns `resultSelector(seed)` for an empty sequence.
+     *
+     * @throws {ArgumentNullError} When `func` or `resultSelector` is null or undefined.
      */
     aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
@@ -407,167 +357,167 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // They do not enumerate the source until iteration begins.
     // ========================================================================
 
+    /** Returns a new sequence with `item` appended after all source elements. */
+    append(item: TSource): TyneqSequence<TSource>;
+
     /**
-     * Yields all source elements followed by `item`.
+     * Casts every element to `U` without runtime validation.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * Unsafe — throws at runtime if any element is not assignable to `U`. Use `ofType` for safe type-narrowing.
      */
-    append(item: TSource): ITyneqEnumerable<TSource>;
+    cast<U>(): TyneqSequence<U>;
 
     /**
-     * Casts every element to `U` via a compile-time-only double assertion.
+     * Partitions the sequence into non-overlapping arrays of length `size`.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * The last chunk may be shorter than `size` if the sequence length is not divisible by `size`.
      *
-     * No runtime type checking is performed. Use {@link ofType} for runtime-safe filtering.
+     * @throws {ArgumentOutOfRangeError} When `size` is less than or equal to `0`.
      */
-    cast<U>(): ITyneqEnumerable<U>;
+    chunk(size: number): TyneqSequence<TSource[]>;
+
+    /** Returns a new sequence with the elements of `other` appended after the source. */
+    concat(other: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
-     * Splits the sequence into arrays of at most `size` elements. The last chunk may be smaller.
-     *
-     * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
-     */
-    chunk(size: number): ITyneqEnumerable<TSource[]>;
-
-    /**
-     * Yields all elements of this sequence followed by all elements of `other`.
+     * Returns a sequence that yields `defaultValue` when the source is empty.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * Passes source elements through unchanged when the source is non-empty.
      */
-    concat(other: Iterable<TSource>): ITyneqEnumerable<TSource>;
+    defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource>;
 
     /**
-     * Returns the sequence unchanged, or a single-element sequence containing `defaultValue` if empty.
+     * Returns consecutive overlapping pairs of elements: `[e0,e1]`, `[e1,e2]`, ...
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * Returns an empty sequence when the source has fewer than two elements.
      */
-    defaultIfEmpty(defaultValue: TSource): ITyneqEnumerable<TSource>;
+    pairwise(): TyneqSequence<[TSource, TSource]>;
 
     /**
-     * Yields adjacent element pairs as `[previous, current]` tuples.
+     * Filters elements to those for which `guard` returns `true`, narrowing the type to `U`.
+     *
+     * @throws {ArgumentNullError} When `guard` is null or undefined.
+     */
+    ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U>;
+
+    /** Returns a new sequence with `item` prepended before all source elements. */
+    prepend(item: TSource): TyneqSequence<TSource>;
+
+    /**
+     * Replaces each element with `value`, keeping the same sequence length.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated. Produces
-     * no output for sequences with fewer than two elements.
+     * Useful for generating a sequence of a fixed value with a known length derived from the source.
      */
-    pairwise(): ITyneqEnumerable<[TSource, TSource]>;
+    populate<TValue>(value: TValue): TyneqSequence<TValue>;
 
     /**
-     * Filters elements to those matching `guard`, narrowing the element type to `U`.
+     * Projects each element through `selector`.
+     *
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     */
+    select<TResult>(selector: (item: TSource) => TResult): TyneqSequence<TResult>;
+
+    /**
+     * Projects each element to an iterable and flattens the results into a single sequence.
+     *
+     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     */
+    selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): TyneqSequence<TResult>;
+
+    /**
+     * Skips the first `count` elements.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * Returns an empty sequence when `count` exceeds the sequence length.
+     * `count` must be non-negative.
      *
-     * @throws {ArgumentNullError} When `guard` is null.
-     * @throws {ArgumentError} When `guard` is undefined.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
-    ofType<U extends TSource>(guard: (value: TSource) => value is U): ITyneqEnumerable<U>;
+    skip(count: number): TyneqSequence<TSource>;
 
     /**
-     * Yields `item` followed by all source elements.
+     * Skips the last `count` elements.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
-     */
-    prepend(item: TSource): ITyneqEnumerable<TSource>;
-
-    /**
-     * Replaces every element with `value`, preserving the element count.
-     */
-    populate<TValue>(value: TValue): ITyneqEnumerable<TValue>;
-
-    /**
-     * Projects each element using `selector`.
+     * Buffers `count` elements to determine the cutoff.
      *
-     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
-    select<TResult>(selector: (item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    skipLast(count: number): TyneqSequence<TSource>;
 
     /**
-     * Projects each element to a sequence and flattens the results.
+     * Skips elements while `predicate` returns `true`, then yields the rest.
      *
-     * @throws {ArgumentNullError} When `selector` is null.
-     * @throws {ArgumentError} When `selector` is undefined.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): ITyneqEnumerable<TResult>;
+    skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 
     /**
-     * Skips the first `count` elements. Negative or zero values skip nothing.
-     */
-    skip(count: number): ITyneqEnumerable<TSource>;
-
-    /**
-     * Skips the last `count` elements. Negative or zero values skip nothing.
-     */
-    skipLast(count: number): ITyneqEnumerable<TSource>;
-
-    /**
-     * Skips elements while the predicate returns `true`, then yields the remainder.
+     * Splits the sequence at elements where `splitOn` returns `true`.
      *
-     * @throws {ArgumentNullError} When `predicate` is null.
-     * @throws {ArgumentError} When `predicate` is undefined.
-     */
-    skipWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
-
-    /**
-     * Splits the sequence on elements where `splitOn` returns `true`. Split-point elements are excluded.
+     * @remarks
+     * The delimiter elements are consumed and not included in any sub-array.
      *
-     * @throws {ArgumentNullError} When `splitOn` is null.
-     * @throws {ArgumentError} When `splitOn` is undefined.
+     * @throws {ArgumentNullError} When `splitOn` is null or undefined.
      */
-    split(splitOn: (item: TSource) => boolean): ITyneqEnumerable<TSource[]>;
+    split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]>;
 
     /**
-     * Takes the first `count` elements. Negative or zero values return an empty sequence.
-     */
-    take(count: number): ITyneqEnumerable<TSource>;
-
-    /**
-     * Yields elements while the predicate returns `true`, stopping at the first non-matching element.
+     * Takes at most the first `count` elements.
      *
-     * @throws {ArgumentNullError} When `predicate` is null.
-     * @throws {ArgumentError} When `predicate` is undefined.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
-    takeWhile(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    take(count: number): TyneqSequence<TSource>;
 
     /**
-     * Invokes `action` on each element as a side effect, passing elements through unchanged.
+     * Takes elements while `predicate` returns `true`, then stops.
      *
-     * @throws {ArgumentNullError} When `action` is null.
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    tap(action: (item: TSource) => void): ITyneqEnumerable<TSource>;
+    takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 
     /**
-     * Invokes `action` on each element only if `predicate()` returns `true` at call time.
+     * Executes `action` for each element as it passes through the pipeline, then yields it unchanged.
      *
-     * @throws {ArgumentNullError} When `action` or `predicate` is null.
+     * @throws {ArgumentNullError} When `action` is null or undefined.
      */
-    tapIf(action: (item: TSource) => void, predicate: () => boolean): ITyneqEnumerable<TSource>;
+    tap(action: (item: TSource) => void): TyneqSequence<TSource>;
 
     /**
-     * Yields every `count`-th element, discarding elements in between. A value of `1` yields every element.
+     * Executes `action` for each element only while `predicate()` returns `true`.
      *
-     * @param count - Sampling interval; must be a positive integer.
+     * @throws {ArgumentNullError} When `action` or `predicate` is null or undefined.
      */
-    throttle(count: number): ITyneqEnumerable<TSource>;
+    tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource>;
 
     /**
-     * Filters the sequence to elements where `predicate` returns `true`.
+     * Yields every `count`-th element (i.e. elements at indices 0, `count`, `2*count`, ...).
      *
-     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentOutOfRangeError} When `count` is less than or equal to `0`.
      */
-    where(predicate: (item: TSource) => boolean): ITyneqEnumerable<TSource>;
+    throttle(count: number): TyneqSequence<TSource>;
 
     /**
-     * Pairs elements from both sequences using `selector`. Stops when either sequence is exhausted.
+     * Yields only elements for which `predicate` returns `true`.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): ITyneqEnumerable<TResult>;
+    where(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
+
+    /**
+     * Pairs each element with the corresponding element from `other` using `selector`.
+     *
+     * @remarks
+     * Stops at the shorter of the two sequences.
+     *
+     * @throws {ArgumentNullError} When `other` or `selector` is null or undefined.
+     */
+    zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): TyneqSequence<TResult>;
 
     // ========================================================================
     // BUFFERING OPERATORS
@@ -575,358 +525,272 @@ export interface ITyneqEnumerable<TSource> extends IEnumerable<TSource> {
     // They enumerate part or all of the source during execution.
     // ========================================================================
 
-    /**
-     * Returns distinct elements in order of first occurrence.
-     */
-    distinct(): ITyneqEnumerable<TSource>;
+    /** Returns the sequence without duplicate elements (using `===` equality). */
+    distinct(): TyneqSequence<TSource>;
 
     /**
-     * Returns elements with distinct keys in order of first key occurrence.
+     * Returns the sequence without duplicate elements, comparing by the result of `keySelector`.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null.
-     * @throws {ArgumentError} When `keySelector` is undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    distinctBy<TKey>(keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
+
+    /** Returns elements not present in `excludedValues`, using `===` equality. */
+    except(excludedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
-     * Returns distinct elements from this sequence that do not appear in `excludedValues`.
-     */
-    except(excludedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
-
-    /**
-     * Returns elements whose extracted key does not appear in `excludedKeys`.
-     */
-    exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
-
-    /**
-     * Groups elements by key and projects each group into a result.
+     * Returns elements whose key (via `keySelector`) is not found in `excludedKeys`.
      *
-     * @param resultSelector - Called once per group with the key and an enumerable of projected values.
-     * @throws {ArgumentNullError} When any parameter is null.
-     * @throws {ArgumentError} When any parameter is undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     */
+    exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
+
+    /**
+     * Groups elements by key and projects each group with `resultSelector`.
+     *
+     * @throws {ArgumentNullError} When `keySelector`, `valueSelector`, or `resultSelector` is null or undefined.
      */
     groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
         valueSelector: (item: TSource) => TValue,
-        resultSelector: (key: TKey, values: ITyneqEnumerable<TValue>) => TResult
-    ): ITyneqEnumerable<TResult>;
+        resultSelector: (key: TKey, values: TyneqSequence<TValue>) => TResult
+    ): TyneqSequence<TResult>;
 
     /**
-     * Performs a left outer join, grouping inner matches under each outer element.
+     * Performs a left outer join: each outer element is paired with its matching inner group.
      *
-     * @param resultSelector - Receives each outer element and an enumerable of its inner matches (empty if none).
+     * @remarks
+     * Elements with no match in `inner` receive an empty group.
+     *
+     * @throws {ArgumentNullError} When any selector is null or undefined.
      */
     groupJoin<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
-        resultSelector: (outer: TSource, group: ITyneqEnumerable<TInner>) => TResult
-    ): ITyneqEnumerable<TResult>;
+        resultSelector: (outer: TSource, group: TyneqSequence<TInner>) => TResult
+    ): TyneqSequence<TResult>;
+
+    /** Returns elements that are also present in `intersectedValues`, using `===` equality. */
+    intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
-     * Returns distinct elements that appear in both this sequence and `intersectedValues`.
-     */
-    intersect(intersectedValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
-
-    /**
-     * Returns elements whose extracted key appears in `intersectedKeys`.
-     */
-    intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
-
-    /**
-     * Correlates elements by key equality (inner join). Only outer elements with at least one matching inner element are yielded.
+     * Returns elements whose key (via `keySelector`) is found in `intersectedKeys`.
      *
-     * @throws {ArgumentNullError} When any function parameter is null.
-     * @throws {ArgumentError} When any function parameter is undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     */
+    intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
+
+    /**
+     * Performs an inner join: produces one result for each matching pair of outer and inner elements.
+     *
+     * @throws {ArgumentNullError} When any selector is null or undefined.
      */
     join<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TSource, inner: TInner) => TResult
-    ): ITyneqEnumerable<TResult>;
+    ): TyneqSequence<TResult>;
 
     /**
-     * Caches the sequence so that subsequent enumerations replay from the cache instead of re-evaluating the source.
+     * Returns a sequence that caches elements incrementally as they are iterated.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated. Elements are
-     * cached incrementally; subsequent enumerations reuse cached values for the portion already
-     * evaluated and continue from the source for the remainder.
-     *
-     * @returns A cached enumerable that stores source elements on first access.
-     * Call `refresh()` on the returned value to invalidate the cache.
+     * Subsequent iterations replay the cache; the source is only iterated once.
+     * Call `refresh()` on the returned sequence to clear the cache and re-enumerate the source.
      */
-    memoize(): ITyneqCachedEnumerable<TSource>;
+    memoize(): TyneqCachedSequence<TSource>;
 
     /**
-     * Sorts elements in ascending order by `keySelector`.
+     * Returns the sequence sorted in ascending order by `keySelector`.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
-     * @returns An ordered sequence; chain `thenBy()` or `thenByDescending()` for secondary sorts.
-     * @throws {ArgumentNullError} When `keySelector` is null.
-     * @throws {ArgumentError} When `keySelector` is undefined.
+     * @remarks
+     * Stable sort. Append `thenBy`/`thenByDescending` for multi-key sorting.
+     *
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
     orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
-    ): ITyneqOrderedEnumerable<TSource>;
+    ): TyneqOrderedSequence<TSource>;
 
     /**
-     * Sorts elements in descending order by `keySelector`.
+     * Returns the sequence sorted in descending order by `keySelector`.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
-     * @returns An ordered sequence; chain `thenBy()` or `thenByDescending()` for secondary sorts.
-     * @throws {ArgumentNullError} When `keySelector` is null.
-     * @throws {ArgumentError} When `keySelector` is undefined.
+     * @remarks
+     * Stable sort. Append `thenBy`/`thenByDescending` for multi-key sorting.
+     *
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
     orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
-    ): ITyneqOrderedEnumerable<TSource>;
+    ): TyneqOrderedSequence<TSource>;
+
+    /** Returns the sequence in reverse order. */
+    reverse(): TyneqSequence<TSource>;
+
+    /** Returns the sequence in random order using `Math.random()`. */
+    shuffle(): TyneqSequence<TSource>;
 
     /**
-     * Yields elements in reverse order.
+     * Inserts elements from `other` into the sequence at `index`.
      *
      * @remarks
-     * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+     * `index` is zero-based and counts from the end of the sequence.
+     * Use `0` to append, `1` to insert one before the last element, etc.
+     *
+     * @throws {ArgumentOutOfRangeError} When `index` is negative.
      */
-    reverse(): ITyneqEnumerable<TSource>;
+    backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource>;
+
+    /** Returns the distinct elements from both this sequence and `otherValues`, using `===` equality. */
+    union(otherValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
-     * Yields elements in a random order.
+     * Returns the elements from both sequences whose keys are distinct.
+     *
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     */
+    unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
+
+    // ========================================================================
+    // PLUGIN
+    // Advanced plugin API for custom operators.
+    // ========================================================================
+
+    /**
+     * Passes this sequence through a custom `factory` function and wraps the result.
      *
      * @remarks
-     * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+     * The returned sequence has `null` for `[tyneqQueryNode]`.
+     * Use this for one-off operator compositions that do not need to be registered.
+     *
+     * @throws {ArgumentNullError} When `factory` is null or undefined.
      */
-    shuffle(): ITyneqEnumerable<TSource>;
-
-    /**
-     * Inserts `other` at a position counted from the end. `index = 0` inserts at the very end.
-     */
-    backsert(index: number, other: Iterable<TSource>): ITyneqEnumerable<TSource>;
-
-    /**
-     * Returns distinct elements from both sequences (set union).
-     */
-    union(otherValues: Iterable<TSource>): ITyneqEnumerable<TSource>;
-
-    /**
-     * Returns elements with distinct keys from both sequences, using `keySelector` for comparison.
-     */
-    unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): ITyneqEnumerable<TSource>;
+    pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult>;
 
     // ========================================================================
-    // EXTENSION / PLUGIN
-    // Advanced extensibility for custom operators.
-    // ========================================================================
-
-    /**
-     * Applies a custom transformation via a user-supplied factory function.
-     */
-    pipe<TResult>(factory: (source: Iterable<TSource>) => IEnumerator<TResult> | IterableIterator<TResult>): ITyneqEnumerable<TResult>;
-
-    // ========================================================================
-    // EXTENSION OPERATORS
-    // Registered via the extensibility infrastructure (@operator, createOperator,
-    // createGeneratorOperator, @terminal, createTerminalOperator).
-    // Requires importing 'tyneq/extensions' (or the operators/extensions barrel)
+    // PLUGIN OPERATORS
+    // Registered via the plugin API (@operator, createOperator,
+    // createStreamingOperator, @terminal, createTerminalOperator).
+    // Requires importing 'tyneq/plugin' (or the plugin barrel)
     // to trigger side-effect registration before using these operators.
     // ========================================================================
 
     /**
-     * Emits a running accumulation of elements (streaming reduce / prefix scan).
+     * Returns a sequence of running aggregates.
      *
      * @remarks
-     * Deferred. Source is not enumerated until the returned sequence is iterated.
+     * The first element of the output is `accumulator(seed, source[0])`. Returns an empty sequence when the source is empty.
      *
-     * Unlike `aggregate()`, yields every intermediate accumulator value rather than only the
-     * final result. The seed is not yielded; the first emitted value is
-     * `accumulator(seed, element[0])`.
-     *
-     * @typeParam TResult - The type of the accumulated result.
-     * @param seed - Initial accumulator value.
-     * @param accumulator - Applied to `(currentAcc, item)` for each element.
-     * @returns A sequence of intermediate accumulated values.
-     *
-     * @example
-     * ```ts
-     * Tyneq.from([1, 2, 3, 4, 5])
-     *     .scan(0, (acc, n) => acc + n)
-     *     .toArray();
-     * // → [1, 3, 6, 10, 15]
-     * ```
+     * @throws {ArgumentNullError} When `accumulator` is null or undefined.
      */
-    scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): ITyneqEnumerable<TResult>;
+    scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): TyneqSequence<TResult>;
 
     /**
-     * Returns both the minimum and maximum elements in a single enumeration pass.
+     * Returns the minimum and maximum element in one pass.
      *
      * @remarks
-     * Immediate. Source is fully enumerated when this method is called.
+     * Uses the natural `<` / `>` operators when no comparer is provided.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
-     *
-     * @example
-     * ```ts
-     * const { min, max } = Tyneq.from([3, 1, 4, 1, 5, 9, 2, 6]).minMax();
-     * // → { min: 1, max: 9 }
-     * ```
      */
     minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource>;
 }
 
 /**
- * Represents an ordered sequence with additional ordering operators.
+ * A `TyneqSequence` with additional secondary sort keys applied.
  *
  * @remarks
- * Returned by `orderBy()` and `orderByDescending()`. Extends {@link ITyneqEnumerable} with
- * `thenBy()` and `thenByDescending()` for multi-level sorting. Each `thenBy` call adds a
- * secondary sort criterion without replacing the primary ordering. The sort is stable.
+ * Produced by `orderBy` / `orderByDescending`. Chain `thenBy` / `thenByDescending` to add secondary sort criteria.
  *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link ITyneqEnumerable} for the base enumerable interface.
- *
+ * @typeParam TSource - Element type.
  * @group Interfaces
  */
-export interface ITyneqOrderedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
     /**
-     * Adds a secondary sort in ascending order.
+     * Adds an ascending secondary sort key.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
 
     /**
-     * Adds a secondary sort in descending order.
+     * Adds a descending secondary sort key.
      *
-     * @param comparer - Custom comparison function; if omitted, uses default ordering.
+     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): ITyneqOrderedEnumerable<TSource>;
+    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
 }
 
 /**
- * A cached sequence that replays already-fetched elements without re-evaluating the source.
+ * A `TyneqSequence` that caches elements as they are iterated.
  *
  * @remarks
- * Obtained by calling `memoize()` on any {@link ITyneqEnumerable}. Elements are fetched from
- * the source on demand and stored in an internal cache. Subsequent enumerations replay cached
- * elements for the portion already evaluated.
+ * Produced by `memoize()`. Call `refresh()` to clear the cache and allow re-enumeration from the source.
  *
- * Call `refresh()` to discard the cache and restart evaluation from the source on the next
- * iteration.
- *
- * @typeParam TSource - Element type of the sequence.
- *
- * @see {@link ITyneqEnumerable.memoize} Factory method that returns this interface.
- *
+ * @typeParam TSource - Element type.
  * @group Interfaces
- * @internal
  */
-export interface ITyneqCachedEnumerable<TSource> extends ITyneqEnumerable<TSource> {
+export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
     /**
-     * Discards the internal cache and resets the sequence to re-evaluate from the source on
-     * the next iteration.
-     *
-     * @returns The same cached enumerable instance, now with an empty cache.
+     * Clears the element cache and returns a new `TyneqCachedSequence` that will re-enumerate from the source.
      */
-    refresh(): ITyneqCachedEnumerable<TSource>;
+    refresh(): TyneqCachedSequence<TSource>;
 }
 
 /**
- * Low-level contract for incremental cache access used by memoize enumerators.
+ * Low-level interface for a sequence that supports incremental cache access.
  *
- * @typeParam TSource - Element type of the sequence.
- *
+ * @typeParam TSource - Element type.
  * @group Interfaces
  * @internal
  */
-export interface ICachedEnumerable<TSource> extends IEnumerable<TSource> {
+export interface CachedEnumerable<TSource> extends Enumerable<TSource> {
     /**
-     * Returns the element at `index` from the cache if available, or fetches the next element
-     * from the source and caches it.
+     * Attempts to return the cached element at `index`.
      *
-     * @param index - Zero-based index of the element to retrieve.
-     * @returns `{ has: true, value }` if the element exists; `{ has: false }` if the source is
-     *   exhausted before reaching `index`.
+     * @returns `{ has: true, value }` if cached, `{ has: false }` otherwise.
      */
     tryGetAtFromCache(index: number): CacheResult<TSource>;
 }
 
-/**
- * Result of a single cache lookup via {@link ICachedEnumerable.tryGetAtFromCache}.
- *
- * @typeParam TSource - Element type of the sequence.
- *
- * @group Types
- * @internal
- */
+/** Result returned by the cache-lookup method on a memoized sequence. */
 export type CacheResult<TSource> = { has: true, value: TSource } | { has: false };
 
 /**
- * Internal contract for ordered enumerable implementations.
+ * Low-level interface for a sequence that can produce a sort comparator.
  *
  * @remarks
- * Maintains a reference to the source sequence, an optional parent ordering for chained
- * `thenBy` operations, and a method to construct the composite {@link BaseEnumerableSorter}.
+ * Implemented by `TyneqOrderedEnumerable`. Consumed by the ordering infrastructure.
  *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link ITyneqOrderedEnumerable} for the public ordered enumerable interface.
- * @see {@link BaseEnumerableSorter} for the sorter implementation.
- *
+ * @typeParam TSource - Element type.
  * @group Interfaces
  * @internal
  */
-export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource> {
-    source: ITyneqEnumerable<TSource>;
+export interface OrderedEnumerable<TSource> extends Enumerable<TSource> {
+    source: TyneqSequence<TSource>;
+
+    /** The parent ordering level, or `null` for the primary sort. */
+    parent: Nullable<OrderedEnumerable<TSource>>;
 
     /**
-     * The parent ordering in a multi-level sort chain, or `null` for the primary ordering.
-     */
-    parent: Nullable<IOrderedEnumerable<TSource>>;
-
-    /**
-     * Creates a sorter that applies this ordering and all parent orderings.
+     * Produces a sorter chain that combines this level with any chained levels.
      *
-     * @param next - The next sorter in the chain, or `null` if this is the last.
-     * @returns A composite sorter implementing the full sort behavior.
+     * @param next - The child sorter, or `null` if this is the innermost level.
      */
     getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource>;
 }
 
-/**
- * The result of a `minMax()` operation: both the minimum and maximum element.
- *
- * @typeParam T - Element type of the source sequence.
- *
- * @see {@link ITyneqEnumerable.minMax}
- *
- * @group Types
- */
+/** Result of `minMax()`, containing both the minimum and maximum elements. */
 export type MinMaxResult<T> = {
-    /** The smallest element according to the comparer. */
     readonly min: T;
-    /** The largest element according to the comparer. */
     readonly max: T;
 };
 
-/**
- * Represents a key-value pair.
- *
- * @remarks
- * Returned by selector functions passed to `toMap()` and `toRecord()`.
- *
- * @typeParam TKey - The type of the key.
- * @typeParam TValue - The type of the value.
- *
- * @see {@link ITyneqEnumerable.toMap}
- * @see {@link ITyneqEnumerable.toRecord}
- *
- * @group Types
- */
+/** A key-value pair used by `toMap()` and `toRecord()` selectors. */
 export type KeyValuePair<TKey, TValue> = {
     key: TKey;
     value: TValue;

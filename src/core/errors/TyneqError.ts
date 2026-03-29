@@ -1,31 +1,18 @@
+
 /**
- * Base error class for all Tyneq library errors.
- *
- * @remarks
- * Extends `Error` with optional inner-error chaining. The `name` property is set to the
- * derived class name via `new.target.name`, so `instanceof` checks work correctly for all
- * subclasses.
- *
- * Catch `TyneqError` to handle any Tyneq-specific exception.
+ * Base class for all errors thrown by Tyneq.
  *
  * @example
  * ```ts
- * try {
- *   Tyneq.from([]).first();
- * } catch (e) {
- *   if (e instanceof TyneqError) {
- *     console.log(`[${e.name}]: ${e.message}`);
- *     if (e.inner) console.log(`Caused by: ${e.inner.message}`);
- *   }
- * }
+ * try { Tyneq.from([]).first(); }
+ * catch (e) { if (e instanceof TyneqError) { console.log(e.message); } }
  * ```
  *
  * @group Errors
  */
 export class TyneqError extends Error {
-    /**
-     * The error that caused this one, if any.
-     */
+
+    /** The underlying error that caused this error, if any. */
     public inner: Error | undefined;
 
     public constructor(message: string, options?: { inner?: Error}) {

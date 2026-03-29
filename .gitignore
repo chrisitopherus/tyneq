@@ -144,5 +144,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Agents
-settings.local.json
-tasks/*
+.claude
+.github
+tasks

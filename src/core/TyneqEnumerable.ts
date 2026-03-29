@@ -1,52 +1,39 @@
-import { IEnumerator, IEnumeratorFactory, ITyneqCachedEnumerable, ITyneqEnumerable, ITyneqOrderedEnumerable } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { IQueryNode } from "../types/queryplan";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
-import { TyneqCachedEnumerable } from "./cache/TyneqCachedEnumerable";
+import { TyneqCachedEnumerable } from "./TyneqCachedEnumerable";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 
 /**
- * Standard concrete implementation of a queryable enumerable sequence.
+ * The standard concrete implementation of {@link TyneqSequence}.
  *
  * @remarks
- * Wraps an {@link IEnumeratorFactory} that produces a fresh iterator on each enumeration,
- * enabling lazy evaluation and re-iteration. Returned by most Tyneq factory methods and
- * query operators.
+ * Created by operator methods in {@link TyneqEnumerableBase} and by the `Tyneq` factory.
+ * Delegates element production to the `EnumeratorFactory` passed at construction.
  *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqEnumerableBase} for inherited query operators.
- * @see {@link TyneqOrderedEnumerable} for ordered sequence support.
- * @see {@link Tyneq} for factory methods that create instances.
- *
- * @group Classes
  * @internal
  */
 export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
-    protected readonly enumeratorFactory: IEnumeratorFactory<TSource>;
+    protected readonly enumeratorFactory: EnumeratorFactory<TSource>;
 
     public readonly [tyneqQueryNode]: IQueryNode | null;
 
-    /**
-     * @param enumeratorFactory - Factory that produces a fresh iterator on each enumeration.
-     * @param node - Optional query plan node for this sequence.
-     * @throws {ArgumentNullError} If `enumeratorFactory` is null.
-     * @throws {ArgumentError} If `enumeratorFactory` is undefined.
-     */
-    public constructor(enumeratorFactory: IEnumeratorFactory<TSource>, node?: IQueryNode | null) {
+    
+    public constructor(enumeratorFactory: EnumeratorFactory<TSource>, node?: IQueryNode | null) {
         super();
         ArgumentUtility.checkNotOptional({ enumeratorFactory });
         this.enumeratorFactory = enumeratorFactory;
         this[tyneqQueryNode] = node ?? null;
     }
 
-    public override getEnumerator(): IEnumerator<TSource> {
+    public override getEnumerator(): Enumerator<TSource> {
         return this.enumeratorFactory.getEnumerator();
     }
 
-    protected override createEnumerable<TResult>(factory: IEnumeratorFactory<TResult>, node?: IQueryNode | null): ITyneqEnumerable<TResult> {
+    protected override createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: IQueryNode | null): TyneqSequence<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
     }
 
@@ -55,7 +42,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
         comparer: (a: TKey, b: TKey) => number,
         descending: boolean,
         node?: IQueryNode | null
-    ): ITyneqOrderedEnumerable<TSource> {
+    ): TyneqOrderedSequence<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(
             this,
             keySelector,
@@ -66,7 +53,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
         );
     }
 
-    protected createCachedEnumerable(source: ITyneqEnumerable<TSource>, node?: IQueryNode | null): ITyneqCachedEnumerable<TSource> {
+    protected createCachedEnumerable(source: TyneqSequence<TSource>, node?: IQueryNode | null): TyneqCachedSequence<TSource> {
         return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

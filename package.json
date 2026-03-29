@@ -18,9 +18,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsc --noEmit && eslint src tests && tsup",
     "dev": "tsup --watch",
-    "debug": "node --inspect-brk --enable-source-maps ./node_modules/tsx/dist/cli.mjs src/dev.ts",
+    "debug": "node --inspect-brk --enable-source-maps ./node_modules/tsx/dist/cli.mjs examples/dev.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

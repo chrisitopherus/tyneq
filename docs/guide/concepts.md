@@ -1,98 +1,114 @@
-# Core Concepts
+# Concepts
 
-This page defines the semantic model used throughout Tyneq documentation.
+## Type Hierarchy
 
-## Sequence
+Three types form the core contract:
 
-A sequence is any value that implements `IEnumerable<T>` — the base re-iterable contract in Tyneq. Each call to `Symbol.iterator` (or `getEnumerator()`) creates a fresh, independent iterator. No mutable state is shared across enumerations.
+| Type | What it is |
+|---|---|
+| `TyneqSequence<T>` | The fluent API — what you work with. Returned by every operator. |
+| `Enumerable<T>` | Re-iterable contract. Each call to `getEnumerator()` produces a fresh cursor. |
+| `Enumerator<T>` | Single-pass cursor — one active enumeration in progress. |
 
-Key properties:
+`TyneqSequence<T>` extends `Enumerable<T>`. Regular users only interact with `TyneqSequence`. `Enumerable<T>` and `Enumerator<T>` appear in custom operator signatures.
 
-- Sequences are re-iterable: the same sequence object can be enumerated any number of times.
-- Each enumeration starts from the beginning of the pipeline.
-- Re-enumeration is safe as long as callbacks are pure and the underlying source supports repeated iteration.
+See [Terminology](/guide/terminology) for full definitions of all types and terms.
 
-## Source and Pipeline
+## Sequences
 
-Every query has three parts:
+A Tyneq sequence is a re-iterable `Enumerable<T>`. Each call to `Symbol.iterator` or `getEnumerator()` creates a fresh, independent enumerator. No mutable state is shared across enumerations.
 
-1. A **source** — the input sequence passed to `Tyneq.from`, `Tyneq.range`, `Tyneq.empty`, or any other factory.
-2. An **operator chain** — a series of transformations composed in method-call order.
-3. An optional **terminal operation** — a final call that evaluates the pipeline and returns a concrete result.
+```ts
+const seq = Tyneq.range(1, 3).select(x => x * 10);
 
-Operators are composed as a pipeline, not executed as standalone steps. Calling `.where(pred).select(fn)` produces a new sequence description; no iteration happens yet.
+seq.toArray(); // [10, 20, 30]
+seq.toArray(); // [10, 20, 30]  ← independent traversal, same result
+```
 
 ## Operator Categories
 
-Tyneq operators are grouped by execution behavior.
+| Category | Memory | Execution | Examples |
+|---|---|---|---|
+| **Streaming** | O(1) | One element at a time, lazily | `where`, `select`, `take`, `scan` |
+| **Buffering** | O(n) | Full source read before any output | `orderBy`, `groupBy`, `distinct` |
+| **Terminal** | — | Immediately executes the pipeline | `toArray`, `count`, `first`, `sum` |
 
-| Category | Space | Execution |
-|---|---|---|
-| **Streaming** | O(1) additional | Deferred — elements flow one at a time |
-| **Buffering** | O(n) additional | Deferred — full or partial source materialized before yielding |
-| **Terminal** | — | Immediate — evaluates and returns a value |
+Every method on a sequence is one of these three. Knowing which category an operator belongs to tells you its memory footprint and when work happens.
 
-See [Operators Overview](/guide/operators-overview) for category details and the full operator list.
+## Deferred Execution
 
-## Deferred and Immediate Execution
+Composing operators does not touch the source. Execution begins when a terminal is called.
 
-**Deferred execution** means the source is not iterated until the returned sequence is iterated. Building a chain of streaming operators does not touch the source data at all.
+```ts
+const query = Tyneq.range(1, 1_000_000)
+  .where(n => n % 2 === 0)
+  .select(n => n * n)
+  .take(5);
 
-**Immediate execution** means the source is fully iterated at the point of the method call. All terminal operators are immediate.
+// Nothing has run yet.
 
-Practical implications:
+query.toArray(); // [4, 16, 36, 64, 100] — pipeline executes once, top-to-bottom
+```
 
-- Calling `.where(pred)` is instantaneous regardless of source size.
-- Calling `.toArray()` iterates the pipeline from root to leaf, processing each element through every operator in turn.
-- Side effects in predicates or selectors execute during iteration, not during operator composition.
+A `where().select().take(1)` on a million-element source processes only enough elements to find the first match.
 
-See [Querying and Deferred Execution](/guide/querying-and-deferred-execution) for deeper examples.
+## Buffering Operators
 
-## Execution Model Guarantees
+Buffering operators must read the full source before yielding any output.
 
-- **Streaming** operators are guaranteed O(1) additional memory and begin yielding before the source is exhausted.
-- **Buffering** operators may hold up to O(n) elements in memory before yielding any output. The source is read fully (or substantially) before the first result appears.
-- **Terminal** operators are immediate: calling them is the materialization boundary.
+```ts
+const sorted = Tyneq.range(1, 100)
+  .where(n => n % 3 === 0)  // streaming — O(1)
+  .orderBy(n => -n)          // buffering — reads and sorts all matching elements
+  .take(5)                   // streaming again
+  .toArray();
+```
 
-## Ordering and Stability
+`orderBy` marks the point where full materialization happens. Operators downstream of it receive a sorted sequence.
 
-- `orderBy` and `orderByDescending` perform a **stable** sort. Elements with equal keys remain in their original relative order.
-- `thenBy` and `thenByDescending` append tie-breaking rules to an existing ordering without re-sorting.
-- Subsequent operators observe the order produced by upstream stages exactly as emitted.
+## Stable Sort
 
-## Re-Enumeration
+`orderBy` and `orderByDescending` are stable. Elements with equal keys keep their original relative order. Chain `thenBy`/`thenByDescending` for tie-breaking:
 
-Enumerating a deferred query multiple times replays the full pipeline from the source on each pass. This is correct and expected behavior.
+```ts
+Tyneq.from(records)
+  .orderBy(r => r.team)
+  .thenByDescending(r => r.score)
+  .toArray();
+```
 
-Use `memoize()` when you need repeatable results from an expensive pipeline across multiple terminal calls without re-executing the full chain.
+## Memoization
 
-Call `refresh()` on the memoized sequence to invalidate the cache and force re-evaluation on the next enumeration.
+`memoize()` caches results after the first enumeration. Subsequent calls return the cached result without re-executing the pipeline.
+
+```ts
+const source = Tyneq.range(1, 5)
+  .tap(n => console.log("computing", n))
+  .shuffle()
+  .memoize();
+
+source.toArray(); // logs 5 times, caches
+source.toArray(); // no logs — returns cache
+
+source.refresh(); // invalidate
+source.toArray(); // logs again
+```
+
+Use `memoize()` only when re-execution is measurable and avoidable. Keep transformation callbacks pure otherwise — re-enumeration is expected behavior.
 
 ## Query Plan
 
-Every sequence produced by a Tyneq operator carries a **query plan node** (`IQueryNode`) that describes the operator and its arguments. Nodes are linked into a chain from the most recent operator back to the root source.
-
-Access the plan via the `tyneqQueryNode` symbol:
+Every sequence produced by a Tyneq operator carries an immutable `IQueryNode` chain describing the operators applied to it.
 
 ```ts
-import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from 'tyneq';
+import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from "tyneq";
 
-const seq = Tyneq.from([1, 2, 3])
-    .where(x => x > 1)
-    .select(x => x * 2);
+const seq = Tyneq.from([1, 2, 3]).where(x => x > 1).select(x => x * 2);
 
-const plan = QueryPlanPrinter.print(seq[tyneqQueryNode]!);
-console.log(plan);
+console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 // from([1, 2, 3])
 //   → where(<fn>)
 //   → select(<fn>)
 ```
 
-The query plan is metadata only — it does not participate in iteration. See [Extensibility and Query Plans](/guide/extensibility) for traversal and visitor patterns.
-
-## Practical Rule Set
-
-1. Keep transformation callbacks pure when possible — re-enumeration will re-execute them.
-2. Place buffering operators intentionally — they materialize memory at the point they appear in the chain.
-3. Treat terminal methods as clear execution boundaries.
-4. Reach for `memoize()` only when the cost of re-enumeration is measurable and repeated.
+See [Query Plan Inspection](/guide/query-plan) for traversal and visitor patterns.
