@@ -1,7 +1,7 @@
 import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
-import type { IQueryNode } from "../types/queryplan";
+import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { getOperatorMetadata, IOperatorMetadataCarrier } from "../queryplan/operatorMetadata";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";

@@ -1,7 +1,7 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
 import { Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
-import type { IQueryNode } from "./queryplan";
+import type { QueryPlanNode } from "./queryplan";
 
 /**
  * A pull-based iterator over a sequence.
@@ -92,7 +92,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Use {@link QueryPlanPrinter} to render this as a string.
      * Sequences created via `pipe()` always have `null` here.
      */
-    readonly [tyneqQueryNode]: Nullable<IQueryNode>;
+    readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
     // ========================================================================
     // TERMINAL OPERATORS

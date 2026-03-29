@@ -50,7 +50,7 @@ describe("OperatorRegistry.register", () => {
 
     OperatorRegistry.register({ metadata: new OperatorMetadata(name, "terminal"), impl: noopImpl });
 
-    expect(OperatorRegistry.get(name)?.source).toBe("external");
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("external");
   });
 
   it("preserves explicitly provided source", () => {
@@ -59,7 +59,7 @@ describe("OperatorRegistry.register", () => {
 
     OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "internal"), impl: noopImpl });
 
-    expect(OperatorRegistry.get(name)?.source).toBe("internal");
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("internal");
   });
 
   it("throws when registering a duplicate name", () => {
@@ -259,7 +259,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("get() returns undefined for an unregistered name", () => {
-    expect(OperatorRegistry.get("__does_not_exist__")).toBeUndefined();
+    expect(OperatorRegistry.getMetadata("__does_not_exist__")).toBeUndefined();
   });
 
   it("list() includes all registered operator metadata", () => {
@@ -330,7 +330,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("'reverse' is registered with kind:'buffer'", () => {
-    const meta = OperatorRegistry.get("reverse");
+    const meta = OperatorRegistry.getMetadata("reverse");
     expect(meta?.kind).toBe("buffer");
     expect(meta?.source).toBe("internal");
   });
@@ -348,7 +348,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("get() returns the correct metadata for a known operator", () => {
-    const meta = OperatorRegistry.get("where");
+    const meta = OperatorRegistry.getMetadata("where");
     expect(meta?.name).toBe("where");
     expect(meta?.kind).toBe("streaming");
     expect(meta?.source).toBe("internal");

@@ -1,7 +1,7 @@
 import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
-import type { IQueryNode } from "../types/queryplan";
+import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 
 /**
@@ -15,7 +15,7 @@ import { QueryNode } from "../queryplan/QueryNode";
  */
 export abstract class TyneqEnumerableCore<TSource> {
 
-    public abstract readonly [tyneqQueryNode]: IQueryNode | null;
+    public abstract readonly [tyneqQueryNode]: QueryPlanNode | null;
 
     public [Symbol.iterator](): Enumerator<TSource> {
         return this.getEnumerator();
@@ -72,14 +72,14 @@ export abstract class TyneqEnumerableCore<TSource> {
         } satisfies EnumeratorFactory<TResult>);
     }
 
-    protected abstract createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: IQueryNode | null): TyneqSequence<TResult>;
+    protected abstract createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult>;
 
     protected abstract createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
         comparer: (a: TKey, b: TKey) => number,
         descending: boolean,
-        node?: IQueryNode | null
+        node?: QueryPlanNode | null
     ): TyneqOrderedSequence<TSource>;
 
-    protected abstract createCachedEnumerable(source: TyneqSequence<TSource>, node?: IQueryNode | null): TyneqCachedSequence<TSource>;
+    protected abstract createCachedEnumerable(source: TyneqSequence<TSource>, node?: QueryPlanNode | null): TyneqCachedSequence<TSource>;
 }

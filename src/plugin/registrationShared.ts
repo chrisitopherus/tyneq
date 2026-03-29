@@ -1,5 +1,5 @@
 import { tyneqQueryNode } from "../types/queryplan";
-import type { IQueryNode } from "../types/queryplan";
+import type { QueryPlanNode } from "../types/queryplan";
 
 /**
  * Structural interface used by registration machinery to call the protected
@@ -12,6 +12,6 @@ import type { IQueryNode } from "../types/queryplan";
  * @internal
  */
 export interface IWithCreateEnumerable {
-    createEnumerable(factory: { getEnumerator(): unknown }, node?: IQueryNode | null): unknown;
-    readonly [tyneqQueryNode]: IQueryNode | null;
+    createEnumerable(factory: { getEnumerator(): unknown }, node?: QueryPlanNode | null): unknown;
+    readonly [tyneqQueryNode]: QueryPlanNode | null;
 }

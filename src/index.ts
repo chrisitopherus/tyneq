@@ -15,7 +15,7 @@ export * from "./core/errors/argument/ArgumentTypeError";
 export * from "./core/errors/argument/ValidationError";
 export * from "./utility/ValidationBuilder";
 // queryplan
-export type { OperatorCategory, SourceKind, IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
+export type { OperatorCategory, SourceKind, QueryPlanNode as IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
 export { tyneqQueryNode } from "./types/queryplan";
 export { QueryNode } from "./queryplan/QueryNode";
 export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";

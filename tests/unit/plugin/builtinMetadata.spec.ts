@@ -54,7 +54,7 @@ describe("internal builtin metadata decorators", () => {
     expect(metadata.name).toBe(name);
     expect(metadata.category).toBe("streaming");
 
-    const registryMeta = OperatorRegistry.get(name);
+    const registryMeta = OperatorRegistry.getMetadata(name);
     expect(registryMeta?.name).toBe(name);
     expect(registryMeta?.kind).toBe("streaming");
     expect(registryMeta?.source).toBe("internal");
@@ -76,7 +76,7 @@ describe("internal builtin metadata decorators", () => {
     expect(metadata.name).toBe(name);
     expect(metadata.category).toBe("terminal");
 
-    const registryMeta = OperatorRegistry.get(name);
+    const registryMeta = OperatorRegistry.getMetadata(name);
     expect(registryMeta?.name).toBe(name);
     expect(registryMeta?.kind).toBe("terminal");
     expect(registryMeta?.source).toBe("internal");

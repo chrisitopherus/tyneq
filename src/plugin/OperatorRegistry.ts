@@ -12,7 +12,7 @@ export class OperatorMetadata {
         public readonly kind: "streaming" | "buffer" | "terminal",
         public readonly source: "internal" | "external" = "external",
         public readonly extensions: Readonly<Record<string, unknown>> = {}
-    ) {}
+    ) { }
 
     /** Creates metadata for a streaming operator registered from an external plugin. */
     public static streaming(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
@@ -147,8 +147,13 @@ export class OperatorRegistry {
         return this._entries.has(name);
     }
 
+    /** Returns the full operator entry for `name`, or `undefined` if not registered. */
+    public static get(name: string): OperatorEntry | undefined {
+        return this._entries.get(name);
+    }
+
     /** Returns the metadata for `name`, or `undefined` if not registered. */
-    public static get(name: string): OperatorMetadata | undefined {
+    public static getMetadata(name: string): OperatorMetadata | undefined {
         return this._entries.get(name)?.metadata;
     }
 

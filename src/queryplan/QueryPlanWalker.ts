@@ -1,4 +1,4 @@
-import type { IQueryNode, QueryPlanVisitor } from "../types/queryplan";
+import type { QueryPlanNode, QueryPlanVisitor } from "../types/queryplan";
 
 /**
  * Abstract base class for side-effect query plan visitors.
@@ -28,7 +28,7 @@ export abstract class QueryPlanWalker implements QueryPlanVisitor<void> {
      * Walks the full chain rooted at `node`, source-to-terminal, calling
      * {@link QueryPlanWalker.visitNode} for each node.
      */
-    public visit(node: IQueryNode): void {
+    public visit(node: QueryPlanNode): void {
         if (node.source !== null) {
             this.visit(node.source);
         }
@@ -41,5 +41,5 @@ export abstract class QueryPlanWalker implements QueryPlanVisitor<void> {
      *
      * @param node - The current node being visited.
      */
-    protected abstract visitNode(node: IQueryNode): void;
+    protected abstract visitNode(node: QueryPlanNode): void;
 }

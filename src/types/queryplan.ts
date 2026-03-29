@@ -1,11 +1,12 @@
+import { Nullable } from "./utility";
 
 /**
- * Symbol key used to access the {@link IQueryNode} on a `TyneqSequence`.
+ * Symbol key used to access the {@link QueryPlanNode} on a `TyneqSequence`.
  *
  * @example
  * ```ts
  * import { tyneqQueryNode } from "tyneq";
- * const node = seq[tyneqQueryNode]; // IQueryNode | null
+ * const node = seq[tyneqQueryNode]; // QueryPlanNode | null
  * ```
  *
  * @group QueryPlan
@@ -13,7 +14,10 @@
 export const tyneqQueryNode: unique symbol = Symbol("tyneq.queryNode");
 
 /**
- * Category of an operator node in the query plan tree.
+ * Categories of operators.
+ *
+ * @remarks
+ * String literal types used to classify operator behaviour.
  *
  * @group QueryPlan
  */
@@ -21,10 +25,6 @@ export type OperatorCategory = "source" | "streaming" | "buffer" | "terminal";
 
 /**
  * The JavaScript collection type that backs a source node.
- *
- * @remarks
- * Only populated on nodes whose {@link IQueryNode.category} is `"source"`.
- * `undefined` on all other nodes.
  *
  * @group QueryPlan
  */
@@ -38,7 +38,7 @@ export type SourceKind = "array" | "set" | "map" | "string" | "other";
  *
  * @group QueryPlan
  */
-export interface IQueryNode {
+export interface QueryPlanNode {
     /** The operator name as registered with the registry. */
     readonly operatorName: string;
 
@@ -46,15 +46,18 @@ export interface IQueryNode {
     readonly args: readonly unknown[];
 
     /** The upstream node, or `null` for source nodes. */
-    readonly source: IQueryNode | null;
+    readonly source: Nullable<QueryPlanNode>;
 
+    /**
+     * Operator category describing behaviour (`"source" | "streaming" | "buffer" | "terminal").
+     */
     readonly category: OperatorCategory;
 
     /**
      * The backing JavaScript collection type for source nodes.
      *
      * @remarks
-     * Only set when `category === "source"`. `undefined` on all operator nodes.
+     * Present only for source nodes (when `category === 'source'`); omitted on other nodes.
      */
     readonly sourceKind?: SourceKind;
 
@@ -74,7 +77,7 @@ export interface IQueryNode {
  */
 export interface QueryPlanVisitor<T> {
     /** Called for each node during traversal. */
-    visit(node: IQueryNode): T;
+    visit(node: QueryPlanNode): T;
 }
 
 /**

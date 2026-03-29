@@ -1,4 +1,4 @@
-import type { IQueryNode } from "../types/queryplan";
+import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "./QueryNode";
 import { QueryPlanTransformer } from "./QueryPlanTransformer";
 
@@ -50,7 +50,7 @@ import { QueryPlanTransformer } from "./QueryPlanTransformer";
  */
 export class QueryPlanOptimizer extends QueryPlanTransformer {
 
-    protected override transformNode(node: IQueryNode, source: IQueryNode | null): IQueryNode {
+    protected override transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
         if (node.operatorName === "where" && source?.operatorName === "where") {
             return this.fuseWhere(node, source);
         }
@@ -62,14 +62,14 @@ export class QueryPlanOptimizer extends QueryPlanTransformer {
         return super.transformNode(node, source);
     }
 
-    private fuseWhere(node: IQueryNode, source: IQueryNode): IQueryNode {
+    private fuseWhere(node: QueryPlanNode, source: QueryPlanNode): QueryPlanNode {
         const predA = source.args[0] as (x: unknown) => boolean;
         const predB = node.args[0] as (x: unknown) => boolean;
         const fused = (x: unknown): boolean => predA(x) && predB(x);
         return new QueryNode("where", [fused], source.source, "streaming");
     }
 
-    private fuseSelect(node: IQueryNode, source: IQueryNode): IQueryNode {
+    private fuseSelect(node: QueryPlanNode, source: QueryPlanNode): QueryPlanNode {
         const projA = source.args[0] as (x: unknown) => unknown;
         const projB = node.args[0] as (x: unknown) => unknown;
         const fused = (x: unknown): unknown => projB(projA(x));
