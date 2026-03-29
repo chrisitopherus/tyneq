@@ -1,7 +1,7 @@
 import { ArgumentError } from "./ArgumentError";
 
 /**
- * Thrown when a required argument is `null` or `undefined`.
+ * Thrown when a required argument is `null`.
  *
  * @example
  * ```ts

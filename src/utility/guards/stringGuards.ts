@@ -10,7 +10,6 @@ import { NullGuards } from "./nullGuards";
 export class StringGuards {
     private constructor() { }
 
-    
     public static checkNotNullOrWhiteSpace(value: Optional<string>, paramName: string): asserts value is string {
         NullGuards.checkNotOptional(value, paramName);
         if (value.trim().length === 0) {

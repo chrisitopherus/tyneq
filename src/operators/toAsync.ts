@@ -6,7 +6,7 @@ import { TyneqSequence } from "../types/core";
  * Wraps the source sequence as an async iterable.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Deferred. The source is enumerated lazily as the returned async iterable is iterated.
  *
  * @see {@link TyneqSequence.toAsync}
  * @group Operators

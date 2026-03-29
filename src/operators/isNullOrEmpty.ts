@@ -7,7 +7,7 @@ import { EnumeratorUtility } from "../utility/EnumeratorUtility";
  * Returns true if the sequence is null or contains no elements.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Reads at most one element from the source (O(1) enumeration) and then disposes the iterator.
  *
  * @see {@link TyneqSequence.isNullOrEmpty}
  * @group Operators
