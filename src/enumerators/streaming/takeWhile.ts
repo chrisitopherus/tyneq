@@ -1,28 +1,24 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields elements while a predicate is true, then stops.
+ * Yields elements from the beginning of the source sequence as long as a predicate is true.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Evaluates the predicate for each element. The first element that returns `false` causes early
- * completion; that element and all subsequent elements are not yielded.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.takeWhile}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "takeWhile", kind: "streaming" })
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (value: T) => boolean;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param predicate - Elements are yielded while this returns `true`.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, predicate: (value: T) => boolean) {
         super(sourceEnumerator);
         this.predicate = predicate;

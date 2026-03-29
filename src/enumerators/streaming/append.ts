@@ -1,16 +1,16 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that appends a single element to the end of a sequence.
+ * Appends a single element to the end of the source sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Yields all source elements first, then the appended item.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.append}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "append", kind: "streaming" })
@@ -19,10 +19,7 @@ export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     private appended = false;
     private readonly item: T;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param item - The element to append after all source elements.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, item: T) {
         super(sourceEnumerator);
         this.item = item;

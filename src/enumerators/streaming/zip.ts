@@ -1,20 +1,18 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**
- * Enumerator that combines two sequences pairwise using a selector function.
+ * Merges two sequences element-by-element using a selector.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Pulls one element from each sequence per iteration and applies the selector to produce an output element.
- * Terminates as soon as either sequence is exhausted (shortest-sequence semantics).
- * Properly disposes the secondary enumerator on completion or early termination.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.zip}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "zip", kind: "streaming" })
@@ -22,11 +20,7 @@ export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     private readonly otherEnumerator: Enumerator<U>;
     private readonly selector: (first: T, second: U) => V;
 
-    /**
-     * @param sourceEnumerator - The first sequence to zip.
-     * @param other - The second sequence to zip with the source.
-     * @param selector - Combines one element from each sequence into the output element.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, other: Iterable<U>, selector: (first: T, second: U) => V) {
         super(sourceEnumerator);
         this.otherEnumerator = other[Symbol.iterator]();

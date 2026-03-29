@@ -169,6 +169,7 @@ describe("createTerminalOperator", () => {
       execute(source) {
         let sum = 0;
         for (const item of source) sum += item;
+
         return sum;
       }
     });
@@ -184,6 +185,7 @@ describe("createTerminalOperator", () => {
       execute(source, factor) {
         let sum = 0;
         for (const item of source) sum += item;
+
         return sum * factor;
       }
     });
@@ -198,6 +200,7 @@ describe("createTerminalOperator", () => {
       name,
       execute(source, _factor) {
         for (const _ of source) { /* consume */ }
+
         return null;
       },
       validate(factor) {

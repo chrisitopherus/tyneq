@@ -1,23 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that emits a running accumulation of elements.
+ * Applies an accumulator function and yields the running result after each element.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * For each source element, applies the accumulator to the running total and yields the updated
- * value. The seed is not yielded; only accumulated results are.
- *
- * ```text
- * source:  [ 1,  2,  3,  4,  5 ]   seed = 0, acc = (a, b) => a + b
- * yields:  [ 1,  3,  6, 10, 15 ]
- * ```
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.scan}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "scan", kind: "streaming" })
@@ -25,11 +19,7 @@ export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, T
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
     private current: TResult;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to consume.
-     * @param seed - Initial accumulator value (not yielded).
-     * @param accumulator - Combines the running total with each source element.
-     */
+    
     public constructor(
         sourceEnumerator: Enumerator<TSource>,
         seed: TResult,

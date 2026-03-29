@@ -1,14 +1,15 @@
 import type { OperatorCategory } from "../types/queryplan";
 
 /**
- * Hidden symbol carrying operator metadata used for query-node construction.
+ * Well-known symbol used to attach operator metadata to class constructors.
+ * Read at query-plan inspection time.
  *
  * @internal
  */
 export const tyneqOperatorMetadata: unique symbol = Symbol("tyneq.operatorMetadata");
 
 /**
- * Metadata attached to internal operator classes.
+ * Metadata attached to a built-in operator constructor via `tyneqOperatorMetadata`.
  *
  * @internal
  */
@@ -17,20 +18,12 @@ export interface IOperatorMetadata {
     readonly category: Exclude<OperatorCategory, "source">;
 }
 
-/**
- * Class-like value that carries internal operator metadata.
- *
- * @internal
- */
+/** Structural interface for classes that carry `tyneqOperatorMetadata`. @internal */
 export interface IOperatorMetadataCarrier {
     readonly [tyneqOperatorMetadata]: IOperatorMetadata;
 }
 
-/**
- * Returns hidden operator metadata from a class carrying Tyneq operator metadata.
- *
- * @internal
- */
+/** Reads the operator metadata from a carrier. @internal */
 export function getOperatorMetadata(target: IOperatorMetadataCarrier): IOperatorMetadata {
     return target[tyneqOperatorMetadata];
 }

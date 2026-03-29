@@ -1,29 +1,24 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that splits a sequence into sub-arrays at delimiter elements.
+ * Splits the source sequence into sub-arrays at each element matching a predicate.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Elements for which the predicate returns `true` are treated as delimiters and are excluded from output.
- * Consecutive delimiters do not produce empty arrays. A trailing delimiter produces no extra empty array.
- * The final partial group is yielded when the source is exhausted.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.split}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "split", kind: "streaming" })
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
     private readonly splitOn: (item: TSource) => boolean;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param splitOn - Identifies delimiter elements; matching elements are consumed but not yielded.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, splitOn: (item: TSource) => boolean) {
         super(sourceEnumerator);
         this.splitOn = splitOn;

@@ -1,27 +1,24 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that projects each element through a selector function.
+ * Projects each element through a selector.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Applies the selector to each source element in order, yielding the transformed value.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.select}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "select", kind: "streaming" })
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param selector - Transforms each source element into the output type.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, selector: (item: T) => U) {
         super(sourceEnumerator);
         this.selector = selector;

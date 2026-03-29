@@ -1,32 +1,22 @@
 import { ArgumentError } from "./ArgumentError";
 
 /**
- * Thrown when an argument has an incorrect runtime type.
- *
- * @remarks
- * Used for dynamic type validation that TypeScript's static type system cannot enforce.
- * The optional `expectedType` and `actualType` properties provide debugging context.
+ * Thrown when an argument has the wrong type.
  *
  * @example
  * ```ts
- * if (typeof callback !== 'function') {
- *   throw new ArgumentTypeError('callback', 'function', typeof callback);
- * }
+ * try { Tyneq.from([1, 2]).where("not a function" as any); }
+ * catch (e) { if (e instanceof ArgumentTypeError) { console.log(e.expectedType, e.actualType); } }
  * ```
  *
- * @see {@link ArgumentError} for general argument validation errors.
- *
+ * @see {@link ArgumentError}
  * @group Errors
  */
 export class ArgumentTypeError extends ArgumentError {
-    /**
-     * The expected type, e.g. `'function'` or `'Date'`.
-     */
+    /** The expected type name. */
     public readonly expectedType?: string;
 
-    /**
-     * The actual type received, e.g. `'string'` or `'number'`.
-     */
+    /** The actual type name received. */
     public readonly actualType?: string;
 
     public constructor(

@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
@@ -6,16 +6,12 @@ import { TyneqSequence } from "../types/core";
 import { Nullable } from "../types/utility";
 
 /**
- * Terminal operator that returns the maximum element in a sequence.
+ * Returns the maximum element in the sequence using a comparer.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Compares elements using `comparer`, defaulting to the natural order comparer. Throws if the
- * sequence is empty.
- *
- * @see {@link TyneqSequence.max} for the public API.
- *
+ * @see {@link TyneqSequence.max}
  * @group Operators
  * @category Terminal
  * @internal
@@ -24,10 +20,7 @@ import { Nullable } from "../types/utility";
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 
-    /**
-     * @param source - The source sequence.
-     * @param comparer - The comparer used to order elements; defaults to the natural order comparer.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, comparer?: (a: TSource, b: TSource) => number) {
         super(source);
 

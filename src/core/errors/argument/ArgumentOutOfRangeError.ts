@@ -1,30 +1,19 @@
 import { ArgumentError } from "./ArgumentError";
 
 /**
- * Thrown when an argument value is outside the acceptable range or constraints.
- *
- * @remarks
- * The `actualValue` property captures the rejected value for debugging.
+ * Thrown when an argument is outside the valid range.
  *
  * @example
  * ```ts
- * try {
- *   Tyneq.range(0, -5);
- * } catch (e) {
- *   if (e instanceof ArgumentOutOfRangeError) {
- *     console.log(`'${e.paramName}' was ${e.actualValue}`);
- *   }
- * }
+ * try { Tyneq.from([1, 2]).take(-1); }
+ * catch (e) { if (e instanceof ArgumentOutOfRangeError) { console.log(e.actualValue); } }
  * ```
  *
- * @see {@link ArgumentError} for general argument validation errors.
- *
+ * @see {@link ArgumentError}
  * @group Errors
  */
 export class ArgumentOutOfRangeError extends ArgumentError {
-    /**
-     * The out-of-range value that was passed, if captured.
-     */
+    /** The actual value that was out of range. */
     public readonly actualValue?: unknown;
 
     public constructor(paramName: string, message?: string, actualValue?: unknown, inner?: Error) {

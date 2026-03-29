@@ -1,17 +1,14 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
 /**
- * Terminal operator that iterates through all elements of a sequence without collecting them.
+ * Iterates the source sequence and discards all elements.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Useful for triggering side effects (e.g., via `tap`) without materializing the results.
- *
- * @see {@link TyneqSequence.consume} for the public API.
- *
+ * @see {@link TyneqSequence.consume}
  * @group Operators
  * @category Terminal
  * @internal

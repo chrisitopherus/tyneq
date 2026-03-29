@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TyneqEnumerableBase } from "../../../src/core/TyneqEnumerableBase";
-import { OperatorRegistry } from "../../../src/extensions/OperatorRegistry";
-import { builtinOperator } from "../../../src/extensions/builtinOperator";
-import { builtinTerminal } from "../../../src/extensions/builtinTerminal";
+import { OperatorRegistry } from "../../../src/plugin/OperatorRegistry";
+import { builtinOperator } from "../../../src/plugin/builtinOperator";
+import { builtinTerminal } from "../../../src/plugin/builtinTerminal";
 import {
   getOperatorMetadata,
   IOperatorMetadataCarrier,

@@ -4,16 +4,14 @@ import { BaseEnumerableSorter } from "../../core/ordering/BaseEnumerableSorter";
 import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 
 /**
- * Enumerator that yields elements in sorted order.
+ * Yields the elements of an ordered sequence in sorted order.
  *
  * @remarks
- * Deferred. Source is fully buffered on first iteration.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Consumes the entire source on first iteration to build a sorted index map using a chain of
- * sorters from the ordered enumerable. Supports multi-level sorting via chained sorters
- * produced by `thenBy` operations.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.orderBy}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 export class OrderByEnumerator<TSource, TKey> extends TyneqBaseEnumerator<TSource> {
@@ -22,9 +20,7 @@ export class OrderByEnumerator<TSource, TKey> extends TyneqBaseEnumerator<TSourc
     private currentIndex = 0;
     private readonly orderedEnumerable: OrderedEnumerable<TSource>;
 
-    /**
-     * @param orderedEnumerable - The ordered enumerable carrying the sorting configuration.
-     */
+    
     public constructor(orderedEnumerable: OrderedEnumerable<TSource>) {
         super();
         this.orderedEnumerable = orderedEnumerable;

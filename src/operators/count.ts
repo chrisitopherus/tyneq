@@ -1,28 +1,22 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
 /**
- * Terminal operator that returns the number of elements in a sequence.
+ * Returns the total number of elements in the sequence.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Optimizes for arrays by reading the `length` property directly. For all other sequences,
- * enumerates each element to count them.
- *
- * @see {@link TyneqSequence.count} for the public API.
- *
+ * @see {@link TyneqSequence.count}
  * @group Operators
  * @category Terminal
  * @internal
  */
 @builtinTerminal({ name: "count" })
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
-    /**
-     * @param source - The source sequence.
-     */
+    
     public constructor(source: Enumerable<T>) {
         super(source);
     }

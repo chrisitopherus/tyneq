@@ -1,17 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that filters out elements with duplicate keys from a sequence.
+ * Returns distinct elements by eliminating duplicates based on a key selector.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Tracks seen keys in a `Set`. Yields the first element for each key, in first-seen-key order.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.distinctBy}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "distinctBy", kind: "buffer" })
@@ -19,10 +19,7 @@ export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param keySelector - Extracts the comparison key from each element.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.keySelector = keySelector;

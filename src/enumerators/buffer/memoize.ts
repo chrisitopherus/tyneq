@@ -2,25 +2,21 @@ import { TyneqCachedEnumerable } from "../../core/TyneqCachedEnumerable";
 import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator";
 
 /**
- * Enumerator that reads from a shared {@link TyneqCachedEnumerable}.
+ * Iterates a cached enumerable, replaying previously computed elements on subsequent iterations.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Yields elements from the cache by index. The cache lazily expands the underlying source on
- * demand. Multiple `MemoizeEnumerator` instances over the same cache share the underlying
- * source while each maintaining its own position independently.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.memoize}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;
 
-    /**
-     * @param cachedEnumerable - The shared cache to read elements from.
-     */
+    
     public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>) {
         super();
         this.cachedEnumerable = cachedEnumerable;

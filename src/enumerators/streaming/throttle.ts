@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields every Nth element from a sequence.
+ * Yields every nth element from the source sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * The element at index 0 is always yielded; subsequent elements are yielded at indices that are
- * multiples of `count` (0, count, 2×count, …).
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.throttle}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "throttle", kind: "streaming" })
@@ -20,10 +19,7 @@ export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param count - Stride between yielded elements; must be a positive safe integer.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

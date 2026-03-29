@@ -1,26 +1,21 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 
 /**
- * Terminal operator that wraps a sequence as a native `AsyncIterable`, enabling
- * `for await...of` consumption and piping to async sinks.
+ * Wraps the source sequence as an async iterable.
  *
  * @remarks
- * Deferred. The source is not enumerated until the returned `AsyncIterable` is iterated.
- * Each iteration of the returned `AsyncIterable` produces a fresh traversal of the source.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * @see {@link TyneqSequence.toAsync} for the public API.
- *
+ * @see {@link TyneqSequence.toAsync}
  * @group Operators
  * @category Terminal
  * @internal
  */
 @builtinTerminal({ name: "toAsync" })
 export class ToAsyncOperator<TSource> extends TyneqTerminalOperator<TSource, AsyncIterable<TSource>> {
-    /**
-     * @param source - The source sequence.
-     */
+    
     public constructor(source: TyneqSequence<TSource>) {
         super(source);
     }

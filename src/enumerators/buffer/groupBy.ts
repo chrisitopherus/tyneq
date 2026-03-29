@@ -1,19 +1,18 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 
 /**
- * Enumerator that groups sequence elements by a key.
+ * Groups elements by a key selector and projects each group through a result selector.
  *
  * @remarks
- * Deferred. Source is fully buffered on first iteration.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Consumes the entire source on first iteration to build a key-to-values lookup, then yields
- * one transformed group per distinct key via the result selector.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.groupBy}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "groupBy", kind: "buffer" })
@@ -25,13 +24,7 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
     private lookupEnumerator?: Enumerator<[TKey, TValue[]]>;
     private lookup = new TyneqMap<TKey, TValue[]>();
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param keySelector - Extracts the grouping key from each element.
-     * @param valueSelector - Transforms each element into the group element type.
-     * @param resultSelector - Combines a key and its group into the output element.
-     * @param groupFactory - Creates an {@link TyneqSequence} wrapping a group's value array.
-     */
+    
     public constructor(
         sourceEnumerator: Enumerator<TSource>,
         keySelector: (item: TSource) => TKey,
@@ -54,9 +47,9 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
             }
 
             const key = this.keySelector(value);
-            const val = this.valueSelector(value);
+            const mappedValue = this.valueSelector(value);
             const group = this.lookup.getOrInit(key, () => []);
-            group.push(val);
+            group.push(mappedValue);
         }
 
         this.lookupEnumerator = this.lookup.entries();

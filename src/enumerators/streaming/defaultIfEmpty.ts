@@ -1,16 +1,15 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that yields all source elements, or a single default value if the source is empty.
+ * Returns the source sequence, or a single default element if the source is empty.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * @see {@link TyneqSequence.defaultIfEmpty} for the public API.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.defaultIfEmpty}
+ * @group Operators
  * @category Streaming
  * @internal
  */
@@ -21,10 +20,7 @@ export class DefaultIfEmptyEnumerator<TSource> extends TyneqEnumerator<TSource> 
     private hasYieldedAny = false;
     private defaultYielded = false;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param defaultValue - The value to yield when the source is empty.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, defaultValue: TSource) {
         super(sourceEnumerator);
         this.defaultValue = defaultValue;
@@ -37,6 +33,7 @@ export class DefaultIfEmptyEnumerator<TSource> extends TyneqEnumerator<TSource> 
                 this.hasYieldedAny = true;
                 return this.yield(next.value);
             }
+
             this.sourceDone = true;
         }
 

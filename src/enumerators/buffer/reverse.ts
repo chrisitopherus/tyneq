@@ -1,17 +1,16 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that yields elements in reverse order.
+ * Reverses the order of elements in the source sequence.
  *
  * @remarks
- * Deferred. Source is fully buffered on first iteration.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Consumes the entire source on first iteration to build a buffer, then yields elements
- * from the end backwards.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.reverse}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "reverse", kind: "buffer" })
@@ -19,9 +18,7 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private index: number = -1;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>) {
         super(sourceEnumerator);
     }

@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
@@ -7,18 +7,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the single element satisfying a predicate, or a default value if none is found.
+ * Returns the single element matching a predicate, or a default value if no match is found.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Must enumerate the entire sequence to ensure uniqueness. Returns `defaultValue` when no
- * element matches. Throws if more than one element matches.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqSequence.singleOrDefault} for the public API.
- *
+ * @see {@link TyneqSequence.singleOrDefault}
  * @group Operators
  * @category Terminal
  * @internal
@@ -28,12 +22,7 @@ export class SingleOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSou
     private readonly predicate: (item: TSource) => boolean;
     private readonly defaultValue: TSource;
 
-    /**
-     * @param source - The source sequence.
-     * @param predicate - The predicate tested against each element.
-     * @param defaultValue - The value returned when no element matches.
-     * @throws {ArgumentError} If `predicate` is null or undefined.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, predicate: (item: TSource) => boolean, defaultValue: TSource) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

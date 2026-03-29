@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { ArgumentOutOfRangeError } from "../core/errors/argument/ArgumentOutOfRangeError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
@@ -6,17 +6,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the element at a specified zero-based index.
+ * Returns the element at a specified index, or throws if the index is out of range.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Enumerates the source up to the target index. Throws if the index is out of range.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqSequence.elementAt} for the public API.
- *
+ * @see {@link TyneqSequence.elementAt}
  * @group Operators
  * @category Terminal
  * @internal
@@ -25,10 +20,7 @@ import { nameof } from "../utility/nameof";
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly index: number;
 
-    /**
-     * @param source - The source sequence.
-     * @param index - The zero-based index of the element to retrieve.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, index: number) {
         super(source);
         this.index = index;

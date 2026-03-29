@@ -1,18 +1,16 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that yields a specified number of elements from the beginning of a sequence.
+ * Returns a specified number of elements from the beginning of the source sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Signals early completion once `count` elements have been yielded, stopping source enumeration
- * immediately rather than consuming the remainder of the sequence.
- * Negative values of `count` are treated as 0, resulting in an empty sequence.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.take}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "take", kind: "streaming" })
@@ -20,10 +18,7 @@ export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private takenCount = 0;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param count - Maximum number of elements to yield; negative values treated as 0.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count < 0 ? 0 : count;

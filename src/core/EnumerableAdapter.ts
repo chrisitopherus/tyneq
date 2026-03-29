@@ -2,22 +2,12 @@ import { Enumerable, Enumerator } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 
 /**
- * Adapts any `Iterable<TSource>` into an {@link Enumerable} by delegating
- * `[Symbol.iterator]` and `getEnumerator` directly to the wrapped iterable.
+ * Wraps a native `Iterable<T>` as a Tyneq {@link Enumerable}.
  *
  * @remarks
- * Used internally by {@link Tyneq.from} to wrap user-provided iterables (arrays, sets, maps,
- * generator functions, etc.) into the `Enumerable` protocol without copying elements.
+ * Used by `Tyneq.from()` to adapt arrays, sets, generators, and any other iterable.
+ * Each call to `getEnumerator()` delegates to the underlying `[Symbol.iterator]()`.
  *
- * Each call to `getEnumerator()` forwards to `iterable[Symbol.iterator]()`, so re-iterability
- * depends on the wrapped iterable — re-iterable sources (arrays, sets) produce fresh iterators;
- * single-use sources (raw generators) do not.
- *
- * @typeParam TSource - Element type of the wrapped iterable.
- *
- * @see {@link Tyneq.from} The only entry point that creates this adapter.
- *
- * @group Classes
  * @internal
  */
 export class EnumerableAdapter<TSource> implements Enumerable<TSource> {

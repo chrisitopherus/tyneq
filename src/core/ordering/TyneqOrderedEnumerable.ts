@@ -13,24 +13,12 @@ import { nameof } from "../../utility/nameof";
 import { TyneqCachedEnumerable } from "../TyneqCachedEnumerable";
 
 /**
- * Represents an ordered enumerable sequence with support for chained sorting criteria.
+ * Concrete implementation of {@link TyneqOrderedSequence}.
  *
  * @remarks
- * Encapsulates a single sort criterion. Calling `thenBy()` or `thenByDescending()` creates a
- * new instance with the current one as `parent`, forming a linked chain. During enumeration the
- * chain is traversed to build a composite sorter that applies all criteria in sequence.
+ * Created by `orderBy` and `orderByDescending`. Chains to a parent `TyneqOrderedEnumerable`
+ * via `thenBy` / `thenByDescending` to build a multi-key sorter.
  *
- * The sort is deferred to enumeration time. The entire source is buffered on first iteration.
- * The sort is stable: elements with equal keys at all levels preserve their original order.
- *
- * @typeParam TSource - The type of elements in the sequence.
- * @typeParam TKey - The type of the sort key for this sort criterion.
- *
- * @see {@link TyneqOrderedSequence} for the public API.
- * @see {@link OrderedEnumerable} for the internal infrastructure.
- * @see {@link TyneqEnumerableBase.orderBy} for how this is created.
- *
- * @group Classes
  * @internal
  */
 export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<TSource> implements TyneqOrderedSequence<TSource> {
@@ -42,15 +30,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     public readonly parent: Nullable<OrderedEnumerable<TSource>>;
     public readonly [tyneqQueryNode]: IQueryNode | null;
 
-    /**
-     * @param source - The sequence to order.
-     * @param keySelector - Extracts the sort key from each element.
-     * @param comparer - Compares two sort keys.
-     * @param descending - Whether to sort in descending order.
-     * @param parent - The parent ordering for multi-level sorts.
-     * @param node - Optional query plan node.
-     * @throws {ArgumentError} If `source`, `keySelector`, or `comparer` is undefined.
-     */
+    
     public constructor(
         source: TyneqSequence<TSource>,
         keySelector: (item: TSource) => TKey,
@@ -76,12 +56,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         return new OrderByEnumerator<TSource, TKey>(this);
     }
 
-    /**
-     * Builds a sorter for this criterion and chains it to `next`.
-     *
-     * @param next - The next sorter in the chain, or null if this is the last.
-     * @returns A sorter for this criterion linked to `next`.
-     */
+    
     public getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource> {
         return new TyneqEnumerableSorter<TSource, TKey>(
             this.keySelector,
@@ -91,21 +66,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    /**
-     * Adds a secondary ascending sort criterion.
-     *
-     * @remarks
-     * Deferred. Source is fully buffered on first iteration.
-     *
-     * @typeParam UKey - The type of the secondary sort key.
-     *
-     * @param keySelector - Extracts the secondary sort key from each element.
-     * @param comparer - Compares two secondary keys; defaults to the natural order comparer.
-     *
-     * @throws {ArgumentError} If `keySelector` is undefined.
-     *
-     * @see {@link thenByDescending} for secondary descending sort.
-     */
+    
     public thenBy<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined
@@ -122,21 +83,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    /**
-     * Adds a secondary descending sort criterion.
-     *
-     * @remarks
-     * Deferred. Source is fully buffered on first iteration.
-     *
-     * @typeParam UKey - The type of the secondary sort key.
-     *
-     * @param keySelector - Extracts the secondary sort key from each element.
-     * @param comparer - Compares two secondary keys; defaults to the natural order comparer.
-     *
-     * @throws {ArgumentError} If `keySelector` is undefined.
-     *
-     * @see {@link thenBy} for secondary ascending sort.
-     */
+    
     public thenByDescending<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined): TyneqOrderedSequence<TSource> {

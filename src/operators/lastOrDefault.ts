@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { Nullable } from "../types/utility";
@@ -6,18 +6,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the last element satisfying a predicate, or a default value if none is found.
+ * Returns the last element matching a predicate, or a default value if no match is found.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Must enumerate the entire sequence to find the last match. Returns `defaultValue` rather
- * than throwing when no element satisfies the predicate.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqSequence.lastOrDefault} for the public API.
- *
+ * @see {@link TyneqSequence.lastOrDefault}
  * @group Operators
  * @category Terminal
  * @internal
@@ -27,12 +21,7 @@ export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSourc
     private readonly predicate: (item: TSource) => boolean;
     private readonly defaultValue: TSource;
 
-    /**
-     * @param source - The source sequence.
-     * @param predicate - The predicate tested against each element.
-     * @param defaultValue - The value returned when no element matches.
-     * @throws {ArgumentError} If `predicate` is null or undefined.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, predicate: (item: TSource) => boolean, defaultValue: TSource) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

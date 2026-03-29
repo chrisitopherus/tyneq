@@ -1,17 +1,14 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
 /**
- * Terminal operator that returns `true` if the sequence contains a specific value.
+ * Returns true if the sequence contains a specified value.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Compares elements using strict equality (`===`). Short-circuits on the first match.
- *
- * @see {@link TyneqSequence.contains} for the public API.
- *
+ * @see {@link TyneqSequence.contains}
  * @group Operators
  * @category Terminal
  * @internal
@@ -20,10 +17,7 @@ import { Enumerable } from "../types/core";
 export class ContainsOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly value: TSource;
 
-    /**
-     * @param source - The source sequence.
-     * @param value - The value to search for.
-     */
+    
     public constructor(source: Enumerable<TSource>, value: TSource) {
         super(source);
         this.value = value;

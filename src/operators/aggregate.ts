@@ -1,24 +1,16 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that reduces a sequence to a single value using an accumulator function.
+ * Applies an accumulator over the sequence and transforms the final result through a selector.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Applies `func` to each element in turn, threading the accumulated value forward from `seed`.
- * Passes the final accumulated value through `resultSelector` to produce the result.
- *
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam UAccumulate - The type of the accumulator value.
- * @typeParam VResult - The type of the final result.
- *
- * @see {@link TyneqSequence.aggregate} for the public API.
- *
+ * @see {@link TyneqSequence.aggregate}
  * @group Operators
  * @category Terminal
  * @internal
@@ -29,13 +21,7 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTermi
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;
     private readonly resultSelector: (accumulate: UAccumulate) => VResult;
 
-    /**
-     * @param source - The source sequence.
-     * @param seed - The initial accumulator value.
-     * @param func - The accumulator applied to each element.
-     * @param resultSelector - Transforms the final accumulator into the result.
-     * @throws {ArgumentError} If `func` or `resultSelector` is null or undefined.
-     */
+    
     public constructor(
         source: Enumerable<TSource>,
         seed: UAccumulate,

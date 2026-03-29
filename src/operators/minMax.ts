@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { Enumerable, MinMaxResult } from "../types/core";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
@@ -7,25 +7,20 @@ import { SequenceContainsNoElementsError } from "../core/errors/SequenceContains
 // Re-export it from there so consumers can import it from either location.
 export type { MinMaxResult } from "../types/core";
 
-/** Default comparer: uses JS relational operators (works for numbers and strings). */
 function defaultCompare<T>(a: T, b: T): number {
     if (a < b) return -1;
     if (a > b) return 1;
+
     return 0;
 }
 
 /**
- * Terminal operator that returns both the minimum and maximum elements in a single pass.
+ * Returns both the minimum and maximum elements of the sequence in a single pass.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Fuses `min()` and `max()` into a single enumeration, which avoids iterating the source
- * twice. Throws if the sequence is empty.
- *
- * @see {@link MinMaxResult} for the return type.
- * @see {@link TyneqSequence.minMax} for the public API.
- *
+ * @see {@link TyneqSequence.minMax}
  * @group Operators
  * @category Terminal
  * @internal
@@ -35,10 +30,7 @@ export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>>
 
     private readonly comparer: (a: T, b: T) => number;
 
-    /**
-     * @param source - The source sequence.
-     * @param comparer - The comparer used to order elements; defaults to the natural order comparer.
-     */
+    
     public constructor(source: Enumerable<T>, comparer?: (a: T, b: T) => number) {
         super(source);
         this.comparer = comparer ?? defaultCompare;

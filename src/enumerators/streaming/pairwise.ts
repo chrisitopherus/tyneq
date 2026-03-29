@@ -1,17 +1,16 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that yields consecutive overlapping pairs from a sequence.
+ * Projects each consecutive pair of elements as a two-element tuple.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Each pair is `[previous, current]`. A sequence of n elements produces n-1 pairs.
- * An empty or single-element sequence produces no output.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.pairwise}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "pairwise", kind: "streaming" })

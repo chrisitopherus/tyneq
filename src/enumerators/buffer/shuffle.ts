@@ -1,17 +1,16 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that yields elements in randomized order.
+ * Returns the elements of the source sequence in a random order.
  *
  * @remarks
- * Deferred. Source is fully buffered on first iteration.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Consumes the entire source on first iteration, shuffles the buffer in-place using the
- * Fisher-Yates algorithm, then yields elements in the shuffled order.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.shuffle}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "shuffle", kind: "buffer" })
@@ -19,9 +18,7 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>) {
         super(sourceEnumerator);
     }

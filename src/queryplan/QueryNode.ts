@@ -1,42 +1,15 @@
 import type { IQueryNode, QueryPlanVisitor, OperatorCategory } from "../types/queryplan";
 
 /**
- * Standard immutable implementation of {@link IQueryNode}.
- *
- * @remarks
- * Instances are created automatically by the operator registration infrastructure
- * (`@operator`, `@terminal`, `createOperator`, `createStreamingOperator`) and by
- * `Tyneq.from` / `Tyneq.range` for root source nodes.
- *
- * Construct `QueryNode` directly only when producing modified nodes inside a
- * {@link QueryPlanVisitor} — for example, in a query optimizer:
- *
- * ```ts
- * class QueryOptimizer implements QueryPlanVisitor<IQueryNode> {
- *     visit(node: IQueryNode): IQueryNode {
- *         const optimizedSource = node.source ? this.visit(node.source) : null;
- *
- *         // Merge adjacent where().where() into a single predicate
- *         if (node.operatorName === 'where' && optimizedSource?.operatorName === 'where') {
- *             const [p1] = node.args as [(x: unknown) => boolean];
- *             const [p2] = optimizedSource.args as [(x: unknown) => boolean];
- *             return new QueryNode('where', [(x: unknown) => p2(x) && p1(x)], optimizedSource.source, 'streaming');
- *         }
- *
- *         return new QueryNode(node.operatorName, node.args, optimizedSource, node.category);
- *     }
- * }
- * ```
+ * Concrete `IQueryNode` implementation.
+ * One node is created per operator call and linked to its upstream source node,
+ * forming a singly-linked list that represents the full query plan.
  *
  * @group QueryPlan
+ * @internal
  */
 export class QueryNode implements IQueryNode {
-    /**
-     * @param operatorName - The registered operator name (e.g., `'where'`, `'from'`).
-     * @param args         - The user arguments passed to this operator.
-     * @param source       - The previous node in the chain, or `null` for root nodes.
-     * @param category     - The execution category of this operator.
-     */
+
     public constructor(
         public readonly operatorName: string,
         public readonly args: readonly unknown[],

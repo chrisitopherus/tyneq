@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
 import { Enumerable, TyneqSequence } from "../types/core";
@@ -6,18 +6,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns `true` if two sequences contain equal elements in the same order.
+ * Returns true if the source and a second sequence contain equal elements in the same order.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Enumerates both sequences in parallel using `equalityComparer`. Short-circuits on the
- * first mismatch or length difference.
- *
- * @typeParam TSource - The type of elements in both sequences.
- *
- * @see {@link TyneqSequence.sequenceEqual} for the public API.
- *
+ * @see {@link TyneqSequence.sequenceEqual}
  * @group Operators
  * @category Terminal
  * @internal
@@ -27,12 +21,7 @@ export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSourc
     private readonly other: Iterable<TSource>;
     private readonly equalityComparer: (a: TSource, b: TSource) => boolean;
 
-    /**
-     * @param source - The source sequence.
-     * @param other - The sequence to compare against.
-     * @param equalityComparer - The comparer used to test element equality; defaults to strict equality.
-     * @throws {ArgumentError} If `other` is null or undefined.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
         super(source);
         ArgumentUtility.checkNotOptional({ other });

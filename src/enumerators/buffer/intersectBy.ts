@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields elements whose keys appear in both the source and another key sequence.
+ * Returns elements whose keys appear in both the source and a second key sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the other keys into a `Set` on first iteration. Each unique key appears at most once
- * in the output.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.intersectBy}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "intersectBy", kind: "buffer" })
@@ -22,11 +21,7 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
     private intersectionKeys = new Set<TKey>();
     private bufferedKeys = new Set<TKey>();
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param otherValues - The keys to intersect with; buffered into a `Set` on first iteration.
-     * @param keySelector - Extracts the comparison key from each source element.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

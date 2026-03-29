@@ -1,22 +1,16 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the zero-based index of the first element satisfying a predicate.
+ * Returns the zero-based index of the first element matching a predicate, or -1 if not found.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Starts searching from `startIndex`. Short-circuits on the first match. Returns `-1` if no
- * element satisfies the predicate.
- *
- * @typeParam T - The type of elements in the sequence.
- *
- * @see {@link TyneqSequence.indexOf} for the public API.
- *
+ * @see {@link TyneqSequence.indexOf}
  * @group Operators
  * @category Terminal
  * @internal
@@ -26,12 +20,7 @@ export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: (item: T) => boolean;
     private readonly startIndex: number;
 
-    /**
-     * @param source - The source sequence.
-     * @param predicate - The predicate tested against each element.
-     * @param startIndex - The zero-based index at which to begin searching (default: `0`).
-     * @throws {ArgumentError} If `predicate` is null or undefined, or `startIndex` is negative.
-     */
+    
     public constructor(source: Enumerable<T>, predicate: (item: T) => boolean, startIndex: number = 0) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

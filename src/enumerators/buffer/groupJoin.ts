@@ -1,19 +1,18 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 
 /**
- * Enumerator that correlates outer elements with inner groups via matching keys (left outer join).
+ * Correlates outer elements with groups of matching inner elements.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the entire inner sequence into a key-to-values lookup on first iteration. Each outer
- * element is then paired with an enumerable of all matching inner elements (empty if no matches).
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.groupJoin}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "groupJoin", kind: "buffer" })
@@ -25,15 +24,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
     private readonly groupFactory: (values: TInner[]) => TyneqSequence<TInner>;
     private innerLookup = new TyneqMap<TKey, TInner[]>();
 
-    /**
-     * @param sourceEnumerator - The outer sequence enumerator.
-     * @param innerSource - The inner sequence to join against; fully buffered on first iteration.
-     * @param outerKeySelector - Extracts the join key from each outer element.
-     * @param innerKeySelector - Extracts the join key from each inner element.
-     * @param resultSelector - Combines an outer element with its matching inner group.
-     * @param groupFactory - Creates an {@link TyneqSequence} wrapping a group's inner array.
-     * @throws {ArgumentError} If any required parameter is null or undefined.
-     */
+    
     public constructor(
         sourceEnumerator: Enumerator<TOuter>,
         innerSource: Iterable<TInner>,

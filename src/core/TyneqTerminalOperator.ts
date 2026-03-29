@@ -2,32 +2,25 @@ import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 
 /**
- * Abstract base class for terminal operators that evaluate a query and return a concrete value.
+ * Abstract base for all terminal operators.
  *
  * @remarks
- * Terminal operators consume the source sequence and return a single result rather than
- * another enumerable. Subclasses implement {@link process} to define the specific evaluation
- * logic.
+ * Terminal operators consume a sequence and return a concrete value.
+ * Subclasses implement `process()` which enumerates `this.source` and returns the result.
+ * Register with `@terminal` or `createTerminalOperator`.
  *
- * @typeParam TSource - The type of elements in the source sequence.
- * @typeParam TResult - The type of the result value produced by the operator.
- *
- * @see {@link TyneqEnumerator} for the base class used by streaming and buffering enumerators.
- *
- * @group Classes
+ * @typeParam TSource - Element type of the source sequence.
+ * @typeParam TResult - The return type of `process()`.
+ * @internal
  */
 export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     protected readonly source: Enumerable<TSource>;
 
-    /**
-     * @param source - The source sequence to evaluate. Must not be null or undefined.
-     * @throws {ArgumentNullError} If `source` is null.
-     * @throws {ArgumentError} If `source` is undefined.
-     */
     public constructor(source: Enumerable<TSource>) {
         ArgumentUtility.checkNotOptional({ source });
         this.source = source;
     }
 
+    /** Executes the terminal operation and returns the result. */
     public abstract process(): TResult;
 }

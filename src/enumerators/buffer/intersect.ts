@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields elements present in both the source and another sequence.
+ * Returns elements that are present in both the source and a second sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the other sequence into a `Set` on first iteration. Each value appears at most once
- * in the output.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.intersect}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "intersect", kind: "buffer" })
@@ -21,10 +20,7 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private intersectionValues = new Set<TSource>();
     private bufferedValues = new Set<TSource>();
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param otherValues - The second sequence; buffered into a `Set` on first iteration.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

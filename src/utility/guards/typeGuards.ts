@@ -5,28 +5,21 @@ import type { HasLength } from "../../types/utility";
 import { TypeGuardUtility } from "../typeGuardUtility";
 
 /**
- * Static assertion class for function, iterable, iterator, enumerable, and custom predicate checks.
+ * Type-checking guard implementations. Called by `ArgumentUtility`.
  *
- * @group Utilities
  * @internal
  */
 export class TypeGuards {
     private constructor() { }
 
-    /**
-     * Asserts that `value` is a function.
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkFunction(value: unknown, paramName: string): asserts value is Function {
         if (typeof value !== "function") {
             throw new ArgumentTypeError(paramName, "function", typeof value);
         }
     }
 
-    /**
-     * Asserts that `value` is iterable (has a callable `[Symbol.iterator]`).
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
         if (!TypeGuardUtility.isIterable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -34,10 +27,7 @@ export class TypeGuards {
         }
     }
 
-    /**
-     * Asserts that `value` is an iterator (has a callable `next()`).
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
         if (!TypeGuardUtility.isIterator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -45,10 +35,7 @@ export class TypeGuards {
         }
     }
 
-    /**
-     * Asserts that `value` is an {@link Enumerable}.
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is Enumerable<T> {
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -56,10 +43,7 @@ export class TypeGuards {
         }
     }
 
-    /**
-     * Asserts that `value` is an {@link Enumerator}.
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is Enumerator<T> {
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -67,10 +51,7 @@ export class TypeGuards {
         }
     }
 
-    /**
-     * Asserts that `value` is an instance of `constructor`.
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkInstanceOf<T>(
         value: unknown,
         constructor: new (...args: any[]) => T,
@@ -83,20 +64,14 @@ export class TypeGuards {
         }
     }
 
-    /**
-     * Asserts that `value` has a numeric `length` property.
-     * @throws {ArgumentTypeError}
-     */
+    
     public static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
         if (typeof value !== "object" || value === null || typeof (value as any).length !== "number") {
             throw new ArgumentTypeError(paramName, "object with numeric length property", typeof value);
         }
     }
 
-    /**
-     * Asserts that `value` satisfies a custom predicate.
-     * @throws {ArgumentError}
-     */
+    
     public static check<T>(value: T, paramName: string, predicate: (v: T) => boolean, message: string): void {
         if (!predicate(value)) {
             throw new ArgumentError(message, paramName);

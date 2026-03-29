@@ -1,4 +1,4 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
@@ -6,16 +6,14 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
 import { TyneqMap } from "../../utility/map";
 
 /**
- * Enumerator that correlates elements from two sequences based on matching keys (inner join).
+ * Correlates outer elements with matching inner elements using a key equality comparison.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the entire inner sequence into a key-to-values lookup on first iteration. For each
- * outer element, yields one result per matching inner element. Outer elements with no matches
- * are skipped.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.join}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "join", kind: "buffer" })
@@ -29,14 +27,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
     private pendingMatches: Nullable<TInner[]> = null;
     private pendingIndex = 0;
 
-    /**
-     * @param sourceEnumerator - The outer sequence enumerator.
-     * @param innerSource - The inner sequence to join against; fully buffered on first iteration.
-     * @param outerKeySelector - Extracts the join key from each outer element.
-     * @param innerKeySelector - Extracts the join key from each inner element.
-     * @param resultSelector - Combines a matching outer and inner element into a result.
-     * @throws {ArgumentError} If any required parameter is null or undefined.
-     */
+    
     public constructor(
         sourceEnumerator: Enumerator<TOuter>,
         innerSource: Iterable<TInner>,

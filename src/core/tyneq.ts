@@ -8,48 +8,25 @@ import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 
 /**
- * Provides static factory methods for creating queryable sequences.
- *
- * @remarks
- * The primary entry point for creating typed enumerable sequences. All methods return
- * lazy-evaluated sequences implementing the full LINQ-style operator surface. Inputs are
- * validated eagerly and throw appropriate errors for null, undefined, or out-of-range values.
- *
- * This class follows the static factory pattern and cannot be instantiated.
- *
- * @see {@link TyneqSequence} for the operator surface of returned sequences.
- *
- * @group Classes
+ * Entry point for creating Tyneq sequences.
  *
  * @example
- * ```typescript
- * // Create from array
- * const numbers = Tyneq.from([1, 2, 3, 4, 5]);
+ * ```ts
+ * import { Tyneq } from "tyneq";
  *
- * // Generate range
- * const range = Tyneq.range(0, 100);
- *
- * // Create empty sequence
- * const empty = Tyneq.empty<string>();
- *
- * // Enumerate with indices
- * const indexed = Tyneq.enumerate(['a', 'b', 'c']);
+ * const sum = Tyneq.from([1, 2, 3, 4, 5])
+ *   .where((x) => x % 2 === 0)
+ *   .sum((x) => x); // -> 6
  * ```
+ *
+ * @group Classes
  */
 export class Tyneq {
     /**
-     * Wraps an iterable source in a queryable sequence.
+     * Creates a lazy sequence from any `Iterable<T>` (arrays, sets, generators, etc.).
      *
-     * @remarks
-     * The source is not copied or cached; each enumeration calls the source's own
-     * `Symbol.iterator` for a fresh iterator.
-     *
-     * @param source - The iterable to wrap. Must not be null or undefined.
-     *
-     * @throws {ArgumentNullError} If `source` is null.
-     * @throws {ArgumentError} If `source` is undefined or not iterable.
-     *
-     * @see {@link enumerate} for wrapping an iterable with index tracking.
+     * @throws {ArgumentNullError} When `source` is null or undefined.
+     * @throws {ArgumentTypeError} When `source` is not iterable.
      */
     public static from<TSource>(source: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ source });
@@ -60,16 +37,13 @@ export class Tyneq {
     }
 
     /**
-     * Generates a sequence of `count` elements produced by calling `randomizer` once per element.
+     * Creates a sequence of `count` elements produced by calling `randomizer` once per element.
      *
      * @remarks
-     * If `count` is 0, returns an empty sequence immediately. Otherwise, `randomizer` is called
-     * once per element during iteration.
+     * Returns an empty sequence when `count === 0`.
      *
-     * @param count - Number of elements to generate. A value of 0 returns an empty sequence.
-     * @param randomizer - Called once for each element position. Must not be null or undefined.
-     *
-     * @see {@link empty} for an empty sequence.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentNullError} When `randomizer` is null or undefined.
      */
     public static random<TSource>(count: number, randomizer: () => TSource): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
@@ -85,12 +59,7 @@ export class Tyneq {
     }
 
     /**
-     * Returns `true` if `source` is `null`, `undefined`, or contains no elements.
-     *
-     * @remarks
-     * Iterates the source only far enough to determine whether it contains at least one element.
-     *
-     * @param source - The iterable to test. May be `null` or `undefined`.
+     * Returns `true` if `source` is `null`, `undefined`, or an iterable whose first element is `null` or `undefined`.
      */
     public static isNullOrEmpty<TSource>(source: Iterable<TSource> | null | undefined): boolean {
         if (source === null || source === undefined) {
@@ -101,18 +70,18 @@ export class Tyneq {
     }
 
     /**
-     * Generates a sequence of consecutive integers starting at `start`.
+     * Creates a sequence of `count` integers starting from `start`.
      *
      * @remarks
-     * Lazy; elements are generated on demand during iteration.
+     * Returns an empty sequence when `count === 0`.
      *
-     * @param start - The first integer in the sequence.
-     * @param count - The number of integers to generate. Must be a non-negative integer.
+     * @example
+     * ```ts
+     * Tyneq.range(1, 5).toArray(); // -> [1, 2, 3, 4, 5]
+     * ```
      *
-     * @throws {ArgumentOutOfRangeError} If `count` is negative or not a finite number.
-     * @throws {ArgumentError} If `count` is not an integer.
-     *
-     * @see {@link empty} for creating an empty sequence.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
      */
     public static range(start: number, count: number): TyneqSequence<number> {
         ArgumentUtility.checkNonNegative({ count });
@@ -128,14 +97,7 @@ export class Tyneq {
         }, new QueryNode("range", [start, count], null, "source"));
     }
 
-    /**
-     * Creates an empty sequence of the specified type.
-     *
-     * @typeParam TSource - The element type of the empty sequence.
-     *
-     * @see {@link range} for generating a sequence with a specific count.
-     * @see {@link from} for wrapping existing iterables.
-     */
+    /** Returns an empty sequence with zero elements. */
     public static empty<TSource>(): TyneqSequence<TSource> {
         return new TyneqEnumerable<TSource>(
             new EnumerableAdapter<TSource>([]),
@@ -144,18 +106,19 @@ export class Tyneq {
     }
 
     /**
-     * Wraps an iterable source and pairs each element with its zero-based index.
+     * Pairs each element with its zero-based index.
      *
      * @remarks
-     * The index counter is shared across all enumerations of the returned sequence.
-     * To get a stable indexed sequence, materialize it with `toArray()` after creation.
+     * Each iteration produces independent index counters — safe to re-enumerate.
      *
-     * @param source - The iterable to enumerate with indices. Must not be null or undefined.
+     * @example
+     * ```ts
+     * Tyneq.enumerate(["a", "b", "c"]).toArray();
+     * // -> [[0, "a"], [1, "b"], [2, "c"]]
+     * ```
      *
-     * @throws {ArgumentNullError} If `source` is null.
-     * @throws {ArgumentError} If `source` is undefined.
-     *
-     * @see {@link from} for wrapping an iterable without index tracking.
+     * @throws {ArgumentNullError} When `source` is null or undefined.
+     * @throws {ArgumentTypeError} When `source` is not iterable.
      */
     public static enumerate<TSource>(source: Iterable<TSource>): Enumerable<[number, TSource]> {
         ArgumentUtility.checkNotOptional({ source });

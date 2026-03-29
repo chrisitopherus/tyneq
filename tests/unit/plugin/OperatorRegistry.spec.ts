@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 // Import from the main entry point to trigger operator barrel registration as a side-effect.
 import "../../../src";
-import { OperatorRegistry, OperatorMetadata } from "../../../src/extensions/OperatorRegistry";
+import { OperatorRegistry, OperatorMetadata } from "../../../src/plugin/OperatorRegistry";
 import { TyneqEnumerableBase } from "../../../src/core/TyneqEnumerableBase";
 
 // Each test that registers an operator must use a unique name because registrations
@@ -14,9 +14,7 @@ const nextName = (tag: string): string => `__regSpec_${tag}_${UID}_${counter++}`
 const noop = () => {};
 const noopImpl = function () { return null; };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // register()
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry.register", () => {
   const registered: string[] = [];
@@ -87,9 +85,7 @@ describe("OperatorRegistry.register", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // unregister()
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry.unregister", () => {
   it("returns true when the operator existed and was removed", () => {
@@ -120,9 +116,7 @@ describe("OperatorRegistry.unregister", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // onRegister() — post-registration hook
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry.onRegister", () => {
   const registered: string[] = [];
@@ -190,9 +184,7 @@ describe("OperatorRegistry.onRegister", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // addGuard() — pre-registration guard
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry.addGuard", () => {
   const guards: Array<() => void> = [];
@@ -259,9 +251,7 @@ describe("OperatorRegistry.addGuard", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Introspection: has(), get(), list(), listByKind(), listBySource(), count()
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("OperatorRegistry introspection", () => {
   it("has() returns false for an unregistered name", () => {

@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields elements from the source that are not present in an excluded-values sequence.
+ * Returns elements from the source sequence that are not present in a second sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the excluded sequence into a `Set` on first iteration. Each source value appears at
- * most once in the output (already-yielded values are also added to the exclusion set).
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.except}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "except", kind: "buffer" })
@@ -20,10 +19,7 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
     private excludeSet = new Set<TSource>();
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param excludedValues - Values to exclude from the result; buffered into a `Set` on first iteration.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, excludedValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.excludedValues = excludedValues;

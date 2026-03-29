@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that bypasses a specified number of elements from the beginning of a sequence.
+ * Skips a specified number of elements from the beginning of the source sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Skips the first `count` elements lazily on the first call to `handleNext`, then passes
- * through all subsequent elements without buffering.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.skip}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "skip", kind: "streaming" })
@@ -20,10 +19,7 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private skipped = false;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param count - Number of elements to skip from the beginning; must be non-negative.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

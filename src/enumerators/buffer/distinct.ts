@@ -1,25 +1,23 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that filters out duplicate values from a sequence.
+ * Returns distinct elements by eliminating duplicates.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Tracks seen values in a `Set`. Yields each value at most once, in first-seen order.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.distinct}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "distinct", kind: "buffer" })
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>) {
         super(sourceEnumerator);
     }

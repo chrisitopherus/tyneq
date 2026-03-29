@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
@@ -8,19 +8,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the element with the minimum key value.
+ * Returns the element with the minimum key as determined by a key selector.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Extracts a key from each element using `keySelector` and returns the element whose key is
- * smallest according to `comparer`. Throws if the sequence is empty.
- *
- * @typeParam TSource - The type of elements in the sequence.
- * @typeParam TKey - The type of the comparison key.
- *
- * @see {@link TyneqSequence.minBy} for the public API.
- *
+ * @see {@link TyneqSequence.minBy}
  * @group Operators
  * @category Terminal
  * @internal
@@ -30,12 +23,7 @@ export class MinByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource,
     private readonly comparer: (a: TKey, b: TKey) => number;
     private readonly keySelector: (element: TSource) => TKey;
 
-    /**
-     * @param source - The source sequence.
-     * @param keySelector - Extracts the comparison key from each element.
-     * @param comparer - The comparer used to order keys; defaults to the natural order comparer.
-     * @throws {ArgumentError} If `keySelector` is null or undefined.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number) {
         super(source);
         ArgumentUtility.checkNotOptional({ keySelector });

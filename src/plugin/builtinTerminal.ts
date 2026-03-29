@@ -1,20 +1,22 @@
 import { OperatorRegistry } from "./OperatorRegistry";
 import { tyneqOperatorMetadata } from "../queryplan/operatorMetadata";
 
+/**
+ * Options for {@link builtinTerminal}.
+ *
+ * @internal
+ */
 export interface BuiltinTerminalOptions {
     readonly name: string;
 }
 
 /**
- * Internal class decorator that registers built-in terminal operator metadata on import.
+ * Class decorator for Tyneq's own built-in terminal operators.
  *
- * @remarks
- * Unlike `@terminal`, this decorator does not patch prototypes and does not execute
- * validation logic. It only registers metadata for introspection.
+ * Records the operator in `OperatorRegistry` (for introspection) without patching
+ * the prototype -- built-in terminal operators are already defined as direct methods on
+ * `TyneqEnumerableBase`.
  *
- * Intended for Tyneq internal operator classes only.
- *
- * @param options - Built-in terminal operator metadata.
  * @internal
  */
 export function builtinTerminal(options: BuiltinTerminalOptions) {

@@ -8,14 +8,12 @@ import {
   ArgumentOutOfRangeError,
 } from "../../../src";
 
-// ─────────────────────────────────────────────────────────────────────────────
 // @operator decorator tests
 //
 // The @operator decorator fires at class-definition time (module evaluation).
 // Importing from "../../../../src" causes all operator files to be evaluated via
 // the operators/extensions barrel, which registers every operator as a side-effect.
 // We verify correct registration by exercising the resulting methods directly.
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("@operator decorator", () => {
   describe("streaming operator registration", () => {
@@ -105,14 +103,12 @@ describe("@operator decorator", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
 // @terminal decorator tests
 //
 // The @terminal decorator wires a class implementing process() so that calling
 // seq.operatorName(...) immediately evaluates and returns a concrete value
 // (not another enumerable). We verify this by checking that the result is a
 // plain value, not a sequence.
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("@terminal decorator", () => {
   describe("terminal operator registration", () => {

@@ -1,21 +1,16 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that computes the arithmetic mean of numeric values in a sequence.
+ * Returns the average of all elements projected through a selector.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Applies `selector` to each element and returns the average. Returns `0` for empty sequences.
- *
- * @typeParam T - The type of elements in the source sequence.
- *
- * @see {@link TyneqSequence.average} for the public API.
- *
+ * @see {@link TyneqSequence.average}
  * @group Operators
  * @category Terminal
  * @internal
@@ -24,11 +19,7 @@ import { nameof } from "../utility/nameof";
 export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 
-    /**
-     * @param source - The source sequence.
-     * @param selector - Extracts a numeric value from each element.
-     * @throws {ArgumentError} If `selector` is null or undefined.
-     */
+    
     public constructor(source: Enumerable<T>, selector: (item: T) => number) {
         super(source);
         ArgumentUtility.checkNotOptional({ selector });

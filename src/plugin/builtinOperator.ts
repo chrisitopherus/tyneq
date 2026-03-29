@@ -1,22 +1,23 @@
 import { OperatorMetadata, OperatorRegistry } from "./OperatorRegistry";
 import { tyneqOperatorMetadata } from "../queryplan/operatorMetadata";
 
+/**
+ * Options for {@link builtinOperator}.
+ *
+ * @internal
+ */
 export interface BuiltinOperatorOptions {
     readonly name: string;
     readonly kind: Exclude<OperatorMetadata["kind"], "terminal">;
 }
 
 /**
- * Internal class decorator that registers built-in operator metadata on import.
+ * Class decorator for Tyneq's own built-in streaming and buffering operators.
  *
- * @remarks
- * Unlike `@operator`, this decorator does not patch prototypes and does not execute
- * validation logic. It only calls `OperatorRegistry.registerBuiltin(...)` so
- * registry introspection includes internal operators.
+ * Records the operator in `OperatorRegistry` (for introspection) without patching
+ * the prototype -- built-in operators are already defined as direct methods on
+ * `TyneqEnumerableBase`.
  *
- * Intended for Tyneq internal operator classes only.
- *
- * @param options - Built-in operator metadata.
  * @internal
  */
 export function builtinOperator(

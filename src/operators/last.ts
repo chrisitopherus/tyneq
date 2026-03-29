@@ -1,4 +1,4 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
@@ -7,18 +7,12 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
- * Terminal operator that returns the last element satisfying a predicate.
+ * Returns the last element matching a predicate, or throws if no match is found.
  *
  * @remarks
- * This method uses immediate execution. The source sequence is fully enumerated when this method is called.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Must enumerate the entire sequence to find the last match. Throws if no element satisfies
- * the predicate.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqSequence.last} for the public API.
- *
+ * @see {@link TyneqSequence.last}
  * @group Operators
  * @category Terminal
  * @internal
@@ -27,11 +21,7 @@ import { nameof } from "../utility/nameof";
 export class LastOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
 
-    /**
-     * @param source - The source sequence.
-     * @param predicate - The predicate tested against each element.
-     * @throws {ArgumentError} If `predicate` is null or undefined.
-     */
+    
     public constructor(source: TyneqSequence<TSource>, predicate: (item: TSource) => boolean) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

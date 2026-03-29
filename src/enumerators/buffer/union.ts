@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields unique elements from both the source and a second sequence.
+ * Returns the set union of the source and a second sequence, eliminating duplicates.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Enumerates the source first, then the second sequence. Each value appears at most once in
- * the output. Uniqueness is tracked in a Set accumulated across both sequences.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.union}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "union", kind: "buffer" })
@@ -22,10 +21,7 @@ export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private currentEnumerator: Enumerator<TSource>;
     private isSourceDone = false;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param otherValues - The second sequence to union with.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

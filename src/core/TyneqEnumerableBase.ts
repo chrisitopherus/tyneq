@@ -5,7 +5,7 @@ import type { IQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { getOperatorMetadata, IOperatorMetadataCarrier } from "../queryplan/operatorMetadata";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
-// ── Terminal operators ────────────────────────────────────────────────────────
+// --- Terminal operators ---
 import { AggregateOperator } from "../operators/aggregate";
 import { AllOperator } from "../operators/all";
 import { AnyOperator } from "../operators/any";
@@ -37,7 +37,7 @@ import { ToAsyncOperator } from "../operators/toAsync";
 import { ToMapOperator } from "../operators/toMap";
 import { ToRecordOperator } from "../operators/toRecord";
 import { ToSetOperator } from "../operators/toSet";
-// ── Streaming enumerators ─────────────────────────────────────────────────────
+// --- Streaming enumerators ---
 import { AppendEnumerator } from "../enumerators/streaming/append";
 import { CastEnumerator } from "../enumerators/streaming/cast";
 import { ChunkEnumerator } from "../enumerators/streaming/chunk";
@@ -61,7 +61,7 @@ import { TapIfEnumerator } from "../enumerators/streaming/tapIf";
 import { ThrottleEnumerator } from "../enumerators/streaming/throttle";
 import { WhereEnumerator } from "../enumerators/streaming/where";
 import { ZipEnumerator } from "../enumerators/streaming/zip";
-// ── Buffer enumerators ────────────────────────────────────────────────────────
+// --- Buffer enumerators ---
 import { BacksertEnumerator } from "../enumerators/buffer/backsert";
 import { DistinctEnumerator } from "../enumerators/buffer/distinct";
 import { DistinctByEnumerator } from "../enumerators/buffer/distinctBy";
@@ -78,23 +78,14 @@ import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
 
 /**
- * Abstract base class providing the complete LINQ-style operator surface for enumerable sequences.
+ * Abstract base class that implements all {@link TyneqSequence} operator methods.
  *
  * @remarks
- * Extends {@link TyneqEnumerableCore} (which owns `orderBy`, `orderByDescending`, `memoize`,
- * and `pipe`) and implements all remaining operators directly — terminal (immediate evaluation),
- * streaming (deferred, O(1) memory), and buffering (deferred, O(n) memory).
+ * All operator methods delegate to the corresponding operator class registered via
+ * `@operator`, `@terminal`, or the functional registration APIs.
+ * Subclasses implement `createEnumerable`, `createOrderedEnumerable`, and `createCachedEnumerable`
+ * to control which concrete sequence types are returned.
  *
- * Query pipelines are lazy — evaluation begins only when a terminal operator or the
- * `for...of` protocol is invoked. Sequences are re-iterable: each enumeration calls
- * {@link getEnumerator} for a fresh iterator.
- *
- * @typeParam TSource - The type of elements in the sequence.
- *
- * @see {@link TyneqEnumerable} for the standard concrete implementation.
- * @see {@link TyneqOrderedEnumerable} for ordered sequence support.
- *
- * @group Classes
  * @internal
  */
 export abstract class TyneqEnumerableBase<TSource>
@@ -109,7 +100,7 @@ export abstract class TyneqEnumerableBase<TSource>
         return new QueryNode(metadata.name, args, this[tyneqQueryNode], metadata.category);
     }
 
-    // ── Terminal operators ────────────────────────────────────────────────────
+    // --- Terminal operators ---
 
     public aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
@@ -253,7 +244,7 @@ export abstract class TyneqEnumerableBase<TSource>
         return new ToSetOperator(this).process();
     }
 
-    // ── Streaming operators ───────────────────────────────────────────────────
+    // --- Streaming operators ---
 
     public cast<U>(): TyneqSequence<U> {
         const node = this.createOperatorNode(CastEnumerator, []);
@@ -472,20 +463,13 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
-    // ── Buffer operators ──────────────────────────────────────────────────────
+    // --- Buffer operators ---
 
     public backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource> {
-        ArgumentUtility.checkNotOptional({ index, other });
-        ArgumentUtility.checkNotNull({ other });
-        if (typeof index !== "number" || !Number.isFinite(index)) {
-            throw new TypeError("backIndex must be a finite number.");
-        }
-        if (!Number.isSafeInteger(index)) {
-            throw new RangeError("backIndex must be a safe integer.");
-        }
-        if (index < 0) {
-            throw new RangeError("backIndex must be a non-negative integer.");
-        }
+        ArgumentUtility.checkNotOptional({ index });
+        ArgumentUtility.checkNotOptional({ other });
+        ArgumentUtility.checkSafeInteger({ index });
+        ArgumentUtility.checkNonNegative({ index });
         ArgumentUtility.checkIterable({ other });
         const node = this.createOperatorNode(BacksertEnumerator, [index, other]);
         return this.createEnumerable(

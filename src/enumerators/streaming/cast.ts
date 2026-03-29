@@ -1,25 +1,21 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
 /**
- * Enumerator that performs an unchecked type cast on each element of a sequence.
+ * Casts each element to the target type.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Casts each element from `T` to `U` via a double type assertion. No runtime type checking is
- * performed; the cast is a compile-time-only operation. Use `OfTypeEnumerator` for runtime-safe
- * type filtering.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.cast}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "cast", kind: "streaming" })
 export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>) {
         super(sourceEnumerator);
     }

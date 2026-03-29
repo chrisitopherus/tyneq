@@ -1,19 +1,15 @@
-import { builtinTerminal } from "../extensions/builtinTerminal";
+import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { EnumeratorUtility } from "../utility/EnumeratorUtility";
 
 /**
- * Terminal operator that returns `true` if the sequence is null or contains no elements.
+ * Returns true if the sequence is null or contains no elements.
  *
  * @remarks
- * Immediate. Source is enumerated on call.
+ * Immediate. Source is fully enumerated when this method is called.
  *
- * Reads at most one element to determine whether the sequence is empty, then disposes the
- * iterator.
- *
- * @see {@link TyneqSequence.isNullOrEmpty} for the public API.
- *
+ * @see {@link TyneqSequence.isNullOrEmpty}
  * @group Operators
  * @category Terminal
  * @internal

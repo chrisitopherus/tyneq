@@ -1,18 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that yields elements whose keys are not present in an excluded-keys sequence.
+ * Returns elements from the source sequence whose keys are not present in a second key sequence.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
  *
- * Buffers the excluded keys into a `Set` on first iteration. Each unique key appears at most
- * once in the output (already-yielded keys are also added to the exclusion set).
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.exceptBy}
+ * @group Operators
+ * @category Buffering
  * @internal
  */
 @builtinOperator({ name: "exceptBy", kind: "buffer" })
@@ -21,11 +20,7 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
     private excludeSet = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param excludedKeys - Keys to exclude; buffered into a `Set` on first iteration.
-     * @param keySelector - Extracts the comparison key from each source element.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.excludedKeys = excludedKeys;

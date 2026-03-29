@@ -1,19 +1,17 @@
-import { builtinOperator } from "../../extensions/builtinOperator";
+import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
- * Enumerator that bypasses elements from the beginning while a predicate is true, then yields all remaining elements.
+ * Skips elements from the beginning of the source sequence as long as a predicate is true.
  *
  * @remarks
- * Deferred. Source is not enumerated until iteration begins.
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * Tests each element against the predicate until the first element that returns `false`.
- * That element and all subsequent elements are yielded without further predicate evaluation.
- * Once skipping ends it does not resume, even if later elements would satisfy the predicate.
- *
- * @group Enumerators
+ * @see {@link TyneqSequence.skipWhile}
+ * @group Operators
+ * @category Streaming
  * @internal
  */
 @builtinOperator({ name: "skipWhile", kind: "streaming" })
@@ -21,10 +19,7 @@ export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
     private isSkipping = true;
 
-    /**
-     * @param sourceEnumerator - The upstream enumerator to wrap.
-     * @param predicate - Elements are skipped while this returns `true`.
-     */
+    
     public constructor(sourceEnumerator: Enumerator<T>, predicate: (item: T) => boolean) {
         super(sourceEnumerator);
         this.predicate = predicate;
