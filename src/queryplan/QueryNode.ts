@@ -1,4 +1,4 @@
-import type { IQueryNode, QueryPlanVisitor, OperatorCategory } from "../types/queryplan";
+import type { IQueryNode, QueryPlanVisitor, OperatorCategory, SourceKind } from "../types/queryplan";
 
 /**
  * Concrete `IQueryNode` implementation.
@@ -14,7 +14,8 @@ export class QueryNode implements IQueryNode {
         public readonly operatorName: string,
         public readonly args: readonly unknown[],
         public readonly source: IQueryNode | null,
-        public readonly category: OperatorCategory
+        public readonly category: OperatorCategory,
+        public readonly sourceKind?: SourceKind
     ) {}
 
     public accept<T>(visitor: QueryPlanVisitor<T>): T {
