@@ -1,6 +1,5 @@
 import { OperatorMetadata, setOperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { Constructor } from "../types/utility";
 
 /**
  * Options for {@link builtinOperator}.
@@ -24,7 +23,7 @@ export interface BuiltinOperatorOptions {
 export function builtinOperator(
     options: BuiltinOperatorOptions
 ) {
-    return function <TClass extends Constructor>(
+    return function <TClass extends Function>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {

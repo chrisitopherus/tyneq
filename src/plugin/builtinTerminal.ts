@@ -1,7 +1,5 @@
-import { setOperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
+import { setOperatorMetadata } from "../core/registry/OperatorMetadata";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { IOperatorMetadataCarrier } from "../types/core";
-import { Constructor } from "../types/utility";
 
 /**
  * Options for {@link builtinTerminal}.
@@ -22,7 +20,7 @@ export interface BuiltinTerminalOptions {
  * @internal
  */
 export function builtinTerminal(options: BuiltinTerminalOptions) {
-    return function <TClass extends Constructor>(
+    return function <TClass extends Function>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
