@@ -1,40 +1,6 @@
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-
-/**
- * Metadata describing a registered operator.
- *
- * @group Classes
- */
-export class OperatorMetadata {
-
-    public constructor(
-        public readonly name: string,
-        public readonly kind: "streaming" | "buffer" | "terminal",
-        public readonly source: "internal" | "external" = "external",
-        public readonly extensions: Readonly<Record<string, unknown>> = {}
-    ) { }
-
-    /** Creates metadata for a streaming operator registered from an external plugin. */
-    public static streaming(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "streaming", "external", extensions);
-    }
-
-    /** Creates metadata for a buffering operator registered from an external plugin. */
-    public static buffer(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "buffer", "external", extensions);
-    }
-
-    /** Creates metadata for a terminal operator registered from an external plugin. */
-    public static terminal(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "terminal", "external", extensions);
-    }
-}
-
-/** A fully resolved operator entry: metadata plus the prototype-level implementation. */
-export interface OperatorEntry {
-    readonly metadata: OperatorMetadata;
-    readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
-}
+import { OperatorEntry } from "../../types/core";
+import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
+import { OperatorMetadata } from "./OperatorMetadata";
 
 /**
  * Central registry for all Tyneq operators.
@@ -194,14 +160,21 @@ export class OperatorRegistry {
             );
         }
 
-        // No-op impl: built-in operators live on TyneqEnumerableBase directly.
-        const noopImpl = function (this: TyneqEnumerableBase<unknown>, ..._args: unknown[]): unknown {
-            return undefined;
-        };
-
+        // Use a lazy wrapper for the implementation to avoid accessing
+        // `TyneqEnumerableBase.prototype` during module initialization (TDZ/circular import).
         const entry: OperatorEntry = {
             metadata: new OperatorMetadata(name, kind, "internal"),
-            impl: noopImpl,
+            impl: function (this: unknown, ...args: unknown[]) {
+                const real = (TyneqEnumerableBase.prototype as any)[name];
+                if (!real) {
+                    throw new Error(
+                        `[tyneq] Cannot invoke builtin '${name}' (${kind}): ` +
+                        "method not found on TyneqEnumerableBase."
+                    );
+                }
+                
+                return real.apply(this, args);
+            },
         };
 
         this._entries.set(name, entry);

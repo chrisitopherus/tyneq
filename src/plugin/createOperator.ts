@@ -1,3 +1,10 @@
+import type { Enumerable, EnumeratorFactory, IWithCreateEnumerable } from "../types/core";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+
 /**
  * Registers a streaming or buffering operator using a factory function.
  *
@@ -37,19 +44,11 @@
  *
  * @group Utilities
  */
-import type { Enumerable, EnumeratorFactory } from "../types/core";
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
-import { QueryNode } from "../queryplan/QueryNode";
-import { tyneqQueryNode } from "../types/queryplan";
-import type { IWithCreateEnumerable } from "./registrationShared";
-
 export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
     kind?: "streaming" | "buffer";
     factory: (source: Enumerable<TSource>, ...args: TArgs) => EnumeratorFactory<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
-    
     source?: "internal" | "external";
 }): void {
     const kind = config.kind ?? "streaming";

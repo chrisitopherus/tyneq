@@ -2,8 +2,8 @@ import { TyneqSequence } from "../../types/core";
 import { QueryPlanNode } from "../../types/queryplan";
 import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { Tyneq } from "../../core/tyneq";
-import { OperatorRegistry } from "../../plugin/OperatorRegistry";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
+import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 
 export class QueryPlanCompiler {
     private readonly transformers: QueryPlanTransformer[];
@@ -70,13 +70,26 @@ export class QueryPlanCompiler {
             );
         }
 
+        // if (!OperatorRegistry.has(node.operatorName)) {
+        //     throw new Error(
+        //         `[tyneq] QueryPlanCompiler: operator '${node.operatorName}' is not registered.`
+        //     );
+        // }
+
+        const method2 = source[node.operatorName as keyof typeof source];
+        if (typeof method2 !== "function") {
+            throw new Error(
+                `2[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
+            );
+        }
+
         const method = OperatorRegistry.get(node.operatorName)?.impl;
-        if (typeof method !== "function" || method.name === "noopImpl") {
+        if (typeof method !== "function") {
             throw new Error(
                 `[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
             );
         }
 
-        return method.apply(source, node.args) as TyneqSequence<T>;
+        return method.apply(source, [...node.args]) as TyneqSequence<T>;
     }
 }

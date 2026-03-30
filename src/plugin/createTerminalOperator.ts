@@ -1,3 +1,8 @@
+import type { Enumerable } from "../types/core";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+
 /**
  * Registers a terminal operator using a plain function.
  *
@@ -24,19 +29,14 @@
  *
  * @group Utilities
  */
-import type { Enumerable } from "../types/core";
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
-
 export function createTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
     execute: (source: Enumerable<TSource>, ...args: TArgs) => TResult;
     validate?: (...args: NoInfer<TArgs>) => void;
-    
     source?: "internal" | "external";
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, "terminal", config.source ?? "external"),
+        metadata: OperatorMetadata.terminal(config.name, config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as Enumerable<TSource>, ...(args as TArgs));

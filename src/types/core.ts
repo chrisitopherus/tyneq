@@ -1,7 +1,9 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
 import { Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
-import type { QueryPlanNode } from "./queryplan";
+import type { OperatorCategory, QueryPlanNode } from "./queryplan";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { OperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
 
 /**
  * A pull-based iterator over a sequence.
@@ -795,3 +797,42 @@ export type KeyValuePair<TKey, TValue> = {
     key: TKey;
     value: TValue;
 };
+
+/**
+ * Metadata attached to a built-in operator constructor via `tyneqOperatorMetadata`.
+ *
+ * @internal
+ */
+export interface IOperatorMetadata {
+    readonly name: string;
+    readonly category: Exclude<OperatorCategory, "source">;
+}
+
+/** Structural interface for classes that carry `tyneqOperatorMetadata`. @internal */
+export interface IOperatorMetadataCarrier {
+    readonly [tyneqOperatorMetadata]: IOperatorMetadata;
+}
+
+/**
+ * Structural interface used by registration machinery to call the protected
+ * `createEnumerable` method on `TyneqEnumerableBase` without exposing it publicly.
+ *
+ * The double-cast `(this as unknown as IWithCreateEnumerable)` is intentional:
+ * `createEnumerable` is `protected`, so the cast is the only way to call it from
+ * outside the class hierarchy without changing the access modifier.
+ *
+ * @internal
+ */
+export interface IWithCreateEnumerable {
+    createEnumerable(factory: { getEnumerator(): unknown }, node?: QueryPlanNode | null): unknown;
+    readonly [tyneqQueryNode]: QueryPlanNode | null;
+}
+
+/** A fully resolved operator entry: metadata plus the prototype-level implementation. */
+export interface OperatorEntry {
+    readonly metadata: OperatorMetadata;
+    readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
+}
+
+/** Source of an operator implementation, used internally to track where operators come from. */
+export type OperatorSource = "internal" | "external";

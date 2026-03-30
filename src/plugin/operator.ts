@@ -1,3 +1,11 @@
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { inferOperatorKind } from "./inferKind";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import { IWithCreateEnumerable } from "../types/core";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+
 /**
  * Class decorator that registers a `TyneqEnumerator` subclass as a streaming or buffering operator.
  *
@@ -32,13 +40,6 @@
  *
  * @group Decorators
  */
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
-import { inferOperatorKind } from "./inferKind";
-import { QueryNode } from "../queryplan/QueryNode";
-import { tyneqQueryNode } from "../types/queryplan";
-import type { IWithCreateEnumerable } from "./registrationShared";
-
 export function operator<TArgs extends unknown[] = never>(
     name: string,
     kindOrValidate?: "streaming" | "buffer" | ((...args: TArgs) => void),
@@ -54,7 +55,7 @@ export function operator<TArgs extends unknown[] = never>(
         const actualValidate: ((...args: TArgs) => void) | undefined =
             typeof kindOrValidate === "function" ? kindOrValidate : validate;
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, kind, "internal"),
+            metadata: new OperatorMetadata(name, kind, "external"),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 actualValidate?.(...(userArgs as TArgs));
                 const base = this;

@@ -1,5 +1,6 @@
-import { OperatorMetadata, OperatorRegistry } from "./OperatorRegistry";
-import { tyneqOperatorMetadata } from "../queryplan/operatorMetadata";
+import { OperatorMetadata, setOperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { Constructor } from "../types/utility";
 
 /**
  * Options for {@link builtinOperator}.
@@ -23,15 +24,16 @@ export interface BuiltinOperatorOptions {
 export function builtinOperator(
     options: BuiltinOperatorOptions
 ) {
-    return function <TClass extends new (...args: any[]) => any>(
+    return function <TClass extends Constructor>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
         const { name, kind } = options;
-        (target as unknown as Record<PropertyKey, unknown>)[tyneqOperatorMetadata] = {
+        setOperatorMetadata(target, {
             name,
             category: kind,
-        };
+        });
+
         OperatorRegistry.registerBuiltin(name, kind);
         return target;
     };

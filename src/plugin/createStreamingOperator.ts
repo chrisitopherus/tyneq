@@ -1,3 +1,10 @@
+import type { Enumerator, EnumeratorFactory, IWithCreateEnumerable } from "../types/core";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+
 /**
  * Registers a streaming operator using a generator function.
  *
@@ -26,22 +33,14 @@
  *
  * @group Utilities
  */
-import type { Enumerator, EnumeratorFactory } from "../types/core";
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorRegistry, OperatorMetadata } from "./OperatorRegistry";
-import { QueryNode } from "../queryplan/QueryNode";
-import { tyneqQueryNode } from "../types/queryplan";
-import type { IWithCreateEnumerable } from "./registrationShared";
-
 export function createStreamingOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
     generator: (source: Iterable<TSource>, ...args: TArgs) => IterableIterator<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
-    
     source?: "internal" | "external";
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, "streaming", config.source ?? "external"),
+        metadata: OperatorMetadata.streaming(config.name, config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const self = this;

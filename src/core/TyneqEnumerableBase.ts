@@ -1,9 +1,7 @@
-import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, KeyValuePair, MinMaxResult } from "../types/core";
+import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult, IOperatorMetadataCarrier } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
-import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
-import { getOperatorMetadata, IOperatorMetadataCarrier } from "../queryplan/operatorMetadata";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
 // --- Terminal operators ---
 import { AggregateOperator } from "../operators/aggregate";
@@ -76,6 +74,7 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
+import { getOperatorMetadata } from "./registry/OperatorMetadata";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.

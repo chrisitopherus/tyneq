@@ -1,5 +1,7 @@
-import { OperatorRegistry } from "./OperatorRegistry";
-import { tyneqOperatorMetadata } from "../queryplan/operatorMetadata";
+import { setOperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { IOperatorMetadataCarrier } from "../types/core";
+import { Constructor } from "../types/utility";
 
 /**
  * Options for {@link builtinTerminal}.
@@ -20,15 +22,16 @@ export interface BuiltinTerminalOptions {
  * @internal
  */
 export function builtinTerminal(options: BuiltinTerminalOptions) {
-    return function <TClass extends new (...args: any[]) => any>(
+    return function <TClass extends Constructor>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
         const { name } = options;
-        (target as unknown as Record<PropertyKey, unknown>)[tyneqOperatorMetadata] = {
+        setOperatorMetadata(target, {
             name,
             category: "terminal",
-        };
+        });
+        
         OperatorRegistry.registerBuiltin(name, "terminal");
         return target;
     };

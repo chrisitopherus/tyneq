@@ -3,7 +3,6 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import { ArgumentUtility } from "../utility/argumentUtility";
-import { nameof } from "../utility/nameof";
 import { TyneqCachedEnumerable } from "./TyneqCachedEnumerable";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 

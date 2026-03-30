@@ -6,7 +6,7 @@ import { builtinTerminal } from "../../../src/plugin/builtinTerminal";
 import {
   getOperatorMetadata,
   IOperatorMetadataCarrier,
-} from "../../../src/queryplan/operatorMetadata";
+} from "../../../src/core/registry/OperatorMetadata";
 import { WhereEnumerator } from "../../../src/enumerators/streaming/where";
 import { AllOperator } from "../../../src/operators/all";
 

@@ -1,6 +1,6 @@
 import { ArgumentError } from "../../core/errors/argument/ArgumentError";
 import { ArgumentNullError } from "../../core/errors/argument/ArgumentNullError";
-import type { HasLength, Nullable, Optional, Undefinedable } from "../../types/utility";
+import type { HasLength, Nullable, Optional, Maybe } from "../../types/utility";
 
 /**
  * Null and undefined guard implementations. Called by `ArgumentUtility`.
@@ -18,7 +18,7 @@ export class NullGuards {
     }
 
     
-    public static checkNotUndefined<T>(value: Undefinedable<T>, paramName: string): asserts value is T {
+    public static checkNotUndefined<T>(value: Maybe<T>, paramName: string): asserts value is T {
         if (value === undefined) {
             throw new ArgumentError(`'${paramName}' cannot be undefined.`, paramName);
         }
