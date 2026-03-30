@@ -18,17 +18,17 @@ export class QueryPlanCompiler {
      * @returns An executable sequence representing the compiled query plan.
      */
     public compile<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {
-        const optimizedNode = this.transform(node);
-        return this.compileNode<T>(optimizedNode);
+        const transformedNode = this.transform(node);
+        return this.compileNode<T>(transformedNode);
     }
 
     private transform(node: QueryPlanNode): QueryPlanNode {
-        let optimizedNode = node;
+        let transformedNode = node;
         for (const transformer of this.transformers) {
-            optimizedNode = transformer.visit(optimizedNode);
+            transformedNode = transformer.visit(transformedNode);
         }
 
-        return optimizedNode;
+        return transformedNode;
     }
 
     private compileNode<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {

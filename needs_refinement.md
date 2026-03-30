@@ -1,0 +1,3 @@
+so operators defined on core are not registered in registry
+
+also how to tackle the issue with operators that are defined on OrderedEnumerable or CachedEnumerable? these need to be registered too, but should obv only be callable if the source is the contains them -> rewrite compiler to not validate the source to be base, but rather just validate that the operator is registered and also that the operator exists on the current source
