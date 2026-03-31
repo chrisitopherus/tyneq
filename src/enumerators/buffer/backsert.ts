@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -19,7 +18,6 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "backsert", kind: "buffer" })
 export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
     private readonly other: Iterable<T>;
     private readonly backIndex: number;

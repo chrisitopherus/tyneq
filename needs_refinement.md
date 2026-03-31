@@ -35,20 +35,41 @@ Three issues with the current architecture:
 The `where()` method lives on `TyneqEnumerableBase` in another file. There is no compile-time
 link between them — renaming the method silently invalidates the registration.
 
-### Unified fix: `@coreOperator` for all internal operators
+### Unified fix: `@builtin` + `@sequence` for all internal operators
 
-Move registration to the method itself across the board. `@builtinOperator` is removed.
-All internal operators — base, core, ordered, cached — use `@coreOperator` on the method
-and `@registerCoreOperators` on the class. The enumerator classes become pure implementation
-with no registration concern.
+Move registration to the method itself across the board. `@builtinOperator` and `@builtinTerminal`
+are removed. All internal operators — base, core, ordered, cached — use `@builtin` on the method
+and `@sequence` on the class. The enumerator classes become pure implementation with no
+registration concern.
 
 The external decorator split remains, because external developers write an enumerator class
 and have no method on a base class to decorate:
 
 | Pattern | Who | Registration lives on |
 |---|---|---|
-| `@coreOperator` + `@registerCoreOperators` | All internal operators | The method — can't drift from the name |
+| `@builtin` + `@sequence` | All internal operators | The method — can't drift from the name |
 | `@operator` / `@orderedOperator` / `@cachedOperator` | External developers | Enumerator class — the only entry point they have |
+
+---
+
+## Removal: `tyneqOperatorMetadata` on enumerator classes
+
+Currently `@builtinOperator` and `@builtinTerminal` call `setOperatorMetadata(target, { name, category })`
+to attach an `IOperatorMetadata` Symbol-property onto the enumerator class constructor.
+This is read back in `TyneqEnumerableBase.createOperatorNode()` to build the `QueryNode`.
+
+After the refactor **this mechanism is fully removed**:
+
+- `@builtin` decorates the method directly, so `name` and `kind` are available right there
+  when building the `QueryNode` inside the method body.
+- `createOperatorNode()` is deleted — each `@builtin` method builds its own node inline.
+- The following are deleted entirely:
+  - `tyneqOperatorMetadata` (the Symbol)
+  - `setOperatorMetadata` / `getOperatorMetadata`
+  - `IOperatorMetadata` interface
+  - `IOperatorMetadataCarrier` interface
+
+`OperatorMetadata` (the registry class) is **not** affected — it only lives in the registry map.
 
 ---
 
@@ -58,13 +79,43 @@ Add `targetClass` — a reference to the actual class the operator lives on (or 
 The compiler uses `instanceof entry.metadata.targetClass` directly. No string enum needed.
 
 ```typescript
+// src/core/registry/OperatorMetadata.ts
+
 export class OperatorMetadata {
     constructor(
         public readonly name: string,
         public readonly kind: "streaming" | "buffer" | "terminal",
         public readonly source: "internal" | "external",
         public readonly targetClass: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>,
+        public readonly extensions: Readonly<Record<string, unknown>> = {}
     ) {}
+
+    public static streaming(
+        name: string,
+        targetClass: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>,
+        source?: OperatorSource,
+        extensions?: Record<string, unknown>
+    ): OperatorMetadata {
+        return new OperatorMetadata(name, "streaming", source ?? "external", targetClass, extensions);
+    }
+
+    public static buffer(
+        name: string,
+        targetClass: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>,
+        source?: OperatorSource,
+        extensions?: Record<string, unknown>
+    ): OperatorMetadata {
+        return new OperatorMetadata(name, "buffer", source ?? "external", targetClass, extensions);
+    }
+
+    public static terminal(
+        name: string,
+        targetClass: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>,
+        source?: OperatorSource,
+        extensions?: Record<string, unknown>
+    ): OperatorMetadata {
+        return new OperatorMetadata(name, "terminal", source ?? "external", targetClass, extensions);
+    }
 }
 ```
 
@@ -78,80 +129,144 @@ export class OperatorMetadata {
 
 ## Change 2 — `OperatorRegistry`: patch onto `targetClass.prototype`
 
-Currently hardcoded to `TyneqEnumerableBase.prototype`. Use `entry.metadata.targetClass.prototype`:
+Currently hardcoded to `TyneqEnumerableBase.prototype`. Use `entry.metadata.targetClass.prototype`.
+`registerBuiltin` now takes `targetClass` instead of assuming `TyneqEnumerableBase`.
 
 ```typescript
-static register(entry: OperatorEntry): void {
-    // ... duplicate checks ...
-    this.operators.set(entry.metadata.name, entry);
-    (entry.metadata.targetClass.prototype as any)[entry.metadata.name] = entry.impl;
+// src/core/registry/TyneqOperatorRegistry.ts
+
+public static register(input: OperatorEntry): void {
+    const { name } = input.metadata;
+
+    if (this._entries.has(name)) {
+        const existing = this._entries.get(name)!.metadata;
+        throw new Error(
+            `[tyneq] Cannot register '${name}' (${input.metadata.kind}): ` +
+            `already registered as '${existing.kind}' from source '${existing.source}'.`
+        );
+    }
+
+    for (const guard of this._registrationGuards) guard(input);
+
+    this._entries.set(name, input);
+    // patch onto the specific target class, not always TyneqEnumerableBase
+    (input.metadata.targetClass.prototype as any)[name] = input.impl;
+
+    for (const hook of this._registrationHooks) hook(input);
 }
 
-static unregister(name: string): void {
-    const entry = this.operators.get(name);
-    if (entry?.metadata.source === "external") {
+public static unregister(name: string): boolean {
+    const entry = this._entries.get(name);
+    if (!entry) return false;
+
+    this._entries.delete(name);
+    if (entry.metadata.source !== "internal") {
         delete (entry.metadata.targetClass.prototype as any)[name];
     }
-    this.operators.delete(name);
+    return true;
 }
 
-static registerBuiltin(
+public static registerBuiltin(
     name: string,
     kind: OperatorMetadata["kind"],
     targetClass: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>
 ): void {
-    // no prototype patching — method already exists as a direct definition
-    this.operators.set(name, {
+    if (this._entries.has(name)) {
+        const existing = this._entries.get(name)!.metadata;
+        throw new Error(
+            `[tyneq] Cannot register builtin '${name}' (${kind}): ` +
+            `already registered as '${existing.kind}' from source '${existing.source}'.`
+        );
+    }
+
+    // No prototype patching — method already exists as a direct definition on targetClass.
+    // Lazy wrapper avoids TDZ/circular-import issues during module initialization.
+    const entry: OperatorEntry = {
         metadata: new OperatorMetadata(name, kind, "internal", targetClass),
-        impl: (targetClass.prototype as any)[name],
-    });
+        impl: function (this: unknown, ...args: unknown[]) {
+            const real = (targetClass.prototype as any)[name];
+            if (!real) {
+                throw new Error(`[tyneq] Cannot invoke builtin '${name}': method not found on ${targetClass.name}.`);
+            }
+            return real.apply(this, args);
+        },
+    };
+
+    this._entries.set(name, entry);
+    for (const hook of this._registrationHooks) hook(entry);
 }
 ```
 
 ---
 
-## Change 3 — Register ALL internal operators via two-decorator pattern
+## Change 3 — New file: `src/plugin/builtin.ts`
 
-### Why two decorators
+Two decorators that replace `@builtinOperator` and `@builtinTerminal` entirely.
 
-TC39 stage 3 method decorators (`ClassMethodDecoratorContext`) do not give you a reference to
-the class the method belongs to — `context` only has the method name. For non-static methods,
-`context.addInitializer` runs per instance, not at class definition time.
+### How they work
 
-The solution is a standard TC39 two-decorator pattern:
-- **`@coreOperator`** (method decorator) — stores registration options as a property on the
-  method function itself (plain property, no library needed)
-- **`@registerCoreOperators`** (class decorator) — receives the class, walks `prototype`,
-  finds marked methods, and calls `OperatorRegistry.registerBuiltin`
+- **`@builtin` (method decorator)** — runs when the class body is evaluated. Receives the method
+  function and the decorator context. Attaches `BuiltinOptions` onto the function via a
+  well-known Symbol, then returns the function unchanged. This is just a tag — no registration
+  happens here yet because the class reference is not available at method-decorator time.
 
-Naming follows the "what it is" convention rather than "what it does":
-- **`@builtin`** — "this method is a built-in operator"
-- **`@sequence`** — "this class is a sequence whose methods define operators"
+- **`@sequence` (class decorator)** — runs after all method decorators on the class have fired.
+  Receives the constructor. Walks `Object.getOwnPropertyNames(target.prototype)`, finds any
+  method that has the `BUILTIN_META` Symbol on it, reads the options, and calls
+  `OperatorRegistry.registerBuiltin(name, kind, target)`. Registration happens exactly once
+  per class at class-definition time.
 
-The scanning and registration are the implementation detail of those two decorators, not their identity.
+### Why a Symbol and not a plain string property?
+
+Symbols are not enumerable and don't appear in `for...in` or `Object.keys()`, so the tag is
+invisible to everything except code that explicitly holds the Symbol. Ownership is clear.
+
+### Execution order within a class
+
+Method decorators run bottom-up (innermost first), then the class decorator runs last. By the
+time `@sequence` fires, every `@builtin`-tagged method already has `BUILTIN_META` on it.
 
 ```typescript
 // src/plugin/builtin.ts
 
-const BUILTIN_META = Symbol("builtinMeta");
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+
+const BUILTIN_META = Symbol("tyneq.builtinMeta");
 
 export interface BuiltinOptions {
     readonly name: string;
     readonly kind: "streaming" | "buffer" | "terminal";
 }
 
-// Method decorator — declares the method as a built-in operator.
-// Stores options on the function object so @sequence can find them.
+/**
+ * Method decorator — declares this method as a built-in operator.
+ *
+ * Stores `BuiltinOptions` on the function object so `@sequence` can find it.
+ * Does NOT register anything by itself — registration happens in `@sequence`.
+ *
+ * @internal
+ */
 export function builtin(options: BuiltinOptions) {
-    return function (value: Function, _context: ClassMethodDecoratorContext): Function {
+    return function (
+        value: Function,
+        _context: ClassMethodDecoratorContext
+    ): Function {
+        // Tag the method function with the options.
+        // BUILTIN_META is a Symbol so this property is invisible to normal iteration.
         (value as any)[BUILTIN_META] = options;
-        return value;
+        return value; // return unchanged — we only tag, not wrap
     };
 }
 
-// Class decorator — declares the class as a sequence.
-// Scans the prototype for @builtin-marked methods and registers each one
-// in OperatorRegistry with targetClass = this class.
+/**
+ * Class decorator — declares this class as a sequence whose `@builtin` methods are operators.
+ *
+ * Scans the prototype for `@builtin`-tagged methods and registers each one via
+ * `OperatorRegistry.registerBuiltin`, passing this class as `targetClass`.
+ *
+ * @internal
+ */
 export function sequence(
     target: abstract new (...args: any[]) => TyneqEnumerableBase<unknown>,
     _context: ClassDecoratorContext
@@ -169,24 +284,36 @@ export function sequence(
 ### Usage — all internal operators, across all classes
 
 ```typescript
-// TyneqEnumerableBase.ts — base operators (was @builtinOperator on enumerator class)
+// TyneqEnumerableBase.ts
 @sequence
 export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<TSource> {
 
     @builtin({ name: "where", kind: "streaming" })
     public where(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
-        return this.createEnumerable({ getEnumerator: () => new WhereEnumerator(this.getEnumerator(), predicate) });
+        const node = new QueryNode("where", [predicate], this[tyneqQueryNode], "streaming");
+        return this.createEnumerable(
+            { getEnumerator: () => new WhereEnumerator(this.getEnumerator(), predicate) },
+            node
+        );
     }
 
     @builtin({ name: "select", kind: "streaming" })
     public select<TResult>(selector: (item: TSource) => TResult): TyneqSequence<TResult> {
-        return this.createEnumerable({ getEnumerator: () => new SelectEnumerator(this.getEnumerator(), selector) });
+        const node = new QueryNode("select", [selector], this[tyneqQueryNode], "streaming");
+        return this.createEnumerable(
+            { getEnumerator: () => new SelectEnumerator(this.getEnumerator(), selector) },
+            node
+        );
     }
 
-    // ... all other base operators follow the same pattern
+    // terminal operators follow the same pattern with kind: "terminal"
+    @builtin({ name: "count", kind: "terminal" })
+    public count(): number {
+        return new CountOperator(this).process();
+    }
 }
 
-// TyneqEnumerableCore.ts — core methods
+// TyneqEnumerableCore.ts
 @sequence
 export abstract class TyneqEnumerableCore<TSource> {
 
@@ -195,11 +322,9 @@ export abstract class TyneqEnumerableCore<TSource> {
 
     @builtin({ name: "memoize", kind: "buffer" })
     public memoize(): TyneqCachedSequence<TSource> { ... }
-
-    // ...
 }
 
-// TyneqOrderedEnumerable.ts — ordered-only methods
+// TyneqOrderedEnumerable.ts
 @sequence
 export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<TSource> {
 
@@ -210,7 +335,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     public thenByDescending<UKey>(...): TyneqOrderedSequence<TSource> { ... }
 }
 
-// TyneqCachedEnumerable.ts — cached-only methods
+// TyneqCachedEnumerable.ts
 @sequence
 export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
 
@@ -220,35 +345,63 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
 ```
 
 The enumerator classes (`WhereEnumerator`, `SelectEnumerator`, etc.) lose `@builtinOperator`
-entirely. They become pure implementation — no registration concern.
+and `@builtinTerminal` entirely. `createOperatorNode()` is also deleted from
+`TyneqEnumerableBase` — each method builds its own `QueryNode` inline with the name and kind
+it already knows statically.
 
 ---
 
 ## Change 4 — New enumerator base classes for ordered/cached operators
 
-`TyneqEnumerator<TInput, TOutput>` passes `Enumerator<TInput>` as source. Ordered and cached
-enumerators need the full sequence object.
+`TyneqEnumerator<TInput, TOutput>` receives `Enumerator<TInput>` as source. Ordered and cached
+enumerators need the full sequence object instead.
 
 ```typescript
 // src/core/enumerators/TyneqOrderedEnumerator.ts
+
+import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
+import { OrderedEnumerable } from "../../types/core";
+
+/**
+ * Base class for enumerators that need the full ordered sequence (not just an Enumerator<T>).
+ * Lifecycle of the source is owned by the sequence, not the enumerator.
+ *
+ * @internal
+ */
 export abstract class TyneqOrderedEnumerator<TSource>
     extends TyneqBaseEnumerator<TSource> {
+
     constructor(protected readonly orderedSource: OrderedEnumerable<TSource>) {
         super();
     }
-    protected disposeSource(): void {
-        // lifecycle is owned by the sequence, not the enumerator
+
+    protected override disposeSource(): void {
+        // The sequence owns its own lifecycle — enumerator must not dispose it.
     }
 }
+```
 
+```typescript
 // src/core/enumerators/TyneqCachedEnumerator.ts
+
+import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
+import { CachedEnumerable } from "../../types/core";
+
+/**
+ * Base class for enumerators that need the full cached sequence (not just an Enumerator<T>).
+ * Lifecycle of the source is owned by the sequence, not the enumerator.
+ *
+ * @internal
+ */
 export abstract class TyneqCachedEnumerator<TSource>
     extends TyneqBaseEnumerator<TSource> {
+
     constructor(protected readonly cachedSource: CachedEnumerable<TSource>) {
         super();
     }
-    protected disposeSource(): void {
-        // lifecycle is owned by the sequence, not the enumerator
+
+    protected override disposeSource(): void {
+        // The sequence owns its own lifecycle — enumerator must not dispose it.
     }
 }
 ```
@@ -260,60 +413,166 @@ export abstract class TyneqCachedEnumerator<TSource>
 
 ## Change 5 — New external-facing decorators: `@orderedOperator` / `@cachedOperator`
 
-These are the external equivalents of `@operator`, targeting specific subtypes. Each decorator
-knows the `targetClass` to patch onto and what to pass to the enumerator constructor (`this`
-instead of `this.getEnumerator()`).
+These are the external equivalents of `@operator`, targeting specific subtypes. The only
+differences from `@operator` are the `targetClass` passed to `OperatorMetadata` and that
+`impl` passes `this` (the sequence) rather than `this.getEnumerator()` to the constructor.
 
 ```typescript
-// External developer usage
-@orderedOperator("myThenBy", (keySelector) => {
-    if (typeof keySelector !== "function") throw new Error("keySelector must be a function");
-})
-class MyThenByEnumerator<T> extends TyneqOrderedEnumerator<T> {
-    constructor(source: OrderedEnumerable<T>, private keySelector: (item: T) => unknown) {
-        super(source);
+// src/plugin/orderedOperator.ts
+
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { TyneqOrderedEnumerable } from "../core/ordering/TyneqOrderedEnumerable";
+import { inferOperatorKind } from "./inferKind";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import { IWithCreateEnumerable } from "../types/core";
+
+/**
+ * Class decorator that registers a `TyneqOrderedEnumerator` subclass as an operator
+ * available only on ordered sequences.
+ *
+ * The enumerator constructor receives the full `TyneqOrderedEnumerable` as its first
+ * argument (not just an `Enumerator<T>`).
+ *
+ * @example
+ * ```ts
+ * @orderedOperator("myThenBy", (keySelector) => {
+ *     if (typeof keySelector !== "function") throw new Error("keySelector must be a function");
+ * })
+ * class MyThenByEnumerator<T> extends TyneqOrderedEnumerator<T> {
+ *     constructor(source: OrderedEnumerable<T>, private keySelector: (item: T) => unknown) {
+ *         super(source);
+ *     }
+ *     protected handleNext(): IteratorResult<T> { ... }
+ * }
+ * ```
+ */
+export function orderedOperator<TArgs extends unknown[] = never>(
+    name: string,
+    validate?: (...args: TArgs) => void
+) {
+    return function <TClass extends new (...args: any[]) => any>(
+        target: TClass,
+        _context: ClassDecoratorContext
+    ): TClass {
+        OperatorRegistry.register({
+            metadata: new OperatorMetadata(name, "buffer", "external", TyneqOrderedEnumerable),
+            impl: function (this: TyneqOrderedEnumerable<unknown>, ...userArgs: unknown[]) {
+                validate?.(...(userArgs as TArgs));
+                const base = this;
+                const withCreate = this as unknown as IWithCreateEnumerable;
+                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], "buffer");
+                return withCreate.createEnumerable({
+                    // passes `this` (the ordered sequence), not this.getEnumerator()
+                    getEnumerator: () => new target(base, ...userArgs)
+                }, node);
+            }
+        });
+        return target;
+    };
+}
+```
+
+```typescript
+// src/plugin/cachedOperator.ts
+
+import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { TyneqCachedEnumerable } from "../core/TyneqCachedEnumerable";
+import { QueryNode } from "../queryplan/QueryNode";
+import { tyneqQueryNode } from "../types/queryplan";
+import { IWithCreateEnumerable } from "../types/core";
+
+/**
+ * Class decorator that registers a `TyneqCachedEnumerator` subclass as an operator
+ * available only on cached sequences.
+ *
+ * The enumerator constructor receives the full `TyneqCachedEnumerable` as its first
+ * argument (not just an `Enumerator<T>`).
+ *
+ * @example
+ * ```ts
+ * @cachedOperator("myRefresh")
+ * class MyRefreshEnumerator<T> extends TyneqCachedEnumerator<T> {
+ *     constructor(source: CachedEnumerable<T>) { super(source); }
+ *     protected handleNext(): IteratorResult<T> { ... }
+ * }
+ * ```
+ */
+export function cachedOperator<TArgs extends unknown[] = never>(
+    name: string,
+    validate?: (...args: TArgs) => void
+) {
+    return function <TClass extends new (...args: any[]) => any>(
+        target: TClass,
+        _context: ClassDecoratorContext
+    ): TClass {
+        OperatorRegistry.register({
+            metadata: new OperatorMetadata(name, "buffer", "external", TyneqCachedEnumerable),
+            impl: function (this: TyneqCachedEnumerable<unknown>, ...userArgs: unknown[]) {
+                validate?.(...(userArgs as TArgs));
+                const base = this;
+                const withCreate = this as unknown as IWithCreateEnumerable;
+                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], "buffer");
+                return withCreate.createEnumerable({
+                    // passes `this` (the cached sequence), not this.getEnumerator()
+                    getEnumerator: () => new target(base, ...userArgs)
+                }, node);
+            }
+        });
+        return target;
+    };
+}
+```
+
+### `operator.ts` — pass `TyneqEnumerableBase` as `targetClass`
+
+The existing `@operator` needs one small update: pass `TyneqEnumerableBase` as `targetClass`
+to `OperatorMetadata`.
+
+```typescript
+// src/plugin/operator.ts  (diff — only the register call changes)
+
+OperatorRegistry.register({
+    metadata: new OperatorMetadata(name, kind, "external", TyneqEnumerableBase),
+    impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
+        actualValidate?.(...(userArgs as TArgs));
+        const base = this;
+        const withCreate = this as unknown as IWithCreateEnumerable;
+        const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind);
+        return withCreate.createEnumerable({
+            getEnumerator() { return new target(base.getEnumerator(), ...userArgs); }
+        }, node);
     }
-    protected handleNext(): IteratorResult<T> { ... }
-}
-
-@cachedOperator("myRefresh")
-class MyRefreshEnumerator<T> extends TyneqCachedEnumerator<T> {
-    constructor(source: CachedEnumerable<T>) { super(source); }
-    protected handleNext(): IteratorResult<T> { ... }
-}
+});
 ```
 
-### `impl` construction differs per decorator
+### `inferKind.ts` — detect ordered/cached enumerator bases
 
 ```typescript
-// @operator — passes this.getEnumerator() (an Enumerator<T>)
-impl = function (this: TyneqEnumerableBase<unknown>, ...args) {
-    return this.createEnumerable({
-        getEnumerator: () => new EnumeratorClass(this.getEnumerator(), ...args)
-    }, queryNode);
-};
+// src/plugin/inferKind.ts
 
-// @orderedOperator — passes `this` (the TyneqOrderedEnumerable itself)
-impl = function (this: TyneqOrderedEnumerable<unknown>, ...args) {
-    return this.createEnumerable({
-        getEnumerator: () => new EnumeratorClass(this, ...args)
-    }, queryNode);
-};
+import { TyneqEnumerator } from "../core/enumerators/TyneqEnumerator";
+import { TyneqOrderedEnumerator } from "../core/enumerators/TyneqOrderedEnumerator";
+import { TyneqCachedEnumerator } from "../core/enumerators/TyneqCachedEnumerator";
 
-// @cachedOperator — passes `this` (the TyneqCachedEnumerable itself)
-impl = function (this: TyneqCachedEnumerable<unknown>, ...args) {
-    return this.createEnumerable({
-        getEnumerator: () => new EnumeratorClass(this, ...args)
-    }, queryNode);
-};
+export function inferOperatorKind(target: Function): "streaming" | "buffer" {
+    let proto = Object.getPrototypeOf(target.prototype);
+    while (proto !== null) {
+        if (proto === TyneqEnumerator.prototype) return "streaming";
+        if (proto === TyneqOrderedEnumerator.prototype) return "buffer";
+        if (proto === TyneqCachedEnumerator.prototype) return "buffer";
+        proto = Object.getPrototypeOf(proto);
+    }
+
+    throw new Error(
+        `[tyneq] @operator('${target.name ?? "?"}'): ` +
+        "cannot infer kind — class must extend TyneqEnumerator, TyneqOrderedEnumerator, " +
+        `or TyneqCachedEnumerator, or pass kind explicitly.`
+    );
+}
 ```
-
-### Kind inference
-
-`inferOperatorKind` currently only checks for `TyneqEnumerator.prototype`. Extend it to also
-detect `TyneqOrderedEnumerator` and `TyneqCachedEnumerator`. Since ordered/cached operators are
-almost always buffer-style, these decorators can also hardcode `kind: "buffer"` as the default
-rather than inferring.
 
 ---
 
@@ -322,6 +581,8 @@ rather than inferring.
 Replace the hardcoded `instanceof TyneqEnumerableBase` check with a metadata-driven one:
 
 ```typescript
+// src/queryplan/compiler/QueryPlanCompiler.ts
+
 applyOperator(source: unknown, node: QueryPlanNode): unknown {
     const entry = OperatorRegistry.get(node.operator);
     if (!entry) {
@@ -357,18 +618,18 @@ at minimum the `plugin` barrel) so external developers can use `@orderedOperator
 
 | File | Change |
 |---|---|
-| `src/core/registry/OperatorMetadata.ts` | Add `targetClass` parameter |
-| `src/core/registry/TyneqOperatorRegistry.ts` | `register()` patches `targetClass.prototype`; `registerBuiltin()` takes `targetClass` |
-| `src/plugin/builtinOperator.ts` | **Deleted** — replaced by `@builtin` |
-| `src/plugin/builtinTerminal.ts` | **Deleted** — replaced by `@builtin` |
+| `src/core/registry/OperatorMetadata.ts` | Add `targetClass` parameter; delete `tyneqOperatorMetadata` symbol, `setOperatorMetadata`, `getOperatorMetadata`, `IOperatorMetadata`, `IOperatorMetadataCarrier` |
+| `src/core/registry/TyneqOperatorRegistry.ts` | `register()` patches `targetClass.prototype`; `unregister()` deletes from `targetClass.prototype`; `registerBuiltin()` takes `targetClass` |
+| `src/plugin/builtinOperator.ts` | **Deleted** — replaced by `@builtin` + `@sequence` |
+| `src/plugin/builtinTerminal.ts` | **Deleted** — replaced by `@builtin` + `@sequence` |
 | `src/plugin/builtin.ts` | New file — `@builtin` method decorator + `@sequence` class decorator |
 | `src/plugin/orderedOperator.ts` | New file — `@orderedOperator` class decorator for external developers |
 | `src/plugin/cachedOperator.ts` | New file — `@cachedOperator` class decorator for external developers |
 | `src/plugin/inferKind.ts` | Detect `TyneqOrderedEnumerator` and `TyneqCachedEnumerator` |
-| `src/plugin/operator.ts` | Pass `TyneqEnumerableBase` as `targetClass` |
+| `src/plugin/operator.ts` | Pass `TyneqEnumerableBase` as `targetClass` in `OperatorMetadata` |
 | `src/core/enumerators/TyneqOrderedEnumerator.ts` | New file |
 | `src/core/enumerators/TyneqCachedEnumerator.ts` | New file |
-| `src/core/TyneqEnumerableBase.ts` | Add `@sequence` + `@builtin` on every operator method; remove enumerator-class registration |
+| `src/core/TyneqEnumerableBase.ts` | Add `@sequence` + `@builtin` on every operator method; delete `createOperatorNode()`; remove enumerator-class registration |
 | `src/core/TyneqEnumerableCore.ts` | Add `@sequence` + `@builtin` on each method |
 | `src/core/ordering/TyneqOrderedEnumerable.ts` | Add `@sequence` + `@builtin` on `thenBy`/`thenByDescending` |
 | `src/core/TyneqCachedEnumerable.ts` | Add `@sequence` + `@builtin` on `refresh` |
@@ -376,3 +637,4 @@ at minimum the `plugin` barrel) so external developers can use `@orderedOperator
 | `src/enumerators/buffer/orderBy.ts` | Extend `TyneqOrderedEnumerator` |
 | `src/enumerators/buffer/memoize.ts` | Extend `TyneqCachedEnumerator` |
 | `src/queryplan/compiler/QueryPlanCompiler.ts` | Use `instanceof entry.metadata.targetClass` |
+| `src/types/core.ts` | Remove `IOperatorMetadata`, `IOperatorMetadataCarrier` interfaces |

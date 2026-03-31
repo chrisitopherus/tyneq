@@ -1,6 +1,8 @@
-import { OperatorEntry } from "../../types/core";
+import { OperatorEntry, SequenceConstructor } from "../../types/core";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
-import { OperatorMetadata } from "./OperatorMetadata";
+import { OperatorMetadata } from "../OperatorMetadata";
+import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { Lazy } from "../../utility/Lazy";
 
 /**
  * Central registry for all Tyneq operators.
@@ -48,7 +50,7 @@ export class OperatorRegistry {
         }
 
         this._entries.set(name, input);
-        (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name] = input.impl;
+        (input.metadata.targetClass.prototype as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
             hook(input);
@@ -71,7 +73,7 @@ export class OperatorRegistry {
 
         this._entries.delete(name);
         if (entry.metadata.source !== "internal") {
-            delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
+            delete (entry.metadata.targetClass.prototype as Record<string, unknown>)[name];
         }
 
         return true;
@@ -151,7 +153,11 @@ export class OperatorRegistry {
      *
      * @internal
      */
-    public static registerBuiltin(name: string, kind: OperatorMetadata["kind"]): void {
+    public static registerBuiltin(
+        name: string,
+        kind: OperatorMetadata["kind"],
+        targetClass: SequenceConstructor
+    ): void {
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
             throw new Error(
@@ -160,20 +166,19 @@ export class OperatorRegistry {
             );
         }
 
-        // Use a lazy wrapper for the implementation to avoid accessing
-        // `TyneqEnumerableBase.prototype` during module initialization (TDZ/circular import).
+        const lazyMethod = new Lazy(() => ReflectionUtility.getPrototypeMethod(targetClass.prototype, name));
         const entry: OperatorEntry = {
-            metadata: new OperatorMetadata(name, kind, "internal"),
+            metadata: new OperatorMetadata(name, kind, "internal", targetClass),
             impl: function (this: unknown, ...args: unknown[]) {
-                const real = (TyneqEnumerableBase.prototype as any)[name];
-                if (!real) {
+                const method = lazyMethod.value;
+                if (!method) {
                     throw new Error(
                         `[tyneq] Cannot invoke builtin '${name}' (${kind}): ` +
-                        "method not found on TyneqEnumerableBase."
+                        "method not found on prototype."
                     );
                 }
-                
-                return real.apply(this, args);
+
+                return method.apply(this, args);
             },
         };
 

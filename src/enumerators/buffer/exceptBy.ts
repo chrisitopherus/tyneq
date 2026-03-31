@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "exceptBy", kind: "buffer" })
 export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly excludedKeys: Iterable<TKey>;
     private excludeSet = new Set<TKey>();

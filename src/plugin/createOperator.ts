@@ -3,7 +3,7 @@ import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
 import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
 
 /**
  * Registers a streaming or buffering operator using a factory function.

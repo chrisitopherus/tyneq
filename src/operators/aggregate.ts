@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
@@ -15,7 +14,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "aggregate" })
 export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTerminalOperator<TSource, VResult> {
     private readonly seed: UAccumulate;
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;

@@ -4,7 +4,7 @@ import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
 import { IWithCreateEnumerable } from "../types/core";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
 
 /**
  * Class decorator that registers a `TyneqEnumerator` subclass as a streaming or buffering operator.

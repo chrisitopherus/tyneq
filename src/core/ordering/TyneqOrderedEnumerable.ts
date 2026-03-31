@@ -11,6 +11,8 @@ import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { ArgumentUtility } from "../../utility/argumentUtility";
 import { nameof } from "../../utility/nameof";
 import { TyneqCachedEnumerable } from "../TyneqCachedEnumerable";
+import { sequence } from "../../plugin/decorators/sequence";
+import { builtin } from "../../plugin/decorators/builtin";
 
 /**
  * Concrete implementation of {@link TyneqOrderedSequence}.
@@ -21,6 +23,7 @@ import { TyneqCachedEnumerable } from "../TyneqCachedEnumerable";
  *
  * @internal
  */
+@sequence
 export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<TSource> implements TyneqOrderedSequence<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly comparer: (a: TKey, b: TKey) => number;
@@ -66,7 +69,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    
+    @builtin({ kind: "buffer" })
     public thenBy<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined
@@ -83,7 +86,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    
+    @builtin({ kind: "buffer" })
     public thenByDescending<UKey>(
         keySelector: (item: TSource) => UKey,
         comparer?: ((a: UKey, b: UKey) => number) | undefined): TyneqOrderedSequence<TSource> {

@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -15,7 +14,6 @@ import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "zip", kind: "streaming" })
 export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     private readonly otherEnumerator: Enumerator<U>;
     private readonly selector: (first: T, second: U) => V;

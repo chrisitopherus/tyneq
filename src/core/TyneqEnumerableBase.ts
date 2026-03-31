@@ -1,4 +1,4 @@
-import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult, IOperatorMetadataCarrier } from "../types/core";
+import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
@@ -74,7 +74,6 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
-import { getOperatorMetadata } from "./registry/OperatorMetadata";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.
@@ -90,14 +89,6 @@ import { getOperatorMetadata } from "./registry/OperatorMetadata";
 export abstract class TyneqEnumerableBase<TSource>
     extends TyneqEnumerableCore<TSource>
     implements TyneqSequence<TSource> {
-
-    private createOperatorNode(
-        operator: new (...args: any[]) => any,
-        args: readonly unknown[]
-    ): QueryNode {
-        const metadata = getOperatorMetadata(operator as unknown as IOperatorMetadataCarrier);
-        return new QueryNode(metadata.name, args, this[tyneqQueryNode], metadata.category);
-    }
 
     // --- Terminal operators ---
 
@@ -246,7 +237,7 @@ export abstract class TyneqEnumerableBase<TSource>
     // --- Streaming operators ---
 
     public cast<U>(): TyneqSequence<U> {
-        const node = this.createOperatorNode(CastEnumerator, []);
+        const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new CastEnumerator<TSource, U>(this.getEnumerator()) },
             node
@@ -255,7 +246,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {
         ArgumentUtility.checkNotOptional({ guard });
-        const node = this.createOperatorNode(OfTypeEnumerator, [guard]);
+        const node = new QueryNode("ofType", [guard], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new OfTypeEnumerator<TSource, U>(this.getEnumerator(), guard) },
             node
@@ -263,7 +254,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public append(item: TSource): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(AppendEnumerator, [item]);
+        const node = new QueryNode("append", [item], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new AppendEnumerator<TSource>(this.getEnumerator(), item) },
             node
@@ -273,7 +264,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public chunk(size: number): TyneqSequence<TSource[]> {
         ArgumentUtility.checkSafeInteger({ size });
         ArgumentUtility.checkPositive({ size });
-        const node = this.createOperatorNode(ChunkEnumerator, [size]);
+        const node = new QueryNode("chunk", [size], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new ChunkEnumerator<TSource>(this.getEnumerator(), size) },
             node
@@ -283,7 +274,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public concat(other: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
-        const node = this.createOperatorNode(ConcatEnumerator, [other]);
+        const node = new QueryNode("concat", [other], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new ConcatEnumerator<TSource>(this.getEnumerator(), other) },
             node
@@ -291,7 +282,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(DefaultIfEmptyEnumerator, [defaultValue]);
+        const node = new QueryNode("defaultIfEmpty", [defaultValue], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new DefaultIfEmptyEnumerator<TSource>(this.getEnumerator(), defaultValue) },
             node
@@ -299,7 +290,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public pairwise(): TyneqSequence<[TSource, TSource]> {
-        const node = this.createOperatorNode(PairwiseEnumerator, []);
+        const node = new QueryNode("pairwise", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new PairwiseEnumerator<TSource>(this.getEnumerator()) },
             node
@@ -307,7 +298,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public populate<TValue>(value: TValue): TyneqSequence<TValue> {
-        const node = this.createOperatorNode(PopulateEnumerator, [value]);
+        const node = new QueryNode("populate", [value], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new PopulateEnumerator<TSource, TValue>(this.getEnumerator(), value) },
             node
@@ -315,7 +306,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public prepend(item: TSource): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(PrependEnumerator, [item]);
+        const node = new QueryNode("prepend", [item], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new PrependEnumerator<TSource>(this.getEnumerator(), item) },
             node
@@ -329,7 +320,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ seed });
         ArgumentUtility.checkNotOptional({ accumulator });
         ArgumentUtility.checkFunction({ accumulator });
-        const node = this.createOperatorNode(ScanEnumerator, [seed, accumulator]);
+        const node = new QueryNode("scan", [seed, accumulator], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new ScanEnumerator<TSource, TResult>(this.getEnumerator(), seed, accumulator) },
             node
@@ -340,7 +331,7 @@ export abstract class TyneqEnumerableBase<TSource>
         selector: (item: TSource) => TResult
     ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ selector });
-        const node = this.createOperatorNode(SelectEnumerator, [selector]);
+        const node = new QueryNode("select", [selector], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SelectEnumerator<TSource, TResult>(this.getEnumerator(), selector) },
             node
@@ -351,7 +342,7 @@ export abstract class TyneqEnumerableBase<TSource>
         selector: (item: TSource) => Iterable<TResult>
     ): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ selector });
-        const node = this.createOperatorNode(SelectManyEnumerator, [selector]);
+        const node = new QueryNode("selectMany", [selector], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SelectManyEnumerator<TSource, TResult>(this.getEnumerator(), selector) },
             node
@@ -360,7 +351,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public skip(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
-        const node = this.createOperatorNode(SkipEnumerator, [count]);
+        const node = new QueryNode("skip", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SkipEnumerator<TSource>(this.getEnumerator(), count) },
             node
@@ -368,7 +359,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public skipLast(count: number): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(SkipLastEnumerator, [count]);
+        const node = new QueryNode("skipLast", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SkipLastEnumerator<TSource>(this.getEnumerator(), count) },
             node
@@ -377,7 +368,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
-        const node = this.createOperatorNode(SkipWhileEnumerator, [predicate]);
+        const node = new QueryNode("skipWhile", [predicate], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SkipWhileEnumerator<TSource>(this.getEnumerator(), predicate) },
             node
@@ -386,7 +377,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]> {
         ArgumentUtility.checkNotOptional({ splitOn });
-        const node = this.createOperatorNode(SplitEnumerator, [splitOn]);
+        const node = new QueryNode("split", [splitOn], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new SplitEnumerator<TSource>(this.getEnumerator(), splitOn) },
             node
@@ -394,7 +385,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public take(count: number): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(TakeEnumerator, [count]);
+        const node = new QueryNode("take", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new TakeEnumerator<TSource>(this.getEnumerator(), count) },
             node
@@ -403,7 +394,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
-        const node = this.createOperatorNode(TakeWhileEnumerator, [predicate]);
+        const node = new QueryNode("takeWhile", [predicate], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new TakeWhileEnumerator<TSource>(this.getEnumerator(), predicate) },
             node
@@ -412,7 +403,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public tap(action: (item: TSource) => void): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
-        const node = this.createOperatorNode(TapEnumerator, [action]);
+        const node = new QueryNode("tap", [action], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new TapEnumerator<TSource>(this.getEnumerator(), action) },
             node
@@ -422,7 +413,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
         ArgumentUtility.checkNotOptional({ predicate });
-        const node = this.createOperatorNode(TapIfEnumerator, [action, predicate]);
+        const node = new QueryNode("tapIf", [action, predicate], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new TapIfEnumerator<TSource>(this.getEnumerator(), action, predicate) },
             node
@@ -432,7 +423,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public throttle(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkSafeInteger({ count });
         ArgumentUtility.checkPositive({ count });
-        const node = this.createOperatorNode(ThrottleEnumerator, [count]);
+        const node = new QueryNode("throttle", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new ThrottleEnumerator<TSource>(this.getEnumerator(), count) },
             node
@@ -441,7 +432,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public where(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
-        const node = this.createOperatorNode(WhereEnumerator, [predicate]);
+        const node = new QueryNode("where", [predicate], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new WhereEnumerator<TSource>(this.getEnumerator(), predicate) },
             node
@@ -455,7 +446,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
         ArgumentUtility.checkNotOptional({ selector });
-        const node = this.createOperatorNode(ZipEnumerator, [other, selector]);
+        const node = new QueryNode("zip", [other, selector], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
             { getEnumerator: () => new ZipEnumerator<TSource, TOther, TResult>(this.getEnumerator(), other, selector) },
             node
@@ -470,7 +461,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkSafeInteger({ index });
         ArgumentUtility.checkNonNegative({ index });
         ArgumentUtility.checkIterable({ other });
-        const node = this.createOperatorNode(BacksertEnumerator, [index, other]);
+        const node = new QueryNode("backsert", [index, other], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new BacksertEnumerator<TSource>(this.getEnumerator(), index, other) },
             node
@@ -478,7 +469,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public distinct(): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(DistinctEnumerator, []);
+        const node = new QueryNode("distinct", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new DistinctEnumerator<TSource>(this.getEnumerator()) },
             node
@@ -487,7 +478,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
-        const node = this.createOperatorNode(DistinctByEnumerator, [keySelector]);
+        const node = new QueryNode("distinctBy", [keySelector], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new DistinctByEnumerator<TSource, TKey>(this.getEnumerator(), keySelector) },
             node
@@ -497,7 +488,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public except(excludedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedValues });
         ArgumentUtility.checkIterable({ excludedValues });
-        const node = this.createOperatorNode(ExceptEnumerator, [excludedValues]);
+        const node = new QueryNode("except", [excludedValues], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new ExceptEnumerator<TSource>(this.getEnumerator(), excludedValues) },
             node
@@ -511,7 +502,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ excludedKeys });
         ArgumentUtility.checkIterable({ excludedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
-        const node = this.createOperatorNode(ExceptByEnumerator, [excludedKeys, keySelector]);
+        const node = new QueryNode("exceptBy", [excludedKeys, keySelector], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new ExceptByEnumerator<TSource, TKey>(this.getEnumerator(), excludedKeys, keySelector) },
             node
@@ -526,7 +517,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ keySelector });
         ArgumentUtility.checkNotOptional({ valueSelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
-        const node = this.createOperatorNode(GroupByEnumerator, [keySelector, valueSelector, resultSelector]);
+        const node = new QueryNode("groupBy", [keySelector, valueSelector, resultSelector], this[tyneqQueryNode], "buffer");
         const groupFactory = (values: TValue[]): TyneqSequence<TValue> =>
             this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as Enumerator<TValue> });
         return this.createEnumerable(
@@ -550,7 +541,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ outerKeySelector });
         ArgumentUtility.checkNotOptional({ innerKeySelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
-        const node = this.createOperatorNode(GroupJoinEnumerator, [inner, outerKeySelector, innerKeySelector, resultSelector]);
+        const node = new QueryNode("groupJoin", [inner, outerKeySelector, innerKeySelector, resultSelector], this[tyneqQueryNode], "buffer");
         const groupFactory = (values: TInner[]): TyneqSequence<TInner> =>
             this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as Enumerator<TInner> });
         return this.createEnumerable(
@@ -566,7 +557,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ intersectedValues });
         ArgumentUtility.checkIterable({ intersectedValues });
-        const node = this.createOperatorNode(IntersectEnumerator, [intersectedValues]);
+        const node = new QueryNode("intersect", [intersectedValues], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new IntersectEnumerator<TSource>(this.getEnumerator(), intersectedValues) },
             node
@@ -580,7 +571,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ intersectedKeys });
         ArgumentUtility.checkIterable({ intersectedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
-        const node = this.createOperatorNode(IntersectByEnumerator, [intersectedKeys, keySelector]);
+        const node = new QueryNode("intersectBy", [intersectedKeys, keySelector], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new IntersectByEnumerator<TSource, TKey>(this.getEnumerator(), intersectedKeys, keySelector) },
             node
@@ -598,7 +589,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ outerKeySelector });
         ArgumentUtility.checkNotOptional({ innerKeySelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
-        const node = this.createOperatorNode(JoinEnumerator, [inner, outerKeySelector, innerKeySelector, resultSelector]);
+        const node = new QueryNode("join", [inner, outerKeySelector, innerKeySelector, resultSelector], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             {
                 getEnumerator: () => new JoinEnumerator<TSource, TInner, TKey, TResult>(
@@ -610,7 +601,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public reverse(): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(ReverseEnumerator, []);
+        const node = new QueryNode("reverse", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new ReverseEnumerator<TSource>(this.getEnumerator()) },
             node
@@ -618,7 +609,7 @@ export abstract class TyneqEnumerableBase<TSource>
     }
 
     public shuffle(): TyneqSequence<TSource> {
-        const node = this.createOperatorNode(ShuffleEnumerator, []);
+        const node = new QueryNode("shuffle", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new ShuffleEnumerator<TSource>(this.getEnumerator()) },
             node
@@ -628,7 +619,7 @@ export abstract class TyneqEnumerableBase<TSource>
     public union(otherValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
-        const node = this.createOperatorNode(UnionEnumerator, [otherValues]);
+        const node = new QueryNode("union", [otherValues], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new UnionEnumerator<TSource>(this.getEnumerator(), otherValues) },
             node
@@ -642,7 +633,7 @@ export abstract class TyneqEnumerableBase<TSource>
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
         ArgumentUtility.checkNotOptional({ keySelector });
-        const node = this.createOperatorNode(UnionByEnumerator, [otherValues, keySelector]);
+        const node = new QueryNode("unionBy", [otherValues, keySelector], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
             { getEnumerator: () => new UnionByEnumerator<TSource, TKey>(this.getEnumerator(), otherValues, keySelector) },
             node

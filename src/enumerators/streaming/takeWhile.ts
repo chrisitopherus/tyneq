@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "takeWhile", kind: "streaming" })
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (value: T) => boolean;
 

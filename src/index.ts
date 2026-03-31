@@ -16,7 +16,7 @@ export * from "./core/errors/argument/ValidationError";
 export * from "./utility/ValidationBuilder";
 
 export { OperatorRegistry } from "./core/registry/TyneqOperatorRegistry";
-export { OperatorMetadata } from "./core/registry/OperatorMetadata";
+export { OperatorMetadata } from "./core/OperatorMetadata";
 export type { OperatorEntry } from "./types/core";
 
 // queryplan

@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 
@@ -13,7 +12,6 @@ import { TyneqSequence } from "../types/core";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "toAsync" })
 export class ToAsyncOperator<TSource> extends TyneqTerminalOperator<TSource, AsyncIterable<TSource>> {
     
     public constructor(source: TyneqSequence<TSource>) {

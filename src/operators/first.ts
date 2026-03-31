@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
@@ -16,7 +15,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "first" })
 export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
 

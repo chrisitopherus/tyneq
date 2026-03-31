@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
@@ -15,7 +14,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "sum" })
 export class SumOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 

@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { Enumerable, MinMaxResult } from "../types/core";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
@@ -25,7 +24,6 @@ function defaultCompare<T>(a: T, b: T): number {
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "minMax" })
 export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>> {
 
     private readonly comparer: (a: T, b: T) => number;

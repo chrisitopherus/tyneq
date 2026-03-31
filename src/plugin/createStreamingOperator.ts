@@ -3,7 +3,7 @@ import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
 import { QueryNode } from "../queryplan/QueryNode";
 import { tyneqQueryNode } from "../types/queryplan";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
 
 /**
  * Registers a streaming operator using a generator function.
@@ -40,7 +40,7 @@ export function createStreamingOperator<TSource, TArgs extends unknown[], TResul
     source?: "internal" | "external";
 }): void {
     OperatorRegistry.register({
-        metadata: OperatorMetadata.streaming(config.name, config.source ?? "external"),
+        metadata: OperatorMetadata.streaming(config.name, TyneqEnumerableBase, config.source ?? "external"),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             const self = this;

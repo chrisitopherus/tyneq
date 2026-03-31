@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 // Import from the main entry point to trigger operator barrel registration as a side-effect.
 import "../../../src";
-import { OperatorRegistry, OperatorMetadata } from "../../../src/plugin/OperatorRegistry";
+import { OperatorRegistry } from "../../../src/core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../../../src/core/OperatorMetadata";
 import { TyneqEnumerableBase } from "../../../src/core/TyneqEnumerableBase";
 
 // Each test that registers an operator must use a unique name because registrations
@@ -324,7 +325,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("OperatorMetadata preserves extensions bag", () => {
-    const meta = OperatorMetadata.streaming("test", { version: "1.0", deprecated: false });
+    const meta = OperatorMetadata.streaming("test", undefined, undefined, { version: "1.0", deprecated: false });
     expect(meta.extensions["version"]).toBe("1.0");
     expect(meta.extensions["deprecated"]).toBe(false);
   });

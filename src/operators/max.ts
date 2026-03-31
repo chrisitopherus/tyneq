@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
@@ -16,7 +15,6 @@ import { Nullable } from "../types/utility";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "max" })
 export class MaxOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 

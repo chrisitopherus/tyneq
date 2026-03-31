@@ -3,7 +3,8 @@ import { Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
 import type { OperatorCategory, QueryPlanNode } from "./queryplan";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
+import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
 
 /**
  * A pull-based iterator over a sequence.
@@ -798,20 +799,6 @@ export type KeyValuePair<TKey, TValue> = {
     value: TValue;
 };
 
-/**
- * Metadata attached to a built-in operator constructor via `tyneqOperatorMetadata`.
- *
- * @internal
- */
-export interface IOperatorMetadata {
-    readonly name: string;
-    readonly category: Exclude<OperatorCategory, "source">;
-}
-
-/** Structural interface for classes that carry `tyneqOperatorMetadata`. @internal */
-export interface IOperatorMetadataCarrier {
-    readonly [tyneqOperatorMetadata]: IOperatorMetadata;
-}
 
 /**
  * Structural interface used by registration machinery to call the protected
@@ -836,3 +823,9 @@ export interface OperatorEntry {
 
 /** Source of an operator implementation, used internally to track where operators come from. */
 export type OperatorSource = "internal" | "external";
+
+/** Kind of an operator, used internally to categorize operators. */
+export type OperatorKind = "streaming" | "buffer" | "terminal" | "cache" | "extension" | "unknown";
+
+/** Constructor type for a sequence class. */
+export type SequenceConstructor = abstract new (...args: any[]) => TyneqEnumerableCore<unknown>;

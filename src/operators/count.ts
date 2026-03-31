@@ -1,5 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
@@ -14,7 +12,6 @@ import { Enumerable } from "../types/core";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "count" })
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
     
     public constructor(source: Enumerable<T>) {

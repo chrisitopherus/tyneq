@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ArgumentUtility } from "../../utility/argumentUtility";
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "intersect", kind: "buffer" })
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly otherValues: Iterable<TSource>;
     private intersectionValues = new Set<TSource>();

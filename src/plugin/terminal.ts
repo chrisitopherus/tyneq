@@ -1,4 +1,4 @@
-import { OperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
 import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
 
@@ -38,7 +38,7 @@ export function terminal<TArgs extends unknown[] = never>(
         _context: ClassDecoratorContext
     ): TClass {
         OperatorRegistry.register({
-            metadata: OperatorMetadata.terminal(name, "external"),
+            metadata: OperatorMetadata.terminal(name, TyneqEnumerableBase, "external"),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 return new target(this, ...userArgs).process();

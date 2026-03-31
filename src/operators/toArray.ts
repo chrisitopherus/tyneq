@@ -1,4 +1,3 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 
@@ -13,7 +12,6 @@ import { TyneqSequence } from "../types/core";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "toArray" })
 export class ToArrayOperator<TSource> extends TyneqTerminalOperator<TSource, TSource[]> {
     
     public constructor(source: TyneqSequence<TSource>) {

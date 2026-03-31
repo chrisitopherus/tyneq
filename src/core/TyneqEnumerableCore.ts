@@ -3,6 +3,8 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
+import { builtin } from "../plugin/decorators/builtin";
+import { sequence } from "../plugin/decorators/sequence";
 
 /**
  * Abstract base that adds `orderBy`, `orderByDescending`, `memoize`, and `pipe` to a sequence.
@@ -13,6 +15,7 @@ import { QueryNode } from "../queryplan/QueryNode";
  *
  * @internal
  */
+@sequence
 export abstract class TyneqEnumerableCore<TSource> {
 
     public abstract readonly [tyneqQueryNode]: QueryPlanNode | null;
@@ -23,7 +26,7 @@ export abstract class TyneqEnumerableCore<TSource> {
 
     public abstract getEnumerator(): Enumerator<TSource>;
 
-    
+    @builtin({ kind: "buffer" })
     public orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
@@ -39,7 +42,7 @@ export abstract class TyneqEnumerableCore<TSource> {
         );
     }
 
-    
+    @builtin({ kind: "buffer" })
     public orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
         comparer?: ((a: TKey, b: TKey) => number) | undefined
@@ -55,13 +58,13 @@ export abstract class TyneqEnumerableCore<TSource> {
         );
     }
 
-    
+    @builtin({ kind: "cache" })
     public memoize(): TyneqCachedSequence<TSource> {
         const node = new QueryNode("memoize", [], this[tyneqQueryNode], "buffer");
         return this.createCachedEnumerable(this as unknown as TyneqSequence<TSource>, node);
     }
 
-    
+    @builtin({ kind: "extension" })
     public pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ factory });
         const self = this;
