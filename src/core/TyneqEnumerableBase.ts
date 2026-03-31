@@ -74,6 +74,8 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
+import { sequence } from "../plugin/decorators/sequence";
+import { builtin } from "../plugin/decorators/builtin";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.
@@ -86,12 +88,14 @@ import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
  *
  * @internal
  */
+@sequence
 export abstract class TyneqEnumerableBase<TSource>
     extends TyneqEnumerableCore<TSource>
     implements TyneqSequence<TSource> {
 
     // --- Terminal operators ---
 
+    @builtin({ kind: "terminal" })
     public aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
         func: (accumulate: UAccumulate, item: TSource) => UAccumulate,
@@ -100,26 +104,33 @@ export abstract class TyneqEnumerableBase<TSource>
         return new AggregateOperator<TSource, UAccumulate, VResult>(this, seed, func, resultSelector).process();
     }
 
+    @builtin({ kind: "terminal" })
     public all(predicate: (item: TSource) => boolean): boolean {
         return new AllOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public any(predicate: (item: TSource) => boolean): boolean {
         return new AnyOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public average(selector: (item: TSource) => number): number {
         return new AverageOperator(this, selector).process();
     }
+
+    @builtin({ kind: "terminal" })
 
     public consume(): void {
         new ConsumeOperator(this).process();
     }
 
+    @builtin({ kind: "terminal" })
     public contains(value: TSource): boolean {
         return new ContainsOperator(this, value).process();
     }
 
+    @builtin({ kind: "terminal" })
     public count(): number {
         return new CountOperator(this).process();
     }
@@ -430,6 +441,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public where(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = new QueryNode("where", [predicate], this[tyneqQueryNode], "streaming");
@@ -455,6 +467,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     // --- Buffer operators ---
 
+    @builtin({ kind: "buffer" })
     public backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ index });
         ArgumentUtility.checkNotOptional({ other });
@@ -468,6 +481,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public distinct(): TyneqSequence<TSource> {
         const node = new QueryNode("distinct", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
@@ -475,7 +489,8 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-
+    
+    @builtin({ kind: "buffer" })
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const node = new QueryNode("distinctBy", [keySelector], this[tyneqQueryNode], "buffer");
