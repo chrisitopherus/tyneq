@@ -70,16 +70,9 @@ export class QueryPlanCompiler {
             );
         }
 
-        // if (!OperatorRegistry.has(node.operatorName)) {
-        //     throw new Error(
-        //         `[tyneq] QueryPlanCompiler: operator '${node.operatorName}' is not registered.`
-        //     );
-        // }
-
-        const method2 = source[node.operatorName as keyof typeof source];
-        if (typeof method2 !== "function") {
+        if (!OperatorRegistry.has(node.operatorName)) {
             throw new Error(
-                `2[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
+                `[tyneq] QueryPlanCompiler: operator '${node.operatorName}' is not registered.`
             );
         }
 

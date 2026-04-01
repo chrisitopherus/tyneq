@@ -3,6 +3,9 @@ import { ArgumentUtility } from "../utility/argumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
+import { sequence } from "../plugin/decorators/sequence";
+import { builtin } from "../plugin/decorators/builtin";
+
 // --- Terminal operators ---
 import { AggregateOperator } from "../operators/aggregate";
 import { AllOperator } from "../operators/all";
@@ -74,8 +77,6 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
-import { sequence } from "../plugin/decorators/sequence";
-import { builtin } from "../plugin/decorators/builtin";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.
@@ -135,58 +136,71 @@ export abstract class TyneqEnumerableBase<TSource>
         return new CountOperator(this).process();
     }
 
+    @builtin({ kind: "terminal" })
     public countBy(predicate: (item: TSource) => boolean): number {
         return new CountByOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public elementAt(index: number): TSource {
         ArgumentUtility.checkNonNegative({ index });
         return new ElementAtOperator(this, index).process();
     }
 
+    @builtin({ kind: "terminal" })
     public elementAtOrDefault(index: number, defaultValue: TSource): TSource {
         return new ElementAtOrDefaultOperator(this, index, defaultValue).process();
     }
 
+    @builtin({ kind: "terminal" })
     public first(predicate: (item: TSource) => boolean): TSource {
         return new FirstOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
         return new FirstOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
+    @builtin({ kind: "terminal" })
     public indexOf(predicate: (item: TSource) => boolean, startIndex: number = 0): number {
         return new IndexOfOperator(this, predicate, startIndex).process();
     }
 
+    @builtin({ kind: "terminal" })
     public isNullOrEmpty(): boolean {
         return new IsNullOrEmptyOperator(this).process();
     }
 
+    @builtin({ kind: "terminal" })
     public last(predicate: (item: TSource) => boolean): TSource {
         return new LastOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
         return new LastOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
+    @builtin({ kind: "terminal" })
     public max(comparer?: (a: TSource, b: TSource) => number): TSource {
         return new MaxOperator(this, comparer).process();
     }
 
+    @builtin({ kind: "terminal" })
     public maxBy<TKey>(
         keySelector: (element: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
     ): TSource {
         return new MaxByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
-
+    
+    @builtin({ kind: "terminal" })
     public min(comparer?: (a: TSource, b: TSource) => number): TSource {
         return new MinOperator(this, comparer).process();
     }
 
+    @builtin({ kind: "terminal" })
     public minBy<TKey>(
         keySelector: (element: TSource) => TKey,
         comparer?: (a: TKey, b: TKey) => number
@@ -194,10 +208,12 @@ export abstract class TyneqEnumerableBase<TSource>
         return new MinByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
 
+    @builtin({ kind: "terminal" })
     public minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource> {
         return new MinMaxOperator(this, comparer).process();
     }
 
+    @builtin({ kind: "terminal" })
     public sequenceEqual(
         other: Iterable<TSource>,
         equalityComparer?: (a: TSource, b: TSource) => boolean
@@ -205,48 +221,58 @@ export abstract class TyneqEnumerableBase<TSource>
         return new SequenceEqualOperator(this, other, equalityComparer).process();
     }
 
+    @builtin({ kind: "terminal" })
     public single(predicate: (item: TSource) => boolean): TSource {
         return new SingleOperator(this, predicate).process();
     }
 
+    @builtin({ kind: "terminal" })
     public singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource {
         return new SingleOrDefaultOperator(this, predicate, defaultValue).process();
     }
 
+    @builtin({ kind: "terminal" })
     public startsWith(sequence: Iterable<TSource>): boolean {
         return new StartsWithOperator(this, sequence).process();
     }
 
+    @builtin({ kind: "terminal" })
     public sum(selector: (item: TSource) => number): number {
         return new SumOperator(this, selector).process();
     }
 
+    @builtin({ kind: "terminal" })
     public toArray(): TSource[] {
         return new ToArrayOperator(this).process();
     }
 
+    @builtin({ kind: "terminal" })
     public toAsync(): AsyncIterable<TSource> {
         return new ToAsyncOperator(this).process();
     }
 
+    @builtin({ kind: "terminal" })
     public toMap<TKey, TValue>(
         selector: (item: TSource) => KeyValuePair<TKey, TValue>
     ): Map<TKey, TValue> {
         return new ToMapOperator<TSource, TKey, TValue>(this, selector).process();
     }
 
+    @builtin({ kind: "terminal" })
     public toRecord<TKey extends string | number | symbol, TValue>(
         selector: (item: TSource) => KeyValuePair<TKey, TValue>
     ): Record<TKey, TValue> {
         return new ToRecordOperator<TSource, TKey, TValue>(this, selector).process();
     }
 
+    @builtin({ kind: "terminal" })
     public toSet(): Set<TSource> {
         return new ToSetOperator(this).process();
     }
 
     // --- Streaming operators ---
 
+        
     public cast<U>(): TyneqSequence<U> {
         const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -255,6 +281,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {
         ArgumentUtility.checkNotOptional({ guard });
         const node = new QueryNode("ofType", [guard], this[tyneqQueryNode], "streaming");
@@ -264,6 +291,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public append(item: TSource): TyneqSequence<TSource> {
         const node = new QueryNode("append", [item], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -272,6 +300,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public chunk(size: number): TyneqSequence<TSource[]> {
         ArgumentUtility.checkSafeInteger({ size });
         ArgumentUtility.checkPositive({ size });
@@ -282,6 +311,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public concat(other: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
@@ -292,6 +322,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource> {
         const node = new QueryNode("defaultIfEmpty", [defaultValue], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -300,6 +331,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public pairwise(): TyneqSequence<[TSource, TSource]> {
         const node = new QueryNode("pairwise", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -308,6 +340,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public populate<TValue>(value: TValue): TyneqSequence<TValue> {
         const node = new QueryNode("populate", [value], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -316,6 +349,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public prepend(item: TSource): TyneqSequence<TSource> {
         const node = new QueryNode("prepend", [item], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -324,6 +358,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public scan<TResult>(
         seed: TResult,
         accumulator: (acc: TResult, item: TSource) => TResult
@@ -338,6 +373,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public select<TResult>(
         selector: (item: TSource) => TResult
     ): TyneqSequence<TResult> {
@@ -349,6 +385,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public selectMany<TResult>(
         selector: (item: TSource) => Iterable<TResult>
     ): TyneqSequence<TResult> {
@@ -360,6 +397,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public skip(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
         const node = new QueryNode("skip", [count], this[tyneqQueryNode], "streaming");
@@ -369,6 +407,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public skipLast(count: number): TyneqSequence<TSource> {
         const node = new QueryNode("skipLast", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -377,6 +416,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = new QueryNode("skipWhile", [predicate], this[tyneqQueryNode], "streaming");
@@ -386,6 +426,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]> {
         ArgumentUtility.checkNotOptional({ splitOn });
         const node = new QueryNode("split", [splitOn], this[tyneqQueryNode], "streaming");
@@ -395,6 +436,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public take(count: number): TyneqSequence<TSource> {
         const node = new QueryNode("take", [count], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -403,6 +445,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         const node = new QueryNode("takeWhile", [predicate], this[tyneqQueryNode], "streaming");
@@ -412,6 +455,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public tap(action: (item: TSource) => void): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
         const node = new QueryNode("tap", [action], this[tyneqQueryNode], "streaming");
@@ -421,6 +465,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ action });
         ArgumentUtility.checkNotOptional({ predicate });
@@ -431,6 +476,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public throttle(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkSafeInteger({ count });
         ArgumentUtility.checkPositive({ count });
@@ -451,6 +497,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "streaming" })
     public zip<TOther, TResult>(
         other: Iterable<TOther>,
         selector: (first: TSource, second: TOther) => TResult
@@ -499,7 +546,8 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-
+    
+    @builtin({ kind: "buffer" })
     public except(excludedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedValues });
         ArgumentUtility.checkIterable({ excludedValues });
@@ -510,6 +558,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public exceptBy<TKey>(
         excludedKeys: Iterable<TKey>,
         keySelector: (item: TSource) => TKey
@@ -524,6 +573,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
         valueSelector: (item: TSource) => TValue,
@@ -545,6 +595,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public groupJoin<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
@@ -569,6 +620,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ intersectedValues });
         ArgumentUtility.checkIterable({ intersectedValues });
@@ -579,6 +631,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public intersectBy<TKey>(
         intersectedKeys: Iterable<TKey>,
         keySelector: (item: TSource) => TKey
@@ -592,7 +645,8 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-
+    
+    @builtin({ kind: "buffer" })
     public join<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
         outerKeySelector: (outer: TSource) => TKey,
@@ -615,6 +669,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public reverse(): TyneqSequence<TSource> {
         const node = new QueryNode("reverse", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
@@ -623,6 +678,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public shuffle(): TyneqSequence<TSource> {
         const node = new QueryNode("shuffle", [], this[tyneqQueryNode], "buffer");
         return this.createEnumerable(
@@ -631,6 +687,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public union(otherValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
@@ -641,6 +698,7 @@ export abstract class TyneqEnumerableBase<TSource>
         );
     }
 
+    @builtin({ kind: "buffer" })
     public unionBy<TKey>(
         otherValues: Iterable<TSource>,
         keySelector: (item: TSource) => TKey
