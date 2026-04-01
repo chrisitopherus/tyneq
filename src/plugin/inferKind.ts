@@ -1,4 +1,5 @@
 import { TyneqEnumerator } from "../core/enumerators/TyneqEnumerator";
+import { PluginError } from "../core/errors/PluginError";
 
 /**
  * Infers `"streaming"` or `"buffer"` from a class's prototype chain.
@@ -16,9 +17,11 @@ export function inferOperatorKind(target: Function): "streaming" | "buffer" {
         proto = Object.getPrototypeOf(proto);
     }
 
-    throw new Error(
-        `[tyneq] @operator('${target.name ?? "?"}'): ` +
-        "cannot infer kind — class must extend TyneqEnumerator, " +
-        `or pass kind explicitly: @operator('${target.name ?? "?"}', 'streaming' | 'buffer').`
+    throw new PluginError(
+        `@operator("${target.name ?? "?"}"): cannot infer operator kind. ` +
+        "The class must extend TyneqEnumerator for automatic kind inference. " +
+        `Pass the kind explicitly instead: @operator("${target.name ?? "?"}", "streaming" | "buffer").`,
+        "operator",
+        target.name ?? undefined
     );
 }

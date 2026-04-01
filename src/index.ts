@@ -13,6 +13,10 @@ export * from "./core/errors/argument/ArgumentNullError";
 export * from "./core/errors/argument/ArgumentOutOfRangeError";
 export * from "./core/errors/argument/ArgumentTypeError";
 export * from "./core/errors/argument/ValidationError";
+export * from "./core/errors/CompilerError";
+export * from "./core/errors/RegistryError";
+export * from "./core/errors/PluginError";
+export * from "./core/errors/ReflectionError";
 export * from "./utility/ValidationBuilder";
 
 export { OperatorRegistry } from "./core/registry/TyneqOperatorRegistry";

@@ -3,6 +3,7 @@ import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { OperatorMetadata } from "../OperatorMetadata";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
 import { Lazy } from "../../utility/Lazy";
+import { RegistryError } from "../errors/RegistryError";
 
 /**
  * Central registry for all Tyneq operators.
@@ -39,9 +40,12 @@ export class OperatorRegistry {
 
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
-            throw new Error(
-                `[tyneq] Cannot register '${name}' (${input.metadata.kind}): ` +
-                `already registered as '${existing.kind}' from source '${existing.source}'.`
+            throw new RegistryError(
+                `Cannot register "${name}" (${input.metadata.kind}): ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                input.metadata.kind,
+                { kind: existing.kind, source: existing.source }
             );
         }
 
@@ -160,9 +164,12 @@ export class OperatorRegistry {
     ): void {
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
-            throw new Error(
-                `[tyneq] Cannot register builtin '${name}' (${kind}): ` +
-                `already registered as '${existing.kind}' from source '${existing.source}'.`
+            throw new RegistryError(
+                `Cannot register builtin "${name}" (${kind}): ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                kind,
+                { kind: existing.kind, source: existing.source }
             );
         }
 
@@ -172,9 +179,11 @@ export class OperatorRegistry {
             impl: function (this: unknown, ...args: unknown[]) {
                 const method = lazyMethod.value;
                 if (!method) {
-                    throw new Error(
-                        `[tyneq] Cannot invoke builtin '${name}' (${kind}): ` +
-                        "method not found on prototype."
+                    throw new RegistryError(
+                        `Cannot invoke builtin "${name}" (${kind}): method not found on prototype. ` +
+                        "Ensure the method exists on the target class before registering.",
+                        name,
+                        kind
                     );
                 }
 

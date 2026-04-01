@@ -1,4 +1,5 @@
 import { Maybe, Method } from "../types/utility";
+import { ReflectionError } from "../core/errors/ReflectionError";
 
 /**
  * Low-level helpers for prototype and descriptor introspection.
@@ -12,8 +13,12 @@ export class ReflectionUtility {
     public static getPrototypeMethod(proto: object, name: string): Method {
         const method = Object.getOwnPropertyDescriptor(proto, name)?.value;
         if (typeof method !== "function") {
-            throw new Error(
-                `[tyneq] Method '${name}' not found on prototype of ${Object.getPrototypeOf(proto)?.constructor?.name ?? "unknown"}.`
+            const prototypeName = Object.getPrototypeOf(proto)?.constructor?.name ?? "unknown";
+            throw new ReflectionError(
+                `Method "${name}" not found on prototype of ${prototypeName}. ` +
+                "Ensure the method is defined directly on the class, not inherited or deleted.",
+                name,
+                prototypeName
             );
         }
 

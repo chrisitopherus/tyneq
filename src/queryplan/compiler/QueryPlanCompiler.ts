@@ -4,6 +4,7 @@ import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { Tyneq } from "../../core/tyneq";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
+import { CompilerError } from "../../core/errors/CompilerError";
 
 export class QueryPlanCompiler {
     private readonly transformers: QueryPlanTransformer[];
@@ -37,7 +38,11 @@ export class QueryPlanCompiler {
         }
 
         if (node.source === null) {
-            throw new Error("[tyneq] QueryPlanCompiler: operator node missing source");
+            throw new CompilerError(
+                "Operator node is missing a source node. Every operator node must have a source.",
+                "operator",
+                node.operatorName
+            );
         }
 
         const sourceSeq = this.compileNode<T>(node.source);
@@ -56,8 +61,10 @@ export class QueryPlanCompiler {
             case "empty":
                 return Tyneq.empty<T>();
             default: {
-                throw new Error(
-                    `[tyneq] QueryPlanCompiler: unknown source operator '${node.operatorName}'`
+                throw new CompilerError(
+                    `Unknown source operator "${node.operatorName}". Built-in sources are: "from", "range", "random", "empty".`,
+                    "source",
+                    node.operatorName
                 );
             }
         }
@@ -65,21 +72,30 @@ export class QueryPlanCompiler {
 
     private applyOperator<T = unknown>(source: TyneqSequence<unknown>, node: QueryPlanNode): TyneqSequence<T> {
         if (!(source instanceof TyneqEnumerableBase)) {
-            throw new Error(
-                `[tyneq] QueryPlanCompiler: source sequence for operator '${node.operatorName}' is not a Tyneq sequence.`
+            throw new CompilerError(
+                `The source sequence for operator "${node.operatorName}" is not a Tyneq sequence. ` +
+                "Only sequences produced by Tyneq can be used as operator sources.",
+                "operator",
+                node.operatorName
             );
         }
 
         if (!OperatorRegistry.has(node.operatorName)) {
-            throw new Error(
-                `[tyneq] QueryPlanCompiler: operator '${node.operatorName}' is not registered.`
+            throw new CompilerError(
+                `Operator "${node.operatorName}" is not registered. ` +
+                "Register it via @operator, createOperator, or createStreamingOperator before compiling.",
+                "operator",
+                node.operatorName
             );
         }
 
         const method = OperatorRegistry.get(node.operatorName)?.impl;
         if (typeof method !== "function") {
-            throw new Error(
-                `[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
+            throw new CompilerError(
+                `Operator "${node.operatorName}" is registered but its implementation is not a function. ` +
+                "This indicates a corrupt registry entry.",
+                "operator",
+                node.operatorName
             );
         }
 
