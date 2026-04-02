@@ -1,5 +1,5 @@
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
 import { TyneqSequence } from "../types/core";
 import { Nullable } from "../types/utility";

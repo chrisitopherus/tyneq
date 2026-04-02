@@ -1,4 +1,4 @@
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
 import { Enumerable, TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";

@@ -90,10 +90,7 @@ import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
  * @internal
  */
 @sequence
-export abstract class TyneqEnumerableBase<TSource>
-    extends TyneqEnumerableCore<TSource>
-    implements TyneqSequence<TSource> {
-
+export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<TSource> implements TyneqSequence<TSource> {
     // --- Terminal operators ---
 
     @builtin({ kind: "terminal" })
@@ -194,7 +191,7 @@ export abstract class TyneqEnumerableBase<TSource>
     ): TSource {
         return new MaxByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
-    
+
     @builtin({ kind: "terminal" })
     public min(comparer?: (a: TSource, b: TSource) => number): TSource {
         return new MinOperator(this, comparer).process();
@@ -272,7 +269,7 @@ export abstract class TyneqEnumerableBase<TSource>
 
     // --- Streaming operators ---
 
-        
+
     public cast<U>(): TyneqSequence<U> {
         const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(
@@ -536,7 +533,7 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-    
+
     @builtin({ kind: "buffer" })
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
@@ -546,7 +543,7 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-    
+
     @builtin({ kind: "buffer" })
     public except(excludedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedValues });
@@ -645,7 +642,7 @@ export abstract class TyneqEnumerableBase<TSource>
             node
         );
     }
-    
+
     @builtin({ kind: "buffer" })
     public join<TInner, TKey, TResult>(
         inner: Iterable<TInner>,

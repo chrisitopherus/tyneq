@@ -32,8 +32,11 @@ export type Predicate<TArgs extends readonly unknown[] = []> = (...args: TArgs) 
 /** A function that takes arguments of type `TArgs` (tuple) and returns a value of type `TResult`. */
 export type Func<TArgs extends readonly unknown[] = [], TResult = unknown> = (...args: TArgs) => TResult;
 
+/** A method callable on a specific `this` context, returning `TReturn`. */
+export type BoundMethod<TThis = unknown, TReturn = unknown> = (this: TThis, ...args: any[]) => TReturn;
+
 /** A method callable on any `this` context with unknown arguments. */
-export type Method = (this: unknown, ...args: any[]) => unknown;
+export type Method = BoundMethod<unknown>;
 
 /** A factory function that creates an instance of type `TInstance` given arguments of type `TArgs`. */
 export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> = (...args: TArgs) => TInstance;

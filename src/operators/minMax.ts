@@ -1,5 +1,5 @@
 import { Enumerable, MinMaxResult } from "../types/core";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 
 // MinMaxResult is defined in types/core.ts to avoid a circular dependency.

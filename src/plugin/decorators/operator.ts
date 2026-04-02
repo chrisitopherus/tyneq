@@ -1,20 +1,19 @@
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { inferOperatorKind } from "./inferKind";
-import { QueryNode } from "../queryplan/QueryNode";
-import { tyneqQueryNode } from "../types/queryplan";
-import { IWithCreateEnumerable } from "../types/core";
-import { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
-import { OperatorMetadata } from "../core/OperatorMetadata";
+import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
+import { QueryNode } from "../../queryplan/QueryNode";
+import { tyneqQueryNode } from "../../types/queryplan";
+import { ISequenceFactory } from "../../types/core";
+import type { OperatorCategory } from "../../types/queryplan";
+import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../../core/OperatorMetadata";
 
 /**
- * Class decorator that registers a `TyneqEnumerator` subclass as a streaming or buffering operator.
+ * Class decorator that registers a `TyneqEnumerator` subclass as an operator on every sequence.
  *
  * Validation runs eagerly at the call site, before the lazy enumerator is created.
- * Kind is inferred from the class hierarchy (`TyneqEnumerator` -> streaming) unless passed explicitly.
  *
  * @param name - Method name to expose on every sequence.
- * @param kindOrValidate - Kind override (`"streaming"` | `"buffer"`) or eager validation function.
- * @param validate - Eager validation function when kind is passed as the second argument.
+ * @param category - Operator kind (`"streaming"` | `"buffer"`).
+ * @param validate - Optional eager validation function for user-supplied arguments.
  *
  * @example
  * ```ts
@@ -22,7 +21,7 @@ import { OperatorMetadata } from "../core/OperatorMetadata";
  * import { TyneqEnumerator } from "tyneq/plugin";
  * import type { Enumerator } from "tyneq";
  *
- * @operator<[predicate: (item: unknown) => boolean]>("myFilter", (predicate) => {
+ * @operator<[predicate: (item: unknown) => boolean]>("myFilter", "streaming", (predicate) => {
  *     if (typeof predicate !== "function") throw new Error("predicate must be a function");
  * })
  * class MyFilterEnumerator<T> extends TyneqEnumerator<T> {
@@ -42,25 +41,20 @@ import { OperatorMetadata } from "../core/OperatorMetadata";
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
-    kindOrValidate?: "streaming" | "buffer" | ((...args: TArgs) => void),
+    category: OperatorCategory,
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        const kind: "streaming" | "buffer" = typeof kindOrValidate === "string"
-            ? kindOrValidate
-            : inferOperatorKind(target);
-        const actualValidate: ((...args: TArgs) => void) | undefined =
-            typeof kindOrValidate === "function" ? kindOrValidate : validate;
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, kind, "external"),
+            metadata: new OperatorMetadata(name, category, "external", TyneqEnumerableBase),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
-                actualValidate?.(...(userArgs as TArgs));
+                validate?.(...(userArgs as TArgs));
                 const base = this;
-                const withCreate = this as unknown as IWithCreateEnumerable;
-                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], kind);
+                const withCreate = this as unknown as ISequenceFactory<unknown>;
+                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);
                 return withCreate.createEnumerable({
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);

@@ -1,5 +1,5 @@
 import { ArgumentOutOfRangeError } from "../core/errors/argument/ArgumentOutOfRangeError";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";

@@ -9,7 +9,7 @@ import { RegistryError } from "../errors/RegistryError";
  * Central registry for all Tyneq operators.
  *
  * Every registration path -- `@operator`, `@terminal`, `createOperator`,
- * `createStreamingOperator`, `createTerminalOperator` -- flows through this class.
+ * `createGeneratorOperator`, `createTerminalOperator` -- flows through this class.
  * It is the single source of truth for which operators exist, their kind, and their
  * prototype-level implementation.
  *
@@ -31,9 +31,9 @@ export class OperatorRegistry {
     // --- Registration ---
 
     /**
-     * Registers an operator entry and patches the method onto `TyneqEnumerableBase.prototype`.
+     * Registers an operator entry and patches the method onto `entry.metadata.targetClass.prototype`.
      *
-     * @throws {Error} When an operator with the same name is already registered.
+     * @throws {RegistryError} When an operator with the same name is already registered.
      */
     public static register(input: OperatorEntry): void {
         const { name } = input.metadata;
@@ -153,7 +153,11 @@ export class OperatorRegistry {
 
     /**
      * Records a built-in operator in the registry without patching the prototype.
-     * Built-in operators already live as direct methods on `TyneqEnumerableBase`.
+     * Built-in operators already live as direct methods on their target class.
+     *
+     * @remarks
+     * Registration guards are intentionally skipped — builtins are internal and
+     * trusted; guards exist to validate external plugin registrations only.
      *
      * @internal
      */

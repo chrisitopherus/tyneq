@@ -1,4 +1,4 @@
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
 /**
