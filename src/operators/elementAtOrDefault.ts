@@ -1,5 +1,4 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 import { nameof } from "../utility/nameof";
@@ -15,7 +14,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "elementAtOrDefault" })
 export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly index: number;
     private readonly defaultValue: TSource;

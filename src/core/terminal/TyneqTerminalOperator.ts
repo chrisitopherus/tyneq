@@ -1,5 +1,5 @@
-import { Enumerable } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { Enumerable } from "../../types/core";
+import { ArgumentUtility } from "../../utility/argumentUtility";
 
 /**
  * Abstract base for all terminal operators.

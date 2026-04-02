@@ -1,5 +1,4 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence, KeyValuePair } from "../types/core";
 import { ArgumentUtility } from "../utility/argumentUtility";
 
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../utility/argumentUtility";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "toMap" })
 export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<TSource, Map<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 

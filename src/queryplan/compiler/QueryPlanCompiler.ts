@@ -2,8 +2,8 @@ import { TyneqSequence } from "../../types/core";
 import { QueryPlanNode } from "../../types/queryplan";
 import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { Tyneq } from "../../core/tyneq";
-import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
+import { CompilerError } from "../../core/errors/CompilerError";
 
 export class QueryPlanCompiler {
     private readonly transformers: QueryPlanTransformer[];
@@ -14,12 +14,16 @@ export class QueryPlanCompiler {
 
     /**
      * Compile a query plan into an executable sequence.
+     *
      * @param node - The root node of the query plan to compile.
-     * @returns An executable sequence representing the compiled query plan.
+     * @returns The compiled sequence typed as `TyneqSequence<T>` by default.
+     * If you know the plan ends in an operator that returns a subtype (e.g. `orderBy` →
+     * `TyneqOrderedSequence`, `memoize` → `TyneqCachedSequence`), supply `TResult` explicitly:
+     * `compiler.compile<number, TyneqOrderedSequence<number>>(node)`.
      */
-    public compile<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {
+    public compile<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
         const transformedNode = this.transform(node);
-        return this.compileNode<T>(transformedNode);
+        return this.compileNode(transformedNode) as TResult;
     }
 
     private transform(node: QueryPlanNode): QueryPlanNode {
@@ -31,65 +35,64 @@ export class QueryPlanCompiler {
         return transformedNode;
     }
 
-    private compileNode<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {
+    private compileNode(node: QueryPlanNode): unknown {
         if (node.category === "source") {
-            return this.compileSource(node) as TyneqSequence<T>;
+            return this.compileSource(node);
         }
 
         if (node.source === null) {
-            throw new Error("[tyneq] QueryPlanCompiler: operator node missing source");
+            throw new CompilerError(
+                "Operator node is missing a source node. Every operator node must have a source.",
+                "operator",
+                node.operatorName
+            );
         }
 
-        const sourceSeq = this.compileNode<T>(node.source);
-        return this.applyOperator(sourceSeq, node) as TyneqSequence<T>;
+        return this.applyOperator(this.compileNode(node.source), node);
     }
 
-    private compileSource<T = unknown>(node: QueryPlanNode): TyneqSequence<T> {
-        console.log(node.operatorName);
+    private compileSource(node: QueryPlanNode): unknown {
         switch (node.operatorName) {
             case "from":
-                return Tyneq.from(node.args[0] as Iterable<T>);
+                return Tyneq.from(node.args[0] as Iterable<unknown>);
             case "range":
-                return Tyneq.range(node.args[0] as number, node.args[1] as number) as TyneqSequence<T>;
+                return Tyneq.range(node.args[0] as number, node.args[1] as number);
             case "random":
-                return Tyneq.random(node.args[0] as number, node.args[1] as () => T);
+                return Tyneq.random(node.args[0] as number, node.args[1] as () => unknown);
             case "empty":
-                return Tyneq.empty<T>();
-            default: {
-                throw new Error(
-                    `[tyneq] QueryPlanCompiler: unknown source operator '${node.operatorName}'`
+                return Tyneq.empty();
+            default:
+                throw new CompilerError(
+                    `Unknown source operator "${node.operatorName}". Built-in sources are: "from", "range", "random", "empty".`,
+                    "source",
+                    node.operatorName
                 );
-            }
         }
     }
 
-    private applyOperator<T = unknown>(source: TyneqSequence<unknown>, node: QueryPlanNode): TyneqSequence<T> {
-        if (!(source instanceof TyneqEnumerableBase)) {
-            throw new Error(
-                `[tyneq] QueryPlanCompiler: source sequence for operator '${node.operatorName}' is not a Tyneq sequence.`
+    private applyOperator(source: unknown, node: QueryPlanNode): unknown {
+        const entry = OperatorRegistry.get(node.operatorName);
+
+        if (!entry) {
+            throw new CompilerError(
+                `Operator "${node.operatorName}" is not registered. ` +
+                "Register it via @operator, createOperator, or createGeneratorOperator before compiling.",
+                "operator",
+                node.operatorName
             );
         }
 
-        // if (!OperatorRegistry.has(node.operatorName)) {
-        //     throw new Error(
-        //         `[tyneq] QueryPlanCompiler: operator '${node.operatorName}' is not registered.`
-        //     );
-        // }
-
-        const method2 = source[node.operatorName as keyof typeof source];
-        if (typeof method2 !== "function") {
-            throw new Error(
-                `2[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
+        if (!(source instanceof entry.metadata.targetClass)) {
+            const expected = entry.metadata.targetClass.name;
+            const actual = (source as any)?.constructor?.name ?? typeof source;
+            throw new CompilerError(
+                `Operator "${node.operatorName}" requires a ${expected} but received ${actual}. ` +
+                "Ensure the source sequence is of the correct type for this operator.",
+                "operator",
+                node.operatorName
             );
         }
 
-        const method = OperatorRegistry.get(node.operatorName)?.impl;
-        if (typeof method !== "function") {
-            throw new Error(
-                `[tyneq] QueryPlanCompiler: no operator '${node.operatorName}' on source sequence. Is the operator registered?`
-            );
-        }
-
-        return method.apply(source, [...node.args]) as TyneqSequence<T>;
+        return entry.impl.apply(source as never, [...node.args]);
     }
 }

@@ -1,6 +1,5 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
 import { TyneqSequence } from "../types/core";
 import { Nullable } from "../types/utility";
@@ -16,7 +15,6 @@ import { Nullable } from "../types/utility";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "min" })
 export class MinOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly comparer: (a: TSource, b: TSource) => number;
 

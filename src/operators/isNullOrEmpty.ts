@@ -1,5 +1,4 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { EnumeratorUtility } from "../utility/EnumeratorUtility";
 
@@ -14,7 +13,6 @@ import { EnumeratorUtility } from "../utility/EnumeratorUtility";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "isNullOrEmpty" })
 export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     public constructor(source: Enumerable<T>) {
         super(source);

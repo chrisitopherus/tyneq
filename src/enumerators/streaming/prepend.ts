@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
@@ -13,7 +12,6 @@ import { Enumerator } from "../../types/core";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "prepend", kind: "streaming" })
 export class PrependEnumerator<T> extends TyneqEnumerator<T> {
     private prepended = false;
     private readonly item: T;

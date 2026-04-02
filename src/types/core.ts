@@ -1,9 +1,10 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
-import { Nullable } from "./utility";
+import { BoundMethod, Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
 import type { OperatorCategory, QueryPlanNode } from "./queryplan";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-import { OperatorMetadata, tyneqOperatorMetadata } from "../core/registry/OperatorMetadata";
+import { OperatorMetadata } from "../core/OperatorMetadata";
+import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
 
 /**
  * A pull-based iterator over a sequence.
@@ -676,7 +677,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     // ========================================================================
     // PLUGIN OPERATORS
     // Registered via the plugin API (@operator, createOperator,
-    // createStreamingOperator, @terminal, createTerminalOperator).
+    // createGeneratorOperator, @terminal, createTerminalOperator).
     // Requires importing 'tyneq/plugin' (or the plugin barrel)
     // to trigger side-effect registration before using these operators.
     // ========================================================================
@@ -798,41 +799,40 @@ export type KeyValuePair<TKey, TValue> = {
     value: TValue;
 };
 
+
 /**
- * Metadata attached to a built-in operator constructor via `tyneqOperatorMetadata`.
+ * Structural interface used by registration machinery to call the protected factory methods
+ * on sequence classes without exposing them publicly.
+ *
+ * The double-cast `(this as unknown as ISequenceFactory<T>)` is intentional:
+ * these methods are `protected`, so the cast is the only way to call them from
+ * outside the class hierarchy without changing their access modifier.
  *
  * @internal
  */
-export interface IOperatorMetadata {
-    readonly name: string;
-    readonly category: Exclude<OperatorCategory, "source">;
-}
-
-/** Structural interface for classes that carry `tyneqOperatorMetadata`. @internal */
-export interface IOperatorMetadataCarrier {
-    readonly [tyneqOperatorMetadata]: IOperatorMetadata;
-}
-
-/**
- * Structural interface used by registration machinery to call the protected
- * `createEnumerable` method on `TyneqEnumerableBase` without exposing it publicly.
- *
- * The double-cast `(this as unknown as IWithCreateEnumerable)` is intentional:
- * `createEnumerable` is `protected`, so the cast is the only way to call it from
- * outside the class hierarchy without changing the access modifier.
- *
- * @internal
- */
-export interface IWithCreateEnumerable {
-    createEnumerable(factory: { getEnumerator(): unknown }, node?: QueryPlanNode | null): unknown;
-    readonly [tyneqQueryNode]: QueryPlanNode | null;
+export interface ISequenceFactory<TSource> {
+    readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
+    createEnumerable(factory: { getEnumerator(): unknown }, node?: Nullable<QueryPlanNode>): unknown;
+    createOrderedEnumerable<TKey>(
+        keySelector: (x: TSource) => TKey,
+        comparer: (a: TKey, b: TKey) => number,
+        descending: boolean,
+        node?: Nullable<QueryPlanNode>
+    ): TyneqOrderedSequence<TSource>;
+    createCachedEnumerable(source: TyneqSequence<TSource>, node?: Nullable<QueryPlanNode>): TyneqCachedSequence<TSource>;
 }
 
 /** A fully resolved operator entry: metadata plus the prototype-level implementation. */
 export interface OperatorEntry {
     readonly metadata: OperatorMetadata;
-    readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
+    readonly impl: BoundMethod<TyneqEnumerableBase<unknown>>;
 }
 
 /** Source of an operator implementation, used internally to track where operators come from. */
 export type OperatorSource = "internal" | "external";
+
+/** Kind of an operator, used internally to categorize operators. Extends `OperatorCategory` with registry-only kinds. */
+export type OperatorKind = OperatorCategory | "cache" | "extension" | "unknown";
+
+/** Constructor type for a sequence class. */
+export type SequenceConstructor = abstract new (...args: any[]) => TyneqEnumerableCore<unknown>;

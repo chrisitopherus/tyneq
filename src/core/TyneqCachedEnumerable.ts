@@ -1,4 +1,6 @@
 import { MemoizeEnumerator } from "../enumerators/buffer/memoize";
+import { builtin } from "../plugin/decorators/builtin";
+import { sequence } from "../plugin/decorators/sequence";
 import { CacheResult, CachedEnumerable, Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
@@ -17,6 +19,7 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
  *
  * @internal
  */
+@sequence
 export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource> implements TyneqCachedSequence<TSource>, CachedEnumerable<TSource> {
     private source: TyneqSequence<TSource>;
     private cache: TSource[] = [];
@@ -33,6 +36,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return new MemoizeEnumerator(this);
     }
 
+    @builtin({ kind: "cache" })
     public refresh(): TyneqCachedSequence<TSource> {
         this.cache = [];
         this.done = false;

@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
@@ -13,7 +12,6 @@ import { Enumerator } from "../../types/core";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "distinct", kind: "buffer" })
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
 

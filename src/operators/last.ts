@@ -1,6 +1,5 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { Nullable } from "../types/utility";
 import { ArgumentUtility } from "../utility/argumentUtility";
@@ -17,7 +16,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "last" })
 export class LastOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: (item: TSource) => boolean;
 

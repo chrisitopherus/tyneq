@@ -78,6 +78,7 @@ describe("@operator decorator", () => {
       expect(() =>
         createOperator({
           name: "scan",
+          category: "streaming",
           factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }),
         })
       ).toThrow(Error);
@@ -87,6 +88,7 @@ describe("@operator decorator", () => {
       expect(() =>
         createOperator({
           name: "where",
+          category: "streaming",
           factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }),
         })
       ).toThrow("where");
@@ -96,6 +98,7 @@ describe("@operator decorator", () => {
       expect(() =>
         createOperator({
           name: "populate",
+          category: "streaming",
           factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }),
         })
       ).toThrow("populate");
@@ -187,6 +190,7 @@ describe("@terminal decorator", () => {
       expect(() =>
         createOperator({
           name: "aggregate",
+          category: "streaming",
           factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }),
         })
       ).toThrow(Error);
@@ -196,6 +200,7 @@ describe("@terminal decorator", () => {
       expect(() =>
         createOperator({
           name: "minMax",
+          category: "streaming",
           factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }),
         })
       ).toThrow("minMax");

@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
@@ -16,7 +15,6 @@ import { TyneqMap } from "../../utility/map";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "join", kind: "buffer" })
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;

@@ -1,5 +1,4 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 
 /**
@@ -13,7 +12,6 @@ import { Enumerable } from "../types/core";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "contains" })
 export class ContainsOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly value: TSource;
 

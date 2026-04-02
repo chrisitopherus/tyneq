@@ -15,7 +15,7 @@ export type HasLength = { length: number };
 export type GenericFunction = (...x: never[]) => unknown;
 
 /** A constructor type that can be instantiated with `new`. */
-export type Constructor<TInstance = unknown, TArgs extends readonly unknown[] = unknown[]> = new (...args: TArgs) => TInstance;
+export type Constructor<TInstance = unknown, TArgs extends readonly any[] = any[]> = new (...args: TArgs) => TInstance;
 
 /** A type that extracts the instance type from a constructor. */
 export type InstanceOf<C> = C extends Constructor<infer TInstance> ? TInstance : never;
@@ -32,8 +32,14 @@ export type Predicate<TArgs extends readonly unknown[] = []> = (...args: TArgs) 
 /** A function that takes arguments of type `TArgs` (tuple) and returns a value of type `TResult`. */
 export type Func<TArgs extends readonly unknown[] = [], TResult = unknown> = (...args: TArgs) => TResult;
 
+/** A method callable on a specific `this` context, returning `TReturn`. */
+export type BoundMethod<TThis = unknown, TReturn = unknown> = (this: TThis, ...args: any[]) => TReturn;
+
+/** A method callable on any `this` context with unknown arguments. */
+export type Method = BoundMethod<unknown>;
+
 /** A factory function that creates an instance of type `TInstance` given arguments of type `TArgs`. */
-export type Factory<TInstance = unknown, TArgs extends readonly unknown[] = unknown[]> = (...args: TArgs) => TInstance;
+export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> = (...args: TArgs) => TInstance;
 
 /**
  * Narrows `T` to `U` if `T extends U`, otherwise uses `U`.
