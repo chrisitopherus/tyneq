@@ -3,7 +3,7 @@ import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqCachedEnumerable } from "../../core/TyneqCachedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { QueryNode } from "../../queryplan/QueryNode";
-import { TyneqCachedSequence } from "../../types/core";
+import type { OperatorKind, TyneqCachedSequence } from "../../types/core";
 import type { OperatorCategory, QueryPlanNode } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 
@@ -18,7 +18,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  * It is responsible for constructing and returning the result sequence.
  *
  * @param name - Method name to expose on cached sequences.
- * @param category - Operator kind (`"streaming"` | `"buffer"` | `"cache"`).
+ * @param category - Operator kind.
  * @param factory - Constructs the result sequence from `(source, node, ...userArgs)`.
  * @param validate - Optional eager validation function for user-supplied arguments.
  *
@@ -41,7 +41,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  */
 export function createCachedOperator<TSource, TArgs extends unknown[]>(
     name: string,
-    category: OperatorCategory,
+    category: OperatorKind,
     factory: (source: TyneqCachedEnumerable<TSource>, node: QueryPlanNode, ...args: TArgs) => TyneqCachedSequence<TSource>,
     validate?: (...args: TArgs) => void
 ): void {
@@ -50,7 +50,7 @@ export function createCachedOperator<TSource, TArgs extends unknown[]>(
         impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
             validate?.(...(userArgs as TArgs));
             const source = this as unknown as TyneqCachedEnumerable<TSource>;
-            const node = new QueryNode(name, userArgs, source[tyneqQueryNode], category);
+            const node = new QueryNode(name, userArgs, source[tyneqQueryNode], category as OperatorCategory);
             return factory(source, node, ...(userArgs as TArgs));
         }
     });

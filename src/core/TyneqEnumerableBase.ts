@@ -269,7 +269,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     // --- Streaming operators ---
 
-
+    @builtin({ kind: "streaming" })
     public cast<U>(): TyneqSequence<U> {
         const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
         return this.createEnumerable(

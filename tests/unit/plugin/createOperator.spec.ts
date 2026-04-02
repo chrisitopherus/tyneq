@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, createOperator, createStreamingOperator, createTerminalOperator, ArgumentError } from "../../../src";
+import { Tyneq, createOperator, createGeneratorOperator as createStreamingOperator, createTerminalOperator, ArgumentError } from "../../../src";
 
 // Each test needs a unique operator name because registrations permanently mutate
 // TyneqEnumerableBase.prototype for the lifetime of the process.
@@ -12,6 +12,7 @@ describe("createOperator", () => {
     const name = nextName("op");
     createOperator<number, [number], number>({
       name,
+      category: "streaming",
       factory(source, multiplier) {
         return {
           getEnumerator() {
@@ -32,6 +33,7 @@ describe("createOperator", () => {
     const name = nextName("opChain");
     createOperator<number, [], number>({
       name,
+      category: "streaming",
       factory(source) {
         return {
           getEnumerator() {
@@ -52,6 +54,7 @@ describe("createOperator", () => {
     const name = nextName("opValidate");
     createOperator<number, [number], number>({
       name,
+      category: "streaming",
       factory(source, _multiplier) {
         return {
           getEnumerator() {
@@ -77,19 +80,19 @@ describe("createOperator", () => {
 
   it("throws an Error when registering a duplicate operator name", () => {
     const name = nextName("opDup");
-    createOperator({ name, factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) });
+    createOperator({ name, category: "streaming", factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) });
 
     expect(() =>
-      createOperator({ name, factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) })
+      createOperator({ name, category: "streaming", factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) })
     ).toThrow(Error);
   });
 
   it("duplicate registration error message includes the conflicting operator name", () => {
     const name = nextName("opDupMsg");
-    createOperator({ name, factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) });
+    createOperator({ name, category: "streaming", factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) });
 
     expect(() =>
-      createOperator({ name, factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) })
+      createOperator({ name, category: "streaming", factory: (source) => ({ getEnumerator: () => (source as any)[Symbol.iterator]() }) })
     ).toThrow(name);
   });
 });
@@ -99,7 +102,8 @@ describe("createStreamingOperator", () => {
     const name = nextName("genOp");
     createStreamingOperator<number, [number], number>({
       name,
-      *generator(source, addend) {
+      category: "streaming",
+      *generator(source: Iterable<number>, addend: number) {
         for (const item of source) yield item + addend;
       }
     });
@@ -112,7 +116,8 @@ describe("createStreamingOperator", () => {
     const name = nextName("genOpReiter");
     createStreamingOperator<number, [], number>({
       name,
-      *generator(source) {
+      category: "streaming",
+      *generator(source: Iterable<number>) {
         for (const item of source) yield item * 2;
       }
     });
@@ -126,8 +131,9 @@ describe("createStreamingOperator", () => {
     const name = nextName("genOpValidate");
     createStreamingOperator<number, [number], number>({
       name,
-      *generator(source, _addend) { yield* source; },
-      validate(addend) {
+      category: "streaming",
+      *generator(source: Iterable<number>, _addend: number) { yield* source; },
+      validate(addend: number) {
         if (typeof addend !== "number") throw new ArgumentError("addend must be a number", "addend");
       }
     });
@@ -144,19 +150,19 @@ describe("createStreamingOperator", () => {
 
   it("throws an Error when registering a duplicate generator operator name", () => {
     const name = nextName("genOpDup");
-    createStreamingOperator({ name, *generator(source) { yield* source as any; } });
+    createStreamingOperator({ name, category: "streaming", *generator(source: Iterable<unknown>) { yield* source as any; } });
 
     expect(() =>
-      createStreamingOperator({ name, *generator(source) { yield* source as any; } })
+      createStreamingOperator({ name, category: "streaming", *generator(source: Iterable<unknown>) { yield* source as any; } })
     ).toThrow(Error);
   });
 
   it("duplicate registration error message includes the conflicting operator name", () => {
     const name = nextName("genOpDupMsg");
-    createStreamingOperator({ name, *generator(source) { yield* source as any; } });
+    createStreamingOperator({ name, category: "streaming", *generator(source: Iterable<unknown>) { yield* source as any; } });
 
     expect(() =>
-      createStreamingOperator({ name, *generator(source) { yield* source as any; } })
+      createStreamingOperator({ name, category: "streaming", *generator(source: Iterable<unknown>) { yield* source as any; } })
     ).toThrow(name);
   });
 });

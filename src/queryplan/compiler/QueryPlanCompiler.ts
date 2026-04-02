@@ -52,7 +52,6 @@ export class QueryPlanCompiler {
     }
 
     private compileSource(node: QueryPlanNode): unknown {
-        console.log(node.operatorName);
         switch (node.operatorName) {
             case "from":
                 return Tyneq.from(node.args[0] as Iterable<unknown>);
