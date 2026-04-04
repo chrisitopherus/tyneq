@@ -1,18 +1,30 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator } from "../../types/core";
-import { Nullable } from '../../types/utility';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { Nullable } from "../../types/utility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
+/**
+ * Flattens each element into a sub-sequence and yields each element of those sub-sequences.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
+ *
+ * @see {@link TyneqSequence.selectMany}
+ * @group Operators
+ * @category Streaming
+ * @internal
+ */
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
-    private readonly selector: (item: T) => IEnumerable<U>;
+    private readonly selector: (item: T) => Iterable<U>;
+    private innerEnumerator: Nullable<Enumerator<U>> = null;
 
-    private innerEnumerator: Nullable<IEnumerator<U>> = null;
-
-    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => IEnumerable<U>) {
+    
+    public constructor(sourceEnumerator: Enumerator<T>, selector: (item: T) => Iterable<U>) {
         super(sourceEnumerator);
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<U> {
+    protected override handleNext(): IteratorResult<U> {
         while (true) {
             if (this.innerEnumerator !== null) {
                 const innerNext = this.innerEnumerator.next();
@@ -25,7 +37,7 @@ export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
 
             const sourceNext = this.sourceEnumerator.next();
             if (sourceNext.done) {
-                return this.complete();
+                return this.done();
             }
 
             this.innerEnumerator = this.selector(sourceNext.value)[Symbol.iterator]();

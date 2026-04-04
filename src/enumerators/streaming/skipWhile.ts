@@ -1,21 +1,33 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
+/**
+ * Skips elements from the beginning of the source sequence as long as a predicate is true.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
+ *
+ * @see {@link TyneqSequence.skipWhile}
+ * @group Operators
+ * @category Streaming
+ * @internal
+ */
 export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: (item: T) => boolean;
-
     private isSkipping = true;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, predicate: (item: T) => boolean) {
+    
+    public constructor(sourceEnumerator: Enumerator<T>, predicate: (item: T) => boolean) {
         super(sourceEnumerator);
         this.predicate = predicate;
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override handleNext(): IteratorResult<T> {
         while (true) {
             const next = this.sourceEnumerator.next();
             if (next.done) {
-                return this.complete();
+                return this.done();
             }
 
             this.isSkipping = this.isSkipping && this.predicate(next.value);

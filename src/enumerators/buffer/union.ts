@@ -1,24 +1,37 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator } from '../../types/core';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
+/**
+ * Returns the set union of the source and a second sequence, eliminating duplicates.
+ *
+ * @remarks
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ *
+ * @see {@link TyneqSequence.union}
+ * @group Operators
+ * @category Buffering
+ * @internal
+ */
 export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     private bufferedValues = new Set<TSource>();
-    private currentEnumerator: IEnumerator<TSource>;
+    private currentEnumerator: Enumerator<TSource>;
     private isSourceDone = false;
+
     
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TSource>) {
+    public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
         this.currentEnumerator = this.sourceEnumerator;
     }
 
-    protected override handleNext(): EnumeratorResult<TSource> {
+    protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.currentEnumerator.next();
             if (done) {
                 if (this.isSourceDone) {
-                    return this.complete();
+                    return this.done();
                 }
 
                 this.isSourceDone = true;

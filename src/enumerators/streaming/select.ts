@@ -1,18 +1,31 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
+/**
+ * Projects each element through a selector.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
+ *
+ * @see {@link TyneqSequence.select}
+ * @group Operators
+ * @category Streaming
+ * @internal
+ */
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => U;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, selector: (item: T) => U) {
+    
+    public constructor(sourceEnumerator: Enumerator<T>, selector: (item: T) => U) {
         super(sourceEnumerator);
         this.selector = selector;
     }
 
-    protected override handleNext(): EnumeratorResult<U> {
+    protected override handleNext(): IteratorResult<U> {
         const next = this.sourceEnumerator.next();
         if (next.done) {
-            return this.complete();
+            return this.done();
         }
 
         const value = next.value;

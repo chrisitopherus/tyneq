@@ -1,0 +1,31 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "tsconfig": "tsconfig.json",
+  "out": "docs/api/reference",
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryFileName": "index.md",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "hideGenerator": true,
+  "categorizeByGroup": true,
+  "sort": ["source-order"],
+  "githubPages": false,
+  "parametersFormat": "table",
+  "indexFormat": "table",
+  "interfacePropertiesFormat": "table",
+  "classPropertiesFormat": "table",
+  "enumMembersFormat": "table",
+  "navigationJson": "docs/api/reference/navigation.json",
+  "hideBreadcrumbs": false,
+  "externalSymbolLinkMappings": {
+    "tyneq": {
+      "TyneqEnumerableEnumerator": "#",
+      "EnumeratorUtility.tryDispose": "#",
+      "BaseEnumerableSorter": "#",
+      "TyneqEnumerableBase": "#"
+    }
+  }
+}

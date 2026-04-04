@@ -1,0 +1,69 @@
+import type { Enumerable, EnumeratorFactory, ISequenceFactory, OperatorSource } from "../../types/core";
+import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
+import { QueryNode } from "../../queryplan/QueryNode";
+import type { OperatorCategory } from "../../types/queryplan";
+import { tyneqQueryNode } from "../../types/queryplan";
+import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../../core/OperatorMetadata";
+
+/**
+ * Registers a streaming or buffering operator using a factory function.
+ *
+ * Use this when the operator requires a class-level enumerator with custom state
+ * but you want to avoid writing the decorator boilerplate. For simpler generator-based
+ * generator-based streaming operators, prefer {@link createGeneratorOperator}.
+ *
+ * @param config.name - Method name to expose on every sequence.
+ * @param config.category - `"streaming"` or `"buffer"`.
+ * @param config.factory - Returns an `EnumeratorFactory` given the source and arguments.
+ * @param config.validate - Optional eager validation for user-supplied arguments.
+ *
+ * @example
+ * ```ts
+ * import { createOperator } from "tyneq/plugin";
+ * import type { Enumerator } from "tyneq";
+ *
+ * createOperator({
+ *     name: "everyOther",
+ *     category: "streaming",
+ *     factory: <T>(source: Enumerable<T>) => ({
+ *         getEnumerator(): Enumerator<T> {
+ *             let skip = false;
+ *             const iter = source[Symbol.iterator]();
+ *             return {
+ *                 next(): IteratorResult<T> {
+ *                     while (true) {
+ *                         const r = iter.next();
+ *                         if (r.done) return r;
+ *                         if (!skip) { skip = true; return r; }
+ *                         skip = false;
+ *                     }
+ *                 }
+ *             };
+ *         }
+ *     })
+ * });
+ * ```
+ *
+ * @group Utilities
+ */
+export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
+    name: string;
+    category: OperatorCategory;
+    factory: (source: Enumerable<TSource>, ...args: TArgs) => EnumeratorFactory<TResult>;
+    validate?: (...args: NoInfer<TArgs>) => void;
+    source?: OperatorSource;
+}): void {
+    OperatorRegistry.register({
+        metadata: new OperatorMetadata(config.name, config.category, config.source ?? "external", TyneqEnumerableBase),
+        impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
+            config.validate?.(...(args as TArgs));
+            const withCreate = this as unknown as ISequenceFactory<unknown>;
+            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], config.category);
+            return withCreate.createEnumerable(
+                config.factory(this as Enumerable<TSource>, ...(args as TArgs)),
+                node
+            );
+        }
+    });
+}

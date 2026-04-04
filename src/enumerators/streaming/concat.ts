@@ -1,17 +1,34 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
+/**
+ * Concatenates a second sequence after the source sequence.
+ *
+ * @remarks
+ * Deferred. Source is not enumerated until the returned sequence is iterated.
+ *
+ * @see {@link TyneqSequence.concat}
+ * @group Operators
+ * @category Streaming
+ * @internal
+ */
 export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly otherEnumerator: IEnumerator<T>;
-
+    private readonly otherEnumerator: Enumerator<T>;
     private isSourceDone = false;
 
-    public constructor(sourceEnumerator: IEnumerator<T>, otherEnumerator: IEnumerator<T>) {
+    
+    public constructor(sourceEnumerator: Enumerator<T>, other: Iterable<T>) {
         super(sourceEnumerator);
-        this.otherEnumerator = otherEnumerator;
+        this.otherEnumerator = other[Symbol.iterator]();
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
+    protected override disposeAdditional(): void {
+        EnumeratorUtility.tryDispose(this.otherEnumerator);
+    }
+
+    protected override handleNext(): IteratorResult<T> {
         if (!this.isSourceDone) {
             const next = this.sourceEnumerator.next();
             if (!next.done) {
@@ -26,6 +43,6 @@ export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
             return this.yield(next.value);
         }
 
-        return this.complete();
+        return this.done();
     }
 }

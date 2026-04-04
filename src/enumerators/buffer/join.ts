@@ -1,49 +1,55 @@
-import { Tyneq } from "../../core/tyneq";
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator, IEnumerable } from '../../types/core';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { TyneqMap } from "../../utility/map";
-import { nameof } from "../../utility/nameof";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { TyneqMap } from "../../utility/TyneqMap";
 
+/**
+ * Correlates outer elements with matching inner elements using a key equality comparison.
+ *
+ * @remarks
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ *
+ * @see {@link TyneqSequence.join}
+ * @group Operators
+ * @category Buffering
+ * @internal
+ */
 export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
-    private readonly innerSource: IEnumerable<TInner>;
+    private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;
     private readonly innerKeySelector: (inner: TInner) => TKey;
     private readonly resultSelector: (outer: TOuter, inner: TInner) => TResult;
-
-    private isInitialized = false;
     private innerLookup = new TyneqMap<TKey, TInner[]>();
-    
     private pendingOuter!: TOuter;
     private pendingMatches: Nullable<TInner[]> = null;
     private pendingIndex = 0;
 
+    
     public constructor(
-        sourceEnumerator: IEnumerator<TOuter>,
-        innerSource: IEnumerable<TInner>,
+        sourceEnumerator: Enumerator<TOuter>,
+        innerSource: Iterable<TInner>,
         outerKeySelector: (outer: TOuter) => TKey,
         innerKeySelector: (inner: TInner) => TKey,
         resultSelector: (outer: TOuter, inner: TInner) => TResult
     ) {
         super(sourceEnumerator);
-        ArgumentUtility.checkNotOptional(innerSource, nameof({ innerSource }));
-        ArgumentUtility.checkNotOptional(outerKeySelector, nameof({ outerKeySelector }));
-        ArgumentUtility.checkNotOptional(innerKeySelector, nameof({ innerKeySelector }));
-        ArgumentUtility.checkNotOptional(resultSelector, nameof({ resultSelector }));
-
         this.innerSource = innerSource;
         this.outerKeySelector = outerKeySelector;
         this.innerKeySelector = innerKeySelector;
         this.resultSelector = resultSelector;
     }
 
-    protected handleNext(): EnumeratorResult<TResult> {
-        this.ensureInitialized();
+    protected override initialize(): void {
+        for (const innerItem of this.innerSource) {
+            const key = this.innerKeySelector(innerItem);
+            const bucket = this.innerLookup.getOrInit(key, () => []);
+            bucket.push(innerItem);
+        }
+    }
 
+    protected override handleNext(): IteratorResult<TResult> {
         while (true) {
-
-
             if (this.pendingMatches !== null) {
                 if (this.pendingIndex < this.pendingMatches.length) {
                     return this.yield(this.resultSelector(this.pendingOuter, this.pendingMatches[this.pendingIndex++]));
@@ -54,7 +60,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
 
             const nextOuter = this.sourceEnumerator.next();
             if (nextOuter.done) {
-                return this.complete();
+                return this.done();
             }
 
             const outerItem = nextOuter.value;
@@ -69,17 +75,5 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
             this.pendingMatches = innerItems;
             this.pendingIndex = 0;
         }
-    }
-
-    private ensureInitialized(): void {
-        if (this.isInitialized) return;
-
-        for (const innerItem of this.innerSource) {
-            const key = this.innerKeySelector(innerItem);
-            const bucket = this.innerLookup.getOrInit(key, () => []);
-            bucket.push(innerItem);
-        }
-
-        this.isInitialized = true;
     }
 }

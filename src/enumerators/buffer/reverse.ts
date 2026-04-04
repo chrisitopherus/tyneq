@@ -1,31 +1,41 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerator } from "../../types/core";
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
 
+/**
+ * Reverses the order of elements in the source sequence.
+ *
+ * @remarks
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ *
+ * @see {@link TyneqSequence.reverse}
+ * @group Operators
+ * @category Buffering
+ * @internal
+ */
 export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private index: number = -1;
-    private isDoneBuffering = false;
 
-    public constructor(sourceEnumerator: IEnumerator<T>) {
+    
+    public constructor(sourceEnumerator: Enumerator<T>) {
         super(sourceEnumerator);
     }
 
-    protected override handleNext(): EnumeratorResult<T> {
-        if (!this.isDoneBuffering) {
-            while (true) {
-                const { done, value } = this.sourceEnumerator.next();
-                if (done) {
-                    this.index = this.buffer.length - 1;
-                    this.isDoneBuffering = true;
-                    break;
-                }
-
-                this.buffer.push(value);
+    protected override initialize(): void {
+        while (true) {
+            const { done, value } = this.sourceEnumerator.next();
+            if (done) {
+                this.index = this.buffer.length - 1;
+                break;
             }
-        }
 
+            this.buffer.push(value);
+        }
+    }
+
+    protected override handleNext(): IteratorResult<T> {
         if (this.index < 0) {
-            return this.complete();
+            return this.done();
         }
 
         return this.yield(this.buffer[this.index--]);

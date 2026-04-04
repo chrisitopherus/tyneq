@@ -1,12 +1,18 @@
-import { TyneqError } from "../core/errors/TyneqError";
-import { ArgumentUtility } from "./argumentUtility";
 
-export function nameof(param: Record<string, unknown>): string {
-    ArgumentUtility.checkNotNull(param, "param");
-
-    if (typeof param !== "object") {
-        throw new TyneqError("nameof() expects an object.");
-    }
-
-    return Object.keys(param)[0] ?? "";
+/**
+ * Extracts the first property name and value from a single-property object.
+ * Used to infer parameter names for error messages without string literals.
+ *
+ * @example
+ * ```ts
+ * const count = 5;
+ * const [name, value] = nameof({ count }); // -> ["count", 5]
+ * ```
+ *
+ * @internal
+ */
+export function nameof<T>(param: Record<string, T>): [name: string, value: T] {
+    const keys = Object.keys(param);
+    const key = keys[0];
+    return [key, param[key]] as [string, T];
 }

@@ -1,27 +1,38 @@
-import { TyneqEnumerator } from "../../core/TyneqEnumerator";
-import { EnumeratorResult, IEnumerable, IEnumerator } from '../../types/core';
+import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
+import { Enumerator } from "../../types/core";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
+/**
+ * Returns elements that are present in both the source and a second sequence.
+ *
+ * @remarks
+ * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ *
+ * @see {@link TyneqSequence.intersect}
+ * @group Operators
+ * @category Buffering
+ * @internal
+ */
 export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    private readonly otherValues: IEnumerable<TSource>;
+    private readonly otherValues: Iterable<TSource>;
     private intersectionValues = new Set<TSource>();
     private bufferedValues = new Set<TSource>();
-    private initialized = false;
 
-    public constructor(sourceEnumerator: IEnumerator<TSource>, otherValues: IEnumerable<TSource>) {
+    
+    public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;
     }
 
-    protected override handleNext(): EnumeratorResult<TSource> {
-        if (!this.initialized) {
-            this.intersectionValues = new Set<TSource>(this.otherValues);
-            this.initialized = true;
-        }
+    protected override initialize(): void {
+        this.intersectionValues = new Set<TSource>(this.otherValues);
+    }
 
+    protected override handleNext(): IteratorResult<TSource> {
         while (true) {
             const { done, value } = this.sourceEnumerator.next();
             if (done) {
-                return this.complete();
+                return this.done();
             }
 
             if (this.intersectionValues.has(value) && !this.bufferedValues.has(value)) {
