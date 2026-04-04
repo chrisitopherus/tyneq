@@ -5,7 +5,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * Base class for enumerators that need the full ordered sequence (not just an Enumerator<T>).
  * Lifecycle of the source is owned by the sequence, not the enumerator.
  *
- * @internal
+ * @group Plugin
  */
 export abstract class TyneqOrderedEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 

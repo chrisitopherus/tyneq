@@ -1,6 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence, KeyValuePair } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 
 /**
  * Collects all elements into a Map using a key-value selector.

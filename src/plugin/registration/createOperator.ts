@@ -21,15 +21,17 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  * @example
  * ```ts
  * import { createOperator } from "tyneq/plugin";
+ * import type { Enumerator } from "tyneq";
  *
  * createOperator({
  *     name: "everyOther",
- *     factory: (source) => ({
- *         getEnumerator() {
+ *     category: "streaming",
+ *     factory: <T>(source: Enumerable<T>) => ({
+ *         getEnumerator(): Enumerator<T> {
  *             let skip = false;
  *             const iter = source[Symbol.iterator]();
  *             return {
- *                 next() {
+ *                 next(): IteratorResult<T> {
  *                     while (true) {
  *                         const r = iter.next();
  *                         if (r.done) return r;
@@ -37,7 +39,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  *                         skip = false;
  *                     }
  *                 }
- *             } as any;
+ *             };
  *         }
  *     })
  * });

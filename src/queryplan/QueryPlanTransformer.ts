@@ -21,7 +21,7 @@ import { QueryNode } from "./QueryNode";
  * ```ts
  * // Rename all 'where' nodes to 'filter' in the plan view
  * class RenameWhere extends QueryPlanTransformer {
- *     protected override transformNode(node: IQueryNode, source: IQueryNode | null): IQueryNode {
+ *     protected override transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
  *         if (node.operatorName === "where") {
  *             return new QueryNode("filter", node.args, source, node.category);
  *         }

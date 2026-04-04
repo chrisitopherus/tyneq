@@ -1,5 +1,5 @@
 import { Enumerable } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Abstract base for all terminal operators.
@@ -11,7 +11,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  *
  * @typeParam TSource - Element type of the source sequence.
  * @typeParam TResult - The return type of `process()`.
- * @internal
+ * @group Plugin
  */
 export abstract class TyneqTerminalOperator<TSource, TResult = TSource> {
     protected readonly source: Enumerable<TSource>;

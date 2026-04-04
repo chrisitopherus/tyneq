@@ -1,5 +1,5 @@
 import { Enumerable, Enumerator } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 
 /**
  * Wraps a native `Iterable<T>` as a Tyneq {@link Enumerable}.

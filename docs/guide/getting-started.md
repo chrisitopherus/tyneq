@@ -35,9 +35,9 @@ Each step is a different kind of operation:
 | Step | Kind | What happens |
 |---|---|---|
 | `Tyneq.from(people)` | Source | Wraps the array |
-| `.where(pred)` | Streaming | Filter — deferred, O(1) memory |
-| `.orderByDescending(key)` | Buffering | Sort — deferred, O(n) memory |
-| `.select(fn)` | Streaming | Project — deferred, O(1) memory |
+| `.where(pred)` | Streaming | Filter - deferred, O(1) memory |
+| `.orderByDescending(key)` | Buffering | Sort - deferred, O(n) memory |
+| `.select(fn)` | Streaming | Project - deferred, O(1) memory |
 | `.toArray()` | Terminal | Executes everything, returns `string[]` |
 
 Nothing runs until `.toArray()`. The operators above it describe what to do, not when.
@@ -53,7 +53,7 @@ Tyneq.from(new Map([["a", 1], ["b", 2]]));
 Tyneq.range(1, 5);    // [1, 2, 3, 4, 5]
 Tyneq.empty<number>();
 
-// Generators — wrap the function, not the object
+// Generators - wrap the function, not the object
 function* naturals() { let n = 0; while (true) yield n++; }
 Tyneq.from({ [Symbol.iterator]: naturals }).take(5).toArray();
 // [0, 1, 2, 3, 4]
@@ -88,6 +88,6 @@ const arr = [...seq];                 // [1, 3, 5]
 
 ## Next
 
-- [Concepts](/guide/concepts) — sequences, operator categories, deferred execution
-- [Operators Overview](/guide/operators-overview) — full operator list
+- [Concepts](/guide/concepts) - sequences, operator categories, deferred execution
+- [Operators Overview](/guide/operators-overview) - full operator list
 - [API Reference](/api/reference/)

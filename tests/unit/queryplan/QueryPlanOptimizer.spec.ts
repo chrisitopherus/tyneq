@@ -99,6 +99,30 @@ describe("QueryPlanOptimizer", () => {
         });
     });
 
+    describe("pure-function contract", () => {
+        it("fused where skips second predicate for items that fail the first (short-circuit)", () => {
+            // Documents that fusion changes side-effect behavior for impure predicates.
+            // Second predicate is never called for items that fail the first.
+            const secondCalls: number[] = [];
+            const seq = Tyneq.from([1, 2, 3, 4])
+                .where((x) => x > 2)
+                .where((x) => { secondCalls.push(x); return x < 5; });
+
+            const optimized = new QueryPlanOptimizer().visit(seq[tyneqQueryNode]!);
+            const fused = optimized.args[0] as (x: number) => boolean;
+
+            // Evaluate the fused predicate against each item manually
+            [1, 2, 3, 4].forEach((x) => fused(x));
+
+            // Items 1 and 2 fail the first predicate — second is never called for them
+            expect(secondCalls).not.toContain(1);
+            expect(secondCalls).not.toContain(2);
+            // Items 3 and 4 pass the first predicate — second is called
+            expect(secondCalls).toContain(3);
+            expect(secondCalls).toContain(4);
+        });
+    });
+
     describe("sourceKind", () => {
         it("preserves sourceKind through optimization", () => {
             const seq = Tyneq.from([1, 2]).where((x) => x > 0).where((x) => x < 3);

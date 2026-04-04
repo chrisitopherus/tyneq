@@ -21,14 +21,19 @@ import { Constructor } from "../../types/utility";
  *
  * @example
  * ```ts
+ * import { orderedOperator, TyneqOrderedEnumerator } from "tyneq/plugin";
+ *
  * @orderedOperator("myThenBy", "buffer", (keySelector) => {
  *     if (typeof keySelector !== "function") throw new Error("keySelector must be a function");
  * })
  * class MyThenByEnumerator<T> extends TyneqOrderedEnumerator<T> {
- *     constructor(source: OrderedEnumerable<T>, private keySelector: (item: T) => unknown) {
+ *     public constructor(source: OrderedEnumerable<T>, private readonly keySelector: (item: T) => unknown) {
  *         super(source);
  *     }
- *     protected handleNext(): IteratorResult<T> { ... }
+ *     protected handleNext(): IteratorResult<T> {
+ *         // this.orderedSource gives access to the full OrderedEnumerable
+ *         return this.orderedSource.getEnumerator().next();
+ *     }
  * }
  * ```
  *
@@ -44,6 +49,7 @@ export function orderedOperator<TArgs extends unknown[] = never>(
             metadata: new OperatorMetadata(name, category, "external", TyneqOrderedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
+                // TypeScript cannot narrow 'this' inside a decorator-generated closure — cast is necessary
                 const base = this as unknown as TyneqOrderedEnumerable<unknown, unknown>;
                 const withCreate = this as unknown as ISequenceFactory<unknown>;
                 const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);

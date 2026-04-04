@@ -1,7 +1,7 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
 import { Enumerable, Enumerator, EnumeratorFactory, IteratorFactory, TyneqSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
@@ -66,7 +66,7 @@ export class Tyneq {
 
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new RandomEnumerator<TSource>(count, randomizer)
-        }, new QueryNode("random", [count], null, "source"));
+        }, new QueryNode("random", [count, randomizer], null, "source"));
     }
 
     /**

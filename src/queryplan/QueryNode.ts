@@ -6,7 +6,6 @@ import type { QueryPlanNode, QueryPlanVisitor, OperatorCategory, SourceKind } fr
  * forming a singly-linked list that represents the full query plan.
  *
  * @group QueryPlan
- * @internal
  */
 export class QueryNode implements QueryPlanNode {
 

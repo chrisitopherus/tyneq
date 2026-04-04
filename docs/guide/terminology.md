@@ -5,12 +5,12 @@ This page defines the types and concepts used throughout the Tyneq source code a
 ## Type Hierarchy
 
 ```
-Iterable<T>          ← native JavaScript protocol
-  └── Enumerable<T>  ← Tyneq's re-iterable contract
-        └── TyneqSequence<T>  ← the public fluent API (what you work with)
+Iterable<T>          <-- native JavaScript protocol
+  └── Enumerable<T>  <-- Tyneq's re-iterable contract
+        └── TyneqSequence<T>  <-- the public fluent API (what you work with)
 
-Iterator<T>          ← native JavaScript protocol
-  └── Enumerator<T>  ← Tyneq's single-pass cursor
+Iterator<T>          <-- native JavaScript protocol
+  └── Enumerator<T>  <-- Tyneq's single-pass cursor
 ```
 
 ---
@@ -23,7 +23,7 @@ The type returned by every Tyneq operator method and factory. This is the interf
 import { Tyneq } from "tyneq";
 
 const seq: TyneqSequence<number> = Tyneq.range(1, 5);
-//                    ↑ every operator returns this
+//                    ^ every operator returns this
 ```
 
 `TyneqSequence<T>` extends `Enumerable<T>` and carries all operator methods (`where`, `select`, `toArray`, etc.) plus the `[tyneqQueryNode]` query plan symbol.
@@ -37,9 +37,9 @@ The re-iterable contract. An `Enumerable<T>` can produce an independent `Enumera
 ```ts
 import type { Enumerable } from "tyneq";
 
-// Appears in custom operator signatures — e.g. createOperator factory:
+// Appears in custom operator signatures - e.g. createOperator factory:
 factory(source: Enumerable<unknown>, step: number): EnumeratorFactory<unknown>
-//             ↑ Enumerable, not Enumerator — so the factory can re-iterate the source
+//             ^ Enumerable, not Enumerator - so the factory can re-iterate the source
 ```
 
 `Enumerable<T>` extends both `Iterable<T>` (native JS) and `EnumeratorFactory<T>`.
@@ -48,10 +48,10 @@ factory(source: Enumerable<unknown>, step: number): EnumeratorFactory<unknown>
 
 ## `Enumerator<T>`
 
-A single, stateful, forward-only cursor over a sequence — one active enumeration in progress. Extends the native `Iterator<T>` protocol with two additions:
+A single, stateful, forward-only cursor over a sequence - one active enumeration in progress. Extends the native `Iterator<T>` protocol with two additions:
 
-- `return()` — terminates the cursor early and releases resources (idempotent)
-- `throw()` — not supported; throws `NotSupportedError` if called
+- `return()` - terminates the cursor early and releases resources (idempotent)
+- `throw()` - not supported; throws `NotSupportedError` if called
 
 ```ts
 import type { Enumerator } from "tyneq";
@@ -82,7 +82,7 @@ factory(source: Enumerable<unknown>): EnumeratorFactory<unknown> {
 }
 ```
 
-`Enumerable<T>` extends `EnumeratorFactory<T>` — every `Enumerable` is also an `EnumeratorFactory`.
+`Enumerable<T>` extends `EnumeratorFactory<T>` - every `Enumerable` is also an `EnumeratorFactory`.
 
 ---
 
@@ -108,7 +108,7 @@ factory(source: Enumerable<unknown>): EnumeratorFactory<unknown> {
 
 ## Re-iteration
 
-Enumerating a `TyneqSequence` multiple times re-runs the pipeline from the root on each pass. This is correct and expected — each call to `toArray()`, `count()`, etc. is independent.
+Enumerating a `TyneqSequence` multiple times re-runs the pipeline from the root on each pass. This is correct and expected - each call to `toArray()`, `count()`, etc. is independent.
 
 Exception: sources that are one-shot (e.g. a generator *object*) do not support re-iteration regardless of what operators wrap them. See [Common Pitfalls](/guide/pitfalls#one-shot-sources).
 
@@ -124,7 +124,7 @@ Exception: sources that are one-shot (e.g. a generator *object*) do not support 
 
 ## Query Plan
 
-Every sequence built by a Tyneq operator carries an `IQueryNode` — a linked list node describing that operator (name, category, arguments) with a reference to the upstream node. The chain from the outermost operator back to the source root is the **query plan**.
+Every sequence built by a Tyneq operator carries an `IQueryNode` - a linked list node describing that operator (name, category, arguments) with a reference to the upstream node. The chain from the outermost operator back to the source root is the **query plan**.
 
 Accessible via `seq[tyneqQueryNode]`. Print with `QueryPlanPrinter`. Traverse with `QueryPlanVisitor<T>`. See [Query Plan Inspection](/guide/query-plan).
 
@@ -136,7 +136,7 @@ The `src/plugin/` directory contains the public registration API for custom oper
 
 | Export | Purpose |
 |---|---|
-| `createStreamingOperator` | Register a generator-based streaming operator |
+| `createGeneratorOperator` | Register a generator-based streaming operator |
 | `createOperator` | Register a streaming/buffering operator with a custom factory |
 | `createTerminalOperator` | Register a terminal operator |
 | `@operator` | Class-based streaming/buffering decorator |

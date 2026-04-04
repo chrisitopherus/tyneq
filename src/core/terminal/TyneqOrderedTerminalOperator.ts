@@ -1,5 +1,5 @@
 import { OrderedEnumerable } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Abstract base for terminal operators that require a fully ordered sequence.
@@ -11,7 +11,7 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  *
  * @typeParam TSource - Element type of the source sequence.
  * @typeParam TResult - The return type of `process()`.
- * @internal
+ * @group Plugin
  */
 export abstract class TyneqOrderedTerminalOperator<TSource, TResult = TSource> {
     protected readonly source: OrderedEnumerable<TSource>;

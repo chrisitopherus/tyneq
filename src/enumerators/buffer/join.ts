@@ -1,8 +1,8 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { TyneqMap } from "../../utility/map";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { TyneqMap } from "../../utility/TyneqMap";
 
 /**
  * Correlates outer elements with matching inner elements using a key equality comparison.

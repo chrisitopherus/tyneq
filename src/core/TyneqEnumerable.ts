@@ -2,7 +2,7 @@ import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, Tyne
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { TyneqCachedEnumerable } from "./TyneqCachedEnumerable";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 

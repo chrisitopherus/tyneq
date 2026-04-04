@@ -22,19 +22,19 @@ npm run docs:dev      # local docs site with hot reload
 
 ```
 src/
-  core/               — base classes, enumerators, errors, ordering
+  core/               - base classes, enumerators, errors, ordering
   enumerators/
-    streaming/        — streaming enumerator implementations
-    buffer/           — buffering enumerator implementations
-  operators/          — terminal operator implementations (flat, no subdirectory)
-  plugin/             — public extension API (@operator, createOperator, OperatorRegistry)
-  queryplan/          — QueryNode, QueryPlanPrinter
-  types/              — public TypeScript interfaces
-  utility/            — internal argument validation helpers
+    streaming/        - streaming enumerator implementations
+    buffer/           - buffering enumerator implementations
+  operators/          - terminal operator implementations (flat, no subdirectory)
+  plugin/             - public extension API (@operator, createOperator, OperatorRegistry)
+  queryplan/          - QueryNode, QueryPlanPrinter, QueryPlanCompiler, QueryPlanOptimizer
+  types/              - public TypeScript interfaces
+  utility/            - internal argument validation helpers
 
 tests/
-  unit/               — per-operator unit tests
-  integration/        — end-to-end pipeline tests
+  unit/               - per-operator unit tests
+  integration/        - end-to-end pipeline tests
 ```
 
 ## Adding a New Operator
@@ -45,11 +45,11 @@ tests/
 |---|---|---|
 | **Streaming** | One element at a time from the source | O(1) |
 | **Buffering** | Requires full or partial source before yielding | O(n) |
-| **Terminal** | Returns a value, not a sequence | — |
+| **Terminal** | Returns a value, not a sequence | - |
 
 ### 2. Create the implementation file
 
-**Streaming or buffering** — in `src/enumerators/streaming/` or `src/enumerators/buffer/`:
+**Streaming or buffering** - in `src/enumerators/streaming/` or `src/enumerators/buffer/`:
 
 ```ts
 // src/enumerators/streaming/dropWhile.ts
@@ -79,7 +79,7 @@ export class DropWhileEnumerator<T> extends TyneqEnumerator<T, T> {
 }
 ```
 
-**Terminal** — in `src/operators/`:
+**Terminal** - in `src/operators/`:
 
 ```ts
 // src/operators/product.ts
@@ -119,7 +119,7 @@ public dropWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource> 
 }
 ```
 
-> **Validation placement:** Validate user-supplied arguments in the method body of `TyneqEnumerableBase` — before any lazy factory is created. Do not validate in enumerator constructors (deferred) or `handleNext()`.
+> **Validation placement:** Validate user-supplied arguments in the method body of `TyneqEnumerableBase` - before any lazy factory is created. Do not validate in enumerator constructors (deferred) or `handleNext()`.
 
 ### 4. Add the method signature to `TyneqSequence`
 
@@ -207,8 +207,8 @@ Each operator should cover:
 
 ## Code Conventions
 
-- Error classes from `src/core/errors/` — never raw `Error`/`TypeError`/`RangeError`
-- Operator implementations are `@internal` — `@remarks` with the execution-model phrase as the first sentence
+- Error classes from `src/core/errors/` - never raw `Error`/`TypeError`/`RangeError`
+- Operator implementations are `@internal` - `@remarks` with the execution-model phrase as the first sentence
 - TSDoc on every `TyneqSequence` method: summary, `@remarks`, `@throws` per argument
 
 ## Bug Reports and Feature Requests

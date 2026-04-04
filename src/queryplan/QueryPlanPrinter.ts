@@ -26,7 +26,7 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
 
     public constructor(options: QueryPlanPrinterOptions = {}) {
         this.indent = options.indent ?? "  ";
-        this.arrow = options.arrow ?? "→";
+        this.arrow = options.arrow ?? "->";
         this.maxInlineArrayItems = options.maxInlineArrayItems ?? 3;
     }
 

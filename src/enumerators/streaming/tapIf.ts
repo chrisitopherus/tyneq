@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Conditionally invokes a side-effect action for each element based on a predicate.

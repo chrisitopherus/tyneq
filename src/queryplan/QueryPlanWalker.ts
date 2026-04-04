@@ -12,7 +12,7 @@ import type { QueryPlanNode, QueryPlanVisitor } from "../types/queryplan";
  * ```ts
  * class NodeCounter extends QueryPlanWalker {
  *     public count = 0;
- *     protected visitNode(_node: IQueryNode): void { this.count++; }
+ *     protected visitNode(_node: QueryPlanNode): void { this.count++; }
  * }
  *
  * const counter = new NodeCounter();

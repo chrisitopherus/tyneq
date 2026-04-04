@@ -1,5 +1,5 @@
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
 
@@ -13,7 +13,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  *
  * @typeParam TInput - Source element type.
  * @typeParam TOutput - Output element type (defaults to `TInput`).
- * @internal
+ * @group Plugin
  */
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
     protected readonly sourceEnumerator: Enumerator<TInput>;

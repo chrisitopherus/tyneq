@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { TyneqMap } from "../../utility/map";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { TyneqMap } from "../../utility/TyneqMap";
 
 /**
  * Correlates outer elements with groups of matching inner elements.

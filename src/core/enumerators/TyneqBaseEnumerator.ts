@@ -15,7 +15,7 @@ import { Enumerator } from "../../types/core";
  *
  * @typeParam TInput - Source element type.
  * @typeParam TOutput - Output element type (defaults to `TInput`).
- * @internal
+ * @group Plugin
  */
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements Enumerator<TOutput> {
     private initialized = false;

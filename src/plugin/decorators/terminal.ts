@@ -1,7 +1,8 @@
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import type { OperatorCategory } from "../../types/queryplan";
+import { PluginError } from "../../core/errors/PluginError";
+import { ReflectionUtility } from "../../utility/ReflectionUtility";
 
 /**
  * Class decorator that registers a class as a terminal operator.
@@ -32,15 +33,22 @@ import type { OperatorCategory } from "../../types/queryplan";
  */
 export function terminal<TArgs extends unknown[] = never>(
     name: string,
-    category: OperatorCategory,
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => { process(): unknown }>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
+        if (ReflectionUtility.tryGetPrototypeMethod(target.prototype, "process") === undefined) {
+            throw new PluginError(
+                `@terminal("${name}"): class "${target.name}" must define a process() method.`,
+                "terminal",
+                target.name
+            );
+        }
+
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, category, "external", TyneqEnumerableBase),
+            metadata: new OperatorMetadata(name, "terminal", "external", TyneqEnumerableBase),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 return new target(this, ...userArgs).process();

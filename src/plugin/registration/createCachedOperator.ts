@@ -17,41 +17,41 @@ import { tyneqQueryNode } from "../../types/queryplan";
  * The factory receives the cached sequence, the query node, and any user arguments.
  * It is responsible for constructing and returning the result sequence.
  *
- * @param name - Method name to expose on cached sequences.
- * @param category - Operator kind.
- * @param factory - Constructs the result sequence from `(source, node, ...userArgs)`.
- * @param validate - Optional eager validation function for user-supplied arguments.
+ * @param config.name - Method name to expose on cached sequences.
+ * @param config.category - Operator kind (`"streaming"` | `"buffer"`).
+ * @param config.factory - Constructs the result sequence from `(source, node, ...userArgs)`.
+ * @param config.validate - Optional eager validation function for user-supplied arguments.
  *
  * @example
  * ```ts
- * createCachedOperator(
- *     "refreshWith",
- *     "cache",
- *     (source, node, newSource: Iterable<unknown>) => {
+ * createCachedOperator({
+ *     name: "refreshWith",
+ *     category: "buffer",
+ *     factory: (source, node, newSource: Iterable<unknown>) => {
  *         const seq = tyneqFrom(newSource);
  *         return new TyneqCachedEnumerable(seq, node);
  *     },
- *     (newSource) => {
+ *     validate: (newSource) => {
  *         if (newSource == null) throw new Error("newSource must not be null");
  *     }
- * );
+ * });
  * ```
  *
  * @group Utilities
  */
-export function createCachedOperator<TSource, TArgs extends unknown[]>(
-    name: string,
-    category: OperatorKind,
-    factory: (source: TyneqCachedEnumerable<TSource>, node: QueryPlanNode, ...args: TArgs) => TyneqCachedSequence<TSource>,
-    validate?: (...args: TArgs) => void
-): void {
+export function createCachedOperator<TSource, TArgs extends unknown[]>(config: {
+    name: string;
+    category: OperatorKind;
+    factory: (source: TyneqCachedEnumerable<TSource>, node: QueryPlanNode, ...args: TArgs) => TyneqCachedSequence<TSource>;
+    validate?: (...args: TArgs) => void;
+}): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(name, category, "external", TyneqCachedEnumerable),
+        metadata: new OperatorMetadata(config.name, config.category, "external", TyneqCachedEnumerable),
         impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
-            validate?.(...(userArgs as TArgs));
+            config.validate?.(...(userArgs as TArgs));
             const source = this as unknown as TyneqCachedEnumerable<TSource>;
-            const node = new QueryNode(name, userArgs, source[tyneqQueryNode], category as OperatorCategory);
-            return factory(source, node, ...(userArgs as TArgs));
+            const node = new QueryNode(config.name, userArgs, source[tyneqQueryNode], config.category as OperatorCategory);
+            return config.factory(source, node, ...(userArgs as TArgs));
         }
     });
 }

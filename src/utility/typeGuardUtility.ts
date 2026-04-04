@@ -4,7 +4,6 @@ import type { Enumerable, Enumerator } from "../types/core";
  * Type guard predicates for Tyneq's core protocol types.
  *
  * @group Utilities
- * @internal
  */
 export class TypeGuardUtility {
     private constructor() { }

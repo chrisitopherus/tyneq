@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Splits the source sequence into sub-arrays at each element matching a predicate.

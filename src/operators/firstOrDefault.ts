@@ -1,6 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**

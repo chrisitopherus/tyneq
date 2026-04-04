@@ -1,6 +1,6 @@
 import { ArgumentError } from "../../core/errors/argument/ArgumentError";
 import type { Optional } from "../../types/utility";
-import { NullGuards } from "./nullGuards";
+import { NullGuards } from "./NullGuards";
 
 /**
  * String-specific guard implementations. Called by `ArgumentUtility`.

@@ -15,10 +15,18 @@ export interface BuiltinOptions {
 }
 
 /**
- * Method decorator — declares this method as a built-in operator.
+ * Method decorator - declares this method as a built-in operator.
  *
  * Stores `BuiltinOptions` on the function object so `@sequence` can find it.
- * Does NOT register anything by itself — registration happens in `@sequence`.
+ * Does NOT register anything by itself - registration happens in `@sequence`.
+ *
+ * @remarks
+ * This is one half of a two-decorator pattern. Apply `@builtin` to each method on a class
+ * decorated with `@sequence`. When the module is evaluated, `@sequence` will scan all
+ * `@builtin`-tagged methods and call `OperatorRegistry.registerBuiltin` for each.
+ *
+ * Only use on methods of `TyneqEnumerableCore` or `TyneqEnumerableBase`. Third-party
+ * operators should use `@operator`, `@terminal`, or the `createOperator` factory instead.
  *
  * @internal
  */

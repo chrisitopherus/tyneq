@@ -1,5 +1,5 @@
 import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
@@ -10,7 +10,7 @@ import { sequence } from "../plugin/decorators/sequence";
  * Abstract base that adds `orderBy`, `orderByDescending`, `memoize`, and `pipe` to a sequence.
  *
  * @remarks
- * These four methods build `QueryNode`s and delegate to abstract factory methods, allowing
+ * All four methods build `QueryNode`s and delegate to abstract factory methods, allowing
  * subclasses to control which concrete sequence types are produced.
  *
  * @internal
@@ -67,12 +67,13 @@ export abstract class TyneqEnumerableCore<TSource> {
     @builtin({ kind: "extension" })
     public pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ factory });
+        const node = new QueryNode("pipe", [factory], this[tyneqQueryNode], "streaming");
         const self = this;
         return this.createEnumerable({
             getEnumerator() {
                 return factory(self as unknown as Iterable<TSource>);
             },
-        } satisfies EnumeratorFactory<TResult>);
+        } satisfies EnumeratorFactory<TResult>, node);
     }
 
     protected abstract createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult>;

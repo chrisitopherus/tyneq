@@ -61,3 +61,21 @@ export type Cast<T> = T;
 /** A type representing an object with assignable properties. */
 export type WithProperties<K extends PropertyKey, V> =
     { [P in K]?: V } & Record<PropertyKey, unknown>;
+
+/**
+ * Extracts the keys of `T` whose value type extends `Function` (i.e. methods).
+ *
+ * @group Types
+ */
+export type MethodKeys<T> = {
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+}[keyof T];
+
+/**
+ * Extracts the keys of `T` whose value type does NOT extend `Function` (i.e. data fields).
+ *
+ * @group Types
+ */
+export type FieldKeys<T> = {
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K;
+}[keyof T];

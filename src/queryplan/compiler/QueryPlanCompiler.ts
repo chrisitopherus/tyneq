@@ -15,21 +15,62 @@ export class QueryPlanCompiler {
     /**
      * Compile a query plan into an executable sequence.
      *
+     * Runs all registered transformers before compiling. Use {@link compileRaw} to skip
+     * the transform phase when the plan is already optimised.
+     *
      * @param node - The root node of the query plan to compile.
      * @returns The compiled sequence typed as `TyneqSequence<T>` by default.
-     * If you know the plan ends in an operator that returns a subtype (e.g. `orderBy` →
-     * `TyneqOrderedSequence`, `memoize` → `TyneqCachedSequence`), supply `TResult` explicitly:
+     * If you know the plan ends in an operator that returns a subtype (e.g. `orderBy` ->
+     * `TyneqOrderedSequence`, `memoize` -> `TyneqCachedSequence`), supply `TResult` explicitly:
      * `compiler.compile<number, TyneqOrderedSequence<number>>(node)`.
      */
     public compile<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
+        if (node === null || node === undefined) {
+            throw new CompilerError(
+                "compile() received a null query plan node. Did you call pipe() which does not track query plans?",
+                "source"
+            );
+        }
+
         const transformedNode = this.transform(node);
         return this.compileNode(transformedNode) as TResult;
+    }
+
+    /**
+     * Compile a pre-optimised query plan into an executable sequence, skipping the
+     * transform phase.
+     *
+     * @remarks
+     * Use this overload when you have already run transformers externally (or deliberately
+     * want to bypass them) and want to compile the node as-is. Equivalent to constructing
+     * a `QueryPlanCompiler` with no transformers and calling `compile()`.
+     *
+     * @param node - The root node of the already-transformed query plan to compile.
+     */
+    public compileRaw<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
+        if (node === null || node === undefined) {
+            throw new CompilerError(
+                "compileRaw() received a null query plan node. Did you call pipe() which does not track query plans?",
+                "source"
+            );
+        }
+
+        return this.compileNode(node) as TResult;
     }
 
     private transform(node: QueryPlanNode): QueryPlanNode {
         let transformedNode = node;
         for (const transformer of this.transformers) {
-            transformedNode = transformer.visit(transformedNode);
+            try {
+                transformedNode = transformer.visit(transformedNode);
+            } catch (e) {
+                throw new CompilerError(
+                    `Transformer "${(transformer as { constructor: { name: string } }).constructor.name}" threw during transformation.`,
+                    "transform",
+                    undefined,
+                    e instanceof Error ? e : undefined
+                );
+            }
         }
 
         return transformedNode;
@@ -51,6 +92,14 @@ export class QueryPlanCompiler {
         return this.applyOperator(this.compileNode(node.source), node);
     }
 
+    /**
+     * @remarks
+     * Only the four built-in source operators (`"from"`, `"range"`, `"random"`, `"empty"`) are
+     * supported. Third-party source operators registered via the plugin system cannot be compiled
+     * here because there is no registry lookup path for `category === "source"` nodes.
+     * Callers who need custom sources should pre-transform the plan (replacing custom source nodes
+     * with one of the built-in sources) before calling `compile()`.
+     */
     private compileSource(node: QueryPlanNode): unknown {
         switch (node.operatorName) {
             case "from":
@@ -84,7 +133,7 @@ export class QueryPlanCompiler {
 
         if (!(source instanceof entry.metadata.targetClass)) {
             const expected = entry.metadata.targetClass.name;
-            const actual = (source as any)?.constructor?.name ?? typeof source;
+            const actual = source !== null && source !== undefined ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source : "null";
             throw new CompilerError(
                 `Operator "${node.operatorName}" requires a ${expected} but received ${actual}. ` +
                 "Ensure the source sequence is of the correct type for this operator.",

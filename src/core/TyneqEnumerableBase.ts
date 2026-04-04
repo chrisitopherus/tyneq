@@ -1,5 +1,5 @@
 import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";

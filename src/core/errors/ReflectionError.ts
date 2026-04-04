@@ -16,7 +16,6 @@ import { TyneqError } from "./TyneqError";
  *
  * @see {@link TyneqError}
  * @group Errors
- * @internal
  */
 export class ReflectionError extends TyneqError {
     /** The name of the method that could not be found. */

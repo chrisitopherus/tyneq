@@ -667,8 +667,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Passes this sequence through a custom `factory` function and wraps the result.
      *
      * @remarks
-     * The returned sequence has `null` for `[tyneqQueryNode]`.
-     * Use this for one-off operator compositions that do not need to be registered.
+     * The returned sequence tracks a `"pipe"` node in the query plan, with `factory` recorded
+     * as the argument. Use this for one-off operator compositions that do not need to be
+     * registered via the plugin API.
      *
      * @throws {ArgumentNullError} When `factory` is null or undefined.
      */

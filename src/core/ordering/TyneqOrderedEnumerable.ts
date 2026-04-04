@@ -8,7 +8,7 @@ import { QueryNode } from "../../queryplan/QueryNode";
 import { TyneqEnumerable } from "../TyneqEnumerable";
 import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 import { nameof } from "../../utility/nameof";
 import { TyneqCachedEnumerable } from "../TyneqCachedEnumerable";
 import { sequence } from "../../plugin/decorators/sequence";

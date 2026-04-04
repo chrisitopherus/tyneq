@@ -1,17 +1,17 @@
 import type { KeyValuePair } from "../types/core";
 import type { HasLength, Nullable, Optional, Maybe } from "../types/utility";
 import { extractParameter } from "./guards/extractParameter";
-import { NullGuards } from "./guards/nullGuards";
-import { StringGuards } from "./guards/stringGuards";
-import { NumericGuards } from "./guards/numericGuards";
-import { TypeGuards } from "./guards/typeGuards";
+import { NullGuards } from "./guards/NullGuards";
+import { StringGuards } from "./guards/StringGuards";
+import { NumericGuards } from "./guards/NumericGuards";
+import { TypeGuards } from "./guards/TypeGuards";
 import type { Enumerable, Enumerator } from "../types/core";
 
 /**
  * Facade for all argument validation guards.
  *
- * Every method accepts either a single-property object (`{ count }`) -- where the
- * property name becomes the error message's parameter name -- or a raw value with
+ * Every method accepts either a single-property object (`{ count }`) - where the
+ * property name becomes the error message's parameter name - or a raw value with
  * an explicit `paramName` string. Prefer the object form; the name is inferred
  * automatically via `nameof`.
  *
@@ -26,7 +26,6 @@ import type { Enumerable, Enumerator } from "../types/core";
  * ```
  *
  * @group Utilities
- * @internal
  */
 export class ArgumentUtility {
     private constructor() { }

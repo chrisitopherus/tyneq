@@ -10,7 +10,7 @@ function* naturals() { let n = 0; while (true) yield n++; }
 const seq = Tyneq.from(naturals()).take(5);
 
 seq.toArray(); // [0, 1, 2, 3, 4]
-seq.toArray(); // [] — generator already exhausted
+seq.toArray(); // [] - generator already exhausted
 ```
 
 Fix: pass the function as a factory, not the object it returns.
@@ -32,7 +32,7 @@ Deferred operators capture references, not values. Mutations between composition
 let threshold = 10;
 const seq = Tyneq.from([5, 15, 20]).where(x => x > threshold);
 threshold = 100;
-seq.toArray(); // [] — 100 was in effect at iteration
+seq.toArray(); // [] - 100 was in effect at iteration
 ```
 
 Fix: capture the value at composition time with `const`.
@@ -80,17 +80,17 @@ If you genuinely need the global top-5, the buffer is unavoidable and correct.
 ```ts
 // These are NOT equivalent
 Tyneq.from([30, 10, 50, 20, 40]).take(3).orderBy(x => x).toArray();
-// [10, 20, 30]  — takes first 3 [30,10,50] then sorts them
+// [10, 20, 30]  - takes first 3 [30,10,50] then sorts them
 
 Tyneq.from([30, 10, 50, 20, 40]).orderBy(x => x).take(3).toArray();
-// [10, 20, 30]  — sorts all, takes the 3 smallest
+// [10, 20, 30]  - sorts all, takes the 3 smallest
 ```
 
 Trace which elements are present at each stage. Operator composition is sequential.
 
 ## Missing `earlyComplete` in Custom Operators
 
-When writing a class-based operator that stops consuming the source early, return `earlyComplete()` rather than `done()`. `done()` marks the enumerator as finished but does not call `dispose()` — the upstream enumerator is never released.
+When writing a class-based operator that stops consuming the source early, return `earlyComplete()` rather than `done()`. `done()` marks the enumerator as finished but does not call `dispose()` - the upstream enumerator is never released.
 
 ```ts
 // ❌ upstream not released when limit is reached
@@ -121,7 +121,7 @@ const query = Tyneq.from([1, 2, 3]).aggregate(
   acc => acc
 );
 
-query; // { values: [1,2,3], sum: 6 } — seed is now polluted
+query; // { values: [1,2,3], sum: 6 } - seed is now polluted
 ```
 
 Always produce a fresh seed:
@@ -145,7 +145,7 @@ The same pair exists for `last`/`lastOrDefault`, `single`/`singleOrDefault`, and
 
 ## Debugging
 
-### `tap` — observe elements at any stage
+### `tap` - observe elements at any stage
 
 ```ts
 Tyneq.from(data)
@@ -156,7 +156,7 @@ Tyneq.from(data)
   .toArray();
 ```
 
-### Query plan — inspect pipeline structure
+### Query plan - inspect pipeline structure
 
 ```ts
 import { QueryPlanPrinter, tyneqQueryNode } from "tyneq";
@@ -164,9 +164,9 @@ import { QueryPlanPrinter, tyneqQueryNode } from "tyneq";
 const query = Tyneq.from(data).where(pred).orderBy(fn).take(5);
 console.log(QueryPlanPrinter.print(query[tyneqQueryNode]!));
 // from([...])
-//   → where(<fn>)
-//   → orderBy(<fn>)
-//   → take(5)
+//   -> where(<fn>)
+//   -> orderBy(<fn>)
+//   -> take(5)
 ```
 
 Buffer operators in the plan are O(n) memory sites. See [Query Plan Inspection](/guide/query-plan).

@@ -57,7 +57,8 @@ export interface QueryPlanNode {
      * The backing JavaScript collection type for source nodes.
      *
      * @remarks
-     * Present only for source nodes (when `category === 'source'`); omitted on other nodes.
+     * Only meaningful when `category === "source"`. For all other categories this field is
+     * `undefined`. Use {@link isSourceNode} to narrow the type before reading this field.
      */
     readonly sourceKind?: SourceKind;
 
@@ -67,6 +68,27 @@ export interface QueryPlanNode {
      * @param visitor - The visitor to invoke.
      */
     accept<T>(visitor: QueryPlanVisitor<T>): T;
+}
+
+/**
+ * Narrows a `QueryPlanNode` to one that is guaranteed to have a `sourceKind`.
+ *
+ * @remarks
+ * `sourceKind` is only present on source nodes (`category === "source"`). Reading it on any
+ * other node returns `undefined`. Use this guard before accessing `node.sourceKind` to get
+ * proper type narrowing and avoid ambiguous `undefined`.
+ *
+ * @example
+ * ```ts
+ * if (isSourceNode(node)) {
+ *     console.log(node.sourceKind); // "array" | "set" | "map" | "string" | "other"
+ * }
+ * ```
+ *
+ * @group QueryPlan
+ */
+export function isSourceNode(node: QueryPlanNode): node is QueryPlanNode & { sourceKind: SourceKind } {
+    return node.category === "source";
 }
 
 /**

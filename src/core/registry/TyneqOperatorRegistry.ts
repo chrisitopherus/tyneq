@@ -1,5 +1,4 @@
 import { OperatorEntry, SequenceConstructor } from "../../types/core";
-import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { OperatorMetadata } from "../OperatorMetadata";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
 import { Lazy } from "../../utility/Lazy";
@@ -8,8 +7,8 @@ import { RegistryError } from "../errors/RegistryError";
 /**
  * Central registry for all Tyneq operators.
  *
- * Every registration path -- `@operator`, `@terminal`, `createOperator`,
- * `createGeneratorOperator`, `createTerminalOperator` -- flows through this class.
+ * Every registration path - `@operator`, `@terminal`, `createOperator`,
+ * `createGeneratorOperator`, `createTerminalOperator` - flows through this class.
  * It is the single source of truth for which operators exist, their kind, and their
  * prototype-level implementation.
  *
@@ -66,7 +65,7 @@ export class OperatorRegistry {
      *
      * @returns `true` if the operator was found and removed; `false` if no operator with that name existed.
      * @remarks
-     * Internal operators (source `"internal"`) are not removed from the prototype -- only
+     * Internal operators (source `"internal"`) are not removed from the prototype - only
      * their registry entry is deleted.
      */
     public static unregister(name: string): boolean {
