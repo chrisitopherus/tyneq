@@ -3,8 +3,8 @@ import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqCachedEnumerable } from "../../core/TyneqCachedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { QueryNode } from "../../queryplan/QueryNode";
-import type { OperatorKind, TyneqCachedSequence } from "../../types/core";
-import type { OperatorCategory, QueryPlanNode } from "../../types/queryplan";
+import type { TyneqCachedSequence } from "../../types/core";
+import type { QueryPlanNode } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 
 /**
@@ -41,7 +41,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  */
 export function createCachedOperator<TSource, TArgs extends unknown[]>(config: {
     name: string;
-    category: OperatorKind;
+    category: "streaming" | "buffer";
     factory: (source: TyneqCachedEnumerable<TSource>, node: QueryPlanNode, ...args: TArgs) => TyneqCachedSequence<TSource>;
     validate?: (...args: TArgs) => void;
 }): void {
@@ -50,7 +50,7 @@ export function createCachedOperator<TSource, TArgs extends unknown[]>(config: {
         impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
             config.validate?.(...(userArgs as TArgs));
             const source = this as unknown as TyneqCachedEnumerable<TSource>;
-            const node = new QueryNode(config.name, userArgs, source[tyneqQueryNode], config.category as OperatorCategory);
+            const node = new QueryNode(config.name, userArgs, source[tyneqQueryNode], config.category);
             return config.factory(source, node, ...(userArgs as TArgs));
         }
     });

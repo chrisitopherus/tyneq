@@ -3,8 +3,8 @@ import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqOrderedEnumerable } from "../../core/ordering/TyneqOrderedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { QueryNode } from "../../queryplan/QueryNode";
-import type { OperatorKind, TyneqOrderedSequence } from "../../types/core";
-import type { OperatorCategory, QueryPlanNode } from "../../types/queryplan";
+import type { TyneqOrderedSequence } from "../../types/core";
+import type { QueryPlanNode } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 
 /**
@@ -48,7 +48,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  */
 export function createOrderedOperator<TSource, TArgs extends unknown[]>(config: {
     name: string;
-    category: OperatorKind;
+    category: "streaming" | "buffer";
     factory: (source: TyneqOrderedEnumerable<TSource, unknown>, node: QueryPlanNode, ...args: TArgs) => TyneqOrderedSequence<TSource>;
     validate?: (...args: TArgs) => void;
 }): void {
@@ -57,7 +57,7 @@ export function createOrderedOperator<TSource, TArgs extends unknown[]>(config: 
         impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
             config.validate?.(...(userArgs as TArgs));
             const source = this as unknown as TyneqOrderedEnumerable<TSource, unknown>;
-            const node = new QueryNode(config.name, userArgs, source[tyneqQueryNode], config.category as OperatorCategory);
+            const node = new QueryNode(config.name, userArgs, source[tyneqQueryNode], config.category);
             return config.factory(source, node, ...(userArgs as TArgs));
         }
     });

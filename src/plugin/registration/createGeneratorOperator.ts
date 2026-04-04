@@ -1,7 +1,6 @@
 import type { Enumerator, EnumeratorFactory, ISequenceFactory, OperatorSource } from "../../types/core";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { QueryNode } from "../../queryplan/QueryNode";
-import type { OperatorCategory } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
@@ -40,7 +39,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  */
 export function createGeneratorOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    category: OperatorCategory;
+    category: "streaming" | "buffer";
     generator: (source: Iterable<TSource>, ...args: TArgs) => IterableIterator<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
     source?: OperatorSource;

@@ -27,7 +27,7 @@ export class QueryPlanCompiler {
     public compile<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
         if (node === null || node === undefined) {
             throw new CompilerError(
-                "compile() received a null query plan node. Did you call pipe() which does not track query plans?",
+                "compile() received a null or undefined query plan node. Ensure the sequence was created via Tyneq.from(), Tyneq.range(), or another source operator before compiling.",
                 "source"
             );
         }
@@ -50,7 +50,7 @@ export class QueryPlanCompiler {
     public compileRaw<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
         if (node === null || node === undefined) {
             throw new CompilerError(
-                "compileRaw() received a null query plan node. Did you call pipe() which does not track query plans?",
+                "compileRaw() received a null or undefined query plan node. Ensure the sequence was created via Tyneq.from(), Tyneq.range(), or another source operator before compiling.",
                 "source"
             );
         }
