@@ -32,7 +32,7 @@ while (current !== null) {
 // from     source
 ```
 
-Sequences created via `.pipe()` opt out - their `[tyneqQueryNode]` is always `null`.
+Sequences created via `.pipe()` record a `"pipe"` node - their `[tyneqQueryNode]` is never `null`.
 
 ## Printing
 
@@ -45,7 +45,7 @@ const seq = Tyneq.from([1, 2, 3, 4, 5])
   .take(3);
 
 console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
-// from([1, 2, 3, ...2 more])
+// from([...5 items])
 //   -> where(<fn>)
 //   -> select(<fn>)
 //   -> take(3)
