@@ -1,8 +1,7 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
 import { ArgumentOutOfRangeError } from "../core/errors/argument/ArgumentOutOfRangeError";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
@@ -16,7 +15,6 @@ import { nameof } from "../utility/nameof";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "elementAt" })
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly index: number;
 

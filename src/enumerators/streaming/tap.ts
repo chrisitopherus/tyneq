@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Invokes a side-effect action for each element without modifying the sequence.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "tap", kind: "streaming" })
 export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly action: (item: TSource) => void;
 

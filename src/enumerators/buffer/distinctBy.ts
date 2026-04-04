@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Returns distinct elements by eliminating duplicates based on a key selector.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "distinctBy", kind: "buffer" })
 export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;

@@ -1,4 +1,4 @@
-import type { IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
+import type { QueryPlanNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
 
 /**
  * Converts a query plan tree into a human-readable multi-line string.
@@ -26,18 +26,18 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
 
     public constructor(options: QueryPlanPrinterOptions = {}) {
         this.indent = options.indent ?? "  ";
-        this.arrow = options.arrow ?? "→";
+        this.arrow = options.arrow ?? "->";
         this.maxInlineArrayItems = options.maxInlineArrayItems ?? 3;
     }
 
     /** Renders the full query plan rooted at `node` as a multi-line string. */
-    public visit(node: IQueryNode): string {
+    public visit(node: QueryPlanNode): string {
         const result = this.buildPlan(node);
         return result;
     }
 
     /** Convenience static: creates a printer with `options` and calls `visit(node)`. */
-    public static print(node: IQueryNode, options?: QueryPlanPrinterOptions): string {
+    public static print(node: QueryPlanNode, options?: QueryPlanPrinterOptions): string {
         return new QueryPlanPrinter(options).visit(node);
     }
 
@@ -76,7 +76,7 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
 
     // --- Private helpers ---
 
-    private buildPlan(node: IQueryNode): string {
+    private buildPlan(node: QueryPlanNode): string {
         const nodes = this.collectNodes(node);
         const lines = nodes.map((n, index) => {
             const argStr = n.args.map((a) => this.formatArg(a)).join(", ");
@@ -86,9 +86,9 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
     }
 
     
-    private collectNodes(node: IQueryNode): IQueryNode[] {
-        const nodes: IQueryNode[] = [];
-        let current: IQueryNode | null = node;
+    private collectNodes(node: QueryPlanNode): QueryPlanNode[] {
+        const nodes: QueryPlanNode[] = [];
+        let current: QueryPlanNode | null = node;
         while (current !== null) {
             nodes.unshift(current);
             current = current.source;

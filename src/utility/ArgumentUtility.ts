@@ -1,17 +1,17 @@
 import type { KeyValuePair } from "../types/core";
-import type { HasLength, Nullable, Optional, Undefinedable } from "../types/utility";
+import type { HasLength, Nullable, Optional, Maybe } from "../types/utility";
 import { extractParameter } from "./guards/extractParameter";
-import { NullGuards } from "./guards/nullGuards";
-import { StringGuards } from "./guards/stringGuards";
-import { NumericGuards } from "./guards/numericGuards";
-import { TypeGuards } from "./guards/typeGuards";
+import { NullGuards } from "./guards/NullGuards";
+import { StringGuards } from "./guards/StringGuards";
+import { NumericGuards } from "./guards/NumericGuards";
+import { TypeGuards } from "./guards/TypeGuards";
 import type { Enumerable, Enumerator } from "../types/core";
 
 /**
  * Facade for all argument validation guards.
  *
- * Every method accepts either a single-property object (`{ count }`) -- where the
- * property name becomes the error message's parameter name -- or a raw value with
+ * Every method accepts either a single-property object (`{ count }`) - where the
+ * property name becomes the error message's parameter name - or a raw value with
  * an explicit `paramName` string. Prefer the object form; the name is inferred
  * automatically via `nameof`.
  *
@@ -26,7 +26,6 @@ import type { Enumerable, Enumerator } from "../types/core";
  * ```
  *
  * @group Utilities
- * @internal
  */
 export class ArgumentUtility {
     private constructor() { }
@@ -42,9 +41,9 @@ export class ArgumentUtility {
     }
 
     
-    public static checkNotUndefined<T>(param: Record<string, Undefinedable<T>>): asserts param is Record<string, T>;
-    public static checkNotUndefined<T>(param: Undefinedable<T>, paramName: string): asserts param is T;
-    public static checkNotUndefined<T>(param: Record<string, Undefinedable<T>> | Undefinedable<T>, paramName?: string): void {
+    public static checkNotUndefined<T>(param: Record<string, Maybe<T>>): asserts param is Record<string, T>;
+    public static checkNotUndefined<T>(param: Maybe<T>, paramName: string): asserts param is T;
+    public static checkNotUndefined<T>(param: Record<string, Maybe<T>> | Maybe<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         NullGuards.checkNotUndefined(value, key);
     }

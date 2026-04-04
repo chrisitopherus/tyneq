@@ -1,7 +1,10 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
-import { Nullable } from "./utility";
+import { BoundMethod, Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
-import type { IQueryNode } from "./queryplan";
+import type { OperatorCategory, QueryPlanNode } from "./queryplan";
+import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
+import { OperatorMetadata } from "../core/OperatorMetadata";
+import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
 
 /**
  * A pull-based iterator over a sequence.
@@ -92,7 +95,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Use {@link QueryPlanPrinter} to render this as a string.
      * Sequences created via `pipe()` always have `null` here.
      */
-    readonly [tyneqQueryNode]: Nullable<IQueryNode>;
+    readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
     // ========================================================================
     // TERMINAL OPERATORS
@@ -664,8 +667,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Passes this sequence through a custom `factory` function and wraps the result.
      *
      * @remarks
-     * The returned sequence has `null` for `[tyneqQueryNode]`.
-     * Use this for one-off operator compositions that do not need to be registered.
+     * The returned sequence tracks a `"pipe"` node in the query plan, with `factory` recorded
+     * as the argument. Use this for one-off operator compositions that do not need to be
+     * registered via the plugin API.
      *
      * @throws {ArgumentNullError} When `factory` is null or undefined.
      */
@@ -674,7 +678,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     // ========================================================================
     // PLUGIN OPERATORS
     // Registered via the plugin API (@operator, createOperator,
-    // createStreamingOperator, @terminal, createTerminalOperator).
+    // createGeneratorOperator, @terminal, createTerminalOperator).
     // Requires importing 'tyneq/plugin' (or the plugin barrel)
     // to trigger side-effect registration before using these operators.
     // ========================================================================
@@ -795,3 +799,41 @@ export type KeyValuePair<TKey, TValue> = {
     key: TKey;
     value: TValue;
 };
+
+
+/**
+ * Structural interface used by registration machinery to call the protected factory methods
+ * on sequence classes without exposing them publicly.
+ *
+ * The double-cast `(this as unknown as ISequenceFactory<T>)` is intentional:
+ * these methods are `protected`, so the cast is the only way to call them from
+ * outside the class hierarchy without changing their access modifier.
+ *
+ * @internal
+ */
+export interface ISequenceFactory<TSource> {
+    readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
+    createEnumerable(factory: { getEnumerator(): unknown }, node?: Nullable<QueryPlanNode>): unknown;
+    createOrderedEnumerable<TKey>(
+        keySelector: (x: TSource) => TKey,
+        comparer: (a: TKey, b: TKey) => number,
+        descending: boolean,
+        node?: Nullable<QueryPlanNode>
+    ): TyneqOrderedSequence<TSource>;
+    createCachedEnumerable(source: TyneqSequence<TSource>, node?: Nullable<QueryPlanNode>): TyneqCachedSequence<TSource>;
+}
+
+/** A fully resolved operator entry: metadata plus the prototype-level implementation. */
+export interface OperatorEntry {
+    readonly metadata: OperatorMetadata;
+    readonly impl: BoundMethod<TyneqEnumerableBase<unknown>>;
+}
+
+/** Source of an operator implementation, used internally to track where operators come from. */
+export type OperatorSource = "internal" | "external";
+
+/** Kind of an operator, used internally to categorize operators. Extends `OperatorCategory` with registry-only kinds. */
+export type OperatorKind = OperatorCategory | "cache" | "extension" | "unknown";
+
+/** Constructor type for a sequence class. */
+export type SequenceConstructor = abstract new (...args: any[]) => TyneqEnumerableCore<unknown>;

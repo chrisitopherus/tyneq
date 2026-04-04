@@ -1,7 +1,9 @@
 import { MemoizeEnumerator } from "../enumerators/buffer/memoize";
+import { builtin } from "../plugin/decorators/builtin";
+import { sequence } from "../plugin/decorators/sequence";
 import { CacheResult, CachedEnumerable, Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
 import { tyneqQueryNode } from "../types/queryplan";
-import type { IQueryNode } from "../types/queryplan";
+import type { QueryPlanNode } from "../types/queryplan";
 import { Nullable } from "../types/utility";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "./TyneqEnumerable";
@@ -17,13 +19,14 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
  *
  * @internal
  */
+@sequence
 export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource> implements TyneqCachedSequence<TSource>, CachedEnumerable<TSource> {
     private source: TyneqSequence<TSource>;
     private cache: TSource[] = [];
     private done: boolean = false;
     private sourceEnumerator: Nullable<Enumerator<TSource>> = null;
 
-    public constructor(source: TyneqSequence<TSource>, node?: IQueryNode | null) {
+    public constructor(source: TyneqSequence<TSource>, node?: QueryPlanNode | null) {
         super();
         this.source = source;
         this[tyneqQueryNode] = node ?? null;
@@ -33,6 +36,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return new MemoizeEnumerator(this);
     }
 
+    @builtin({ kind: "cache" })
     public refresh(): TyneqCachedSequence<TSource> {
         this.cache = [];
         this.done = false;
@@ -68,9 +72,9 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         return { has: false };
     }
 
-    public readonly [tyneqQueryNode]: IQueryNode | null;
+    public readonly [tyneqQueryNode]: QueryPlanNode | null;
 
-    protected createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: IQueryNode | null): TyneqSequence<TResult> {
+    protected createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
     }
     protected createOrderedEnumerable<TKey>(keySelector: (x: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean): TyneqOrderedSequence<TSource> {
@@ -82,7 +86,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         );
     }
 
-    protected createCachedEnumerable(source: TyneqSequence<TSource>, node?: IQueryNode | null): TyneqCachedSequence<TSource> {
+    protected createCachedEnumerable(source: TyneqSequence<TSource>, node?: QueryPlanNode | null): TyneqCachedSequence<TSource> {
         return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

@@ -1,46 +1,14 @@
-import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
-
-/**
- * Metadata describing a registered operator.
- *
- * @group Classes
- */
-export class OperatorMetadata {
-
-    public constructor(
-        public readonly name: string,
-        public readonly kind: "streaming" | "buffer" | "terminal",
-        public readonly source: "internal" | "external" = "external",
-        public readonly extensions: Readonly<Record<string, unknown>> = {}
-    ) {}
-
-    /** Creates metadata for a streaming operator registered from an external plugin. */
-    public static streaming(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "streaming", "external", extensions);
-    }
-
-    /** Creates metadata for a buffering operator registered from an external plugin. */
-    public static buffer(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "buffer", "external", extensions);
-    }
-
-    /** Creates metadata for a terminal operator registered from an external plugin. */
-    public static terminal(name: string, extensions?: Record<string, unknown>): OperatorMetadata {
-        return new OperatorMetadata(name, "terminal", "external", extensions);
-    }
-}
-
-/** A fully resolved operator entry: metadata plus the prototype-level implementation. */
-export interface OperatorEntry {
-    readonly metadata: OperatorMetadata;
-    readonly impl: (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) => unknown;
-}
+import { OperatorEntry, SequenceConstructor } from "../../types/core";
+import { OperatorMetadata } from "../OperatorMetadata";
+import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { Lazy } from "../../utility/Lazy";
+import { RegistryError } from "../errors/RegistryError";
 
 /**
  * Central registry for all Tyneq operators.
  *
- * Every registration path -- `@operator`, `@terminal`, `createOperator`,
- * `createStreamingOperator`, `createTerminalOperator` -- flows through this class.
+ * Every registration path - `@operator`, `@terminal`, `createOperator`,
+ * `createGeneratorOperator`, `createTerminalOperator` - flows through this class.
  * It is the single source of truth for which operators exist, their kind, and their
  * prototype-level implementation.
  *
@@ -62,18 +30,21 @@ export class OperatorRegistry {
     // --- Registration ---
 
     /**
-     * Registers an operator entry and patches the method onto `TyneqEnumerableBase.prototype`.
+     * Registers an operator entry and patches the method onto `entry.metadata.targetClass.prototype`.
      *
-     * @throws {Error} When an operator with the same name is already registered.
+     * @throws {RegistryError} When an operator with the same name is already registered.
      */
     public static register(input: OperatorEntry): void {
         const { name } = input.metadata;
 
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
-            throw new Error(
-                `[tyneq] Cannot register '${name}' (${input.metadata.kind}): ` +
-                `already registered as '${existing.kind}' from source '${existing.source}'.`
+            throw new RegistryError(
+                `Cannot register "${name}" (${input.metadata.kind}): ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                input.metadata.kind,
+                { kind: existing.kind, source: existing.source }
             );
         }
 
@@ -82,7 +53,7 @@ export class OperatorRegistry {
         }
 
         this._entries.set(name, input);
-        (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name] = input.impl;
+        (input.metadata.targetClass.prototype as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
             hook(input);
@@ -94,7 +65,7 @@ export class OperatorRegistry {
      *
      * @returns `true` if the operator was found and removed; `false` if no operator with that name existed.
      * @remarks
-     * Internal operators (source `"internal"`) are not removed from the prototype -- only
+     * Internal operators (source `"internal"`) are not removed from the prototype - only
      * their registry entry is deleted.
      */
     public static unregister(name: string): boolean {
@@ -105,7 +76,7 @@ export class OperatorRegistry {
 
         this._entries.delete(name);
         if (entry.metadata.source !== "internal") {
-            delete (TyneqEnumerableBase.prototype as unknown as Record<string, unknown>)[name];
+            delete (entry.metadata.targetClass.prototype as Record<string, unknown>)[name];
         }
 
         return true;
@@ -147,8 +118,13 @@ export class OperatorRegistry {
         return this._entries.has(name);
     }
 
+    /** Returns the full operator entry for `name`, or `undefined` if not registered. */
+    public static get(name: string): OperatorEntry | undefined {
+        return this._entries.get(name);
+    }
+
     /** Returns the metadata for `name`, or `undefined` if not registered. */
-    public static get(name: string): OperatorMetadata | undefined {
+    public static getMetadata(name: string): OperatorMetadata | undefined {
         return this._entries.get(name)?.metadata;
     }
 
@@ -176,27 +152,46 @@ export class OperatorRegistry {
 
     /**
      * Records a built-in operator in the registry without patching the prototype.
-     * Built-in operators already live as direct methods on `TyneqEnumerableBase`.
+     * Built-in operators already live as direct methods on their target class.
+     *
+     * @remarks
+     * Registration guards are intentionally skipped — builtins are internal and
+     * trusted; guards exist to validate external plugin registrations only.
      *
      * @internal
      */
-    public static registerBuiltin(name: string, kind: OperatorMetadata["kind"]): void {
+    public static registerBuiltin(
+        name: string,
+        kind: OperatorMetadata["kind"],
+        targetClass: SequenceConstructor
+    ): void {
         if (this._entries.has(name)) {
             const existing = this._entries.get(name)!.metadata;
-            throw new Error(
-                `[tyneq] Cannot register builtin '${name}' (${kind}): ` +
-                `already registered as '${existing.kind}' from source '${existing.source}'.`
+            throw new RegistryError(
+                `Cannot register builtin "${name}" (${kind}): ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                kind,
+                { kind: existing.kind, source: existing.source }
             );
         }
 
-        // No-op impl: built-in operators live on TyneqEnumerableBase directly.
-        const noopImpl = function (this: TyneqEnumerableBase<unknown>, ..._args: unknown[]): unknown {
-            return undefined;
-        };
-
+        const lazyMethod = new Lazy(() => ReflectionUtility.getPrototypeMethod(targetClass.prototype, name));
         const entry: OperatorEntry = {
-            metadata: new OperatorMetadata(name, kind, "internal"),
-            impl: noopImpl,
+            metadata: new OperatorMetadata(name, kind, "internal", targetClass),
+            impl: function (this: unknown, ...args: unknown[]) {
+                const method = lazyMethod.value;
+                if (!method) {
+                    throw new RegistryError(
+                        `Cannot invoke builtin "${name}" (${kind}): method not found on prototype. ` +
+                        "Ensure the method exists on the target class before registering.",
+                        name,
+                        kind
+                    );
+                }
+
+                return method.apply(this, args);
+            },
         };
 
         this._entries.set(name, entry);

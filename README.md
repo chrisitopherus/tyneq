@@ -96,7 +96,7 @@ const query = Tyneq.range(1, 100)
 
 query.toArray(); // [4, 16, 36, 64, 100]
 
-// Sequences are re-iterable — call as many times as you want
+// Sequences are re-iterable - call as many times as you want
 query.toArray(); // [4, 16, 36, 64, 100]  ← same result, independent state
 
 // Standard iteration protocols
@@ -114,7 +114,7 @@ Every operator falls into one of three categories:
 |---|---|---|
 | **Streaming** | O(1) | One element at a time, lazily |
 | **Buffering** | O(n) | Materializes full source before yielding |
-| **Terminal** | — | Executes the pipeline, returns a value |
+| **Terminal** | - | Executes the pipeline, returns a value |
 
 ### Factories
 
@@ -222,9 +222,9 @@ Every operator falls into one of three categories:
 Register custom operators with no source modifications. They are available on all sequences at import time.
 
 ```ts
-import { createStreamingOperator } from "tyneq";
+import { createGeneratorOperator } from "tyneq";
 
-createStreamingOperator({
+createGeneratorOperator({
   name: "repeatEach",
   *generator(source: Iterable<unknown>, times: number) {
     for (const item of source) {

@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
@@ -13,7 +12,6 @@ import { Enumerator } from "../../types/core";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "cast", kind: "streaming" })
 export class CastEnumerator<T, U> extends TyneqEnumerator<T, U> {
     
     public constructor(sourceEnumerator: Enumerator<T>) {

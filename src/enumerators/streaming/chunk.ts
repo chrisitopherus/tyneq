@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Splits the source sequence into non-overlapping chunks of a fixed size.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "chunk", kind: "streaming" })
 export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
     private readonly size: number;
     private currentChunk: T[] = [];

@@ -1,8 +1,7 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { TyneqMap } from "../../utility/map";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { TyneqMap } from "../../utility/TyneqMap";
 
 /**
  * Correlates outer elements with groups of matching inner elements.
@@ -15,7 +14,6 @@ import { TyneqMap } from "../../utility/map";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "groupJoin", kind: "buffer" })
 export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerator<TOuter, TResult> {
     private readonly innerSource: Iterable<TInner>;
     private readonly outerKeySelector: (outer: TOuter) => TKey;

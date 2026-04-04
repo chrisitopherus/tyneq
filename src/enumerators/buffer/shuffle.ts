@@ -1,4 +1,3 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 
@@ -13,7 +12,6 @@ import { Enumerator } from "../../types/core";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "shuffle", kind: "buffer" })
 export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;

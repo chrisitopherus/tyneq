@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Filters elements to only those matching a type guard.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "ofType", kind: "streaming" })
 export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {
     private readonly guard: (value: T) => value is U;
 

@@ -1,7 +1,6 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence, KeyValuePair } from "../types/core";
-import { ArgumentUtility } from "../utility/argumentUtility";
+import { ArgumentUtility } from "../utility/ArgumentUtility";
 
 /**
  * Collects all elements into a plain object record using a key-value selector.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../utility/argumentUtility";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "toRecord" })
 export class ToRecordOperator<TSource, TKey extends string | number | symbol, TValue> extends TyneqTerminalOperator<TSource, Record<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 

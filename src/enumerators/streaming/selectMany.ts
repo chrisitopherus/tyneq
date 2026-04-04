@@ -1,8 +1,7 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Flattens each element into a sub-sequence and yields each element of those sub-sequences.
@@ -15,7 +14,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "selectMany", kind: "streaming" })
 export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => Iterable<U>;
     private innerEnumerator: Nullable<Enumerator<U>> = null;

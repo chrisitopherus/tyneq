@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Applies an accumulator function and yields the running result after each element.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Streaming
  * @internal
  */
-@builtinOperator({ name: "scan", kind: "streaming" })
 export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
     private current: TResult;

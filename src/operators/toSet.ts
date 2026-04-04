@@ -1,5 +1,4 @@
-import { builtinTerminal } from "../plugin/builtinTerminal";
-import { TyneqTerminalOperator } from "../core/TyneqTerminalOperator";
+import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 
 /**
@@ -13,7 +12,6 @@ import { TyneqSequence } from "../types/core";
  * @category Terminal
  * @internal
  */
-@builtinTerminal({ name: "toSet" })
 export class ToSetOperator<TSource> extends TyneqTerminalOperator<TSource, Set<TSource>> {
     
     public constructor(source: TyneqSequence<TSource>) {

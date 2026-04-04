@@ -1,4 +1,4 @@
-import type { IQueryNode, QueryPlanVisitor } from "../types/queryplan";
+import type { QueryPlanNode, QueryPlanVisitor } from "../types/queryplan";
 import { QueryNode } from "./QueryNode";
 
 /**
@@ -21,7 +21,7 @@ import { QueryNode } from "./QueryNode";
  * ```ts
  * // Rename all 'where' nodes to 'filter' in the plan view
  * class RenameWhere extends QueryPlanTransformer {
- *     protected override transformNode(node: IQueryNode, source: IQueryNode | null): IQueryNode {
+ *     protected override transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
  *         if (node.operatorName === "where") {
  *             return new QueryNode("filter", node.args, source, node.category);
  *         }
@@ -32,7 +32,7 @@ import { QueryNode } from "./QueryNode";
  *
  * @group QueryPlan
  */
-export class QueryPlanTransformer implements QueryPlanVisitor<IQueryNode> {
+export class QueryPlanTransformer implements QueryPlanVisitor<QueryPlanNode> {
 
     /**
      * Transforms the full chain rooted at `node` and returns the new root node.
@@ -42,7 +42,7 @@ export class QueryPlanTransformer implements QueryPlanVisitor<IQueryNode> {
      * `transformNode` is called for the current node. This means `source` passed to
      * `transformNode` is always already the transformed predecessor.
      */
-    public visit(node: IQueryNode): IQueryNode {
+    public visit(node: QueryPlanNode): QueryPlanNode {
         const transformedSource = node.source !== null ? this.visit(node.source) : null;
         return this.transformNode(node, transformedSource);
     }
@@ -58,7 +58,7 @@ export class QueryPlanTransformer implements QueryPlanVisitor<IQueryNode> {
      * @param node - The original node (unmodified).
      * @param source - The transformed predecessor, or `null` for source nodes.
      */
-    protected transformNode(node: IQueryNode, source: IQueryNode | null): IQueryNode {
+    protected transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
         return new QueryNode(node.operatorName, node.args, source, node.category, node.sourceKind);
     }
 }

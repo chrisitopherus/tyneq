@@ -1,6 +1,6 @@
 # Query Plan Inspection
 
-Every Tyneq sequence carries an immutable `IQueryNode` chain describing the operators applied to it. It is metadata only — it does not participate in iteration.
+Every Tyneq sequence carries an immutable `IQueryNode` chain describing the operators applied to it. It is metadata only - it does not participate in iteration.
 
 ## Accessing the Plan
 
@@ -32,7 +32,7 @@ while (current !== null) {
 // from     source
 ```
 
-Sequences created via `.pipe()` opt out — their `[tyneqQueryNode]` is always `null`.
+Sequences created via `.pipe()` record a `"pipe"` node - their `[tyneqQueryNode]` is never `null`.
 
 ## Printing
 
@@ -45,10 +45,10 @@ const seq = Tyneq.from([1, 2, 3, 4, 5])
   .take(3);
 
 console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
-// from([1, 2, 3, ...2 more])
-//   → where(<fn>)
-//   → select(<fn>)
-//   → take(3)
+// from([...5 items])
+//   -> where(<fn>)
+//   -> select(<fn>)
+//   -> take(3)
 ```
 
 Options:
@@ -128,7 +128,7 @@ class PipelineLinter implements QueryPlanVisitor<string[]> {
       (node.operatorName === "orderBy" || node.operatorName === "orderByDescending") &&
       node.source?.operatorName === "take"
     ) {
-      issues.push(`${node.operatorName} placed after take — did you mean to sort before limiting?`);
+      issues.push(`${node.operatorName} placed after take - did you mean to sort before limiting?`);
     }
     return issues;
   }
@@ -156,6 +156,6 @@ JSON.stringify(seq[tyneqQueryNode]!.accept(new JsonSerializer()), null, 2);
 
 ## Notes
 
-**Single `visit` method** — operators are registered dynamically at runtime, so a static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated on every new operator. A single `visit` method delegates dispatch inside the visitor body, keeping the interface stable regardless of which operators are registered.
+**Single `visit` method** - operators are registered dynamically at runtime, so a static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated on every new operator. A single `visit` method delegates dispatch inside the visitor body, keeping the interface stable regardless of which operators are registered.
 
-**Node immutability** — `IQueryNode` is fully immutable. Visitors that transform plans construct new `QueryNode` instances — they cannot mutate existing nodes.
+**Node immutability** - `IQueryNode` is fully immutable. Visitors that transform plans construct new `QueryNode` instances - they cannot mutate existing nodes.

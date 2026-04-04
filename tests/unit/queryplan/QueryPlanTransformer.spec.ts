@@ -61,6 +61,34 @@ describe("QueryPlanTransformer", () => {
         expect(result.source?.source).toBeNull();
     });
 
+    it("subclass can collapse two nodes into one", () => {
+        // Collapses consecutive 'select' + 'select' into a single 'select' by fusing projections
+        class FuseSelect extends QueryPlanTransformer {
+            protected override transformNode(node: IQueryNode, source: IQueryNode | null): IQueryNode {
+                if (node.operatorName === "select" && source?.operatorName === "select") {
+                    const projA = source.args[0] as (x: unknown) => unknown;
+                    const projB = node.args[0] as (x: unknown) => unknown;
+                    return new QueryNode("select", [(x: unknown) => projB(projA(x))], source.source, "streaming");
+                }
+
+                return super.transformNode(node, source);
+            }
+        }
+
+        const seq = Tyneq.from([1, 2, 3])
+            .select((x) => x * 2)
+            .select((x: number) => x + 1);
+
+        const result = new FuseSelect().visit(seq[tyneqQueryNode]!);
+        expect(result.operatorName).toBe("select");
+        expect(result.source?.operatorName).toBe("from");
+        expect(result.source?.source).toBeNull();
+        // Verify fused projection: 2*2+1=5, 3*2+1=7
+        const fused = result.args[0] as (x: number) => number;
+        expect(fused(2)).toBe(5);
+        expect(fused(3)).toBe(7);
+    });
+
     it("preserves sourceKind through identity transform", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1);
         const original = seq[tyneqQueryNode]!;

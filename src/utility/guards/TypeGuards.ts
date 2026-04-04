@@ -2,7 +2,7 @@ import { ArgumentError } from "../../core/errors/argument/ArgumentError";
 import { ArgumentTypeError } from "../../core/errors/argument/ArgumentTypeError";
 import type { Enumerable, Enumerator } from "../../types/core";
 import type { HasLength } from "../../types/utility";
-import { TypeGuardUtility } from "../typeGuardUtility";
+import { TypeGuardUtility } from "../TypeGuardUtility";
 
 /**
  * Type-checking guard implementations. Called by `ArgumentUtility`.

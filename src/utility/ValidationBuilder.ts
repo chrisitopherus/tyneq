@@ -15,7 +15,6 @@ import { ValidationError } from "../core/errors/argument/ValidationError";
  * ```
  *
  * @group Utilities
- * @internal
  */
 export class ValidationBuilder {
     private readonly _errors: string[] = [];

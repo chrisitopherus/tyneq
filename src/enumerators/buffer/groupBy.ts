@@ -1,8 +1,7 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
-import { TyneqMap } from "../../utility/map";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { TyneqMap } from "../../utility/TyneqMap";
 
 /**
  * Groups elements by a key selector and projects each group through a result selector.
@@ -15,7 +14,6 @@ import { TyneqMap } from "../../utility/map";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "groupBy", kind: "buffer" })
 export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnumerator<TSource, TResult> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly valueSelector: (item: TSource) => TValue;

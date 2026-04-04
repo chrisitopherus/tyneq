@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 // Import from the main entry point to trigger operator barrel registration as a side-effect.
 import "../../../src";
-import { OperatorRegistry, OperatorMetadata } from "../../../src/plugin/OperatorRegistry";
+import { OperatorRegistry } from "../../../src/core/registry/TyneqOperatorRegistry";
+import { OperatorMetadata } from "../../../src/core/OperatorMetadata";
 import { TyneqEnumerableBase } from "../../../src/core/TyneqEnumerableBase";
 
 // Each test that registers an operator must use a unique name because registrations
@@ -50,7 +51,7 @@ describe("OperatorRegistry.register", () => {
 
     OperatorRegistry.register({ metadata: new OperatorMetadata(name, "terminal"), impl: noopImpl });
 
-    expect(OperatorRegistry.get(name)?.source).toBe("external");
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("external");
   });
 
   it("preserves explicitly provided source", () => {
@@ -59,7 +60,7 @@ describe("OperatorRegistry.register", () => {
 
     OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "internal"), impl: noopImpl });
 
-    expect(OperatorRegistry.get(name)?.source).toBe("internal");
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("internal");
   });
 
   it("throws when registering a duplicate name", () => {
@@ -259,7 +260,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("get() returns undefined for an unregistered name", () => {
-    expect(OperatorRegistry.get("__does_not_exist__")).toBeUndefined();
+    expect(OperatorRegistry.getMetadata("__does_not_exist__")).toBeUndefined();
   });
 
   it("list() includes all registered operator metadata", () => {
@@ -324,13 +325,13 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("OperatorMetadata preserves extensions bag", () => {
-    const meta = OperatorMetadata.streaming("test", { version: "1.0", deprecated: false });
+    const meta = OperatorMetadata.streaming("test", undefined, undefined, { version: "1.0", deprecated: false });
     expect(meta.extensions["version"]).toBe("1.0");
     expect(meta.extensions["deprecated"]).toBe(false);
   });
 
   it("'reverse' is registered with kind:'buffer'", () => {
-    const meta = OperatorRegistry.get("reverse");
+    const meta = OperatorRegistry.getMetadata("reverse");
     expect(meta?.kind).toBe("buffer");
     expect(meta?.source).toBe("internal");
   });
@@ -348,7 +349,7 @@ describe("OperatorRegistry introspection", () => {
   });
 
   it("get() returns the correct metadata for a known operator", () => {
-    const meta = OperatorRegistry.get("where");
+    const meta = OperatorRegistry.getMetadata("where");
     expect(meta?.name).toBe("where");
     expect(meta?.kind).toBe("streaming");
     expect(meta?.source).toBe("internal");

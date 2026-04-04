@@ -1,7 +1,6 @@
-import { builtinOperator } from "../../plugin/builtinOperator";
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/argumentUtility";
+import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Returns elements whose keys appear in both the source and a second key sequence.
@@ -14,7 +13,6 @@ import { ArgumentUtility } from "../../utility/argumentUtility";
  * @category Buffering
  * @internal
  */
-@builtinOperator({ name: "intersectBy", kind: "buffer" })
 export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private readonly otherValues: Iterable<TKey>;
     private readonly keySelector: (item: TSource) => TKey;
