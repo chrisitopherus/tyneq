@@ -7,19 +7,19 @@ import { Factory, Maybe } from "../types/utility";
  */
 export class Lazy<T> {
     /** The lazily initialized value, or `undefined` if not yet initialized. */
-    private _value: Maybe<T> = undefined;
+    private lazyValue: Maybe<T> = undefined;
     /** Indicates whether the value has been initialized. */
-    private _initialized = false;
+    private initialized = false;
 
     public constructor(private readonly factory: Factory<T, []>) { }
 
     /** Returns the lazily initialized value, initializing it if necessary. */
     public get value(): T {
-        if (!this._initialized) {
-            this._value = this.factory();
-            this._initialized = true;
+        if (!this.initialized) {
+            this.lazyValue = this.factory();
+            this.initialized = true;
         }
 
-        return this._value!;
+        return this.lazyValue!;
     }
 }
