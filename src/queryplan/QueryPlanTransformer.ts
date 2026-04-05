@@ -1,5 +1,6 @@
 import type { QueryPlanNode, QueryPlanVisitor } from "../types/queryplan";
 import { QueryNode } from "./QueryNode";
+import type { Nullable } from "../types/utility";
 
 /**
  * Base class for immutable query plan rewriting.
@@ -58,7 +59,7 @@ export class QueryPlanTransformer implements QueryPlanVisitor<QueryPlanNode> {
      * @param node - The original node (unmodified).
      * @param source - The transformed predecessor, or `null` for source nodes.
      */
-    protected transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
+    protected transformNode(node: QueryPlanNode, source: Nullable<QueryPlanNode>): QueryPlanNode {
         return new QueryNode(node.operatorName, node.args, source, node.category, node.sourceKind);
     }
 }
