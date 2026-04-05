@@ -4,6 +4,27 @@ import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { CompilerError } from "../../core/errors/CompilerError";
 
+/**
+ * Compiles a query plan tree into an executable `TyneqSequence`.
+ *
+ * @remarks
+ * Walks the `QueryPlanNode` chain from source to terminal, reconstructing each operator by
+ * looking it up in the `OperatorRegistry` and applying it to the compiled source.
+ * An optional list of `QueryPlanTransformer` instances runs before compilation, allowing
+ * optimization or rewriting of the plan.
+ *
+ * @example
+ * ```ts
+ * import { Tyneq, tyneqQueryNode, QueryPlanCompiler, QueryPlanOptimizer } from "tyneq";
+ *
+ * const seq = Tyneq.from([1, 2, 3]).where(x => x > 1).select(x => x * 2);
+ * const compiler = new QueryPlanCompiler([new QueryPlanOptimizer()]);
+ * const result = compiler.compile(seq[tyneqQueryNode]!);
+ * result.toArray(); // -> [4, 6]
+ * ```
+ *
+ * @group QueryPlan
+ */
 export class QueryPlanCompiler {
     private readonly transformers: QueryPlanTransformer[];
 

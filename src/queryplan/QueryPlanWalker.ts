@@ -1,4 +1,4 @@
-import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor } from "../types/queryplan";
+import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, QueryPlanWalkerOptions } from "../types/queryplan";
 
 /**
  * Concrete base class for side-effect query plan visitors.
@@ -7,14 +7,14 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor } fro
  * Traverses the node chain calling {@link QueryPlanWalker.visitNode} once per node.
  * The traversal direction defaults to `"source-to-terminal"` (bottom-up: `from` before
  * `where` before `select`) and can be changed to `"terminal-to-source"` (top-down) via
- * the constructor.
+ * the options object.
  *
  * ### Usage patterns
  *
  * **Direct instantiation with a callback** -- no subclass needed for simple traversals:
  * ```ts
  * const names: string[] = [];
- * new QueryPlanWalker(node => names.push(node.operatorName)).visit(plan);
+ * new QueryPlanWalker({ callback: node => names.push(node.operatorName) }).visit(plan);
  * ```
  *
  * **Subclass** -- for stateful walkers that accumulate results across nodes:
@@ -31,10 +31,21 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor } fro
  *
  * **Top-down traversal:**
  * ```ts
- * new QueryPlanWalker(
- *     node => console.log(node.operatorName),
- *     "terminal-to-source"
- * ).visit(plan);
+ * new QueryPlanWalker({
+ *     callback: node => console.log(node.operatorName),
+ *     direction: "terminal-to-source",
+ * }).visit(plan);
+ * ```
+ *
+ * **Subclass with direction override** -- pass options to `super`:
+ * ```ts
+ * class ReverseCollector extends QueryPlanWalker {
+ *     public readonly names: string[] = [];
+ *     public constructor() { super({ direction: "terminal-to-source" }); }
+ *     protected override visitNode(node: QueryPlanNode): void {
+ *         this.names.push(node.operatorName);
+ *     }
+ * }
  * ```
  *
  * @group QueryPlan
@@ -45,16 +56,11 @@ export class QueryPlanWalker implements QueryPlanVisitor<void> {
     private readonly direction: QueryPlanTraversalDirection;
 
     /**
-     * @param callback - Optional callback invoked by the default {@link visitNode} for each
-     *   node. Ignored when `visitNode` is overridden without calling `super.visitNode`.
-     * @param direction - Traversal direction. Defaults to `"source-to-terminal"`.
+     * @param options - Optional configuration for the walker.
      */
-    public constructor(
-        callback?: (node: QueryPlanNode) => void,
-        direction: QueryPlanTraversalDirection = "source-to-terminal"
-    ) {
-        this.callback = callback;
-        this.direction = direction;
+    public constructor(options?: QueryPlanWalkerOptions) {
+        this.callback = options?.callback;
+        this.direction = options?.direction ?? "source-to-terminal";
     }
 
     /**
@@ -81,10 +87,10 @@ export class QueryPlanWalker implements QueryPlanVisitor<void> {
      * Called once per node during traversal.
      *
      * @remarks
-     * The default implementation fires the callback passed to the constructor (if any).
+     * The default implementation fires the callback passed via options (if any).
      * Override this method in a subclass to provide custom behaviour. Subclasses that
      * override this method decide whether to call `super.visitNode(node)` to also fire
-     * the constructor callback.
+     * the options callback.
      *
      * @param node - The current node being visited.
      */

@@ -104,6 +104,24 @@ export function isSourceNode(node: QueryPlanNode): node is QueryPlanNode & { sou
 export type QueryPlanTraversalDirection = "source-to-terminal" | "terminal-to-source";
 
 /**
+ * Options for {@link QueryPlanWalker}.
+ *
+ * @group QueryPlan
+ */
+export interface QueryPlanWalkerOptions {
+    /**
+     * Callback invoked by the default `visitNode` implementation for each node.
+     * Ignored when `visitNode` is overridden in a subclass without calling `super.visitNode`.
+     */
+    callback?: (node: QueryPlanNode) => void;
+
+    /**
+     * Traversal direction. Defaults to `"source-to-terminal"`.
+     */
+    direction?: QueryPlanTraversalDirection;
+}
+
+/**
  * Visitor for traversing a query plan tree.
  *
  * @typeParam T - The value produced by visiting a node.

@@ -5,6 +5,7 @@ import { ReflectionError } from "../core/errors/ReflectionError";
  * Low-level helpers for prototype and descriptor introspection.
  *
  * @group Utilities
+ * @internal
  */
 export class ReflectionUtility {
     private constructor() { }
@@ -135,7 +136,7 @@ export class ReflectionUtility {
      * Excludes `constructor`.
      *
      * @remarks
-     * Only own data properties are included — accessor properties (getters/setters) and methods
+     * Only own data properties are included - accessor properties (getters/setters) and methods
      * are excluded. Inherited properties are not returned.
      */
     public static getFields<T extends object>(proto: T): Readonly<Pick<T, FieldKeys<T>>> {

@@ -6,11 +6,11 @@ This page defines the types and concepts used throughout the Tyneq source code a
 
 ```
 Iterable<T>          <-- native JavaScript protocol
-  └── Enumerable<T>  <-- Tyneq's re-iterable contract
-        └── TyneqSequence<T>  <-- the public fluent API (what you work with)
+  |-- Enumerable<T>  <-- Tyneq re-iterable contract
+        |-- TyneqSequence<T>  <-- public fluent API (what you work with)
 
 Iterator<T>          <-- native JavaScript protocol
-  └── Enumerator<T>  <-- Tyneq's single-pass cursor
+  |-- Enumerator<T>  <-- Tyneq single-pass cursor
 ```
 
 ---
@@ -23,7 +23,7 @@ The type returned by every Tyneq operator method and factory. This is the interf
 import { Tyneq } from "tyneq";
 
 const seq: TyneqSequence<number> = Tyneq.range(1, 5);
-//                    ^ every operator returns this
+//               ^ every operator returns this
 ```
 
 `TyneqSequence<T>` extends `Enumerable<T>` and carries all operator methods (`where`, `select`, `toArray`, etc.) plus the `[tyneqQueryNode]` query plan symbol.
@@ -90,14 +90,24 @@ factory(source: Enumerable<unknown>): EnumeratorFactory<unknown> {
 
 | Term | What it means |
 |---|---|
-| **Streaming operator** | Returns a new `TyneqSequence`. Deferred. Processes one element at a time. O(1) memory. |
-| **Buffering operator** | Returns a new `TyneqSequence`. Deferred. Reads the full source into memory before yielding. O(n) memory. |
-| **Terminal operator** | Returns a concrete value (not a sequence). Executes the pipeline immediately. |
-| **Source / factory** | Creates the root `TyneqSequence` (`Tyneq.from`, `Tyneq.range`, `Tyneq.empty`, etc.). |
+| **sequence** | Any `TyneqSequence<T>` value |
+| **source** | The upstream sequence passed to an operator |
+| **element** | A single item produced by a sequence |
+| **predicate** | `(item: T) => boolean` |
+| **selector** | `(item: T) => TResult` |
+| **key selector** | `(item: T) => TKey` - extracts a comparison key |
+| **accumulator** | `(acc: TResult, item: T) => TResult` |
+| **comparer** | `Comparer<T>` = `(a: T, b: T) => number`; negative = less, 0 = equal, positive = greater |
+| **equality comparer** | `EqualityComparer<T>` = `(a: T, b: T) => boolean` |
+| **streaming operator** | Returns a new `TyneqSequence`. Deferred. O(1) memory. One element at a time. |
+| **buffering operator** | Returns a new `TyneqSequence`. Deferred. O(n) memory. Reads full source before yielding. |
+| **terminal** | Returns a concrete value (not a sequence). Executes the pipeline immediately. |
+| **deferred** | Source is not iterated until the returned sequence is iterated. |
+| **immediate** | Source is fully iterated when the method is called. |
 
 ---
 
-## Deferred vs Immediate Execution
+## Deferred vs. Immediate
 
 | Term | Meaning |
 |---|---|
@@ -110,7 +120,7 @@ factory(source: Enumerable<unknown>): EnumeratorFactory<unknown> {
 
 Enumerating a `TyneqSequence` multiple times re-runs the pipeline from the root on each pass. This is correct and expected - each call to `toArray()`, `count()`, etc. is independent.
 
-Exception: sources that are one-shot (e.g. a generator *object*) do not support re-iteration regardless of what operators wrap them. See [Common Pitfalls](/guide/pitfalls#one-shot-sources).
+Exception: sources that are one-shot (e.g. a generator *object*) do not support re-iteration regardless of what operators wrap them. See [Pitfalls](/guide/pitfalls#one-shot-sources).
 
 ---
 
@@ -124,9 +134,9 @@ Exception: sources that are one-shot (e.g. a generator *object*) do not support 
 
 ## Query Plan
 
-Every sequence built by a Tyneq operator carries an `IQueryNode` - a linked list node describing that operator (name, category, arguments) with a reference to the upstream node. The chain from the outermost operator back to the source root is the **query plan**.
+Every sequence built by a Tyneq operator carries a `QueryPlanNode` - a linked list node describing that operator (name, category, arguments) with a reference to the upstream node. The chain from the outermost operator back to the source root is the **query plan**.
 
-Accessible via `seq[tyneqQueryNode]`. Print with `QueryPlanPrinter`. Traverse with `QueryPlanVisitor<T>`. See [Query Plan Inspection](/guide/query-plan).
+Accessible via `seq[tyneqQueryNode]`. Print with `QueryPlanPrinter`. Walk with `QueryPlanWalker`. Transform with `QueryPlanTransformer`. Compile with `QueryPlanCompiler`. See [Query Plan](/guide/query-plan).
 
 ---
 
@@ -139,11 +149,37 @@ The `src/plugin/` directory contains the public registration API for custom oper
 | `createGeneratorOperator` | Register a generator-based streaming operator |
 | `createOperator` | Register a streaming/buffering operator with a custom factory |
 | `createTerminalOperator` | Register a terminal operator |
+| `createOrderedOperator` | Register an operator available only on ordered sequences |
+| `createCachedOperator` | Register an operator available only on cached sequences |
 | `@operator` | Class-based streaming/buffering decorator |
 | `@terminal` | Class-based terminal decorator |
 | `OperatorRegistry` | Introspect, guard, and observe all registered operators |
 | `TyneqEnumerator` | Base class for class-based streaming/buffering operators |
-| `TyneqBaseEnumerator` | Base class for source generators (not for pipeline operators) |
+| `TyneqBaseEnumerator` | Low-level base class (state machine lifecycle) |
 | `TyneqTerminalOperator` | Base class for class-based terminal operators |
 
-In documentation and user-facing language this is called the **extensibility API** or **custom operators**. The directory is named `plugin` in source.
+In documentation and user-facing language this is called the **extensibility API** or **plugin API**. The directory is named `plugin` in source.
+
+---
+
+## registration
+
+The act of adding an operator or terminal to the `OperatorRegistry` via a decorator or factory function. Registration patches the method onto `TyneqEnumerableBase.prototype` at module-import time, making it available on all sequences immediately.
+
+---
+
+## walker
+
+A `QueryPlanWalker` instance that traverses a query plan for side effects. Visits each `QueryPlanNode` in a configurable direction (`"source-to-terminal"` or `"terminal-to-source"`).
+
+---
+
+## transformer
+
+A `QueryPlanTransformer` instance that traverses a query plan and rebuilds it, optionally changing node names, arguments, or structure.
+
+---
+
+## visitor
+
+Any object implementing `QueryPlanVisitor<T>` - has a single `visit(node: QueryPlanNode): T` method.

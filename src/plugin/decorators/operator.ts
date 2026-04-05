@@ -63,7 +63,7 @@ export function operator<TArgs extends unknown[] = never>(
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this;
-                // TypeScript cannot narrow 'this' inside a decorator-generated closure — cast is necessary
+                // TypeScript cannot narrow 'this' inside a decorator-generated closure - cast is necessary
                 const withCreate = this as unknown as ISequenceFactory<unknown>;
                 const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);
                 return withCreate.createEnumerable({

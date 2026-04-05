@@ -49,7 +49,7 @@ export function orderedOperator<TArgs extends unknown[] = never>(
             metadata: new OperatorMetadata(name, category, "external", TyneqOrderedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
-                // TypeScript cannot narrow 'this' inside a decorator-generated closure — cast is necessary
+                // TypeScript cannot narrow 'this' inside a decorator-generated closure - cast is necessary
                 const base = this as unknown as TyneqOrderedEnumerable<unknown, unknown>;
                 const withCreate = this as unknown as ISequenceFactory<unknown>;
                 const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);

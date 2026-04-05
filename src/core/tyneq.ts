@@ -125,7 +125,7 @@ export class Tyneq {
      * Pairs each element with its zero-based index.
      *
      * @remarks
-     * Each iteration produces independent index counters — safe to re-enumerate.
+     * Each iteration produces independent index counters - safe to re-enumerate.
      *
      * @example
      * ```ts

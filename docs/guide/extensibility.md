@@ -1,6 +1,6 @@
-# Custom Operators
+# Extensibility
 
-Tyneq has a first-class API for registering custom operators at runtime. Importing the registration file is the only setup required - the operator is immediately available on all sequences.
+Tyneq has a first-class API for registering custom operators at runtime. Importing the registration call is the only setup required - the operator is immediately available on all sequences.
 
 ## Registration APIs
 
@@ -9,8 +9,10 @@ Tyneq has a first-class API for registering custom operators at runtime. Importi
 | `createGeneratorOperator` | `TyneqSequence<T>` | Streaming operator expressible as a generator |
 | `createOperator` | `TyneqSequence<T>` | Streaming/buffering with a custom enumerator factory |
 | `createTerminalOperator` | Concrete value | Returns a scalar or collection, not a sequence |
-| `@operator` decorator | `TyneqSequence<T>` | Class-based streaming/buffering (TS 5.0+ required) |
-| `@terminal` decorator | Concrete value | Class-based terminal (TS 5.0+ required) |
+| `createOrderedOperator` | `TyneqOrderedSequence<T>` | Operator available only on ordered sequences |
+| `createCachedOperator` | `TyneqCachedSequence<T>` | Operator available only on cached sequences |
+| `@operator` decorator | `TyneqSequence<T>` | Class-based streaming/buffering (TypeScript 5.0+) |
+| `@terminal` decorator | Concrete value | Class-based terminal (TypeScript 5.0+) |
 
 ---
 
@@ -23,6 +25,7 @@ import { createGeneratorOperator } from "tyneq";
 
 createGeneratorOperator({
   name: "repeatEach",
+  category: "streaming",
   *generator(source: Iterable<unknown>, times: number) {
     for (const item of source) {
       for (let i = 0; i < times; i++) yield item;
@@ -40,7 +43,7 @@ declare module "tyneq" {
 }
 
 Tyneq.from([1, 2, 3]).repeatEach(2).toArray();
-// [1, 1, 2, 2, 3, 3]
+// -> [1, 1, 2, 2, 3, 3]
 ```
 
 `validate` runs **eagerly at the call site** - before any lazy work begins. Argument errors are thrown immediately, not during iteration.
@@ -68,42 +71,43 @@ declare module "tyneq" {
   }
 }
 
-Tyneq.from([1, 2, 3]).joinString(", "); // "1, 2, 3"
+Tyneq.from([1, 2, 3]).joinString(", "); // -> "1, 2, 3"
 ```
 
 ---
 
 ## `createOperator`
 
-Use when you need `Enumerable` access (for re-iteration) or a custom enumerator factory.
+Use when you need `Enumerable` access (for re-iteration) or a fully custom enumerator factory.
 
 ```ts
 import { createOperator } from "tyneq";
-import type { Enumerable, EnumeratorFactory } from "tyneq";
+import type { Enumerable, Enumerator, EnumeratorFactory } from "tyneq";
 
 createOperator({
   name: "stride",
+  category: "streaming",
   factory(source: Enumerable<unknown>, step: number): EnumeratorFactory<unknown> {
     return {
-      getEnumerator() {
-        return strideGenerator(source[Symbol.iterator](), step) as any;
-      },
+      getEnumerator(): Enumerator<unknown> {
+        let index = 0;
+        const iter = source[Symbol.iterator]();
+        return {
+          next() {
+            while (true) {
+              const r = iter.next();
+              if (r.done) return r;
+              if (index++ % step === 0) return r;
+            }
+          }
+        };
+      }
     };
   },
   validate(step) {
     if (typeof step !== "number" || step < 1) throw new RangeError("step must be >= 1");
   },
 });
-
-function* strideGenerator<T>(iter: Iterator<T>, step: number): IterableIterator<T> {
-  let index = 0;
-  let result = iter.next();
-  while (!result.done) {
-    if (index % step === 0) yield result.value;
-    result = iter.next();
-    index++;
-  }
-}
 
 declare module "tyneq" {
   interface TyneqSequence<T> {
@@ -116,7 +120,7 @@ declare module "tyneq" {
 
 ## Class-Based Operators (`@operator`)
 
-Extend `TyneqEnumerator<TSource, TOut>` for operators with complex internal state. Requires TypeScript 5.0+ and TC39 decorators (`"experimentalDecorators": false`).
+Extend `TyneqEnumerator<TSource, TOut>` for operators with complex internal state.
 
 ### Streaming
 
@@ -126,16 +130,20 @@ Override `handleNext()` to process elements one at a time:
 import { operator, TyneqEnumerator } from "tyneq";
 import type { Enumerator } from "tyneq";
 
-@operator("everyOther")
+@operator("everyOther", "streaming")
 class EveryOtherEnumerator<T> extends TyneqEnumerator<T, T> {
   private skip = false;
+
+  public constructor(source: Enumerator<T>) {
+    super(source);
+  }
 
   protected override handleNext(): IteratorResult<T> {
     while (true) {
       const result = this.sourceEnumerator.next();
-      if (result.done) return this.done();
+      if (result.done) return result;
       this.skip = !this.skip;
-      if (this.skip) return this.yield(result.value);
+      if (this.skip) return result;
     }
   }
 }
@@ -147,11 +155,9 @@ declare module "tyneq" {
 }
 ```
 
-`this.yield(value)` emits a value. `this.done()` marks the sequence as finished. Call `this.earlyComplete()` when stopping before the source is exhausted - it propagates `dispose()` upstream to release any held resources.
-
 ### Buffering
 
-Pass `"buffer"` as the second argument to `@operator`. Override `initialize()` to fill an internal buffer before `handleNext()` is called:
+Pass `"buffer"` as the category. Override `initialize()` to fill an internal buffer before `handleNext()` is called:
 
 ```ts
 @operator("cap", "buffer")
@@ -159,44 +165,81 @@ class CapEnumerator<T> extends TyneqEnumerator<T, T> {
   private buffer: T[] = [];
   private index = 0;
 
+  public constructor(source: Enumerator<T>) {
+    super(source);
+  }
+
   protected override initialize(): void {
     let result = this.sourceEnumerator.next();
     while (!result.done) {
       this.buffer.push(result.value);
       result = this.sourceEnumerator.next();
     }
-    // sort, deduplicate, etc. here
   }
 
   protected override handleNext(): IteratorResult<T> {
-    if (this.index >= this.buffer.length) return this.done();
-    return this.yield(this.buffer[this.index++]);
+    if (this.index >= this.buffer.length) return { done: true, value: undefined };
+    return { done: false, value: this.buffer[this.index++] };
   }
 }
 ```
 
-### Completion Helpers
+---
 
-| Method | When to use |
-|---|---|
-| `this.done()` | Source is exhausted |
-| `this.earlyComplete()` | Stopping before source is exhausted - releases upstream |
-| `this.yield(value)` | Emit an element |
+## Class-Based Terminals (`@terminal`)
 
-Always use `earlyComplete()` when the custom operator exits early (e.g. after emitting `n` elements). Using `done()` in this case leaks upstream resources.
+```ts
+import { terminal, TyneqTerminalOperator } from "tyneq";
+import type { Enumerable } from "tyneq";
+
+@terminal("product")
+class ProductOperator extends TyneqTerminalOperator<number, number> {
+  public constructor(source: Enumerable<number>) {
+    super(source);
+  }
+
+  public process(): number {
+    let result = 1;
+    for (const item of this.source) result *= item;
+    return result;
+  }
+}
+
+declare module "tyneq" {
+  interface TyneqSequence<T> {
+    product(): number;
+  }
+}
+
+Tyneq.from([1, 2, 3, 4]).product(); // -> 24
+```
 
 ---
 
 ## Validation Contract
 
-`validate` (functional APIs) or the second argument to `@operator`/`@terminal` runs synchronously **before any lazy factory is created**. This means:
+`validate` (functional APIs) or the third argument to `@operator`/`@terminal` runs synchronously **before any lazy factory is created**:
 
 ```ts
 const query = Tyneq.from([1, 2, 3]).stride(-1);
-// ↑ throws here, before any iteration
+// throws here, before any iteration
 ```
 
 Do not put argument validation in a constructor or `handleNext()` - errors would be deferred until iteration begins.
+
+---
+
+## Module Augmentation
+
+The `declare module "tyneq"` block adds the operator to the TypeScript type system. Without it, TypeScript will not know the method exists. Place it in the same file as the registration call:
+
+```ts
+declare module "tyneq" {
+  interface TyneqSequence<T> {
+    myOp(arg: string): TyneqSequence<T>;
+  }
+}
+```
 
 ---
 
@@ -208,17 +251,17 @@ All registration paths route through `OperatorRegistry`. Use it for introspectio
 import { OperatorRegistry } from "tyneq";
 
 OperatorRegistry.list();                    // all registered operators
-OperatorRegistry.listByKind("terminal");
+OperatorRegistry.listByKind("terminal");    // only terminals
 OperatorRegistry.listBySource("internal");  // built-in operators
-OperatorRegistry.listBySource("external");  // third-party operators
+OperatorRegistry.listBySource("external");  // plugin operators
 OperatorRegistry.has("myOp");
-OperatorRegistry.get("select");             // OperatorMetadata
+OperatorRegistry.get("select");             // OperatorEntry | undefined
 OperatorRegistry.count();
 ```
 
 ### Guards
 
-Run synchronously before every registration. Throw to block:
+Run synchronously before every external registration. Throw to block:
 
 ```ts
 const remove = OperatorRegistry.addGuard(entry => {
@@ -227,7 +270,7 @@ const remove = OperatorRegistry.addGuard(entry => {
   }
 });
 
-remove(); // detach
+remove(); // detach the guard
 ```
 
 ### Post-Registration Hooks
@@ -244,7 +287,7 @@ unsubscribe(); // detach
 
 ### Test Isolation
 
-Remove an operator from the registry and prototype in `afterEach`:
+Remove a plugin operator in `afterEach` to avoid cross-test contamination:
 
 ```ts
 import { OperatorRegistry, createGeneratorOperator } from "tyneq";
@@ -256,9 +299,13 @@ afterEach(() => {
   if (registered) { OperatorRegistry.unregister(registered); registered = null; }
 });
 
-it("custom op", () => {
+it("custom op works", () => {
   registered = `testOp_${Date.now()}`;
-  createGeneratorOperator({ name: registered, *generator(source) { yield* source as any; } });
+  createGeneratorOperator({
+    name: registered,
+    category: "streaming",
+    *generator(source) { yield* source as any; }
+  });
   // ...
 });
 ```
@@ -267,15 +314,16 @@ it("custom op", () => {
 
 ## Sharing as a Module
 
-Register as a side-effect of import:
+Register as a side-effect of import so consumers do not have to call anything:
 
 ```ts
-// my-extensions/sliding-percentile.ts
+// my-lib/sliding-percentile.ts
 import { createGeneratorOperator } from "tyneq";
 
 createGeneratorOperator({
   name: "slidingPercentile",
-  *generator(source: Iterable<unknown>, windowSize: number, p: number): IterableIterator<unknown> {
+  category: "streaming",
+  *generator(source: Iterable<unknown>, windowSize: number, p: number) {
     const buf: number[] = [];
     for (const val of source as Iterable<number>) {
       buf.push(val);
@@ -297,11 +345,10 @@ declare module "tyneq" {
 }
 ```
 
-Consumers import once - typically in an entry point:
+Consumer:
 
 ```ts
-import "my-extensions/sliding-percentile";
+import "my-lib/sliding-percentile"; // once, typically in entry point
 
-// available everywhere
 Tyneq.from(readings).slidingPercentile(10, 0.9).toArray();
 ```

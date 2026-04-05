@@ -6,14 +6,14 @@ import { QueryPlanTransformer } from "./QueryPlanTransformer";
  * A built-in {@link QueryPlanTransformer} that fuses redundant consecutive operators.
  *
  * @remarks
- * **This optimizer rewrites the query plan tree only — it does not affect execution of the
+ * **This optimizer rewrites the query plan tree only - it does not affect execution of the
  * original sequence.** The returned `QueryPlanNode` reflects what an optimized pipeline would
  * look like; the live sequence that produced the original plan is unchanged.
  *
  * **Fusion is only semantics-preserving for pure, side-effect-free functions.**
  * If a predicate or projection has side effects (e.g. logging, mutation), fusing two nodes into
  * one changes when and how many times those effects fire. For example, in a fused `where`, the
- * second predicate is never called for items that fail the first — any mutation inside the second
+ * second predicate is never called for items that fail the first - any mutation inside the second
  * predicate is skipped for those items. Do not use this optimizer on pipelines with impure
  * predicates or projections.
  *
