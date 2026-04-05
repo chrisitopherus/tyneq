@@ -26,7 +26,7 @@ export { OperatorMetadata } from "./core/OperatorMetadata";
 export type { OperatorEntry } from "./types/core";
 
 // queryplan
-export type { OperatorCategory, SourceKind, QueryPlanNode as IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
+export type { OperatorCategory, SourceKind, QueryPlanTraversalDirection, QueryPlanNode as IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
 export { tyneqQueryNode, isSourceNode } from "./types/queryplan";
 export { QueryNode } from "./queryplan/QueryNode";
 export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
