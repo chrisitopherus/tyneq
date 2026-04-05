@@ -50,20 +50,27 @@ const topScorers = Tyneq
 
 ## Why Tyneq
 
-| Feature | Tyneq | Generic iterator libs |
+Tyneq is built for teams that want LINQ-style expressiveness in TypeScript without giving up control of execution behavior.
+
+- Predictable execution model: streaming and buffering are explicit, so performance characteristics are easier to reason about.
+- Re-iterable by default: one query can power multiple terminals without accidental one-shot iterator surprises.
+- Strong TypeScript ergonomics: generic operators, module augmentation support, and strict typing throughout the API.
+- Extensible architecture: add custom operators and terminals through decorators or registration APIs.
+- Runtime introspection: inspect and debug pipelines with query plan tools.
+
+### At a glance
+
+| Capability | Tyneq | Many generic iterator libs |
 |---|---|---|
-| Lazy evaluation | yes | yes |
-| Re-iterable sequences | yes | no - one-shot |
-| Streaming vs. buffering distinction | yes | no |
-| Relational joins / group joins | yes | no |
-| Multi-key ordering pipeline | yes | no |
-| Built-in memoization | yes | no |
-| Running aggregates (`scan`) | yes | no |
-| Async bridge (`toAsync`) | yes | no |
-| Custom operator registration | yes | no |
-| Query plan introspection | yes | no |
-| TypeScript-first generics | yes | varies |
-| Zero dependencies | yes | varies |
+| Deferred query pipelines | yes | yes |
+| Re-iterable sequences | yes | often no |
+| Streaming vs buffering operator model | yes | usually implicit |
+| Multi-key ordering (`orderBy` + `thenBy`) | yes | varies |
+| Joins and group joins | yes | rare |
+| Built-in memoization | yes | rare |
+| Operator plugin API | yes | rare |
+| Query plan tooling | yes | rare |
+| Zero runtime dependencies | yes | varies |
 
 ---
 
@@ -296,6 +303,7 @@ Walk the plan with `QueryPlanWalker`, rewrite it with `QueryPlanTransformer`, op
 | [Concepts](https://chrisitopherus.github.io/tyneq/guide/concepts) | Sequences, operators, deferred execution |
 | [Operators](https://chrisitopherus.github.io/tyneq/guide/operators) | Full operator reference |
 | [Extensibility](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Custom operators and plugins |
+| [Plugin Internals](https://chrisitopherus.github.io/tyneq/guide/plugin-internals) | Custom enumerators, registry workflow, utility helpers |
 | [Query Plan](https://chrisitopherus.github.io/tyneq/guide/query-plan) | Introspection and visitors |
 | [Best Practices](https://chrisitopherus.github.io/tyneq/guide/best-practices) | Patterns and pitfalls |
 | [API Reference](https://chrisitopherus.github.io/tyneq/api/) | Full generated API docs |
@@ -312,6 +320,14 @@ npm test         # run test suite
 npm run lint     # check style
 npm run docs:dev # local docs site
 ```
+
+### Docs Publishing (GitHub Pages)
+
+Recommended workflow:
+
+1. Commit only docs source (`docs/guide`, `docs/.vitepress`, generated API markdown if you intentionally version it).
+2. Let GitHub Actions build and deploy Pages on push to `main` via `.github/workflows/docs-pages.yml`.
+3. Keep branch-based publishing (`npm run docs:publish`) only as a fallback/manual path.
 
 Bug reports and feature requests: [github.com/chrisitopherus/tyneq/issues](https://github.com/chrisitopherus/tyneq/issues)
 
