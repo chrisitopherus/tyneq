@@ -4,12 +4,14 @@
 
 ```bash
 npm install tyneq
-# yarn add tyneq / pnpm add tyneq
+# yarn add tyneq  /  pnpm add tyneq
 ```
 
-Requires TypeScript 5.x with `"strictNullChecks": true`. No `@types` package.
+Requires **TypeScript 5.x** with `"strictNullChecks": true`. No separate `@types` package.
 
-## First Query
+---
+
+## Your first query
 
 ```ts
 import { Tyneq } from "tyneq";
@@ -27,67 +29,133 @@ const topCore = Tyneq
   .select(p => `${p.name} (${p.score})`)
   .toArray();
 
-// ["Grace (97)", "Ada (84)"]
+// -> ["Grace (97)", "Ada (84)"]
 ```
 
-Each step is a different kind of operation:
+Each step does something specific:
 
-| Step | Kind | What happens |
+| Step | Kind | What it means |
 |---|---|---|
-| `Tyneq.from(people)` | Source | Wraps the array |
-| `.where(pred)` | Streaming | Filter - deferred, O(1) memory |
-| `.orderByDescending(key)` | Buffering | Sort - deferred, O(n) memory |
-| `.select(fn)` | Streaming | Project - deferred, O(1) memory |
-| `.toArray()` | Terminal | Executes everything, returns `string[]` |
+| `Tyneq.from(people)` | Source | Wraps the array in a Tyneq sequence |
+| `.where(pred)` | Streaming | Describes a filter - nothing runs yet |
+| `.orderByDescending(key)` | Buffering | Describes a sort - nothing runs yet |
+| `.select(fn)` | Streaming | Describes a projection - nothing runs yet |
+| `.toArray()` | Terminal | **Now** everything runs, top to bottom |
 
-Nothing runs until `.toArray()`. The operators above it describe what to do, not when.
+The key insight: **operators describe work, terminals execute it.**
 
-## Sources
+---
+
+## Creating sequences
 
 `Tyneq.from` accepts any `Iterable<T>`:
 
 ```ts
 Tyneq.from([1, 2, 3]);
-Tyneq.from(new Set([1, 2, 3]));
-Tyneq.from(new Map([["a", 1], ["b", 2]]));
-Tyneq.range(1, 5);    // [1, 2, 3, 4, 5]
-Tyneq.empty<number>();
+Tyneq.from(new Set(["a", "b", "c"]));
+Tyneq.from(new Map([["a", 1], ["b", 2]])); // TyneqSequence<[string, number]>
+Tyneq.from("hello");                        // TyneqSequence<string> (characters)
+```
 
-// Generators - wrap the function, not the object
+Convenience factories:
+
+```ts
+Tyneq.range(1, 5);         // -> [1, 2, 3, 4, 5]
+Tyneq.range(0, 3);         // -> [0, 1, 2]
+Tyneq.empty<number>();     // zero-element sequence
+Tyneq.enumerate(["a", "b", "c"]).toArray();
+// -> [[0, "a"], [1, "b"], [2, "c"]]
+```
+
+### Generator functions
+
+If your source is a generator, pass the **function** not the **object**:
+
+```ts
 function* naturals() { let n = 0; while (true) yield n++; }
-Tyneq.from({ [Symbol.iterator]: naturals }).take(5).toArray();
-// [0, 1, 2, 3, 4]
+
+// Bad: naturals() returns a one-shot generator object
+const bad = Tyneq.from(naturals()).take(5);
+bad.toArray(); // [0, 1, 2, 3, 4]
+bad.toArray(); // [] - already exhausted!
+
+// Good: wrap the function so each iteration gets a fresh generator
+const good = Tyneq.from({ [Symbol.iterator]: naturals }).take(5);
+good.toArray(); // [0, 1, 2, 3, 4]
+good.toArray(); // [0, 1, 2, 3, 4]
 ```
 
-> Passing a generator *object* (not a factory) creates a one-shot source. See [Common Pitfalls](/guide/pitfalls).
+See [Best Practices & Pitfalls](./best-practices.md) for more on this.
 
-## Re-iteration
+---
 
-Tyneq sequences are re-iterable. You can call multiple terminals on the same query:
+## Re-iteration: use the same query multiple times
+
+This is one of the most important things about Tyneq. Every sequence is **re-iterable** - calling a terminal is non-destructive.
 
 ```ts
-const active = Tyneq.from(people).where(p => p.score >= 90);
+const active = Tyneq.from(people).where(p => p.score >= 85);
 
-active.count();                                        // 2
-active.select(p => p.name).toArray();                  // ["Linus", "Grace"]
-active.orderByDescending(p => p.score).elementAt(0);  // { name: "Grace", ... }
+// All three use the same query object
+active.count();                              // -> 2
+active.select(p => p.name).toArray();        // -> ["Linus", "Grace"]
+active.orderByDescending(p => p.score).first().name; // -> "Grace"
 ```
 
-Each call re-executes the pipeline from the source. Use `memoize()` if re-execution is expensive.
-
-## Standard Iteration
-
-Sequences implement `Iterable<T>`:
+Each call re-executes the pipeline from the source. There is no internal cursor to exhaust. If re-executing the pipeline is expensive (e.g. the source involves I/O or random data), use `memoize()`:
 
 ```ts
-const seq = Tyneq.range(1, 5).where(n => n % 2 !== 0);
+const expensive = Tyneq.from(fetchUsers())
+  .where(u => u.active)
+  .shuffle()
+  .memoize();
 
-for (const n of seq) console.log(n); // 1 3 5
-const arr = [...seq];                 // [1, 3, 5]
+expensive.toArray(); // executes once, caches
+expensive.toArray(); // returns cache
 ```
 
-## Next
+---
 
-- [Concepts](/guide/concepts) - sequences, operator categories, deferred execution
-- [Operators](/guide/operators) - full operator list
-- [API Reference](/api/reference/)
+## Deferred execution in practice
+
+Nothing touches the source until a terminal is called. That means:
+
+```ts
+// No computation, no source access - just builds the plan
+const query = Tyneq.range(1, 1_000_000)
+  .where(n => n % 2 === 0)
+  .select(n => n * n)
+  .take(5);
+
+// Only now does iteration begin - and stops after 5 elements
+query.toArray(); // -> [4, 16, 36, 64, 100]
+```
+
+This also means operators respect each other. `take(5)` after a streaming pipeline stops pulling from `where` as soon as it has 5 results. It never processes the remaining 999,995 elements.
+
+---
+
+## Standard iteration
+
+Sequences implement `Iterable<T>`, so you can use them anywhere JavaScript accepts an iterable:
+
+```ts
+const evens = Tyneq.range(1, 10).where(n => n % 2 === 0);
+
+for (const n of evens) console.log(n);  // 2 4 6 8 10
+const arr = [...evens];                  // [2, 4, 6, 8, 10]
+
+// Works with destructuring too
+const [first, second] = evens;           // first=2, second=4
+```
+
+---
+
+## Next steps
+
+You have the basics. Here is where to go next:
+
+- [Core Concepts](./concepts.md) - understand streaming vs. buffering, the execution model, and memoization in depth
+- [Operators](./operators.md) - all 60+ operators with examples
+- [Custom Operators](./extensibility.md) - add your own operators to every sequence
+- [Query Plan & Compiler](./query-plan.md) - inspect and compile pipelines as metadata
