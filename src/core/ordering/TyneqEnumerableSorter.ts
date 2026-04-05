@@ -1,4 +1,5 @@
 import { Nullable } from "../../types/utility";
+import { Comparer } from "../../types/core";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 import { nameof } from "../../utility/nameof";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
@@ -15,12 +16,12 @@ import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<TSource> {
     private keys: TKey[] = [];
     private readonly keySelector: (item: TSource) => TKey;
-    private readonly comparer: (a: TKey, b: TKey) => number;
+    private readonly comparer: Comparer<TKey>;
     private readonly descending: number;
     private next: Nullable<BaseEnumerableSorter<TSource>> = null;
 
-    
-    public constructor(keySelector: (item: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean, next?: BaseEnumerableSorter<TSource>) {
+
+    public constructor(keySelector: (item: TSource) => TKey, comparer: Comparer<TKey>, descending: boolean, next?: BaseEnumerableSorter<TSource>) {
         super();
         ArgumentUtility.checkNotOptional({ keySelector });
         ArgumentUtility.checkNotOptional({ comparer });

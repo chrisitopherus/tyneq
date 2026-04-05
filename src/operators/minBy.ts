@@ -1,7 +1,7 @@
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
-import { TyneqSequence } from "../types/core";
+import { TyneqSequence, Comparer } from "../types/core";
 import { Nullable } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
@@ -18,11 +18,11 @@ import { nameof } from "../utility/nameof";
  * @internal
  */
 export class MinByOperator<TSource, TKey> extends TyneqTerminalOperator<TSource, TSource> {
-    private readonly comparer: (a: TKey, b: TKey) => number;
+    private readonly comparer: Comparer<TKey>;
     private readonly keySelector: (element: TSource) => TKey;
 
-    
-    public constructor(source: TyneqSequence<TSource>, keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number) {
+
+    public constructor(source: TyneqSequence<TSource>, keySelector: (element: TSource) => TKey, comparer?: Comparer<TKey>) {
         super(source);
         ArgumentUtility.checkNotOptional({ keySelector });
 
