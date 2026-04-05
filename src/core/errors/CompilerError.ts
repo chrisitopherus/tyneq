@@ -23,9 +23,9 @@ export class CompilerError extends TyneqError {
 
     /**
      * The compilation phase in which the error occurred.
-     * - `"transform"` — during query plan transformation (pre-compile)
-     * - `"source"` — while compiling a source node
-     * - `"operator"` — while applying an operator node
+     * - `"transform"` - during query plan transformation (pre-compile)
+     * - `"source"` - while compiling a source node
+     * - `"operator"` - while applying an operator node
      */
     public readonly phase: "transform" | "source" | "operator";
 

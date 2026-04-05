@@ -29,7 +29,7 @@ import { OrderedEnumerable } from "../../types/core";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createOrderedTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
