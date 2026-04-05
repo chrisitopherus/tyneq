@@ -7,15 +7,15 @@ import type { Nullable } from "../types/utility";
  *
  * @remarks
  * Recursively rebuilds the node chain, calling {@link QueryPlanTransformer.transformNode}
- * once per node. The default implementation is an **identity transform** — every node is
+ * once per node. The default implementation is an **identity transform** - every node is
  * reconstructed with the same data, producing a structurally equivalent copy.
  *
  * Subclasses override `transformNode` to intercept specific operators. Three rewrite
  * patterns are possible:
  *
- * - **Rewrite a node** — return a new `QueryNode` with different `operatorName` or `args`
- * - **Remove a node** — return `source` directly, skipping this node
- * - **Collapse two nodes into one** — use `source` as the new node's `source` (fusing
+ * - **Rewrite a node** - return a new `QueryNode` with different `operatorName` or `args`
+ * - **Remove a node** - return `source` directly, skipping this node
+ * - **Collapse two nodes into one** - use `source` as the new node's `source` (fusing
  *   the current node with its already-transformed predecessor)
  *
  * @example
@@ -53,7 +53,7 @@ export class QueryPlanTransformer implements QueryPlanVisitor<QueryPlanNode> {
      *
      * @remarks
      * The default implementation reconstructs the node with identical data (identity transform).
-     * `source` is the already-transformed predecessor — use it as the `source` of any returned
+     * `source` is the already-transformed predecessor - use it as the `source` of any returned
      * node to preserve chain continuity.
      *
      * @param node - The original node (unmodified).

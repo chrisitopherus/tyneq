@@ -10,7 +10,7 @@ import { TyneqEnumerable } from "./TyneqEnumerable";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 
 /**
- * Concrete implementation of {@link TyneqCachedSequence} — caches elements incrementally.
+ * Concrete implementation of {@link TyneqCachedSequence} - caches elements incrementally.
  *
  * @remarks
  * Created by `memoize()`. On the first iteration the source is enumerated one element at a time

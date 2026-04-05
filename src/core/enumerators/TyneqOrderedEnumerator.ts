@@ -6,6 +6,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * Lifecycle of the source is owned by the sequence, not the enumerator.
  *
  * @group Plugin
+ * @internal
  */
 export abstract class TyneqOrderedEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 
@@ -14,6 +15,6 @@ export abstract class TyneqOrderedEnumerator<TSource> extends TyneqBaseEnumerato
     }
 
     protected override disposeSource(): void {
-        // The sequence owns its own lifecycle — enumerator must not dispose it.
+        // The sequence owns its own lifecycle - enumerator must not dispose it.
     }
 }

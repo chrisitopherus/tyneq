@@ -89,5 +89,5 @@ const arr = [...seq];                 // [1, 3, 5]
 ## Next
 
 - [Concepts](/guide/concepts) - sequences, operator categories, deferred execution
-- [Operators Overview](/guide/operators-overview) - full operator list
+- [Operators](/guide/operators) - full operator list
 - [API Reference](/api/reference/)

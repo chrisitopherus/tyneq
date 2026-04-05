@@ -37,7 +37,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createCachedOperator<TSource, TArgs extends unknown[]>(config: {
     name: string;

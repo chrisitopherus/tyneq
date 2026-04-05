@@ -3,7 +3,7 @@ import { Tyneq, tyneqQueryNode, QueryPlanWalker } from "../../../src";
 import type { IQueryNode } from "../../../src";
 
 // ---------------------------------------------------------------------------
-// Subclass-based usage (existing behaviour, preserved)
+// Subclass-based usage
 // ---------------------------------------------------------------------------
 
 class NameCollector extends QueryPlanWalker {
@@ -43,31 +43,36 @@ describe("QueryPlanWalker -- subclass", () => {
 // Direct instantiation with callback
 // ---------------------------------------------------------------------------
 
-describe("QueryPlanWalker -- callback constructor", () => {
+describe("QueryPlanWalker -- callback option", () => {
     it("is directly instantiable without subclassing", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1);
         const names: string[] = [];
-        new QueryPlanWalker((node) => names.push(node.operatorName)).visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({ callback: (node) => names.push(node.operatorName) }).visit(seq[tyneqQueryNode]!);
         expect(names).toEqual(["from", "where"]);
     });
 
     it("fires the callback once per node", () => {
         const seq = Tyneq.from([1]).where((x) => x > 0).select((x) => x);
         const cb = vi.fn();
-        new QueryPlanWalker(cb).visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({ callback: cb }).visit(seq[tyneqQueryNode]!);
         expect(cb).toHaveBeenCalledTimes(3);
     });
 
     it("passes the correct node to each callback invocation", () => {
         const seq = Tyneq.from([1]).where((x) => x > 0);
         const received: string[] = [];
-        new QueryPlanWalker((node) => received.push(node.operatorName)).visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({ callback: (node) => received.push(node.operatorName) }).visit(seq[tyneqQueryNode]!);
         expect(received).toEqual(["from", "where"]);
     });
 
-    it("works with no arguments (no-op walk)", () => {
+    it("works with no options (no-op walk)", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1);
         expect(() => new QueryPlanWalker().visit(seq[tyneqQueryNode]!)).not.toThrow();
+    });
+
+    it("works with empty options object (no-op walk)", () => {
+        const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1);
+        expect(() => new QueryPlanWalker({}).visit(seq[tyneqQueryNode]!)).not.toThrow();
     });
 });
 
@@ -79,28 +84,37 @@ describe("QueryPlanWalker -- traversal direction", () => {
     it("source-to-terminal visits from source up to terminal", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1).select((x) => x * 2);
         const names: string[] = [];
-        new QueryPlanWalker((n) => names.push(n.operatorName), "source-to-terminal").visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({
+            callback: (n) => names.push(n.operatorName),
+            direction: "source-to-terminal",
+        }).visit(seq[tyneqQueryNode]!);
         expect(names).toEqual(["from", "where", "select"]);
     });
 
     it("terminal-to-source visits from terminal down to source", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1).select((x) => x * 2);
         const names: string[] = [];
-        new QueryPlanWalker((n) => names.push(n.operatorName), "terminal-to-source").visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({
+            callback: (n) => names.push(n.operatorName),
+            direction: "terminal-to-source",
+        }).visit(seq[tyneqQueryNode]!);
         expect(names).toEqual(["select", "where", "from"]);
     });
 
     it("direction defaults to source-to-terminal when omitted", () => {
         const seq = Tyneq.from([1]).where((x) => x > 0).select((x) => x);
         const names: string[] = [];
-        new QueryPlanWalker((n) => names.push(n.operatorName)).visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({ callback: (n) => names.push(n.operatorName) }).visit(seq[tyneqQueryNode]!);
         expect(names).toEqual(["from", "where", "select"]);
     });
 
     it("terminal-to-source on a single node visits that node once", () => {
         const seq = Tyneq.from([1]);
         const names: string[] = [];
-        new QueryPlanWalker((n) => names.push(n.operatorName), "terminal-to-source").visit(seq[tyneqQueryNode]!);
+        new QueryPlanWalker({
+            callback: (n) => names.push(n.operatorName),
+            direction: "terminal-to-source",
+        }).visit(seq[tyneqQueryNode]!);
         expect(names).toEqual(["from"]);
     });
 });
@@ -112,6 +126,9 @@ describe("QueryPlanWalker -- traversal direction", () => {
 describe("QueryPlanWalker -- subclass with direction", () => {
     class DirectionalCollector extends QueryPlanWalker {
         public readonly names: string[] = [];
+        public constructor(direction: "source-to-terminal" | "terminal-to-source") {
+            super({ direction });
+        }
         protected override visitNode(node: IQueryNode): void {
             this.names.push(node.operatorName);
         }
@@ -119,8 +136,15 @@ describe("QueryPlanWalker -- subclass with direction", () => {
 
     it("subclass respects direction passed to super constructor", () => {
         const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1).select((x) => x * 2);
-        const collector = new DirectionalCollector(undefined, "terminal-to-source");
+        const collector = new DirectionalCollector("terminal-to-source");
         collector.visit(seq[tyneqQueryNode]!);
         expect(collector.names).toEqual(["select", "where", "from"]);
+    });
+
+    it("subclass with default direction uses source-to-terminal", () => {
+        const seq = Tyneq.from([1, 2, 3]).where((x) => x > 1).select((x) => x * 2);
+        const collector = new DirectionalCollector("source-to-terminal");
+        collector.visit(seq[tyneqQueryNode]!);
+        expect(collector.names).toEqual(["from", "where", "select"]);
     });
 });

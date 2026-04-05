@@ -24,7 +24,7 @@ import type { CachedEnumerable, OperatorSource } from "../../types/core";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createCachedTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;

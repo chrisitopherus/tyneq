@@ -23,7 +23,7 @@ export interface Enumerator<T> extends Iterator<T> {
      * Terminates the iterator early and releases resources.
      *
      * @remarks
-     * Idempotent — safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
+     * Idempotent - safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
      */
     return?(value?: unknown): IteratorResult<T>;
 
@@ -94,7 +94,7 @@ export type IteratorFactory<T> = () => Enumerator<T>;
 export type TyneqEnumerableFactory<TSource, TEnumerable extends TyneqSequence<TSource>> = (iteratorFactory: IteratorFactory<TSource>) => TEnumerable;
 
 /**
- * The primary public API for a lazy sequence — the type returned by all Tyneq operators.
+ * The primary public API for a lazy sequence - the type returned by all Tyneq operators.
  *
  * @remarks
  * Every operator method returns a new `TyneqSequence` without consuming the source.
@@ -326,7 +326,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns an `AsyncIterable` that iterates this sequence asynchronously.
      *
      * @remarks
-     * Deferred — each `for await...of` loop produces a fresh traversal of the source.
+     * Deferred - each `for await...of` loop produces a fresh traversal of the source.
      */
     toAsync(): AsyncIterable<TSource>;
 
@@ -387,7 +387,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Casts every element to `U` without runtime validation.
      *
      * @remarks
-     * Unsafe — throws at runtime if any element is not assignable to `U`. Use `ofType` for safe type-narrowing.
+     * Unsafe - throws at runtime if any element is not assignable to `U`. Use `ofType` for safe type-narrowing.
      */
     cast<U>(): TyneqSequence<U>;
 

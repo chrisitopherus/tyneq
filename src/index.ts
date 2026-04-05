@@ -26,7 +26,7 @@ export { OperatorMetadata } from "./core/OperatorMetadata";
 export type { OperatorEntry } from "./types/core";
 
 // queryplan
-export type { OperatorCategory, SourceKind, QueryPlanTraversalDirection, QueryPlanNode as IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "./types/queryplan";
+export type { OperatorCategory, SourceKind, QueryPlanTraversalDirection, QueryPlanNode as IQueryNode, QueryPlanVisitor, QueryPlanPrinterOptions, QueryPlanWalkerOptions } from "./types/queryplan";
 export { tyneqQueryNode, isSourceNode } from "./types/queryplan";
 export { QueryNode } from "./queryplan/QueryNode";
 export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
@@ -35,7 +35,7 @@ export { QueryPlanTransformer } from "./queryplan/QueryPlanTransformer";
 export { QueryPlanOptimizer } from "./queryplan/QueryPlanOptimizer";
 export { QueryPlanCompiler } from "./queryplan/compiler/QueryPlanCompiler";
 
-// plugin — decorators
+// plugin - decorators
 export { operator } from "./plugin/decorators/operator";
 export { orderedOperator } from "./plugin/decorators/orderedOperator";
 export { cachedOperator } from "./plugin/decorators/cachedOperator";
@@ -43,7 +43,7 @@ export { terminal } from "./plugin/decorators/terminal";
 export { orderedTerminal } from "./plugin/decorators/orderedTerminal";
 export { cachedTerminal } from "./plugin/decorators/cachedTerminal";
 
-// plugin — functional registration
+// plugin - functional registration
 export { createOperator } from "./plugin/registration/createOperator";
 export { createGeneratorOperator } from "./plugin/registration/createGeneratorOperator";
 export { createOrderedOperator } from "./plugin/registration/createOrderedOperator";

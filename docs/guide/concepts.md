@@ -21,8 +21,8 @@ A Tyneq sequence is a re-iterable `Enumerable<T>`. Each call to `Symbol.iterator
 ```ts
 const seq = Tyneq.range(1, 3).select(x => x * 10);
 
-seq.toArray(); // [10, 20, 30]
-seq.toArray(); // [10, 20, 30]  <-- independent traversal, same result
+seq.toArray(); // -> [10, 20, 30]
+seq.toArray(); // -> [10, 20, 30]  - independent traversal, same result
 ```
 
 ## Operator Categories
@@ -47,7 +47,7 @@ const query = Tyneq.range(1, 1_000_000)
 
 // Nothing has run yet.
 
-query.toArray(); // [4, 16, 36, 64, 100] - pipeline executes once, top-to-bottom
+query.toArray(); // -> [4, 16, 36, 64, 100] - pipeline executes, top-to-bottom
 ```
 
 A `where().select().take(1)` on a million-element source processes only enough elements to find the first match.
@@ -77,6 +77,8 @@ Tyneq.from(records)
   .toArray();
 ```
 
+See [Ordering](/guide/ordering) for full details.
+
 ## Memoization
 
 `memoize()` caches results after the first enumeration. Subsequent calls return the cached result without re-executing the pipeline.
@@ -98,7 +100,7 @@ Use `memoize()` only when re-execution is measurable and avoidable. Keep transfo
 
 ## Query Plan
 
-Every sequence produced by a Tyneq operator carries an immutable `IQueryNode` chain describing the operators applied to it.
+Every sequence produced by a Tyneq operator carries an immutable `QueryPlanNode` chain describing the operators applied to it.
 
 ```ts
 import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from "tyneq";
@@ -111,4 +113,4 @@ console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 //   -> select(<fn>)
 ```
 
-See [Query Plan Inspection](/guide/query-plan) for traversal and visitor patterns.
+See [Query Plan](/guide/query-plan) for traversal, transformation, and compilation.

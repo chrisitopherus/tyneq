@@ -232,7 +232,7 @@ export class OperatorRegistry {
      * Built-in operators already live as direct methods on their target class.
      *
      * @remarks
-     * Registration guards are intentionally skipped — builtins are internal and
+     * Registration guards are intentionally skipped - builtins are internal and
      * trusted; guards exist to validate external plugin registrations only.
      *
      * @internal
