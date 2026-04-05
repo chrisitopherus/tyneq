@@ -1,6 +1,6 @@
-# Query Plan Inspection
+# Query Plan
 
-Every Tyneq sequence carries an immutable `IQueryNode` chain describing the operators applied to it. It is metadata only - it does not participate in iteration.
+Every Tyneq sequence carries an immutable `QueryPlanNode` chain describing the operators applied to it. It is metadata only - it does not participate in iteration.
 
 ## Accessing the Plan
 
@@ -12,13 +12,13 @@ const seq = Tyneq.from([1, 2, 3, 4, 5])
   .select(x => x * 10)
   .take(3);
 
-const node = seq[tyneqQueryNode];   // IQueryNode | null
-node?.operatorName;                  // "take"
-node?.category;                      // "streaming"
-node?.source?.operatorName;          // "select"
+const node = seq[tyneqQueryNode];   // QueryPlanNode | null
+node?.operatorName;                  // -> "take"
+node?.category;                      // -> "streaming"
+node?.source?.operatorName;          // -> "select"
 ```
 
-`IQueryNode` is a singly-linked list. Walk it to inspect the full chain:
+`QueryPlanNode` is a singly-linked list. Walk it manually to inspect the full chain:
 
 ```ts
 let current = seq[tyneqQueryNode];
@@ -35,6 +35,8 @@ while (current !== null) {
 Sequences created via `.pipe()` record a `"pipe"` node - their `[tyneqQueryNode]` is never `null`.
 
 ## Printing
+
+`QueryPlanPrinter` renders the plan as a human-readable string.
 
 ```ts
 import { Tyneq, tyneqQueryNode, QueryPlanPrinter } from "tyneq";
@@ -54,20 +56,12 @@ console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 Options:
 
 ```ts
-// Custom indent and arrow
-QueryPlanPrinter.print(node, { indent: "  ", arrow: "->" });
-
-// Show more array items inline
-QueryPlanPrinter.print(node, { maxInlineArrayItems: 10 });
+QueryPlanPrinter.print(node, { indent: "    ", arrow: "=>", maxInlineArrayItems: 10 });
 ```
 
-### Subclassing
-
-Override `formatArg` or `formatLine` for custom rendering:
+Subclass to customize argument formatting:
 
 ```ts
-import { QueryPlanPrinter } from "tyneq";
-
 class VerbosePrinter extends QueryPlanPrinter {
   protected override formatArg(arg: unknown): string {
     if (typeof arg === "function") return `<fn:${arg.name || "anonymous"}>`;
@@ -78,84 +72,191 @@ class VerbosePrinter extends QueryPlanPrinter {
 new VerbosePrinter().visit(seq[tyneqQueryNode]!);
 ```
 
-## Visitor Pattern
+## Narrowing Source Nodes
 
-`QueryPlanVisitor<T>` walks a plan. Implement `visit(node)` and recurse into `node.source` manually.
+Source nodes (`category === "source"`) are the only nodes that carry `sourceKind`. Use the `isSourceNode` guard before reading it:
 
 ```ts
-interface QueryPlanVisitor<T> {
-  visit(node: IQueryNode): T;
-}
+import { isSourceNode } from "tyneq";
 
-// Entry point
-const result = seq[tyneqQueryNode]!.accept(new MyVisitor());
+let node = seq[tyneqQueryNode];
+while (node !== null) {
+  if (isSourceNode(node)) {
+    console.log(node.sourceKind); // -> "array" | "set" | "map" | "string" | "other"
+  }
+  node = node.source;
+}
 ```
 
-### Collect operator names
+## Walking the Plan
+
+`QueryPlanWalker` traverses the node chain and calls a visitor function (or overrideable method) for each node.
+
+### Direct instantiation with a callback
+
+The simplest usage - no subclass needed:
 
 ```ts
-import type { IQueryNode, QueryPlanVisitor } from "tyneq";
+import { Tyneq, tyneqQueryNode, QueryPlanWalker } from "tyneq";
+
+const names: string[] = [];
+new QueryPlanWalker({
+  callback: node => names.push(node.operatorName),
+}).visit(seq[tyneqQueryNode]!);
+// names -> ["from", "where", "select", "take"]
+```
+
+### Traversal direction
+
+`"source-to-terminal"` (default): visits from the source node up to the terminal.
+`"terminal-to-source"`: visits from the terminal node down to the source.
+
+```ts
+const reversed: string[] = [];
+new QueryPlanWalker({
+  callback: node => reversed.push(node.operatorName),
+  direction: "terminal-to-source",
+}).visit(seq[tyneqQueryNode]!);
+// reversed -> ["take", "select", "where", "from"]
+```
+
+### Subclassing for stateful walkers
+
+Override `visitNode` when you need to accumulate state across nodes:
+
+```ts
+class BufferCounter extends QueryPlanWalker {
+  public count = 0;
+  protected override visitNode(node: QueryPlanNode): void {
+    if (node.category === "buffer") this.count++;
+  }
+}
+
+const counter = new BufferCounter();
+counter.visit(seq[tyneqQueryNode]!);
+console.log(counter.count); // -> 0 (no buffering operators in this plan)
+```
+
+Pass options to `super` to configure direction:
+
+```ts
+class ReverseCollector extends QueryPlanWalker {
+  public readonly names: string[] = [];
+  public constructor() { super({ direction: "terminal-to-source" }); }
+  protected override visitNode(node: QueryPlanNode): void {
+    this.names.push(node.operatorName);
+  }
+}
+```
+
+## Transforming the Plan
+
+`QueryPlanTransformer` rebuilds the node chain, allowing structural changes.
+
+```ts
+import { QueryPlanTransformer, QueryNode } from "tyneq";
+import type { QueryPlanNode } from "tyneq";
+
+// Rename all 'where' nodes to 'filter' in the plan view
+class RenameWhere extends QueryPlanTransformer {
+  protected override transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
+    if (node.operatorName === "where") {
+      return new QueryNode("filter", node.args, source, node.category);
+    }
+    return super.transformNode(node, source);
+  }
+}
+
+const rewritten = new RenameWhere().visit(seq[tyneqQueryNode]!);
+QueryPlanPrinter.print(rewritten);
+// from([...])
+//   -> filter(<fn>)
+//   -> select(<fn>)
+//   -> take(3)
+```
+
+Three rewrite patterns are available in `transformNode`:
+
+- **Rewrite** - return a new `QueryNode` with different `operatorName` or `args`
+- **Remove** - return `source` directly, skipping the current node
+- **Collapse** - use `source.source` to fuse two nodes into one
+
+## Optimizing the Plan
+
+`QueryPlanOptimizer` is a built-in transformer that fuses redundant consecutive operators.
+
+```ts
+import { QueryPlanOptimizer } from "tyneq";
+
+const seq = Tyneq.from([1, 2, 3])
+  .where(x => x > 0)
+  .where(x => x < 3)
+  .select(x => x * 2)
+  .select(x => x + 1);
+
+const optimized = new QueryPlanOptimizer().visit(seq[tyneqQueryNode]!);
+QueryPlanPrinter.print(optimized);
+// from([...])
+//   -> where(<fn>)   - two where nodes fused into one
+//   -> select(<fn>)  - two select nodes fused into one
+```
+
+**Caution:** fusion changes when and how many times callbacks fire. Only use the optimizer on pipelines with pure, side-effect-free predicates and projections.
+
+## Compiling the Plan
+
+`QueryPlanCompiler` turns a `QueryPlanNode` chain back into an executable `TyneqSequence`. Useful for serializing and replaying pipelines.
+
+```ts
+import { QueryPlanCompiler, QueryPlanOptimizer } from "tyneq";
+
+const seq = Tyneq.from([1, 2, 3]).where(x => x > 1).select(x => x * 2);
+
+const compiler = new QueryPlanCompiler([new QueryPlanOptimizer()]);
+const result = compiler.compile(seq[tyneqQueryNode]!);
+
+result.toArray(); // -> [4, 6]
+```
+
+`compileRaw` skips the transformer phase:
+
+```ts
+compiler.compileRaw(seq[tyneqQueryNode]!).toArray();
+```
+
+The compiler looks up each operator by name in `OperatorRegistry`. Only registered operators (including all built-ins and any registered plugins) can be compiled.
+
+## Implementing a Custom Visitor
+
+`QueryPlanVisitor<T>` is a single-method interface. Implement it directly for non-walker use cases:
+
+```ts
+import type { QueryPlanNode, QueryPlanVisitor } from "tyneq";
 
 class OperatorCollector implements QueryPlanVisitor<string[]> {
-  visit(node: IQueryNode): string[] {
+  visit(node: QueryPlanNode): string[] {
     const upstream = node.source ? this.visit(node.source) : [];
     return [...upstream, node.operatorName];
   }
 }
 
 seq[tyneqQueryNode]!.accept(new OperatorCollector());
-// ["from", "where", "select", "take"]
+// -> ["from", "where", "select", "take"]
 ```
 
-### Count buffering stages
+Count buffering stages:
 
 ```ts
-class BufferCounter implements QueryPlanVisitor<number> {
-  visit(node: IQueryNode): number {
+class BufferStageCounter implements QueryPlanVisitor<number> {
+  visit(node: QueryPlanNode): number {
     const upstream = node.source ? this.visit(node.source) : 0;
     return upstream + (node.category === "buffer" ? 1 : 0);
   }
 }
 ```
 
-### Pipeline linter
-
-```ts
-class PipelineLinter implements QueryPlanVisitor<string[]> {
-  visit(node: IQueryNode): string[] {
-    const issues = node.source ? this.visit(node.source) : [];
-    if (
-      (node.operatorName === "orderBy" || node.operatorName === "orderByDescending") &&
-      node.source?.operatorName === "take"
-    ) {
-      issues.push(`${node.operatorName} placed after take - did you mean to sort before limiting?`);
-    }
-    return issues;
-  }
-}
-```
-
-### JSON serialization
-
-```ts
-interface NodeJson { op: string; category: string; argTypes: string[]; source: NodeJson | null; }
-
-class JsonSerializer implements QueryPlanVisitor<NodeJson> {
-  visit(node: IQueryNode): NodeJson {
-    return {
-      op: node.operatorName,
-      category: node.category,
-      argTypes: node.args.map(a => typeof a),
-      source: node.source ? this.visit(node.source) : null,
-    };
-  }
-}
-
-JSON.stringify(seq[tyneqQueryNode]!.accept(new JsonSerializer()), null, 2);
-```
-
 ## Notes
 
-**Single `visit` method** - operators are registered dynamically at runtime, so a static dispatch table (`visitWhere`, `visitSelect`, …) would need to be updated on every new operator. A single `visit` method delegates dispatch inside the visitor body, keeping the interface stable regardless of which operators are registered.
+**Single `visit` method** - operators are registered dynamically at runtime, so a static dispatch table (`visitWhere`, `visitSelect`, ...) would need updating on every new operator. A single `visit` method keeps the interface stable regardless of which operators are registered.
 
-**Node immutability** - `IQueryNode` is fully immutable. Visitors that transform plans construct new `QueryNode` instances - they cannot mutate existing nodes.
+**Node immutability** - `QueryPlanNode` is fully immutable. Transformers construct new `QueryNode` instances - they cannot mutate existing nodes.
