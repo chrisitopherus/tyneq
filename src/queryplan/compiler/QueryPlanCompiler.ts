@@ -1,7 +1,6 @@
 import { TyneqSequence } from "../../types/core";
 import { QueryPlanNode } from "../../types/queryplan";
 import { QueryPlanTransformer } from "../QueryPlanTransformer";
-import { Tyneq } from "../../core/tyneq";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { CompilerError } from "../../core/errors/CompilerError";
 
@@ -92,31 +91,18 @@ export class QueryPlanCompiler {
         return this.applyOperator(this.compileNode(node.source), node);
     }
 
-    /**
-     * @remarks
-     * Only the four built-in source operators (`"from"`, `"range"`, `"random"`, `"empty"`) are
-     * supported. Third-party source operators registered via the plugin system cannot be compiled
-     * here because there is no registry lookup path for `category === "source"` nodes.
-     * Callers who need custom sources should pre-transform the plan (replacing custom source nodes
-     * with one of the built-in sources) before calling `compile()`.
-     */
     private compileSource(node: QueryPlanNode): unknown {
-        switch (node.operatorName) {
-            case "from":
-                return Tyneq.from(node.args[0] as Iterable<unknown>);
-            case "range":
-                return Tyneq.range(node.args[0] as number, node.args[1] as number);
-            case "random":
-                return Tyneq.random(node.args[0] as number, node.args[1] as () => unknown);
-            case "empty":
-                return Tyneq.empty();
-            default:
-                throw new CompilerError(
-                    `Unknown source operator "${node.operatorName}". Built-in sources are: "from", "range", "random", "empty".`,
-                    "source",
-                    node.operatorName
-                );
+        const entry = OperatorRegistry.get(node.operatorName);
+        if (!entry || entry.metadata.kind !== "source") {
+            throw new CompilerError(
+                `Unknown source operator "${node.operatorName}". ` +
+                "Register it via OperatorRegistry.registerSource() before compiling.",
+                "source",
+                node.operatorName
+            );
         }
+
+        return entry.impl.apply(null as never, [...node.args]);
     }
 
     private applyOperator(source: unknown, node: QueryPlanNode): unknown {
@@ -131,7 +117,7 @@ export class QueryPlanCompiler {
             );
         }
 
-        if (!(source instanceof entry.metadata.targetClass)) {
+        if (entry.metadata.targetClass !== undefined && !(source instanceof entry.metadata.targetClass)) {
             const expected = entry.metadata.targetClass.name;
             const actual = source !== null && source !== undefined ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source : "null";
             throw new CompilerError(

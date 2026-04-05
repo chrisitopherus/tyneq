@@ -109,6 +109,18 @@ describe("QueryPlanCompiler", () => {
         });
     });
 
+    describe("compile() — third-party source via registerSource()", () => {
+        it("compiles a custom source operator registered via registerSource()", () => {
+            const name = nextName();
+            registered.push(name);
+            OperatorRegistry.registerSource(name, (items) => Tyneq.from(items as number[]), "external");
+
+            const node = new QueryNode(name, [[10, 20, 30]], null, "source");
+            const result = new QueryPlanCompiler().compile<number>(node);
+            expect(result.toArray()).toEqual([10, 20, 30]);
+        });
+    });
+
     describe("compile() — orphaned operator node (missing source)", () => {
         it("throws CompilerError with phase 'operator' for operator node with null source", () => {
             const orphan = new QueryNode("where", [() => true], null, "streaming");
