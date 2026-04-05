@@ -1,28 +1,272 @@
-# Best Practices
+# Best Practices & Pitfalls
 
-## Use `firstOrDefault` instead of `first` when empty is expected
+This page collects the patterns that work well and the mistakes that are easy to make. Both matter equally.
+
+---
+
+## Sources and re-iteration
+
+### Wrap generator functions, not generator objects
+
+A generator *object* is a one-shot iterator. Once exhausted, it is gone. Passing one to `Tyneq.from` does not make it re-iterable.
+
+```ts
+function* naturals() { let n = 0; while (true) yield n++; }
+
+// Bad: naturals() returns a generator object
+const bad = Tyneq.from(naturals()).take(5);
+bad.toArray(); // [0, 1, 2, 3, 4]
+bad.toArray(); // [] - generator already exhausted
+
+// Good: wrap the function so each iteration gets a fresh generator
+const good = Tyneq.from({ [Symbol.iterator]: naturals }).take(5);
+good.toArray(); // [0, 1, 2, 3, 4]
+good.toArray(); // [0, 1, 2, 3, 4]
+```
+
+### Beware source array mutation
+
+Deferred operators hold a reference to the source, not a copy. Mutating the source array between composition and iteration changes results.
+
+```ts
+const arr = [1, 2, 3];
+const seq = Tyneq.from(arr).where(x => x > 1);
+
+arr.push(4);
+seq.toArray(); // -> [2, 3, 4]  - 4 was added before iteration
+```
+
+If you need a snapshot, copy the array first:
+
+```ts
+const seq = Tyneq.from([...arr]).where(x => x > 1);
+```
+
+---
+
+## Execution and deferred evaluation
+
+### Capture values, not references, in closures
+
+Deferred operators capture references. A mutable variable captured in a `where` or `select` reflects its value at iteration time, not composition time.
+
+```ts
+// Bad: threshold is read at iteration time
+let threshold = 10;
+const seq = Tyneq.from([5, 15, 20]).where(x => x > threshold);
+threshold = 100;
+seq.toArray(); // [] - 100 was in effect at iteration
+
+// Good: capture with const
+const threshold = 10;
+const seq = Tyneq.from([5, 15, 20]).where(x => x > threshold);
+```
+
+### Side effects run per enumeration
+
+Every `toArray()` re-executes the full pipeline. Side effects in `tap`, `select`, or `where` run again on each call.
+
+```ts
+const seq = Tyneq.from([1, 2, 3]).tap(x => console.log("processing", x));
+
+seq.toArray(); // logs 1 2 3
+seq.toArray(); // logs 1 2 3 again
+```
+
+If the side effects should only run once, use `memoize()` to prevent re-execution after the first pass.
+
+---
+
+## Buffering and performance
+
+### Buffering operators read the full source - always
+
+`orderBy`, `reverse`, `groupBy`, `distinct`, and other buffering operators must read the entire upstream before yielding anything. Placing `take` after a buffer stage does not prevent the buffer from materializing.
+
+```ts
+// Bad - orderBy reads ALL of largeCollection, then take(5) discards the rest
+Tyneq.from(largeCollection).orderBy(x => x.score).take(5).toArray();
+```
+
+If the top-5 are always within the first N elements, limit first:
+
+```ts
+// Better when semantics allow - sort only the first 100
+Tyneq.from(largeCollection).take(100).orderBy(x => x.score).take(5).toArray();
+```
+
+If you genuinely need the global top-5, the full sort is unavoidable and correct.
+
+### Operator order changes semantics
+
+```ts
+// These are NOT equivalent
+Tyneq.from([30, 10, 50, 20, 40]).take(3).orderBy(x => x).toArray();
+// -> [10, 20, 30]  (takes first 3: [30,10,50], then sorts them)
+
+Tyneq.from([30, 10, 50, 20, 40]).orderBy(x => x).take(3).toArray();
+// -> [10, 20, 30]  (sorts all, takes the 3 smallest)
+```
+
+The output is the same here by coincidence. In general, `take.orderBy` and `orderBy.take` are different operations.
+
+---
+
+## Element access
+
+### Use `firstOrDefault` when absence is expected
 
 `first(pred)` throws `SequenceContainsNoElementsError` when no element matches. If an empty result is a normal case, use `firstOrDefault` and handle the default explicitly.
 
 ```ts
-// May throw - only correct when absence is a bug
+// Bad: throws when no user has that ID
 const user = users.first(u => u.id === id);
 
-// Correct when "not found" is expected
+// Good: returns null when not found
 const user = users.firstOrDefault(u => u.id === id, null);
 if (user === null) { /* handle not found */ }
 ```
 
-The same pattern applies to `last`/`lastOrDefault`, `single`/`singleOrDefault`, and `elementAt`/`elementAtOrDefault`.
+The same pattern applies to: `last`/`lastOrDefault`, `single`/`singleOrDefault`, `elementAt`/`elementAtOrDefault`.
 
 ---
 
-## Use `TyneqComparer` instead of inline comparers
+## Memoization
 
-Inline comparers are error-prone and not reusable. The built-in comparers in `TyneqComparer` are tested and cover the common cases.
+### Use `memoize()` only when re-evaluation is measurable
+
+Re-iterating a sequence re-runs the entire pipeline from the source. If the source is a plain in-memory array, this is extremely fast. Only memoize when there is a concrete reason:
+
+- The source involves I/O or external calls
+- The pipeline includes `shuffle()` or other random operations you want fixed
+- The pipeline is computationally expensive and re-evaluation is measurable
 
 ```ts
-// Bad - custom inline, easy to get wrong
+// Unnecessary memoize on a trivial pipeline
+const seq = Tyneq.from([1, 2, 3]).select(x => x * 2).memoize(); // overkill
+
+// Appropriate memoize
+const seq = Tyneq.from(fetchApiData())
+  .where(x => x.active)
+  .shuffle()
+  .take(10)
+  .memoize(); // memoize justifies itself here
+```
+
+### `memoize()` does not deep-clone
+
+The cache stores references. Mutating a cached element affects all future reads from the cache.
+
+```ts
+const data = [{ x: 1 }, { x: 2 }];
+const cached = Tyneq.from(data).memoize();
+
+cached.toArray(); // [{ x: 1 }, { x: 2 }]
+data[0].x = 999;
+cached.toArray(); // [{ x: 999 }, { x: 2 }] - same references
+```
+
+If mutation-safe caching is required, clone elements before memoizing:
+
+```ts
+const cached = Tyneq.from(data).select(x => ({ ...x })).memoize();
+```
+
+### Avoid mutable seeds in `aggregate`
+
+`aggregate` does not clone the seed. If the seed is a mutable object and the accumulator modifies it in place, the same object is reused and polluted on re-iteration.
+
+```ts
+// Bad: seed object mutated across calls
+const query = Tyneq.from([1, 2, 3]).aggregate(
+  { values: [] as number[], sum: 0 },
+  (acc, x) => { acc.values.push(x); acc.sum += x; return acc; },
+  acc => acc
+);
+
+query; // { values: [1, 2, 3], sum: 6 }  - seed is now polluted
+query; // { values: [1, 2, 3, 1, 2, 3], sum: 12 } - polluted again!
+```
+
+Always produce a fresh seed:
+
+```ts
+// Good: function produces a new object each call
+function summarize(src: TyneqSequence<number>) {
+  return src.aggregate(
+    { values: [] as number[], sum: 0 },
+    (acc, x) => { acc.values.push(x); acc.sum += x; return acc; },
+    acc => acc
+  );
+}
+```
+
+---
+
+## Custom operators
+
+### Validate at the call site, not in constructors or handleNext
+
+For custom operators, argument validation must run at the call site - before the lazy factory is created. Errors in constructors or `handleNext` are deferred until iteration.
+
+```ts
+// Bad: constructor validation is deferred
+@operator("stride", "streaming")
+class StrideEnumerator<T> extends TyneqEnumerator<T, T> {
+  constructor(source: Enumerator<T>, private step: number) {
+    super(source);
+    if (step < 1) throw new RangeError(...); // deferred! confusing!
+  }
+}
+
+// Good: validate in the third argument to @operator
+@operator("stride", "streaming", (step: number) => {
+  if (step < 1) throw new RangeError("step must be >= 1");
+})
+class StrideEnumerator<T> extends TyneqEnumerator<T, T> {
+  constructor(source: Enumerator<T>, private step: number) {
+    super(source); // no validation here
+  }
+}
+```
+
+### Call `earlyComplete()` when stopping before the source is exhausted
+
+If your operator stops pulling from the source before it is done, call `this.earlyComplete()`. Without it, the upstream `Enumerator` is not released and its resources are leaked.
+
+```ts
+// Bad: upstream not released when limit is reached
+protected override handleNext(): IteratorResult<T> {
+  if (this.emitted >= this.limit) return { done: true, value: undefined };
+  // ...
+}
+
+// Good
+protected override handleNext(): IteratorResult<T> {
+  if (this.emitted >= this.limit) {
+    this.earlyComplete();
+    return { done: true, value: undefined };
+  }
+  // ...
+}
+```
+
+### Prefix plugin operator names
+
+When distributing a plugin, prefix all operator names to avoid conflicts with built-ins or other third-party plugins.
+
+```ts
+createGeneratorOperator({ name: "mylib_slidingAverage", ... });
+```
+
+Enforce the convention in tests with `OperatorRegistry.addGuard`.
+
+### Use `TyneqComparer` instead of inline comparers
+
+Inline comparers are error-prone. The built-in comparers in `TyneqComparer` are tested and cover the common cases.
+
+```ts
+// Bad: custom inline, easy to get wrong
 .orderBy(x => x, (a, b) => (a > b ? 1 : a < b ? -1 : 0))
 
 // Good
@@ -34,82 +278,20 @@ import { TyneqComparer } from "tyneq";
 
 ---
 
-## Wrap generator functions, not generator objects
+## Debugging
 
-Passing a generator *object* to `Tyneq.from` creates a one-shot source. The sequence appears to work on the first iteration but returns empty results on subsequent iterations.
-
-```ts
-// Bad - one-shot
-function* naturals() { let n = 0; while (true) yield n++; }
-const seq = Tyneq.from(naturals()).take(5); // generator object
-seq.toArray(); // [0, 1, 2, 3, 4]
-seq.toArray(); // [] - already exhausted
-
-// Good - factory
-const seq = Tyneq.from({ [Symbol.iterator]: naturals }).take(5);
-seq.toArray(); // [0, 1, 2, 3, 4]
-seq.toArray(); // [0, 1, 2, 3, 4]
-```
-
----
-
-## Use `memoize()` when re-evaluation is expensive
-
-Re-iterating a sequence re-runs the entire pipeline from the source. If the source involves I/O, heavy computation, or random results, cache it:
+### Use `tap` to observe elements at any pipeline stage
 
 ```ts
-// Every toArray() re-shuffles
-const seq = Tyneq.from(data).shuffle().take(10);
-seq.toArray(); // random subset
-seq.toArray(); // different random subset
-
-// Correct
-const seq = Tyneq.from(data).shuffle().take(10).memoize();
-seq.toArray(); // random subset
-seq.toArray(); // same subset
+Tyneq.from(data)
+  .tap(x => console.log("after source:", x))
+  .where(pred)
+  .tap(x => console.log("after where:", x))
+  .select(fn)
+  .toArray();
 ```
 
-Do not memoize unless there is a concrete reason. Pipelines that read from in-memory arrays are fast to re-execute.
-
----
-
-## Limit before sorting when only a small result is needed
-
-Buffering operators (`orderBy`, `groupBy`, `distinct`, ...) always read the full source. Placing `take` before the buffer reduces the number of elements that must be sorted.
-
-```ts
-// Bad - sorts 100000 items to take 5
-Tyneq.from(largeArray).orderBy(x => x.score).take(5).toArray();
-
-// Better when semantics allow - take first 100, then sort
-Tyneq.from(largeArray).take(100).orderBy(x => x.score).take(5).toArray();
-```
-
-If you genuinely need the global top-5, the full sort is unavoidable.
-
----
-
-## Keep `validate` callbacks cheap and synchronous
-
-The `validate` function in `createGeneratorOperator`, `createOperator`, etc. runs eagerly at the call site, before the lazy pipeline is set up. It must be synchronous. Keep it focused on argument type and range checks - not I/O or heavy computation.
-
----
-
-## Tag plugin registrations with a name prefix
-
-When distributing a plugin, prefix all operator names to avoid conflicts with built-in or other third-party operators.
-
-```ts
-createGeneratorOperator({ name: "mylib_slidingAverage", ... });
-```
-
-Use `OperatorRegistry.addGuard` in tests to enforce this convention for your project.
-
----
-
-## Use the query plan for debugging
-
-When a pipeline produces unexpected output, print the query plan to verify the operator chain is what you expect:
+### Print the query plan to verify the pipeline structure
 
 ```ts
 import { QueryPlanPrinter, tyneqQueryNode } from "tyneq";
@@ -122,22 +304,25 @@ console.log(QueryPlanPrinter.print(query[tyneqQueryNode]!));
 //   -> take(5)
 ```
 
-Buffering operators in the plan are O(n) memory sites. Source nodes show `sourceKind` via `isSourceNode`.
+Buffering operators (`orderBy`, `groupBy`, `distinct`, ...) in the plan are O(n) memory sites. If you see an unexpected buffer stage, the plan will show you where it is.
 
----
-
-## Validate at the operator call site, not in constructors
-
-For custom class-based operators, do not validate user arguments in the constructor. Validation must happen before the lazy factory is created, which means in `validate` (functional APIs) or the third argument to `@operator`. Constructors run at iteration time, not at call time.
-
----
-
-## Prefer `consume()` for pipelines that exist for their side effects
+### Use `consume()` for side-effect-only pipelines
 
 If a pipeline exists purely to trigger `tap` calls, drain it with `consume()` to make the intent clear:
 
 ```ts
 Tyneq.from(events)
+  .tap(e => analytics.track(e))
   .tap(e => logger.log(e))
-  .consume(); // explicit: we only care about the side effect
+  .consume(); // explicit: we only care about side effects
+```
+
+### `backsert(0)` appends, not inserts before last
+
+The `index` parameter in `backsert` counts how many elements from the end to skip before inserting. `backsert(0)` means "skip zero elements from the end", which is append.
+
+```ts
+Tyneq.from([1, 2, 3]).backsert(0, [9]).toArray(); // -> [1, 2, 3, 9]  (appended)
+Tyneq.from([1, 2, 3]).backsert(1, [9]).toArray(); // -> [1, 2, 9, 3]  (before last)
+Tyneq.from([1, 2, 3]).backsert(2, [9]).toArray(); // -> [1, 9, 2, 3]  (before second-to-last)
 ```

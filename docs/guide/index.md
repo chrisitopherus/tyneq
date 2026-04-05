@@ -1,37 +1,41 @@
-# Guide
+---
+layout: home
 
-```ts
-import { Tyneq } from "tyneq";
+hero:
+  name: "Tyneq"
+  text: "Lazy query pipelines for TypeScript"
+  tagline: "LINQ-expressive, type-safe, and infinitely extensible. Zero dependencies."
+  image:
+    src: /logo.svg
+    alt: Tyneq
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/getting-started
+    - theme: alt
+      text: Core Concepts
+      link: /guide/concepts
+    - theme: alt
+      text: API Reference
+      link: /api/reference/
 
-const result = Tyneq
-  .from([
-    { name: "Ada",   team: "core",  score: 84 },
-    { name: "Linus", team: "infra", score: 92 },
-    { name: "Grace", team: "core",  score: 97 },
-  ])
-  .where(p => p.team === "core")
-  .orderByDescending(p => p.score)
-  .select(p => `${p.name} (${p.score})`)
-  .toArray();
-// -> ["Grace (97)", "Ada (84)"]
-```
-
-Tyneq is a LINQ-style query library for TypeScript. Pipelines are lazy and re-iterable. Nothing runs until a terminal operator is called.
-
-## Pages
-
-| | |
-|---|---|
-| [Getting Started](/guide/getting-started) | Install, first query, mental model |
-| [Concepts](/guide/concepts) | Sequences, operator categories, deferred execution, re-iteration |
-| [Operators](/guide/operators) | Full operator reference by category |
-| [Ordering](/guide/ordering) | Multi-key sort pipeline, comparers |
-| [Grouping](/guide/grouping) | groupBy, join, groupJoin |
-| [Set Operations](/guide/set-operations) | distinct, union, intersect, except |
-| [Extensibility](/guide/extensibility) | Register custom operators and terminals |
-| [Query Plan](/guide/query-plan) | Access, print, walk, transform, and compile the operator chain |
-| [Best Practices](/guide/best-practices) | Patterns worth following |
-| [Pitfalls](/guide/pitfalls) | Common mistakes and how to avoid them |
-| [Terminology](/guide/terminology) | All types and terms defined |
-| [Contributing](/guide/contributing) | Repository setup, adding operators, conventions |
-| [API Reference](/api/reference/) | Full generated API docs |
+features:
+  - icon: "⚡"
+    title: Lazy by default
+    details: Nothing runs until you call a terminal. Compose as many operators as you need - the source is never touched until you ask for results.
+  - icon: "♻️"
+    title: Re-iterable sequences
+    details: Call toArray(), count(), and first() on the same query without re-building it. Each terminal is independent.
+  - icon: "🔬"
+    title: Explicit execution model
+    details: Every operator is streaming (O(1)) or buffering (O(n)). No surprise materializations. You always know what will happen and when.
+  - icon: "🗺️"
+    title: Live query plans
+    details: Every sequence carries a plan you can inspect, print, walk, transform, and compile back into an executable pipeline.
+  - icon: "🧩"
+    title: Infinitely extensible
+    details: Add custom operators via decorators or functional APIs. They appear on every sequence at import time - just like built-ins.
+  - icon: "📦"
+    title: Zero dependencies
+    details: Pure TypeScript. Nothing to audit. Ships as CJS + ESM with full type declarations.
+---
