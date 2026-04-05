@@ -34,7 +34,7 @@ function buildApiSidebar() {
 
 export default defineConfig({
   title: "Tyneq",
-  description: "Typed Enumerable Queries for TypeScript",
+  description: "Lazy query pipelines for TypeScript. LINQ-expressive, type-safe, and infinitely extensible.",
   base,
   cleanUrls: true,
   lastUpdated: true,
@@ -48,39 +48,46 @@ export default defineConfig({
       provider: "local"
     },
     nav: [
-      { text: "Guide", link: "/guide/" },
+      { text: "Guide", link: "/guide/getting-started" },
       { text: "Reference", link: "/api/reference/" },
       { text: "GitHub", link: "https://github.com/chrisitopherus/tyneq" }
     ],
     sidebar: {
       "/guide/": [
         {
-          text: "Introduction",
+          text: "Start Here",
           items: [
-            { text: "Overview", link: "/guide/" },
-            { text: "Getting Started", link: "/guide/getting-started" }
+            { text: "Getting Started", link: "/guide/getting-started" },
+            { text: "Core Concepts", link: "/guide/concepts" }
           ]
         },
         {
-          text: "Core Concepts",
+          text: "Using Tyneq",
           items: [
-            { text: "Concepts", link: "/guide/concepts" },
-            { text: "Terminology", link: "/guide/terminology" },
-            { text: "Operators Overview", link: "/guide/operators-overview" }
+            { text: "Operators", link: "/guide/operators" },
+            { text: "Ordering", link: "/guide/ordering" },
+            { text: "Grouping & Joins", link: "/guide/grouping" },
+            { text: "Set Operations", link: "/guide/set-operations" }
           ]
         },
         {
-          text: "Guides",
+          text: "Extending Tyneq",
           items: [
-            { text: "Common Pitfalls", link: "/guide/pitfalls" },
             { text: "Custom Operators", link: "/guide/extensibility" },
-            { text: "Plugin Internals", link: "/guide/plugin-internals" },
-            { text: "Query Plan Inspection", link: "/guide/query-plan" }
+            { text: "Plugin Internals", link: "/guide/plugin-internals" }
           ]
         },
         {
-          text: "Contributing",
+          text: "Query Plan",
           items: [
+            { text: "Query Plan & Compiler", link: "/guide/query-plan" }
+          ]
+        },
+        {
+          text: "Reference",
+          items: [
+            { text: "Best Practices & Pitfalls", link: "/guide/best-practices" },
+            { text: "Terminology", link: "/guide/terminology" },
             { text: "Contributing", link: "/guide/contributing" }
           ]
         }
