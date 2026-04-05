@@ -21,6 +21,7 @@ export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, T
     
     public constructor(source: TyneqSequence<TSource>, index: number) {
         super(source);
+        ArgumentUtility.checkNonNegative({ index });
         this.index = index;
     }
 

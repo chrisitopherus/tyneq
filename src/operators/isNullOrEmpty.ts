@@ -19,10 +19,6 @@ export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> 
     }
 
     public process(): boolean {
-        if (this.source === null || this.source[Symbol.iterator] === null) {
-            return true;
-        }
-
         const iterator = this.source[Symbol.iterator]();
         const first = iterator.next();
 
