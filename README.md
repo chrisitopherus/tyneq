@@ -43,8 +43,27 @@ const topScorers = Tyneq
   .orderByDescending(p => p.score)
   .select(p => `${p.name} (${p.score})`)
   .toArray();
-// ["Grace (97)", "Ada (84)"]
+// -> ["Grace (97)", "Ada (84)"]
 ```
+
+---
+
+## Why Tyneq
+
+| Feature | Tyneq | Generic iterator libs |
+|---|---|---|
+| Lazy evaluation | yes | yes |
+| Re-iterable sequences | yes | no - one-shot |
+| Streaming vs. buffering distinction | yes | no |
+| Relational joins / group joins | yes | no |
+| Multi-key ordering pipeline | yes | no |
+| Built-in memoization | yes | no |
+| Running aggregates (`scan`) | yes | no |
+| Async bridge (`toAsync`) | yes | no |
+| Custom operator registration | yes | no |
+| Query plan introspection | yes | no |
+| TypeScript-first generics | yes | varies |
+| Zero dependencies | yes | varies |
 
 ---
 
@@ -58,63 +77,54 @@ Requires TypeScript 5.x with `"strictNullChecks": true`. No separate `@types` pa
 
 ---
 
-## Why Tyneq
-
-| Feature | Tyneq | Generic iterator libs |
-|---|---|---|
-| Lazy evaluation | ✅ | ✅ |
-| Re-iterable sequences | ✅ | ❌ one-shot |
-| Streaming vs buffering distinction | ✅ | ❌ |
-| Relational joins / group joins | ✅ | ❌ |
-| Multi-key ordering pipeline | ✅ | ❌ |
-| Built-in memoization | ✅ | ❌ |
-| Running aggregates (`scan`) | ✅ | ❌ |
-| Async bridge (`toAsync`) | ✅ | ❌ |
-| Custom operator registration | ✅ | ❌ |
-| Query plan introspection | ✅ | ❌ |
-| TypeScript-first generics | ✅ | varies |
-| Zero dependencies | ✅ | varies |
-
----
-
 ## Quick Start
 
 ```ts
 import { Tyneq } from "tyneq";
 
-// From any iterable
-Tyneq.from([1, 2, 3]);
-Tyneq.from(new Set([1, 2, 3]));
-Tyneq.range(1, 5);     // [1, 2, 3, 4, 5]
-Tyneq.empty<number>();
+// Wrap any iterable
+const seq = Tyneq.from([1, 2, 3, 4, 5]);
+Tyneq.range(1, 5);          // [1, 2, 3, 4, 5]
+Tyneq.from(new Set([1, 2]));
 
-// Nothing runs until a terminal operator is called
-const query = Tyneq.range(1, 100)
+// Nothing runs until a terminal is called
+const evens = Tyneq.range(1, 100)
   .where(n => n % 2 === 0)
   .select(n => n * n)
   .take(5);
 
-query.toArray(); // [4, 16, 36, 64, 100]
+evens.toArray(); // -> [4, 16, 36, 64, 100]
+```
 
-// Sequences are re-iterable - call as many times as you want
-query.toArray(); // [4, 16, 36, 64, 100]  ← same result, independent state
+Sequences are re-iterable. Call terminals on the same query as many times as you want:
 
-// Standard iteration protocols
-for (const n of query) console.log(n);
-const arr = [...query]; // spread works
+```ts
+evens.toArray(); // -> [4, 16, 36, 64, 100] - independent state, no re-build required
+evens.count();   // -> 5
+```
+
+Standard iteration protocols work out of the box:
+
+```ts
+for (const n of evens) console.log(n);
+const arr = [...evens];
 ```
 
 ---
 
+## Core Concepts
+
+**Deferred execution.** Operators do not run when you call them - they describe what to do. The source is not touched until a terminal operator (`toArray`, `first`, `count`, etc.) forces evaluation.
+
+**Streaming vs. buffering.** Streaming operators (`where`, `select`, `take`, ...) process one element at a time with O(1) memory. Buffering operators (`orderBy`, `groupBy`, `distinct`, ...) must read the entire source before producing output.
+
+**Re-iteration.** Every `TyneqSequence` is re-iterable: each iteration is independent and starts from the source. Use `memoize()` to cache results across iterations when re-evaluating from the source is expensive.
+
+**Query plan.** Every sequence carries a linked chain of `QueryPlanNode` instances describing the pipeline. Inspect it at runtime, print it for debugging, walk it with a `QueryPlanWalker`, or compile it back into a live sequence with `QueryPlanCompiler`.
+
+---
+
 ## Operators
-
-Every operator falls into one of three categories:
-
-| Kind | Memory | When it runs |
-|---|---|---|
-| **Streaming** | O(1) | One element at a time, lazily |
-| **Buffering** | O(n) | Materializes full source before yielding |
-| **Terminal** | - | Executes the pipeline, returns a value |
 
 ### Factories
 
@@ -124,7 +134,7 @@ Every operator falls into one of three categories:
 | `Tyneq.range(start, count)` | Integer sequence |
 | `Tyneq.empty<T>()` | Empty sequence |
 | `Tyneq.enumerate(source)` | Pair each element with its zero-based index as `[number, T]` |
-| `Tyneq.random(count, randomizer)` | Sequence from a callback |
+| `Tyneq.random(count, fn)` | Sequence from a callback |
 
 ### Streaming
 
@@ -141,19 +151,19 @@ Every operator falls into one of three categories:
 | `append(item)` | Append a single element |
 | `prepend(item)` | Prepend a single element |
 | `concat(other)` | Concatenate two sequences |
-| `zip(other, selector)` | Pair elements from two sequences; stops at shorter |
+| `zip(other, selector)` | Pair elements from two sequences; stops at the shorter |
 | `scan(seed, fn)` | Emit running accumulator after each element |
 | `pairwise()` | Overlapping `[prev, curr]` pairs |
 | `chunk(size)` | Fixed-size chunks |
 | `split(pred)` | Split on matching elements |
 | `defaultIfEmpty(value)` | Yield source, or `value` if empty |
 | `populate(value)` | Replace every element with `value` |
-| `cast<U>()` | Compile-time type assertion |
+| `cast<U>()` | Compile-time type assertion (no runtime check) |
 | `ofType<U>(guard)` | Filter and narrow by type guard |
 | `tap(fn)` | Side-effect per element, pass-through |
-| `tapIf(fn, pred)` | `tap` guarded by a condition |
+| `tapIf(fn, pred)` | `tap` gated by a condition |
 | `throttle(n)` | Emit every `n`th element |
-| `pipe(factory)` | Custom transformation |
+| `pipe(factory)` | Custom one-off transformation |
 
 ### Buffering
 
@@ -163,9 +173,9 @@ Every operator falls into one of three categories:
 | `orderByDescending(key, cmp?)` | Sort descending |
 | `thenBy(key, cmp?)` | Secondary ascending sort |
 | `thenByDescending(key, cmp?)` | Secondary descending sort |
-| `groupBy(key, value, result)` | Group by key, map each group |
+| `groupBy(key, value, result)` | Group by key |
 | `distinct()` | Remove duplicates |
-| `distinctBy(key)` | Remove duplicates by projected key |
+| `distinctBy(key)` | Remove duplicates by key |
 | `reverse()` | Reverse |
 | `shuffle()` | Random permutation |
 | `union(other)` | Union with deduplication |
@@ -175,15 +185,15 @@ Every operator falls into one of three categories:
 | `except(other)` | Elements not in `other` |
 | `exceptBy(other, key)` | Difference by key |
 | `join(inner, outerKey, innerKey, result)` | Inner join |
-| `groupJoin(inner, outerKey, innerKey, result)` | Left outer join with grouped inner results |
-| `backsert(index, other)` | Insert `other` from-end at `index` |
+| `groupJoin(inner, outerKey, innerKey, result)` | Left outer join with grouped inner |
+| `backsert(index, other)` | Insert `other` counting from the end |
 | `memoize()` | Cache across re-enumerations |
 
 ### Terminal
 
 | | |
 |---|---|
-| `toArray()` | `Array<T>` |
+| `toArray()` | `T[]` |
 | `toSet()` | `Set<T>` |
 | `toMap(selector)` | `Map<K, V>` |
 | `toRecord(selector)` | `Record<K, V>` |
@@ -219,13 +229,14 @@ Every operator falls into one of three categories:
 
 ## Extensibility
 
-Register custom operators with no source modifications. They are available on all sequences at import time.
+Register custom operators with no source modifications. They become available on every sequence at import time.
 
 ```ts
 import { createGeneratorOperator } from "tyneq";
 
 createGeneratorOperator({
   name: "repeatEach",
+  category: "streaming",
   *generator(source: Iterable<unknown>, times: number) {
     for (const item of source) {
       for (let i = 0; i < times; i++) yield item;
@@ -243,14 +254,16 @@ declare module "tyneq" {
 }
 
 Tyneq.from([1, 2, 3]).repeatEach(2).toArray();
-// [1, 1, 2, 2, 3, 3]
+// -> [1, 1, 2, 2, 3, 3]
 ```
 
-See the [Custom Operators guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for all five registration APIs, validation patterns, class-based operators, and the `OperatorRegistry`.
+Five registration APIs are available: `createGeneratorOperator`, `createOperator`, `createTerminalOperator`, and their ordered/cached variants. Class-based operators can use the `@operator` and `@terminal` decorators instead.
+
+See the [Extensibility guide](https://chrisitopherus.github.io/tyneq/guide/extensibility) for full details.
 
 ---
 
-## Query Plan Inspection
+## Query Plan
 
 Every sequence carries a query plan tree describing the operators applied to it.
 
@@ -264,12 +277,12 @@ const seq = Tyneq.from([1, 2, 3])
 
 console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 // from([1, 2, 3])
-//   → where(<fn>)
-//   → select(<fn>)
-//   → take(5)
+//   -> where(<fn>)
+//   -> select(<fn>)
+//   -> take(5)
 ```
 
-Plans can also be traversed with a `QueryPlanVisitor<T>`. See the [Query Plan guide](https://chrisitopherus.github.io/tyneq/guide/query-plan).
+Walk the plan with `QueryPlanWalker`, rewrite it with `QueryPlanTransformer`, optimize it with `QueryPlanOptimizer`, or compile it back to a live sequence with `QueryPlanCompiler`. See the [Query Plan guide](https://chrisitopherus.github.io/tyneq/guide/query-plan).
 
 ---
 
@@ -281,16 +294,15 @@ Plans can also be traversed with a `QueryPlanVisitor<T>`. See the [Query Plan gu
 |---|---|
 | [Getting Started](https://chrisitopherus.github.io/tyneq/guide/getting-started) | Install and first query |
 | [Concepts](https://chrisitopherus.github.io/tyneq/guide/concepts) | Sequences, operators, deferred execution |
-| [Operators Overview](https://chrisitopherus.github.io/tyneq/guide/operators-overview) | Full operator list |
-| [Extensibility](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Custom operators |
+| [Operators](https://chrisitopherus.github.io/tyneq/guide/operators) | Full operator reference |
+| [Extensibility](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Custom operators and plugins |
 | [Query Plan](https://chrisitopherus.github.io/tyneq/guide/query-plan) | Introspection and visitors |
+| [Best Practices](https://chrisitopherus.github.io/tyneq/guide/best-practices) | Patterns and pitfalls |
 | [API Reference](https://chrisitopherus.github.io/tyneq/api/) | Full generated API docs |
 
 ---
 
 ## Contributing
-
-See the [Contributor Guide](https://chrisitopherus.github.io/tyneq/guide/contributing).
 
 ```bash
 git clone https://github.com/chrisitopherus/tyneq
@@ -307,4 +319,4 @@ Bug reports and feature requests: [github.com/chrisitopherus/tyneq/issues](https
 
 ## License
 
-[MIT](./LICENSE) © [chrisitopherus](https://github.com/chrisitopherus)
+[MIT](./LICENSE) (c) [chrisitopherus](https://github.com/chrisitopherus)
