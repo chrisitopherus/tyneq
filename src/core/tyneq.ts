@@ -7,6 +7,7 @@ import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 import type { SourceKind } from "../types/queryplan";
+import { source } from "../plugin/decorators/source";
 
 /**
  * Entry point for creating Tyneq sequences.
@@ -29,6 +30,7 @@ export class Tyneq {
      * @throws {ArgumentNullError} When `source` is null or undefined.
      * @throws {ArgumentTypeError} When `source` is not iterable.
      */
+    @source({ source: "internal" })
     public static from<TSource>(source: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
@@ -56,6 +58,7 @@ export class Tyneq {
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      * @throws {ArgumentNullError} When `randomizer` is null or undefined.
      */
+    @source({ source: "internal" })
     public static random<TSource>(count: number, randomizer: () => TSource): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkNotOptional({ randomizer });
@@ -94,6 +97,7 @@ export class Tyneq {
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      * @throws {ArgumentError} When `count` is not an integer.
      */
+    @source({ source: "internal" })
     public static range(start: number, count: number): TyneqSequence<number> {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
@@ -109,6 +113,7 @@ export class Tyneq {
     }
 
     /** Returns an empty sequence with zero elements. */
+    @source({ source: "internal" })
     public static empty<TSource>(): TyneqSequence<TSource> {
         return new TyneqEnumerable<TSource>(
             new EnumerableAdapter<TSource>([]),

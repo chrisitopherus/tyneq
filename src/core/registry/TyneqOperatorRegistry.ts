@@ -1,4 +1,4 @@
-import { OperatorEntry, SequenceConstructor } from "../../types/core";
+import { OperatorEntry, OperatorSource, SequenceConstructor } from "../../types/core";
 import { OperatorMetadata } from "../OperatorMetadata";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
 import { Lazy } from "../../utility/Lazy";
@@ -53,6 +53,14 @@ export class OperatorRegistry {
         }
 
         this._entries.set(name, input);
+        if (input.metadata.targetClass === undefined) {
+            throw new RegistryError(
+                `Cannot register "${name}": targetClass is required for prototype-patching operators. Use registerSource() for source operators.`,
+                name,
+                input.metadata.kind
+            );
+        }
+
         (input.metadata.targetClass.prototype as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
@@ -75,7 +83,7 @@ export class OperatorRegistry {
         }
 
         this._entries.delete(name);
-        if (entry.metadata.source !== "internal") {
+        if (entry.metadata.source !== "internal" && entry.metadata.targetClass !== undefined) {
             delete (entry.metadata.targetClass.prototype as Record<string, unknown>)[name];
         }
 
@@ -149,6 +157,62 @@ export class OperatorRegistry {
     }
 
     // --- Internal registration ---
+
+    /**
+     * Registers a source operator (a static factory, not a prototype method).
+     *
+     * @remarks
+     * Source operators differ from prototype operators in two ways:
+     * - They are called with `null` as `this` -- they have no instance.
+     * - They are looked up by the compiler via `category === "source"` rather than
+     *   being patched onto a prototype.
+     *
+     * The entry is stored with `kind = "source"` and is never patched onto any prototype.
+     * Registration guards are skipped for `"internal"` source operators (same policy as
+     * {@link registerBuiltin}).
+     *
+     * @param name - The operator name, matching the `operatorName` on the `QueryPlanNode`.
+     * @param factory - The factory function; receives the node args in order, `this` is `null`.
+     * @param source - Whether this is a built-in or external source operator. Defaults to `"external"`.
+     *
+     * @internal
+     */
+    public static registerSource(
+        name: string,
+        factory: (...args: unknown[]) => unknown,
+        source: OperatorSource = "external"
+    ): void {
+        if (this._entries.has(name)) {
+            const existing = this._entries.get(name)!.metadata;
+            throw new RegistryError(
+                `Cannot register source "${name}": ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                "source",
+                { kind: existing.kind, source: existing.source }
+            );
+        }
+
+        const entry: OperatorEntry = {
+            metadata: OperatorMetadata.source(name, source),
+            // Source factories have no `this` -- the impl ignores it and delegates to factory.
+            impl: function (this: unknown, ...args: unknown[]) {
+                return factory(...args);
+            },
+        };
+
+        this._entries.set(name, entry);
+
+        if (source !== "internal") {
+            for (const guard of this._registrationGuards) {
+                guard(entry);
+            }
+        }
+
+        for (const hook of this._registrationHooks) {
+            hook(entry);
+        }
+    }
 
     /**
      * Records a built-in operator in the registry without patching the prototype.
