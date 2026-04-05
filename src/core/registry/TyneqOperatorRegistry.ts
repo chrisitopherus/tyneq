@@ -48,11 +48,6 @@ export class OperatorRegistry {
             );
         }
 
-        for (const guard of this._registrationGuards) {
-            guard(input);
-        }
-
-        this._entries.set(name, input);
         if (input.metadata.targetClass === undefined) {
             throw new RegistryError(
                 `Cannot register "${name}": targetClass is required for prototype-patching operators. Use registerSource() for source operators.`,
@@ -61,6 +56,11 @@ export class OperatorRegistry {
             );
         }
 
+        for (const guard of this._registrationGuards) {
+            guard(input);
+        }
+
+        this._entries.set(name, input);
         (input.metadata.targetClass.prototype as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
@@ -164,18 +164,31 @@ export class OperatorRegistry {
      * @remarks
      * Source operators differ from prototype operators in two ways:
      * - They are called with `null` as `this` -- they have no instance.
-     * - They are looked up by the compiler via `category === "source"` rather than
+     * - They are looked up by the compiler via `kind === "source"` rather than
      *   being patched onto a prototype.
      *
      * The entry is stored with `kind = "source"` and is never patched onto any prototype.
-     * Registration guards are skipped for `"internal"` source operators (same policy as
-     * {@link registerBuiltin}).
+     * Registration guards run for `"external"` sources (same policy as {@link register}).
+     * Guards are skipped for `"internal"` sources (same policy as {@link registerBuiltin}).
+     *
+     * Third-party source operators registered here are automatically compiled by
+     * `QueryPlanCompiler` without any changes to the compiler.
      *
      * @param name - The operator name, matching the `operatorName` on the `QueryPlanNode`.
      * @param factory - The factory function; receives the node args in order, `this` is `null`.
      * @param source - Whether this is a built-in or external source operator. Defaults to `"external"`.
      *
-     * @internal
+     * @example
+     * ```ts
+     * import { OperatorRegistry } from "tyneq/plugin";
+     * import { Tyneq } from "tyneq";
+     *
+     * OperatorRegistry.registerSource("fibonacci", (count) => {
+     *     // return a Tyneq sequence of fibonacci numbers
+     * });
+     * ```
+     *
+     * @group Classes
      */
     public static registerSource(
         name: string,
@@ -201,13 +214,13 @@ export class OperatorRegistry {
             },
         };
 
-        this._entries.set(name, entry);
-
         if (source !== "internal") {
             for (const guard of this._registrationGuards) {
                 guard(entry);
             }
         }
+
+        this._entries.set(name, entry);
 
         for (const hook of this._registrationHooks) {
             hook(entry);
