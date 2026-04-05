@@ -1,4 +1,4 @@
-import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, Comparer } from "../types/core";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
@@ -38,7 +38,7 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
 
     protected createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
-        comparer: (a: TKey, b: TKey) => number,
+        comparer: Comparer<TKey>,
         descending: boolean,
         node?: QueryPlanNode | null
     ): TyneqOrderedSequence<TSource> {

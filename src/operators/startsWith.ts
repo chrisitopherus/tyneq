@@ -1,7 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns true if the source sequence begins with all elements of a second sequence.

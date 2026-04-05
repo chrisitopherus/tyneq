@@ -74,6 +74,7 @@ export default defineConfig({
           items: [
             { text: "Common Pitfalls", link: "/guide/pitfalls" },
             { text: "Custom Operators", link: "/guide/extensibility" },
+            { text: "Plugin Internals", link: "/guide/plugin-internals" },
             { text: "Query Plan Inspection", link: "/guide/query-plan" }
           ]
         },

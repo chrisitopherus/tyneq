@@ -53,6 +53,25 @@ export default defineConfig(
                 }
             ],
 
+            // --- Naming conventions ---
+            // Private instance fields: no underscore prefix (use TypeScript access modifiers).
+            // Private static fields: underscore prefix allowed (conventional for static singletons).
+            "@typescript-eslint/naming-convention": [
+                "error",
+                {
+                    "selector": "classProperty",
+                    "modifiers": ["private"],
+                    "format": ["camelCase"],
+                    "leadingUnderscore": "forbid"
+                },
+                {
+                    "selector": "classProperty",
+                    "modifiers": ["private", "static"],
+                    "format": ["camelCase"],
+                    "leadingUnderscore": "allow"
+                }
+            ],
+
             // Blank lines after block statements:
             // require a blank line after if/for/while/do/switch/try blocks.
             // Two consecutive block statements may follow each other without a blank line.

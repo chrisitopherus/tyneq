@@ -35,7 +35,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createGeneratorOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;

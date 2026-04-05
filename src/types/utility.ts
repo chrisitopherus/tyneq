@@ -49,7 +49,7 @@ export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> =
 export type Assume<T, U> = T extends U ? T : U;
 
 /**
- * Identity type — preserves `T` as-is.
+ * Identity type - preserves `T` as-is.
  *
  * @remarks
  * Used in positions where an explicit type annotation is needed but no transformation is intended.

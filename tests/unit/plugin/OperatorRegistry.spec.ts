@@ -354,4 +354,89 @@ describe("OperatorRegistry introspection", () => {
     expect(meta?.kind).toBe("streaming");
     expect(meta?.source).toBe("internal");
   });
+
+  it("listByKind('source') returns the four built-in source operators", () => {
+    const names = OperatorRegistry.listByKind("source").map((m) => m.name);
+    expect(names).toContain("from");
+    expect(names).toContain("range");
+    expect(names).toContain("random");
+    expect(names).toContain("empty");
+  });
+});
+
+// registerSource()
+
+describe("OperatorRegistry.registerSource", () => {
+  const registered: string[] = [];
+
+  afterEach(() => {
+    for (const name of registered.splice(0)) {
+      OperatorRegistry.unregister(name);
+    }
+  });
+
+  it("registers an entry with kind 'source'", () => {
+    const name = nextName("srcKind");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null);
+
+    expect(OperatorRegistry.getMetadata(name)?.kind).toBe("source");
+  });
+
+  it("defaults source to 'external'", () => {
+    const name = nextName("srcDefault");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null);
+
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("external");
+  });
+
+  it("preserves explicitly provided source 'internal'", () => {
+    const name = nextName("srcInternal");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null, "internal");
+
+    expect(OperatorRegistry.getMetadata(name)?.source).toBe("internal");
+  });
+
+  it("throws when registering a duplicate name", () => {
+    const name = nextName("srcDup");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null);
+
+    expect(() => OperatorRegistry.registerSource(name, () => null)).toThrow(Error);
+  });
+
+  it("impl delegates to the factory with the supplied args", () => {
+    const name = nextName("srcImpl");
+    registered.push(name);
+    const results: unknown[] = [];
+    OperatorRegistry.registerSource(name, (...args) => { results.push(...args); return null; });
+
+    const entry = OperatorRegistry.get(name)!;
+    entry.impl.call(null as never, "a", "b");
+
+    expect(results).toEqual(["a", "b"]);
+  });
+
+  it("fires onRegister hooks after registration", () => {
+    const hook = vi.fn();
+    const unsub = OperatorRegistry.onRegister(hook);
+
+    const name = nextName("srcHook");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null);
+    unsub();
+
+    expect(hook).toHaveBeenCalledTimes(1);
+    expect(hook.mock.calls[0][0].metadata.name).toBe(name);
+  });
+
+  it("does not patch TyneqEnumerableBase.prototype", () => {
+    const name = nextName("srcProto");
+    registered.push(name);
+    OperatorRegistry.registerSource(name, () => null);
+
+    expect((TyneqEnumerableBase.prototype as any)[name]).toBeUndefined();
+  });
 });

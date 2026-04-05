@@ -17,7 +17,7 @@ import { ValidationError } from "../core/errors/argument/ValidationError";
  * @group Utilities
  */
 export class ValidationBuilder {
-    private readonly _errors: string[] = [];
+    private readonly errors: string[] = [];
 
     /**
      * Runs `fn` and collects any thrown error message. Returns `this` for chaining.
@@ -26,7 +26,7 @@ export class ValidationBuilder {
         try {
             fn();
         } catch (e) {
-            this._errors.push(e instanceof Error ? e.message : String(e));
+            this.errors.push(e instanceof Error ? e.message : String(e));
         }
         
         return this;
@@ -37,8 +37,8 @@ export class ValidationBuilder {
      * Does nothing when no errors were collected.
      */
     public throwIfAny(): void {
-        if (this._errors.length > 0) {
-            throw new ValidationError(this._errors);
+        if (this.errors.length > 0) {
+            throw new ValidationError(this.errors);
         }
     }
 }

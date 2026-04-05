@@ -1,4 +1,4 @@
-import { OperatorEntry, SequenceConstructor } from "../../types/core";
+import { OperatorEntry, OperatorSource, SequenceConstructor } from "../../types/core";
 import { OperatorMetadata } from "../OperatorMetadata";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
 import { Lazy } from "../../utility/Lazy";
@@ -48,6 +48,14 @@ export class OperatorRegistry {
             );
         }
 
+        if (input.metadata.targetClass === undefined) {
+            throw new RegistryError(
+                `Cannot register "${name}": targetClass is required for prototype-patching operators. Use registerSource() for source operators.`,
+                name,
+                input.metadata.kind
+            );
+        }
+
         for (const guard of this._registrationGuards) {
             guard(input);
         }
@@ -75,7 +83,7 @@ export class OperatorRegistry {
         }
 
         this._entries.delete(name);
-        if (entry.metadata.source !== "internal") {
+        if (entry.metadata.source !== "internal" && entry.metadata.targetClass !== undefined) {
             delete (entry.metadata.targetClass.prototype as Record<string, unknown>)[name];
         }
 
@@ -151,11 +159,80 @@ export class OperatorRegistry {
     // --- Internal registration ---
 
     /**
+     * Registers a source operator (a static factory, not a prototype method).
+     *
+     * @remarks
+     * Source operators differ from prototype operators in two ways:
+     * - They are called with `null` as `this` -- they have no instance.
+     * - They are looked up by the compiler via `kind === "source"` rather than
+     *   being patched onto a prototype.
+     *
+     * The entry is stored with `kind = "source"` and is never patched onto any prototype.
+     * Registration guards run for `"external"` sources (same policy as {@link register}).
+     * Guards are skipped for `"internal"` sources (same policy as {@link registerBuiltin}).
+     *
+     * Third-party source operators registered here are automatically compiled by
+     * `QueryPlanCompiler` without any changes to the compiler.
+     *
+     * @param name - The operator name, matching the `operatorName` on the `QueryPlanNode`.
+     * @param factory - The factory function; receives the node args in order, `this` is `null`.
+     * @param source - Whether this is a built-in or external source operator. Defaults to `"external"`.
+     *
+     * @example
+     * ```ts
+     * import { OperatorRegistry } from "tyneq/plugin";
+     * import { Tyneq } from "tyneq";
+     *
+     * OperatorRegistry.registerSource("fibonacci", (count) => {
+     *     // return a Tyneq sequence of fibonacci numbers
+     * });
+     * ```
+     *
+     * @group Classes
+     */
+    public static registerSource(
+        name: string,
+        factory: (...args: unknown[]) => unknown,
+        source: OperatorSource = "external"
+    ): void {
+        if (this._entries.has(name)) {
+            const existing = this._entries.get(name)!.metadata;
+            throw new RegistryError(
+                `Cannot register source "${name}": ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                "source",
+                { kind: existing.kind, source: existing.source }
+            );
+        }
+
+        const entry: OperatorEntry = {
+            metadata: OperatorMetadata.source(name, source),
+            // Source factories have no `this` -- the impl ignores it and delegates to factory.
+            impl: function (this: unknown, ...args: unknown[]) {
+                return factory(...args);
+            },
+        };
+
+        if (source !== "internal") {
+            for (const guard of this._registrationGuards) {
+                guard(entry);
+            }
+        }
+
+        this._entries.set(name, entry);
+
+        for (const hook of this._registrationHooks) {
+            hook(entry);
+        }
+    }
+
+    /**
      * Records a built-in operator in the registry without patching the prototype.
      * Built-in operators already live as direct methods on their target class.
      *
      * @remarks
-     * Registration guards are intentionally skipped — builtins are internal and
+     * Registration guards are intentionally skipped - builtins are internal and
      * trusted; guards exist to validate external plugin registrations only.
      *
      * @internal

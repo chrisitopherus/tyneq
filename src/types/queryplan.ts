@@ -92,6 +92,36 @@ export function isSourceNode(node: QueryPlanNode): node is QueryPlanNode & { sou
 }
 
 /**
+ * Traversal direction for {@link QueryPlanWalker}.
+ *
+ * - `"source-to-terminal"` -- visits from the source node up to the terminal (bottom-up).
+ *   `from` is visited before `where`, `where` before `select`. This is the default.
+ * - `"terminal-to-source"` -- visits from the terminal node down to the source (top-down).
+ *   `select` is visited before `where`, `where` before `from`.
+ *
+ * @group QueryPlan
+ */
+export type QueryPlanTraversalDirection = "source-to-terminal" | "terminal-to-source";
+
+/**
+ * Options for {@link QueryPlanWalker}.
+ *
+ * @group QueryPlan
+ */
+export interface QueryPlanWalkerOptions {
+    /**
+     * Callback invoked by the default `visitNode` implementation for each node.
+     * Ignored when `visitNode` is overridden in a subclass without calling `super.visitNode`.
+     */
+    callback?: (node: QueryPlanNode) => void;
+
+    /**
+     * Traversal direction. Defaults to `"source-to-terminal"`.
+     */
+    direction?: QueryPlanTraversalDirection;
+}
+
+/**
  * Visitor for traversing a query plan tree.
  *
  * @typeParam T - The value produced by visiting a node.

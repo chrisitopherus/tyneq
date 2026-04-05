@@ -1,7 +1,7 @@
 import { MemoizeEnumerator } from "../enumerators/buffer/memoize";
 import { builtin } from "../plugin/decorators/builtin";
 import { sequence } from "../plugin/decorators/sequence";
-import { CacheResult, CachedEnumerable, Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
+import { CacheResult, CachedEnumerable, Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, Comparer } from "../types/core";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import { Nullable } from "../types/utility";
@@ -10,7 +10,7 @@ import { TyneqEnumerable } from "./TyneqEnumerable";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 
 /**
- * Concrete implementation of {@link TyneqCachedSequence} — caches elements incrementally.
+ * Concrete implementation of {@link TyneqCachedSequence} - caches elements incrementally.
  *
  * @remarks
  * Created by `memoize()`. On the first iteration the source is enumerated one element at a time
@@ -77,7 +77,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     protected createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
     }
-    protected createOrderedEnumerable<TKey>(keySelector: (x: TSource) => TKey, comparer: (a: TKey, b: TKey) => number, descending: boolean): TyneqOrderedSequence<TSource> {
+    protected createOrderedEnumerable<TKey>(keySelector: (x: TSource) => TKey, comparer: Comparer<TKey>, descending: boolean): TyneqOrderedSequence<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(
             this,
             keySelector,

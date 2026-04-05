@@ -40,7 +40,7 @@ export class NumericGuards {
     
     public static checkInRange(value: number, min: number, max: number, paramName: string): void {
         if (min > max) {
-            throw new ArgumentError(`'min' (${min}) must be ≤ 'max' (${max}).`, "min");
+            throw new ArgumentError(`'min' (${min}) must be <= 'max' (${max}).`, "min");
         }
         if (!Number.isFinite(value) || value < min || value > max) {
             throw new ArgumentOutOfRangeError(paramName, `'${paramName}' must be in range [${min}, ${max}].`);

@@ -15,7 +15,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  * For operators that return a plain sequence from an enumerator class, use `@orderedOperator`.
  *
  * The factory receives the ordered sequence, the query node, and any user arguments.
- * It is responsible for constructing and returning the result sequence — typically:
+ * It is responsible for constructing and returning the result sequence - typically:
  * `new TyneqOrderedEnumerable(source.source, keySelector, comparer, descending, source, node)`.
  *
  * @param config.name - Method name to expose on ordered sequences.
@@ -44,7 +44,7 @@ import { tyneqQueryNode } from "../../types/queryplan";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createOrderedOperator<TSource, TArgs extends unknown[]>(config: {
     name: string;

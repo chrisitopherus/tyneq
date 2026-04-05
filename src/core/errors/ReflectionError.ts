@@ -1,7 +1,7 @@
 import { TyneqError } from "./TyneqError";
 
 /**
- * Thrown when a prototype reflection operation fails — for example, when a
+ * Thrown when a prototype reflection operation fails - for example, when a
  * method that is expected to exist on a prototype cannot be found.
  *
  * @example

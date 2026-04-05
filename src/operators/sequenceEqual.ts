@@ -1,6 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
-import { Enumerable, TyneqSequence } from "../types/core";
+import { Enumerable, TyneqSequence, EqualityComparer } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -17,10 +17,10 @@ import { nameof } from "../utility/nameof";
  */
 export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSource, boolean> {
     private readonly other: Iterable<TSource>;
-    private readonly equalityComparer: (a: TSource, b: TSource) => boolean;
+    private readonly equalityComparer: EqualityComparer<TSource>;
 
-    
-    public constructor(source: TyneqSequence<TSource>, other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean) {
+
+    public constructor(source: TyneqSequence<TSource>, other: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkNotNull({ equalityComparer });

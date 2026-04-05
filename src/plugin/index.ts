@@ -56,6 +56,7 @@ export { TyneqOrderedTerminalOperator } from "../core/terminal/TyneqOrderedTermi
 // --- Class decorators ---
 export { operator } from "./decorators/operator";
 export { terminal } from "./decorators/terminal";
+export { source } from "./decorators/source";
 export { cachedOperator } from "./decorators/cachedOperator";
 export { orderedOperator } from "./decorators/orderedOperator";
 export { cachedTerminal } from "./decorators/cachedTerminal";

@@ -27,7 +27,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  * });
  * ```
  *
- * @group Utilities
+ * @group Decorators
  */
 export function createTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;

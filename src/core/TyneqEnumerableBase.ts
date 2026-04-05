@@ -1,4 +1,4 @@
-import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult } from "../types/core";
+import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult, Comparer, EqualityComparer } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
@@ -180,40 +180,40 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "terminal" })
-    public max(comparer?: (a: TSource, b: TSource) => number): TSource {
+    public max(comparer?: Comparer<TSource>): TSource {
         return new MaxOperator(this, comparer).process();
     }
 
     @builtin({ kind: "terminal" })
     public maxBy<TKey>(
         keySelector: (element: TSource) => TKey,
-        comparer?: (a: TKey, b: TKey) => number
+        comparer?: Comparer<TKey>
     ): TSource {
         return new MaxByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
 
     @builtin({ kind: "terminal" })
-    public min(comparer?: (a: TSource, b: TSource) => number): TSource {
+    public min(comparer?: Comparer<TSource>): TSource {
         return new MinOperator(this, comparer).process();
     }
 
     @builtin({ kind: "terminal" })
     public minBy<TKey>(
         keySelector: (element: TSource) => TKey,
-        comparer?: (a: TKey, b: TKey) => number
+        comparer?: Comparer<TKey>
     ): TSource {
         return new MinByOperator<TSource, TKey>(this, keySelector, comparer).process();
     }
 
     @builtin({ kind: "terminal" })
-    public minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource> {
+    public minMax(comparer?: Comparer<TSource>): MinMaxResult<TSource> {
         return new MinMaxOperator(this, comparer).process();
     }
 
     @builtin({ kind: "terminal" })
     public sequenceEqual(
         other: Iterable<TSource>,
-        equalityComparer?: (a: TSource, b: TSource) => boolean
+        equalityComparer?: EqualityComparer<TSource>
     ): boolean {
         return new SequenceEqualOperator(this, other, equalityComparer).process();
     }

@@ -103,6 +103,7 @@ dist
 
 # vitepress cache directory
 **/.vitepress/cache
+**/.vitepress/dist
 
 # generated API docs (TypeDoc)
 docs/api/reference/
@@ -146,4 +147,8 @@ vite.config.ts.timestamp-*
 # Agents
 .claude
 .github
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!.github/workflows/*.yaml
 tasks
