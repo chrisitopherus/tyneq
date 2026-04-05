@@ -45,6 +45,26 @@ export interface EnumeratorFactory<T> {
 }
 
 /**
+ * A function that compares two values for ordering.
+ *
+ * @remarks
+ * Must return a negative number when `a < b`, a positive number when `a > b`, and `0` when equal.
+ * Matches the signature expected by `Array.prototype.sort`.
+ *
+ * @typeParam T - The type of values being compared.
+ * @group Types
+ */
+export type Comparer<T> = (a: T, b: T) => number;
+
+/**
+ * A function that tests two values for equality.
+ *
+ * @typeParam T - The type of values being compared.
+ * @group Types
+ */
+export type EqualityComparer<T> = (a: T, b: T) => boolean;
+
+/**
  * A lazy, re-iterable sequence.
  *
  * @remarks
@@ -222,7 +242,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      */
-    max(comparer?: (a: TSource, b: TSource) => number): TSource;
+    max(comparer?: Comparer<TSource>): TSource;
 
     /**
      * Returns the element with the maximum key.
@@ -230,7 +250,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
+    maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: Comparer<TKey>): TSource;
 
     /**
      * Returns the minimum element according to the comparer.
@@ -240,7 +260,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      */
-    min(comparer?: (a: TSource, b: TSource) => number): TSource;
+    min(comparer?: Comparer<TSource>): TSource;
 
     /**
      * Returns the element with the minimum key.
@@ -248,7 +268,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TSource;
+    minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: Comparer<TKey>): TSource;
 
     /**
      * Returns `true` if this sequence and `other` have the same elements in the same order.
@@ -257,7 +277,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Uses `equalityComparer` for element comparison, or `===` when omitted.
      * Returns `true` if both sequences are empty.
      */
-    sequenceEqual(other: Iterable<TSource>, equalityComparer?: (a: TSource, b: TSource) => boolean): boolean;
+    sequenceEqual(other: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean;
 
     /**
      * Returns the only element that satisfies the predicate.
@@ -615,7 +635,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      */
     orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
-        comparer?: (a: TKey, b: TKey) => number
+        comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource>;
 
     /**
@@ -628,7 +648,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      */
     orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
-        comparer?: (a: TKey, b: TKey) => number
+        comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource>;
 
     /** Returns the sequence in reverse order. */
@@ -701,7 +721,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
      */
-    minMax(comparer?: (a: TSource, b: TSource) => number): MinMaxResult<TSource>;
+    minMax(comparer?: Comparer<TSource>): MinMaxResult<TSource>;
 }
 
 /**
@@ -719,14 +739,14 @@ export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
      *
      * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
+    thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: Comparer<TKey>): TyneqOrderedSequence<TSource>;
 
     /**
      * Adds a descending secondary sort key.
      *
      * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
-    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: (a: TKey, b: TKey) => number): TyneqOrderedSequence<TSource>;
+    thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: Comparer<TKey>): TyneqOrderedSequence<TSource>;
 }
 
 /**
@@ -816,7 +836,7 @@ export interface ISequenceFactory<TSource> {
     createEnumerable(factory: { getEnumerator(): unknown }, node?: Nullable<QueryPlanNode>): unknown;
     createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
-        comparer: (a: TKey, b: TKey) => number,
+        comparer: Comparer<TKey>,
         descending: boolean,
         node?: Nullable<QueryPlanNode>
     ): TyneqOrderedSequence<TSource>;

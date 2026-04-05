@@ -1,7 +1,7 @@
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
-import { TyneqSequence } from "../types/core";
+import { TyneqSequence, Comparer } from "../types/core";
 import { Nullable } from "../types/utility";
 
 /**
@@ -16,10 +16,10 @@ import { Nullable } from "../types/utility";
  * @internal
  */
 export class MinOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    private readonly comparer: (a: TSource, b: TSource) => number;
+    private readonly comparer: Comparer<TSource>;
 
-    
-    public constructor(source: TyneqSequence<TSource>, comparer?: (a: TSource, b: TSource) => number) {
+
+    public constructor(source: TyneqSequence<TSource>, comparer?: Comparer<TSource>) {
         super(source);
 
         this.comparer = comparer ?? TyneqComparer.defaultComparer;

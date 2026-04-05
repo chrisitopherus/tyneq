@@ -1,4 +1,5 @@
-import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, Comparer } from "../types/core";
+import { TyneqComparer } from "./TyneqComparer";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
@@ -29,14 +30,14 @@ export abstract class TyneqEnumerableCore<TSource> {
     @builtin({ kind: "buffer" })
     public orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
-        comparer?: ((a: TKey, b: TKey) => number) | undefined
+        comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const orderByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderBy", orderByArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
             keySelector,
-            comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+            comparer ?? TyneqComparer.defaultComparer,
             false,
             node
         );
@@ -45,14 +46,14 @@ export abstract class TyneqEnumerableCore<TSource> {
     @builtin({ kind: "buffer" })
     public orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
-        comparer?: ((a: TKey, b: TKey) => number) | undefined
+        comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         const orderByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("orderByDescending", orderByDescArgs, this[tyneqQueryNode], "buffer");
         return this.createOrderedEnumerable(
             keySelector,
-            comparer ?? ((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+            comparer ?? TyneqComparer.defaultComparer,
             true,
             node
         );
@@ -80,7 +81,7 @@ export abstract class TyneqEnumerableCore<TSource> {
 
     protected abstract createOrderedEnumerable<TKey>(
         keySelector: (x: TSource) => TKey,
-        comparer: (a: TKey, b: TKey) => number,
+        comparer: Comparer<TKey>,
         descending: boolean,
         node?: QueryPlanNode | null
     ): TyneqOrderedSequence<TSource>;
