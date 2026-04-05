@@ -29,7 +29,6 @@ Tyneq is a LINQ-style query library for TypeScript. Pipelines are lazy and re-it
 | [Grouping](/guide/grouping) | groupBy, join, groupJoin |
 | [Set Operations](/guide/set-operations) | distinct, union, intersect, except |
 | [Extensibility](/guide/extensibility) | Register custom operators and terminals |
-| [Plugin Internals](/guide/plugin-internals) | Custom enumerators, registry internals, utility patterns |
 | [Query Plan](/guide/query-plan) | Access, print, walk, transform, and compile the operator chain |
 | [Best Practices](/guide/best-practices) | Patterns worth following |
 | [Pitfalls](/guide/pitfalls) | Common mistakes and how to avoid them |
