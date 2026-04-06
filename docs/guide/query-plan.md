@@ -267,12 +267,51 @@ const result = compiler.compile(plan);
 compiler.compileRaw(plan).toArray();
 ```
 
+### Compiling against a different source
+
+Pass a `source` option to replace the data stored in the plan's source node at compile time. All operators (predicates, projections, limits) are replayed exactly as recorded — only the input data changes.
+
+```ts
+import { QueryPlanCompiler, type CompileOptions } from "tyneq";
+
+const plan = Tyneq.from([1, 2, 3])
+  .where(x => x > 1)
+  .select(x => x * 10)[tyneqQueryNode]!;
+
+const compiler = new QueryPlanCompiler();
+
+compiler.compile(plan).toArray();                       // -> [20, 30]
+compiler.compile(plan, { source: [0, 2, 4] }).toArray() // -> [20, 40]
+compiler.compile(plan, { source: [5, 6, 7] }).toArray() // -> [50, 60, 70]
+```
+
+The original plan is not mutated. Each `compile` call is independent. This makes it straightforward to build a pipeline once and run it against many data sets - for example, running the same report logic across different time windows or tenants.
+
+```ts
+// Build and store the pipeline structure once
+const reportPlan = Tyneq.from([] as Sale[])
+  .where(s => s.region === "EU")
+  .select(s => s.amount)
+  .where(a => a > 1000)[tyneqQueryNode]!;
+
+const compiler = new QueryPlanCompiler([new QueryPlanOptimizer()]);
+
+// Run against different data sets at execution time
+const q1Result = compiler.compile<number>(reportPlan, { source: q1Sales }).toArray();
+const q2Result = compiler.compile<number>(reportPlan, { source: q2Sales }).toArray();
+```
+
+### How `pipe` compiles
+
+`pipe` stores the factory function in the plan node's `args` at the time the pipeline is built. When the compiler replays the plan, it calls the original factory with the compiled source — the same factory that was passed to `pipe()`. There is no special handling needed: `pipe` compiles correctly like any other operator.
+
 ### Why this is powerful
 
 Because the plan is data, you can:
 
 - **Store pipelines** as JSON metadata (if args are serializable) and reconstruct them later
 - **Build reusable pipelines** from configuration without writing code
+- **Run the same pipeline against different sources** via `compile(plan, { source: newData })`
 - **Optimize before execution** - apply `QueryPlanOptimizer` only in production
 - **Test pipeline structure** independently from execution
 - **Analyze and audit** what operators run before any data flows
@@ -290,11 +329,11 @@ function buildReportPipeline(config: ReportConfig) {
   reportPlans.set(config.id, plan);
 }
 
-// Execute later, with optimization
+// Execute later, with optimization and a fresh data source
 function runReport(id: string, data: unknown[]) {
   const plan = reportPlans.get(id)!;
   const compiler = new QueryPlanCompiler([new QueryPlanOptimizer()]);
-  return compiler.compile(plan).toArray();
+  return compiler.compile(plan, { source: data }).toArray();
 }
 ```
 

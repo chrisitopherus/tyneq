@@ -312,7 +312,17 @@ console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 //   -> take(5)
 ```
 
-The `QueryPlanCompiler` is the heart of the system. It takes any plan node and produces a fully executable sequence, running registered transformers (like `QueryPlanOptimizer`) along the way. This makes it possible to store pipelines as metadata, optimize them, and replay them on any source.
+The `QueryPlanCompiler` is the heart of the system. It takes any plan node and produces a fully executable sequence, running registered transformers (like `QueryPlanOptimizer`) along the way. Pass a `source` option to run the same pipeline against different data without rebuilding it:
+
+```ts
+const plan = Tyneq.from(data).where(x => x > 0).select(x => x * 2)[tyneqQueryNode]!;
+const compiler = new QueryPlanCompiler();
+
+compiler.compile(plan, { source: datasetA }).toArray();
+compiler.compile(plan, { source: datasetB }).toArray();
+```
+
+This makes it possible to store pipelines as metadata, optimize them, and replay them on any source.
 
 See the [Query Plan guide](https://chrisitopherus.github.io/tyneq/guide/query-plan) for the full picture.
 
