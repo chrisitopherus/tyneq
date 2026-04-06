@@ -22,10 +22,11 @@
   "hideBreadcrumbs": false,
   "externalSymbolLinkMappings": {
     "tyneq": {
-      "TyneqEnumerableEnumerator": "#",
       "EnumeratorUtility.tryDispose": "#",
       "BaseEnumerableSorter": "#",
-      "TyneqEnumerableBase": "#"
+      "TyneqEnumerableBase": "#",
+      "TyneqEnumerableCore": "#",
+      "OperatorRegistry.registerBuiltin": "#"
     }
   }
 }
