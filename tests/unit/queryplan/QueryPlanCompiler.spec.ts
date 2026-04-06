@@ -9,6 +9,7 @@ import {
     CompilerError,
     OperatorRegistry,
     OperatorMetadata,
+    type CompileOptions,
 } from "../../../src";
 import type { IQueryNode } from "../../../src";
 
@@ -250,6 +251,51 @@ describe("QueryPlanCompiler", () => {
             const node = seq[tyneqQueryNode]!;
             const result = new QueryPlanCompiler([new QueryPlanOptimizer()]).compile<number>(node);
             expect(result.toArray()).toEqual([5, 7, 9]);
+        });
+    });
+
+    describe("compile() — source override via CompileOptions", () => {
+        it("uses the override source instead of the stored source data", () => {
+            const plan = Tyneq.from([1, 2, 3])
+                .where((x: number) => x > 1)
+                .select((x: number) => x * 10)[tyneqQueryNode]!;
+
+            // override with [0, 2, 4]: where(x > 1) keeps 2 and 4, select(*10) -> [20, 40]
+            const result = new QueryPlanCompiler().compile<number>(plan, { source: [0, 2, 4] });
+            expect(result.toArray()).toEqual([20, 40]);
+        });
+
+        it("ignores the override when source is undefined (uses stored data)", () => {
+            const plan = Tyneq.from([1, 2, 3]).where((x: number) => x > 1)[tyneqQueryNode]!;
+
+            const options: CompileOptions = {};
+            const result = new QueryPlanCompiler().compile<number>(plan, options);
+            expect(result.toArray()).toEqual([2, 3]);
+        });
+
+        it("preserves all operators when overriding source", () => {
+            const plan = Tyneq.from([5, 3, 1, 4, 2])
+                .where((x: number) => x > 2)
+                .select((x: number) => x * 2)[tyneqQueryNode]!;
+
+            const result = new QueryPlanCompiler().compile<number>(plan, { source: [10, 1, 8, 2, 6] });
+            expect(result.toArray()).toEqual([20, 16, 12]);
+        });
+
+        it("original plan is unaffected after compiling with override", () => {
+            const seq = Tyneq.from([1, 2, 3]).where((x: number) => x > 1);
+            const plan = seq[tyneqQueryNode]!;
+            const compiler = new QueryPlanCompiler();
+
+            compiler.compile<number>(plan, { source: [10, 20] });
+            expect(compiler.compile<number>(plan).toArray()).toEqual([2, 3]);
+        });
+
+        it("works with compileRaw and source override", () => {
+            const plan = Tyneq.from([1, 2, 3]).select((x: number) => x + 1)[tyneqQueryNode]!;
+
+            const result = new QueryPlanCompiler().compileRaw<number>(plan, { source: [100, 200] });
+            expect(result.toArray()).toEqual([101, 201]);
         });
     });
 

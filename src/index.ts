@@ -33,7 +33,7 @@ export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
 export { QueryPlanWalker } from "./queryplan/QueryPlanWalker";
 export { QueryPlanTransformer } from "./queryplan/QueryPlanTransformer";
 export { QueryPlanOptimizer } from "./queryplan/QueryPlanOptimizer";
-export { QueryPlanCompiler } from "./queryplan/compiler/QueryPlanCompiler";
+export { QueryPlanCompiler, type CompileOptions } from "./queryplan/compiler/QueryPlanCompiler";
 
 // plugin - decorators
 export { operator } from "./plugin/decorators/operator";
