@@ -13,7 +13,7 @@ When you call any registration function (`createGeneratorOperator`, `@operator`,
 1. **Metadata is validated** - name uniqueness, required fields, category correctness.
 2. **Guards run** - any guards added via `OperatorRegistry.addGuard` are called synchronously. If a guard throws, registration is aborted.
 3. **An entry is added to `OperatorRegistry`** - keyed by name, with metadata including kind, category, source, and the factory.
-4. **The method is patched onto `TyneqEnumerableBase.prototype`** - immediately available on all sequences.
+4. **The method is patched onto the target prototype** - `TyneqEnumerableBase` for standard operators, or the specialized subclass (`TyneqOrderedEnumerable`, `TyneqCachedEnumerable`) for specialized operators. See [Which prototype each API patches](#which-prototype-each-api-patches) below.
 
 This all happens at module import time, as a side effect of importing your registration file.
 
@@ -24,6 +24,54 @@ import "./my-plugin/myOp"; // registration runs here
 
 // After import: Tyneq.from([]).myOp is a function
 ```
+
+---
+
+## Which prototype each API patches
+
+Every registration API ultimately calls `OperatorRegistry.register`, which patches a method onto a specific class prototype. The target prototype determines which sequence types the operator appears on.
+
+| API / Decorator | Patches prototype of | Operator appears on |
+|---|---|---|
+| `createGeneratorOperator` | `TyneqEnumerableBase` | All sequences |
+| `createOperator` | `TyneqEnumerableBase` | All sequences |
+| `createTerminalOperator` | `TyneqEnumerableBase` | All sequences |
+| `@operator` | `TyneqEnumerableBase` | All sequences |
+| `@terminal` | `TyneqEnumerableBase` | All sequences |
+| `createOrderedOperator` | `TyneqOrderedEnumerable` | Ordered sequences only |
+| `@orderedOperator` | `TyneqOrderedEnumerable` | Ordered sequences only |
+| `createOrderedTerminalOperator` | `TyneqOrderedEnumerable` | Ordered sequences only |
+| `@orderedTerminal` | `TyneqOrderedEnumerable` | Ordered sequences only |
+| `createCachedOperator` | `TyneqCachedEnumerable` | Cached sequences only |
+| `@cachedOperator` | `TyneqCachedEnumerable` | Cached sequences only |
+| `createCachedTerminalOperator` | `TyneqCachedEnumerable` | Cached sequences only |
+| `@cachedTerminal` | `TyneqCachedEnumerable` | Cached sequences only |
+
+`TyneqOrderedEnumerable` and `TyneqCachedEnumerable` both extend `TyneqEnumerableBase`, so they also carry all base-level operators. The specialized APIs add methods that appear *only* on their subtype, enforced at the TypeScript level via the `TyneqOrderedSequence` and `TyneqCachedSequence` interfaces.
+
+### Extending to your own sequence type
+
+The same mechanism works for custom sequence types. If you subclass `TyneqEnumerableBase` and expose it as a new sequence interface, you can register operators that patch only your subclass:
+
+```ts
+import { OperatorRegistry, OperatorMetadata } from "tyneq";
+
+// Your custom sequence class
+class ValidationEnumerable<T> extends TyneqEnumerableBase<T> {
+  // ... custom fields (schema, rules, etc.)
+}
+
+// Register an operator that only appears on ValidationEnumerable
+OperatorRegistry.register({
+  metadata: new OperatorMetadata("assertSchema", "streaming", "external", ValidationEnumerable),
+  impl: function (this: ValidationEnumerable<unknown>, schema: object) {
+    // this is always a ValidationEnumerable here
+    return this.createEnumerable({ getEnumerator: () => new AssertSchemaEnumerator(this.getEnumerator(), schema) }, node);
+  }
+});
+```
+
+The `targetClass` argument to `OperatorMetadata` is the class whose `.prototype` gets the patch. The method will not appear on plain `TyneqSequence` - only on instances of `ValidationEnumerable`.
 
 ---
 
@@ -223,11 +271,22 @@ class InterleaveEnumerator<T> extends TyneqEnumerator<T, T> {
 }
 ```
 
-### When to use `TyneqEnumerableEnumerator`
+### Choosing the right base class
 
-`TyneqEnumerableEnumerator` is the base for buffering enumerators that need to wrap an `Enumerable` (rather than an `Enumerator`) as their source. This gives you re-iteration capability inside the enumerator itself. The built-in `orderBy` and `groupBy` use this.
+There are four base classes. Which one you extend depends on what the operator is called on:
 
-For most custom operators, `TyneqEnumerator` is sufficient.
+| Base class | Extends from source | Use when |
+|---|---|---|
+| `TyneqEnumerator<TInput, TOutput>` | `Enumerator<TInput>` | Operator on any sequence (`@operator`) |
+| `TyneqOrderedEnumerator<TSource>` | `OrderedEnumerable<TSource>` | Operator only on ordered sequences (`@orderedOperator`) |
+| `TyneqCachedEnumerator<TSource>` | `CachedEnumerable<TSource>` | Operator only on cached sequences (`@cachedOperator`) |
+| `TyneqBaseEnumerator<TOutput>` | (none - bring your own source) | Enumerator with no upstream, or fully custom source wiring |
+
+**`TyneqEnumerator`** is the standard choice for custom operators. It holds the upstream as `this.sourceEnumerator: Enumerator<TInput>` and disposes it automatically.
+
+**`TyneqOrderedEnumerator`** and **`TyneqCachedEnumerator`** receive the full sequence object (not just an enumerator) as `this.orderedSource` and `this.cachedSource` respectively. This is necessary because ordered and cached sequences own their own lifecycle - the enumerator must not dispose them. It also gives you access to sequence-level properties (e.g. the sort key chain on an ordered sequence).
+
+**`TyneqBaseEnumerator`** is the raw foundation all others build on. Use it when you need total control - for example an enumerator that generates values without a source, or one that holds multiple heterogeneous sources. You are responsible for disposal in `disposeSource()` and `disposeAdditional()`.
 
 ---
 
