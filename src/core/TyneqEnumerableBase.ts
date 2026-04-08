@@ -76,6 +76,7 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
+import { PermutationsEnumerator } from "../enumerators/buffer/permutations";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.
@@ -652,6 +653,15 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
                     this.getEnumerator(), inner, outerKeySelector, innerKeySelector, resultSelector
                 ),
             },
+            node
+        );
+    }
+
+    @builtin({ kind: "buffer" })
+    public permutations(): TyneqSequence<TSource[]> {
+        const node = new QueryNode("permutations", [], this[tyneqQueryNode], "buffer");
+        return this.createEnumerable(
+            { getEnumerator: () => new PermutationsEnumerator<TSource>(this.getEnumerator()) },
             node
         );
     }

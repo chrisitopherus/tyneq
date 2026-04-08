@@ -643,6 +643,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
         comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource>;
 
+    /** Returns all possible permutations of the sequence. */
+    permutations(): TyneqSequence<TSource[]>;
+
     /** Returns the sequence in reverse order. */
     reverse(): TyneqSequence<TSource>;
 
