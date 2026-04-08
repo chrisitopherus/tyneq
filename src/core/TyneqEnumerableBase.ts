@@ -40,7 +40,6 @@ import { ToRecordOperator } from "../operators/toRecord";
 import { ToSetOperator } from "../operators/toSet";
 // --- Streaming enumerators ---
 import { AppendEnumerator } from "../enumerators/streaming/append";
-import { CastEnumerator } from "../enumerators/streaming/cast";
 import { ChunkEnumerator } from "../enumerators/streaming/chunk";
 import { ConcatEnumerator } from "../enumerators/streaming/concat";
 import { DefaultIfEmptyEnumerator } from "../enumerators/streaming/defaultIfEmpty";
@@ -268,15 +267,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     // --- Streaming operators ---
-
-    @builtin({ kind: "streaming" })
-    public cast<U>(): TyneqSequence<U> {
-        const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
-        return this.createEnumerable(
-            { getEnumerator: () => new CastEnumerator<TSource, U>(this.getEnumerator()) },
-            node
-        );
-    }
 
     @builtin({ kind: "streaming" })
     public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {

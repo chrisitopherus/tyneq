@@ -28,7 +28,7 @@ import { builtin } from "../../plugin/decorators/builtin";
 export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<TSource> implements TyneqOrderedSequence<TSource> {
     private readonly keySelector: (item: TSource) => TKey;
     private readonly comparer: Comparer<TKey>;
-    private readonly descending: boolean;
+    private descending: boolean;
 
     public readonly source: TyneqSequence<TSource>;
     public readonly parent: Nullable<OrderedEnumerable<TSource>>;
@@ -54,6 +54,16 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         this.descending = descending;
         this.parent = parent ?? null;
         this[tyneqQueryNode] = node ?? null;
+    }
+
+    public asc(): TyneqOrderedSequence<TSource> {
+        this.descending = false;
+        return this;
+    }
+    
+    public desc(): TyneqOrderedSequence<TSource> {
+        this.descending = true;
+        return this;
     }
 
     public override getEnumerator(): Enumerator<TSource> {
