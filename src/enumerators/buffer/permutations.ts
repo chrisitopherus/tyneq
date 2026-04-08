@@ -26,12 +26,12 @@ export class PermutationsEnumerator<TSource> extends TyneqEnumerator<TSource, TS
 
     protected override handleNext(): IteratorResult<TSource[]> {
         if (this.i === -1) {
-            this.i = 0;
+            this.i = 1;
             return this.yield([...this.buffer]);
         }
 
         while (this.i < this.n) {
-            if (this.c[this.i]) { // can we swap?
+            if (this.c[this.i] < this.i) { // can we swap?
                 const swapIndex = this.i % 2 === 0
                     ? 0
                     : this.c[this.i];
