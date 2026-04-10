@@ -384,14 +384,6 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     append(item: TSource): TyneqSequence<TSource>;
 
     /**
-     * Casts every element to `U` without runtime validation.
-     *
-     * @remarks
-     * Unsafe - throws at runtime if any element is not assignable to `U`. Use `ofType` for safe type-narrowing.
-     */
-    cast<U>(): TyneqSequence<U>;
-
-    /**
      * Partitions the sequence into non-overlapping arrays of length `size`.
      *
      * @remarks
@@ -651,6 +643,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
         comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource>;
 
+    /** Returns all possible permutations of the sequence. */
+    permutations(): TyneqSequence<TSource[]>;
+
     /** Returns the sequence in reverse order. */
     reverse(): TyneqSequence<TSource>;
 
@@ -747,6 +742,12 @@ export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
      * @throws {ArgumentNullError} When `keySelector` is null or undefined.
      */
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: Comparer<TKey>): TyneqOrderedSequence<TSource>;
+
+    /** Sets the ordering to ascending according to the current sort keys. */
+    asc(): TyneqOrderedSequence<TSource>;
+
+    /** Sets the ordering to descending according to the current sort keys. */
+    desc(): TyneqOrderedSequence<TSource>;
 }
 
 /**

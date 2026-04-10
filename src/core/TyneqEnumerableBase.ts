@@ -40,7 +40,6 @@ import { ToRecordOperator } from "../operators/toRecord";
 import { ToSetOperator } from "../operators/toSet";
 // --- Streaming enumerators ---
 import { AppendEnumerator } from "../enumerators/streaming/append";
-import { CastEnumerator } from "../enumerators/streaming/cast";
 import { ChunkEnumerator } from "../enumerators/streaming/chunk";
 import { ConcatEnumerator } from "../enumerators/streaming/concat";
 import { DefaultIfEmptyEnumerator } from "../enumerators/streaming/defaultIfEmpty";
@@ -77,6 +76,7 @@ import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
 import { UnionEnumerator } from "../enumerators/buffer/union";
 import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
+import { PermutationsEnumerator } from "../enumerators/buffer/permutations";
 
 /**
  * Abstract base class that implements all {@link TyneqSequence} operator methods.
@@ -268,15 +268,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     // --- Streaming operators ---
-
-    @builtin({ kind: "streaming" })
-    public cast<U>(): TyneqSequence<U> {
-        const node = new QueryNode("cast", [], this[tyneqQueryNode], "streaming");
-        return this.createEnumerable(
-            { getEnumerator: () => new CastEnumerator<TSource, U>(this.getEnumerator()) },
-            node
-        );
-    }
 
     @builtin({ kind: "streaming" })
     public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {
@@ -662,6 +653,15 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
                     this.getEnumerator(), inner, outerKeySelector, innerKeySelector, resultSelector
                 ),
             },
+            node
+        );
+    }
+
+    @builtin({ kind: "buffer" })
+    public permutations(): TyneqSequence<TSource[]> {
+        const node = new QueryNode("permutations", [], this[tyneqQueryNode], "buffer");
+        return this.createEnumerable(
+            { getEnumerator: () => new PermutationsEnumerator<TSource>(this.getEnumerator()) },
             node
         );
     }
