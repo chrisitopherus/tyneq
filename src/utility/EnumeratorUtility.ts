@@ -1,3 +1,4 @@
+import { NotSupportedError } from "../core/errors/NotSupportedError";
 import { Enumerator } from "../types/core";
 import { Optional } from "../types/utility";
 
@@ -15,11 +16,8 @@ export class EnumeratorUtility {
      * Safe to call on `null` or `undefined`.
      */
     public static tryDispose<TSource>(enumerator: Optional<Enumerator<TSource>>): void {
-        const enumeratorReturnFunc = enumerator?.return;
-        if (!enumeratorReturnFunc) return;
-
         try {
-            enumeratorReturnFunc.call(enumerator);
+            enumerator?.return?.();
         } catch {
             // swallow
         }
@@ -30,5 +28,15 @@ export class EnumeratorUtility {
         return {
             [Symbol.iterator]: () => enumerator
         };
+    }
+
+    /** Gets an `Enumerator<T>` from any `Iterable<T>`. */
+    public static fromIterable<TSource>(iterable: Iterable<TSource>): Enumerator<TSource> {
+        return iterable[Symbol.iterator]() as Enumerator<TSource>;
+    }
+
+    /** Checks if the enumerator is already exhausted (i.e., `next().done === true`). */
+    public static isExhausted<TSource>(enumerator: Enumerator<TSource>): boolean {
+        return enumerator.next().done === true;
     }
 }

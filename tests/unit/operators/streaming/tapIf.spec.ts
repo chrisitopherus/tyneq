@@ -16,6 +16,20 @@ describe("tapIf", () => {
       Tyneq.from([1, 2, 3]).tapIf((x) => seen.push(x), () => true).toArray();
       expect(seen).toEqual([1, 2, 3]);
     });
+
+    it("passes the zero-based index to the action", () => {
+      const indices: number[] = [];
+      Tyneq.from(["a", "b", "c"]).tapIf((_, i) => indices.push(i), () => true).toArray();
+      expect(indices).toEqual([0, 1, 2]);
+    });
+
+    it("index increments for every element even when action is not called", () => {
+      let callCount = 0;
+      let lastIndex = -1;
+      Tyneq.from([1, 2, 3]).tapIf((_, i) => { callCount++; lastIndex = i; }, () => callCount === 0).toArray();
+      expect(callCount).toBe(1);
+      expect(lastIndex).toBe(0);
+    });
   });
 
   describe("edge cases", () => {

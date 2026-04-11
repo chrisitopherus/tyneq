@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
+import { ItemPredicate } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
@@ -14,10 +15,11 @@ import { ArgumentUtility } from "../../utility/ArgumentUtility";
  * @internal
  */
 export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly predicate: (value: T) => boolean;
+    private readonly predicate: ItemPredicate<T>;
+    private index: number = 0;
 
-    
-    public constructor(sourceEnumerator: Enumerator<T>, predicate: (value: T) => boolean) {
+
+    public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;
     }
@@ -28,7 +30,7 @@ export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
             return this.done();
         }
 
-        if (this.predicate(result.value)) {
+        if (this.predicate(result.value, this.index++)) {
             return this.yield(result.value);
         }
 

@@ -18,6 +18,16 @@ describe("any", () => {
     expect(Tyneq.from<number>([]).any((x) => x > 0)).toBe(false);
   });
 
+  it("passes the zero-based index to the predicate", () => {
+    const indices: number[] = [];
+    Tyneq.from(["a", "b", "c"]).any((_, i) => { indices.push(i); return false; });
+    expect(indices).toEqual([0, 1, 2]);
+  });
+
+  it("can test by index", () => {
+    expect(Tyneq.from([10, 20, 30]).any((_, i) => i === 2)).toBe(true);
+  });
+
   it("throws ArgumentNullError when predicate is null", () => {
     expect(() => Tyneq.from([1, 2, 3]).any(null as any)).toThrow(ArgumentNullError);
   });

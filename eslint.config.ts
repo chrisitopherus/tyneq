@@ -62,7 +62,7 @@ export default defineConfig(
                     "selector": "classProperty",
                     "modifiers": ["private"],
                     "format": ["camelCase"],
-                    "leadingUnderscore": "forbid"
+                    "leadingUnderscore": "allow"
                 },
                 {
                     "selector": "classProperty",

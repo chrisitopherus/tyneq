@@ -29,6 +29,15 @@ export type Action<TArgs extends readonly unknown[] = []> = (...args: TArgs) => 
 /** A function that takes arguments of type `TArgs` (tuple) and returns a boolean. */
 export type Predicate<TArgs extends readonly unknown[] = []> = (...args: TArgs) => boolean;
 
+/** A predicate over a sequence element, optionally receiving its zero-based index. */
+export type ItemPredicate<T> = (item: T, index: number) => boolean;
+
+/** A projection over a sequence element, optionally receiving its zero-based index. */
+export type ItemSelector<T, TResult> = (item: T, index: number) => TResult;
+
+/** A side-effect action over a sequence element, optionally receiving its zero-based index. */
+export type ItemAction<T> = (item: T, index: number) => void;
+
 /** A function that takes arguments of type `TArgs` (tuple) and returns a value of type `TResult`. */
 export type Func<TArgs extends readonly unknown[] = [], TResult = unknown> = (...args: TArgs) => TResult;
 

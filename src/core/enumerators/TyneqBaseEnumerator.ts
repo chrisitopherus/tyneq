@@ -18,27 +18,27 @@ import { Enumerator } from "../../types/core";
  * @group Plugin
  */
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements Enumerator<TOutput> {
-    private initialized = false;
+    private _initialized = false;
+    private _completed = false;
     protected sourceDisposed = false;
-    protected completed = false;
 
     public constructor() { }
 
     /** Advances the iterator, calling `initialize()` on first call. Idempotent after completion. */
     public next(): IteratorResult<TOutput> {
-        if (this.completed) {
+        if (this._completed) {
             return this.done();
         }
 
-        if (!this.initialized) {
+        if (!this._initialized) {
             this.initialize();
-            this.initialized = true;
+            this._initialized = true;
         }
 
         const result = this.handleNext();
 
         if (result.done) {
-            this.completed = true;
+            this._completed = true;
             return this.done();
         }
 
@@ -47,9 +47,9 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
 
     /** Terminates iteration early, disposes resources, and marks completed. Idempotent. */
     public return(value?: unknown): IteratorResult<TOutput> {
-        if (!this.completed) {
+        if (!this._completed) {
             this.dispose(value);
-            this.completed = true;
+            this._completed = true;
         }
 
         return this.done();
@@ -75,7 +75,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      * Use when the last element must be emitted together with completion in one step.
      */
     protected doneWithYield(value: TOutput): IteratorResult<TOutput> {
-        this.completed = true;
+        this._completed = true;
         return this.yield(value);
     }
 
@@ -87,7 +87,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      */
     protected earlyComplete(reason?: unknown): IteratorResult<TOutput> {
         this.dispose(reason);
-        this.completed = true;
+        this._completed = true;
         return this.done();
     }
 

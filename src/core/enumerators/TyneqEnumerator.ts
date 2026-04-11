@@ -15,7 +15,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  * @typeParam TOutput - Output element type (defaults to `TInput`).
  * @group Plugin
  */
-export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TOutput> {
+export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TInput, TOutput> {
     protected readonly sourceEnumerator: Enumerator<TInput>;
 
     public constructor(sourceEnumerator: Enumerator<TInput>) {

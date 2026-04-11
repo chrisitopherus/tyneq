@@ -18,6 +18,16 @@ describe("indexOf", () => {
     it("respects a non-zero startIndex", () => {
       expect(Tyneq.from([2, 4, 6]).indexOf((x) => x % 2 === 0, 1)).toBe(1);
     });
+
+    it("passes the sequence index to the predicate", () => {
+      const indices: number[] = [];
+      Tyneq.from(["a", "b", "c"]).indexOf((_, i) => { indices.push(i); return false; });
+      expect(indices).toEqual([0, 1, 2]);
+    });
+
+    it("can locate by index (find position of element at index 2)", () => {
+      expect(Tyneq.from([10, 20, 30]).indexOf((_, i) => i === 2)).toBe(2);
+    });
   });
 
   describe("edge cases", () => {

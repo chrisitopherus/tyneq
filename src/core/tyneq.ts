@@ -1,8 +1,7 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
-import { Enumerable, Enumerator, EnumeratorFactory, IteratorFactory, TyneqSequence } from "../types/core";
+import { Enumerable, TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
