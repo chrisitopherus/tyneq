@@ -1,5 +1,6 @@
 import { TyneqError } from "./TyneqError";
 import { OperatorMetadata } from "../OperatorMetadata";
+import { Maybe } from "../../types/utility";
 
 /**
  * Thrown when the operator registry encounters a conflict or invalid state
@@ -26,19 +27,19 @@ export class RegistryError extends TyneqError {
      * The kind of the operator that was being registered or invoked.
      * `undefined` if the kind is not applicable to this error.
      */
-    public readonly kind: OperatorMetadata["kind"] | undefined;
+    public readonly kind: Maybe<OperatorMetadata["kind"]>;
 
     /**
      * The kind already present in the registry for this name, when there is a conflict.
      * `undefined` when the error is not a duplicate-registration conflict.
      */
-    public readonly conflictingKind: OperatorMetadata["kind"] | undefined;
+    public readonly conflictingKind: Maybe<OperatorMetadata["kind"]>;
 
     /**
      * The source that originally registered the conflicting operator.
      * `undefined` when the error is not a duplicate-registration conflict.
      */
-    public readonly conflictingSource: OperatorMetadata["source"] | undefined;
+    public readonly conflictingSource: Maybe<OperatorMetadata["source"]>;
 
     public constructor(
         message: string,

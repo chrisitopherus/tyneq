@@ -1,4 +1,5 @@
 import type { QueryPlanNode, QueryPlanVisitor, QueryPlanPrinterOptions } from "../types/queryplan";
+import type { Nullable } from "../types/utility";
 
 /**
  * Converts a query plan tree into a human-readable multi-line string.
@@ -88,7 +89,7 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
     
     private collectNodes(node: QueryPlanNode): QueryPlanNode[] {
         const nodes: QueryPlanNode[] = [];
-        let current: QueryPlanNode | null = node;
+        let current: Nullable<QueryPlanNode> = node;
         while (current !== null) {
             nodes.unshift(current);
             current = current.source;

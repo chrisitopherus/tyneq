@@ -1,4 +1,5 @@
 import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, QueryPlanWalkerOptions } from "../types/queryplan";
+import { Maybe } from "../types/utility";
 
 /**
  * Concrete base class for side-effect query plan visitors.
@@ -52,7 +53,7 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, Quer
  */
 export class QueryPlanWalker implements QueryPlanVisitor<void> {
 
-    private readonly callback: ((node: QueryPlanNode) => void) | undefined;
+    private readonly callback: Maybe<(node: QueryPlanNode) => void>;
     private readonly direction: QueryPlanTraversalDirection;
 
     /**

@@ -2,6 +2,7 @@ import { Enumerable, MinMaxResult, Comparer } from "../types/core";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqComparer } from "../core/TyneqComparer";
+import { Maybe } from "../types/utility";
 
 // MinMaxResult is defined in types/core.ts to avoid a circular dependency.
 // Re-export it from there so consumers can import it from either location.
@@ -29,8 +30,8 @@ export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>>
     }
 
     public override process(): MinMaxResult<T> {
-        let min: T | undefined;
-        let max: T | undefined;
+        let min: Maybe<T>;
+        let max: Maybe<T>;
         let hasElements = false;
 
         for (const item of this.source) {

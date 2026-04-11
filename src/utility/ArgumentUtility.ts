@@ -168,7 +168,7 @@ export class ArgumentUtility {
         const { key, value } = hasExplicitParamName
             ? this.extractParameter(param as number, paramNameOrArrayLength)
             : this.extractParameter(param as Record<string, number>);
-        const resolvedArrayLength = hasExplicitParamName ? arrayLength : paramNameOrArrayLength as number | undefined;
+        const resolvedArrayLength = hasExplicitParamName ? arrayLength : paramNameOrArrayLength as Maybe<number>;
         NumericGuards.checkArrayIndex(value, key, resolvedArrayLength);
     }
 

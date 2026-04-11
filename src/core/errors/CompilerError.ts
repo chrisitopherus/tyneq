@@ -1,3 +1,4 @@
+import { Maybe } from "../../types/utility";
 import { TyneqError } from "./TyneqError";
 
 /**
@@ -19,7 +20,7 @@ import { TyneqError } from "./TyneqError";
  */
 export class CompilerError extends TyneqError {
     /** The name of the operator being compiled when the error occurred, if known. */
-    public readonly operatorName: string | undefined;
+    public readonly operatorName: Maybe<string>;
 
     /**
      * The compilation phase in which the error occurred.

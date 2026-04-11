@@ -3,6 +3,7 @@ import { OperatorMetadata } from "../OperatorMetadata";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
 import { Lazy } from "../../utility/Lazy";
 import { RegistryError } from "../errors/RegistryError";
+import { Maybe } from "../../types/utility";
 
 /**
  * Central registry for all Tyneq operators.
@@ -127,12 +128,12 @@ export class OperatorRegistry {
     }
 
     /** Returns the full operator entry for `name`, or `undefined` if not registered. */
-    public static get(name: string): OperatorEntry | undefined {
+    public static get(name: string): Maybe<OperatorEntry> {
         return this._entries.get(name);
     }
 
     /** Returns the metadata for `name`, or `undefined` if not registered. */
-    public static getMetadata(name: string): OperatorMetadata | undefined {
+    public static getMetadata(name: string): Maybe<OperatorMetadata> {
         return this._entries.get(name)?.metadata;
     }
 
