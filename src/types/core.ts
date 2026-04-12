@@ -821,13 +821,13 @@ export type KeyValuePair<TKey, TValue> = {
  * Structural interface used by registration machinery to call the protected factory methods
  * on sequence classes without exposing them publicly.
  *
- * The double-cast `(this as unknown as ISequenceFactory<T>)` is intentional:
+ * The double-cast `(this as unknown as SequenceFactory<T>)` is intentional:
  * these methods are `protected`, so the cast is the only way to call them from
  * outside the class hierarchy without changing their access modifier.
  *
  * @internal
  */
-export interface ISequenceFactory<TSource> {
+export interface SequenceFactory<TSource> {
     readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
     createEnumerable(factory: { getEnumerator(): unknown }, node?: Nullable<QueryPlanNode>): unknown;
     createOrderedEnumerable<TKey>(

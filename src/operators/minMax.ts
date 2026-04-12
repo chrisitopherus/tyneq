@@ -46,7 +46,7 @@ export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>>
         }
 
         if (!hasElements) {
-            throw new SequenceContainsNoElementsError();
+            throw new SequenceContainsNoElementsError("minMax");
         }
 
         return { min: min as T, max: max as T };

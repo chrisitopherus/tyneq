@@ -1,9 +1,10 @@
-import type { Enumerator, EnumeratorFactory, ISequenceFactory, OperatorSource } from "../../types/core";
+import type { Enumerator, EnumeratorFactory, OperatorSource } from "../../types/core";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { QueryNode } from "../../queryplan/QueryNode";
 import { tyneqQueryNode } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
+import { asSequenceFactory } from "../pluginHelpers";
 
 /**
  * Registers a streaming or buffering operator using a generator function.
@@ -48,10 +49,10 @@ export function createGeneratorOperator<TSource, TArgs extends unknown[], TResul
         metadata: new OperatorMetadata(config.name, config.category, config.source ?? "external", TyneqEnumerableBase),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
-            const withCreate = this as unknown as ISequenceFactory<unknown>;
-            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], config.category);
+            const seqFactory = asSequenceFactory(this);
+            const node = new QueryNode(config.name, args, seqFactory[tyneqQueryNode], config.category);
             const source = this as unknown as Iterable<TSource>;
-            return withCreate.createEnumerable({
+            return seqFactory.createEnumerable({
                 // IterableIterator<T> is structurally compatible with Enumerator<T>
                 getEnumerator: (): Enumerator<unknown> =>
                     config.generator(source, ...(args as TArgs)) as unknown as Enumerator<unknown>

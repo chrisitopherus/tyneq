@@ -13,7 +13,13 @@ import { InvalidOperationError } from "./InvalidOperationError";
  * @group Errors
  */
 export class SequenceContainsNoElementsError extends InvalidOperationError {
-    public constructor(inner?: Error) {
-        super("Sequence contains no elements.", inner);
+    public readonly operatorName: string | undefined;
+
+    public constructor(operatorName?: string, inner?: Error) {
+        const message = operatorName
+            ? `Sequence contains no elements (in "${operatorName}").`
+            : "Sequence contains no elements.";
+        super(message, inner);
+        this.operatorName = operatorName;
     }
 }

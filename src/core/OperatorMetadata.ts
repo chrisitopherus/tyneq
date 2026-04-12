@@ -2,20 +2,34 @@ import { OperatorKind, OperatorSource, SequenceConstructor } from "../types/core
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import type { Maybe } from "../types/utility";
 
+/** @internal Sentinel value for explicitly omitting `targetClass`. */
+const NO_TARGET: unique symbol = Symbol("NO_TARGET");
+
 /**
  * Metadata describing a registered operator.
  *
  * @group Classes
  */
 export class OperatorMetadata {
+    public readonly name: string;
+    public readonly kind: OperatorKind;
+    public readonly source: OperatorSource;
+    public readonly targetClass: Maybe<SequenceConstructor>;
+    public readonly extensions: Readonly<Record<string, unknown>>;
 
     public constructor(
-        public readonly name: string,
-        public readonly kind: OperatorKind,
-        public readonly source: OperatorSource = "external",
-        public readonly targetClass: Maybe<SequenceConstructor> = TyneqEnumerableBase,
-        public readonly extensions: Readonly<Record<string, unknown>> = {}
-    ) { }
+        name: string,
+        kind: OperatorKind,
+        source: OperatorSource = "external",
+        targetClass: Maybe<SequenceConstructor> | typeof NO_TARGET = TyneqEnumerableBase,
+        extensions: Readonly<Record<string, unknown>> = {}
+    ) {
+        this.name = name;
+        this.kind = kind;
+        this.source = source;
+        this.targetClass = targetClass === NO_TARGET ? undefined : targetClass;
+        this.extensions = extensions;
+    }
 
     /**
      * Creates metadata for a source operator.
@@ -28,11 +42,7 @@ export class OperatorMetadata {
         name: string,
         src: OperatorSource = "external"
     ): OperatorMetadata {
-        // `targetClass` must be explicitly unset after construction because the constructor
-        // parameter defaults to TyneqEnumerableBase when undefined is passed (JS default param
-        // semantics). Object.assign bypasses the readonly constraint at runtime (readonly is
-        // compile-time only) to store the correct value.
-        return Object.assign(new OperatorMetadata(name, "source", src), { targetClass: undefined as Maybe<SequenceConstructor> });
+        return new OperatorMetadata(name, "source", src, NO_TARGET);
     }
 
     /** Creates metadata for a streaming operator. Defaults targetClass to TyneqEnumerableBase. */

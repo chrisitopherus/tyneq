@@ -22,10 +22,7 @@ import { IndexOfOperator } from "../operators/indexOf";
 import { IsNullOrEmptyOperator } from "../operators/isNullOrEmpty";
 import { LastOperator } from "../operators/last";
 import { LastOrDefaultOperator } from "../operators/lastOrDefault";
-import { MaxOperator } from "../operators/max";
-import { MaxByOperator } from "../operators/maxBy";
-import { MinOperator } from "../operators/min";
-import { MinByOperator } from "../operators/minBy";
+import { ExtremumOperator, ExtremumByOperator } from "../operators/extremum";
 import { MinMaxOperator } from "../operators/minMax";
 import { SequenceEqualOperator } from "../operators/sequenceEqual";
 import { SingleOperator } from "../operators/single";
@@ -180,7 +177,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "terminal" })
     public max(comparer?: Comparer<TSource>): TSource {
-        return new MaxOperator(this, comparer).process();
+        return new ExtremumOperator(this, 1, "max", comparer).process();
     }
 
     @builtin({ kind: "terminal" })
@@ -188,12 +185,12 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         keySelector: (element: TSource) => TKey,
         comparer?: Comparer<TKey>
     ): TSource {
-        return new MaxByOperator<TSource, TKey>(this, keySelector, comparer).process();
+        return new ExtremumByOperator<TSource, TKey>(this, keySelector, 1, "maxBy", comparer).process();
     }
 
     @builtin({ kind: "terminal" })
     public min(comparer?: Comparer<TSource>): TSource {
-        return new MinOperator(this, comparer).process();
+        return new ExtremumOperator(this, -1, "min", comparer).process();
     }
 
     @builtin({ kind: "terminal" })
@@ -201,7 +198,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         keySelector: (element: TSource) => TKey,
         comparer?: Comparer<TKey>
     ): TSource {
-        return new MinByOperator<TSource, TKey>(this, keySelector, comparer).process();
+        return new ExtremumByOperator<TSource, TKey>(this, keySelector, -1, "minBy", comparer).process();
     }
 
     @builtin({ kind: "terminal" })

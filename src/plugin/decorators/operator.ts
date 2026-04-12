@@ -1,12 +1,12 @@
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { QueryNode } from "../../queryplan/QueryNode";
 import { tyneqQueryNode } from "../../types/queryplan";
-import { ISequenceFactory } from "../../types/core";
 import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { PluginError } from "../../core/errors/PluginError";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { asSequenceFactory } from "../pluginHelpers";
 
 /**
  * Class decorator that registers a `TyneqEnumerator` subclass as an operator on every sequence.
@@ -52,7 +52,8 @@ export function operator<TArgs extends unknown[] = never>(
     ): TClass {
         if (ReflectionUtility.tryGetPrototypeMethod(target.prototype, "handleNext") === undefined) {
             throw new PluginError(
-                `@operator("${name}"): class "${target.name}" must define a handleNext() method (expected a TyneqEnumerator subclass).`,
+                `@operator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
+                + "Ensure the class extends TyneqEnumerator<TInput, TOutput>.",
                 "operator",
                 target.name
             );
@@ -63,10 +64,9 @@ export function operator<TArgs extends unknown[] = never>(
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this;
-                // TypeScript cannot narrow 'this' inside a decorator-generated closure - cast is necessary
-                const withCreate = this as unknown as ISequenceFactory<unknown>;
-                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);
-                return withCreate.createEnumerable({
+                const factory = asSequenceFactory(this);
+                const node = new QueryNode(name, userArgs, factory[tyneqQueryNode], category);
+                return factory.createEnumerable({
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);
                     }

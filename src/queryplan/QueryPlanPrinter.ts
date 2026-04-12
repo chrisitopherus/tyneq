@@ -91,9 +91,11 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         const nodes: QueryPlanNode[] = [];
         let current: Nullable<QueryPlanNode> = node;
         while (current !== null) {
-            nodes.unshift(current);
+            nodes.push(current);
             current = current.source;
         }
+
+        nodes.reverse();
 
         return nodes;
     }

@@ -41,7 +41,8 @@ export function terminal<TArgs extends unknown[] = never>(
     ): TClass {
         if (ReflectionUtility.tryGetPrototypeMethod(target.prototype, "process") === undefined) {
             throw new PluginError(
-                `@terminal("${name}"): class "${target.name}" must define a process() method.`,
+                `@terminal("${name}"): class "${target.name}" must define a public process(): TResult method. `
+                + "Ensure the class extends TyneqTerminalOperator<TSource, TResult>.",
                 "terminal",
                 target.name
             );

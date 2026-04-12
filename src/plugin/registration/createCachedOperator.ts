@@ -43,7 +43,7 @@ export function createCachedOperator<TSource, TArgs extends unknown[]>(config: {
     name: string;
     category: "streaming" | "buffer";
     factory: (source: TyneqCachedEnumerable<TSource>, node: QueryPlanNode, ...args: TArgs) => TyneqCachedSequence<TSource>;
-    validate?: (...args: TArgs) => void;
+    validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
         metadata: new OperatorMetadata(config.name, config.category, "external", TyneqCachedEnumerable),

@@ -1,10 +1,11 @@
-import type { Enumerable, EnumeratorFactory, ISequenceFactory, OperatorSource } from "../../types/core";
+import type { Enumerable, EnumeratorFactory, OperatorSource } from "../../types/core";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { QueryNode } from "../../queryplan/QueryNode";
 import type { OperatorCategory } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
+import { asSequenceFactory } from "../pluginHelpers";
 
 /**
  * Registers a streaming or buffering operator using a factory function.
@@ -58,9 +59,9 @@ export function createOperator<TSource, TArgs extends unknown[], TResult>(config
         metadata: new OperatorMetadata(config.name, config.category, config.source ?? "external", TyneqEnumerableBase),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
-            const withCreate = this as unknown as ISequenceFactory<unknown>;
-            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], config.category);
-            return withCreate.createEnumerable(
+            const factory = asSequenceFactory(this);
+            const node = new QueryNode(config.name, args, factory[tyneqQueryNode], config.category);
+            return factory.createEnumerable(
                 config.factory(this as Enumerable<TSource>, ...(args as TArgs)),
                 node
             );

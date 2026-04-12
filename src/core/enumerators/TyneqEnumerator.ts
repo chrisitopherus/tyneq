@@ -17,6 +17,7 @@ import { TyneqBaseEnumerator } from "./TyneqBaseEnumerator";
  */
 export abstract class TyneqEnumerator<TInput, TOutput = TInput> extends TyneqBaseEnumerator<TInput, TOutput> {
     protected readonly sourceEnumerator: Enumerator<TInput>;
+    private sourceDisposed = false;
 
     public constructor(sourceEnumerator: Enumerator<TInput>) {
         super();

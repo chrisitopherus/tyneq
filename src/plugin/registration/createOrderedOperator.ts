@@ -50,7 +50,7 @@ export function createOrderedOperator<TSource, TArgs extends unknown[]>(config: 
     name: string;
     category: "streaming" | "buffer";
     factory: (source: TyneqOrderedEnumerable<TSource, unknown>, node: QueryPlanNode, ...args: TArgs) => TyneqOrderedSequence<TSource>;
-    validate?: (...args: TArgs) => void;
+    validate?: (...args: NoInfer<TArgs>) => void;
 }): void {
     OperatorRegistry.register({
         metadata: new OperatorMetadata(config.name, config.category, "external", TyneqOrderedEnumerable),

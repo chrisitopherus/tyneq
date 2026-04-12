@@ -3,10 +3,10 @@ import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqCachedEnumerable } from "../../core/TyneqCachedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { QueryNode } from "../../queryplan/QueryNode";
-import { ISequenceFactory } from "../../types/core";
 import type { OperatorCategory } from "../../types/queryplan";
 import { tyneqQueryNode } from "../../types/queryplan";
 import { Constructor } from "../../types/utility";
+import { asSequenceFactory } from "../pluginHelpers";
 
 /**
  * Class decorator that registers a `TyneqCachedEnumerator` subclass as an operator
@@ -44,11 +44,10 @@ export function cachedOperator<TArgs extends unknown[] = never>(
             metadata: new OperatorMetadata(name, category, "external", TyneqCachedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
-                // TypeScript cannot narrow 'this' inside a decorator-generated closure - cast is necessary
                 const base = this as unknown as TyneqCachedEnumerable<unknown>;
-                const withCreate = this as unknown as ISequenceFactory<unknown>;
-                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);
-                return withCreate.createEnumerable({
+                const factory = asSequenceFactory(this);
+                const node = new QueryNode(name, userArgs, factory[tyneqQueryNode], category);
+                return factory.createEnumerable({
                     getEnumerator: () => new target(base, ...userArgs)
                 }, node);
             }

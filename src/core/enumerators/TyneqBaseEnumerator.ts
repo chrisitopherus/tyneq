@@ -20,7 +20,6 @@ import { Enumerator } from "../../types/core";
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements Enumerator<TOutput> {
     private _initialized = false;
     private _completed = false;
-    protected sourceDisposed = false;
 
     public constructor() { }
 
