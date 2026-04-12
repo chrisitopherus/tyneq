@@ -25,6 +25,24 @@ Iterator<T>                  <- native JavaScript protocol
 
 For everyday usage, you only ever touch `TyneqSequence<T>`. The others appear when you extend the library.
 
+### Specialized sequence types
+
+Two sequence types extend `TyneqSequence<T>` with additional capabilities:
+
+**`TyneqOrderedSequence<T>`** -- returned by `orderBy()` and `orderByDescending()`. Adds `thenBy()` and `thenByDescending()` for multi-key sorting, plus `asc()` and `desc()` for fluent direction changes. Custom operators can be added via `createOrderedOperator` or `@orderedOperator`.
+
+**`TyneqCachedSequence<T>`** -- returned by `memoize()`. Adds `refresh()` to invalidate the internal cache. Custom operators can be added via `createCachedOperator` or `@cachedOperator`.
+
+Both carry all the standard operators too. The extra methods only appear when you are in the right context:
+
+```ts
+Tyneq.from(data)
+  .orderBy((x) => x.name)     // TyneqOrderedSequence -- thenBy() is available
+  .thenBy((x) => x.age)       // still TyneqOrderedSequence
+  .where((x) => x.active)     // back to TyneqSequence -- thenBy() no longer available
+  .toArray();
+```
+
 ---
 
 ## Operator categories
@@ -167,6 +185,78 @@ console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 The plan is metadata only - it does not participate in iteration. But it is live and useful: you can walk it, transform it, and **compile it back into an executable sequence** via `QueryPlanCompiler`.
 
 See [Query Plan & Compiler](./query-plan.md) for the full guide.
+
+---
+
+## Inside the enumerator
+
+You do not need to understand enumerators to use Tyneq. But if you write custom operators or want to know what happens under the hood, here is the model.
+
+Every operator is backed by an enumerator -- a stateful cursor that knows how to produce one element at a time. When you call a terminal like `toArray()`, the pipeline creates a chain of enumerators from source to terminal, and pulls elements through them.
+
+### The state machine
+
+Every enumerator follows this lifecycle:
+
+```
+Created --> [initialize()] --> Running --> [done or earlyComplete()] --> Done
+```
+
+1. **Created** -- the constructor ran, but no elements have been produced yet.
+2. **`initialize()`** -- called once, before the first element is requested. Streaming operators usually do nothing here. Buffering operators read the full source into an internal buffer.
+3. **Running** -- `handleNext()` is called repeatedly. Each call either yields an element (`{ done: false, value }`) or signals completion (`{ done: true }`).
+4. **Done** -- no more elements. The source enumerator is disposed. Further calls to `next()` return `{ done: true }` immediately.
+
+### Streaming vs. buffering in the enumerator
+
+The difference between streaming and buffering operators comes down to where the work happens:
+
+**Streaming:** `handleNext()` pulls one element from the source, processes it, and either yields or skips it. O(1) memory.
+
+```ts
+// Conceptual model of a "where" enumerator
+handleNext() {
+  while (true) {
+    const next = this.sourceEnumerator.next();
+    if (next.done) return { done: true };
+    if (this.predicate(next.value)) return { done: false, value: next.value };
+    // skip -- loop again
+  }
+}
+```
+
+**Buffering:** `initialize()` drains the entire source into a local data structure. Then `handleNext()` serves from that buffer. O(n) memory.
+
+```ts
+// Conceptual model of an "orderBy" enumerator
+initialize() {
+  this.buffer = Array.from(this.source);
+  this.sorted = this.sort(this.buffer);
+  this.index = 0;
+}
+
+handleNext() {
+  if (this.index >= this.sorted.length) return { done: true };
+  return { done: false, value: this.sorted[this.index++] };
+}
+```
+
+### Early completion
+
+When an operator stops consuming before the source is exhausted (like `take`), it calls `earlyComplete()`. This propagates `return()` to the source enumerator, releasing any upstream resources. Without it, the upstream enumerator is leaked.
+
+### The base class hierarchy
+
+There are four enumerator base classes, each for a different context:
+
+| Base class | Source | Used by |
+|---|---|---|
+| `TyneqEnumerator<TIn, TOut>` | `Enumerator<TIn>` | Standard operators (most common) |
+| `TyneqOrderedEnumerator<T>` | `OrderedEnumerable<T>` | Ordered-specific operators |
+| `TyneqCachedEnumerator<T>` | `CachedEnumerable<T>` | Cached-specific operators |
+| `TyneqBaseEnumerator<T>` | (none) | Source enumerators, fully custom |
+
+`TyneqEnumerator` is what you use 99% of the time when writing custom operators. See [Custom Operators](./extensibility.md) for the full guide.
 
 ---
 
