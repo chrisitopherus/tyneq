@@ -2,11 +2,11 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqCachedEnumerable } from "../../core/TyneqCachedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
-import { QueryNode } from "../../queryplan/QueryNode";
 import type { OperatorCategory } from "../../types/queryplan";
-import { tyneqQueryNode } from "../../types/queryplan";
 import { Constructor } from "../../types/utility";
-import { asSequenceFactory } from "../pluginHelpers";
+import { PluginError } from "../../core/errors/PluginError";
+import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
  * Class decorator that registers a `TyneqCachedEnumerator` subclass as an operator
@@ -25,9 +25,14 @@ import { asSequenceFactory } from "../pluginHelpers";
  *
  * @cachedOperator("myRefresh", "buffer")
  * class MyRefreshEnumerator<T> extends TyneqCachedEnumerator<T> {
+ *     private readonly iter: Enumerator<T>;
+ *     public constructor(source: CachedEnumerable<T>) {
+ *         super(source);
+ *         this.iter = this.cachedSource.getEnumerator();
+ *     }
  *     protected handleNext(): IteratorResult<T> {
  *         // this.cachedSource gives access to the full CachedEnumerable
- *         return this.cachedSource.getEnumerator().next();
+ *         return this.iter.next();
  *     }
  * }
  * ```
@@ -40,16 +45,23 @@ export function cachedOperator<TArgs extends unknown[] = never>(
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends Constructor<any>>(target: TClass, _context: ClassDecoratorContext<TClass>): TClass {
+        if (!ReflectionUtility.hasMethod(target.prototype, "handleNext")) {
+            throw new PluginError(
+                `@cachedOperator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
+                + "Ensure the class extends TyneqCachedEnumerator<T>.",
+                "cachedOperator",
+                target.name
+            );
+        }
+
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, category, "external", TyneqCachedEnumerable),
+            metadata: OperatorMetadata.forCategory(category, name, TyneqCachedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this as unknown as TyneqCachedEnumerable<unknown>;
-                const factory = asSequenceFactory(this);
-                const node = new QueryNode(name, userArgs, factory[tyneqQueryNode], category);
-                return factory.createEnumerable({
+                return RegistrationUtility.buildEnumerable(this, name, userArgs, category, {
                     getEnumerator: () => new target(base, ...userArgs)
-                }, node);
+                });
             }
         });
         return target;

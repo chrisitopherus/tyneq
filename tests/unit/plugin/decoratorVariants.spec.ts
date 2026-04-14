@@ -171,6 +171,16 @@ describe("@cachedOperator", () => {
     afterEach(() => {
         OperatorRegistry.unregister("testCachedOp");
         OperatorRegistry.unregister("testCachedOpValidated");
+        OperatorRegistry.unregister("testCachedOpNoNext");
+    });
+
+    it("throws PluginError when applied to a class without a handleNext() method", () => {
+        expect(() => {
+            (cachedOperator as any)("testCachedOpNoNext", "streaming")(
+                class MissingHandleNextClass { },
+                {}
+            );
+        }).toThrow(PluginError);
     });
 
     it("registers the operator under the given name", () => {
@@ -221,6 +231,16 @@ describe("@orderedOperator", () => {
     afterEach(() => {
         OperatorRegistry.unregister("testOrderedOp");
         OperatorRegistry.unregister("testOrderedOpValidated");
+        OperatorRegistry.unregister("testOrderedOpNoNext");
+    });
+
+    it("throws PluginError when applied to a class without a handleNext() method", () => {
+        expect(() => {
+            (orderedOperator as any)("testOrderedOpNoNext", "buffer")(
+                class MissingHandleNextClass { },
+                {}
+            );
+        }).toThrow(PluginError);
     });
 
     it("registers the operator under the given name", () => {

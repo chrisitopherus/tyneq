@@ -1,5 +1,7 @@
 import { OperatorKind, OperatorSource, SequenceConstructor } from "../types/core";
+import type { OperatorCategory } from "../types/queryplan";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
+import { PluginError } from "./errors/PluginError";
 import type { Maybe } from "../types/utility";
 
 /** @internal Sentinel value for explicitly omitting `targetClass`. */
@@ -73,5 +75,37 @@ export class OperatorMetadata {
         extensions?: Record<string, unknown>
     ): OperatorMetadata {
         return new OperatorMetadata(name, "terminal", source ?? "external", targetClass, extensions);
+    }
+
+    /**
+     * Creates metadata for a streaming or buffer operator determined at runtime.
+     *
+     * @remarks
+     * Use when the category is a variable rather than a compile-time literal --
+     * for example in `@operator` and `@orderedOperator` whose `category` parameter
+     * is provided by the caller. For compile-time-known categories prefer the
+     * dedicated {@link streaming} / {@link buffer} / {@link terminal} statics.
+     *
+     * Only `"streaming"` and `"buffer"` are valid; passing `"terminal"` or `"source"` throws.
+     */
+    public static forCategory(
+        category: OperatorCategory,
+        name: string,
+        targetClass: SequenceConstructor = TyneqEnumerableBase,
+        source?: OperatorSource,
+        extensions?: Record<string, unknown>
+    ): OperatorMetadata {
+        if (category === "streaming") {
+            return OperatorMetadata.streaming(name, targetClass, source, extensions);
+        }
+        if (category === "buffer") {
+            return OperatorMetadata.buffer(name, targetClass, source, extensions);
+        }
+
+        throw new PluginError(
+            `OperatorMetadata.forCategory: unsupported category "${category}". Use .terminal() or .source() directly.`,
+            "forCategory",
+            name
+        );
     }
 }

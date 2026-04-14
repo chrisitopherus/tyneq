@@ -40,7 +40,7 @@ export function orderedTerminal<TArgs extends unknown[] = never>(
         _context: ClassDecoratorContext<TClass>
     ): TClass {
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, "terminal", "external", TyneqOrderedEnumerable),
+            metadata: OperatorMetadata.terminal(name, TyneqOrderedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const source = this as unknown as OrderedEnumerable<unknown>;
