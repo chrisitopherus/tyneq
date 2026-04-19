@@ -1,12 +1,10 @@
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import { QueryNode } from "../../queryplan/QueryNode";
-import { tyneqQueryNode } from "../../types/queryplan";
 import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { PluginError } from "../../core/errors/PluginError";
 import { ReflectionUtility } from "../../utility/ReflectionUtility";
-import { asSequenceFactory } from "../pluginHelpers";
+import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
  * Class decorator that registers a `TyneqEnumerator` subclass as an operator on every sequence.
@@ -19,8 +17,7 @@ import { asSequenceFactory } from "../pluginHelpers";
  *
  * @example
  * ```ts
- * import { operator } from "tyneq/plugin";
- * import { TyneqEnumerator } from "tyneq/plugin";
+ * import { operator, TyneqEnumerator } from "tyneq/plugin";
  * import type { Enumerator } from "tyneq";
  *
  * @operator<[predicate: (item: unknown) => boolean]>("myFilter", "streaming", (predicate) => {
@@ -43,14 +40,14 @@ import { asSequenceFactory } from "../pluginHelpers";
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
-    category: OperatorCategory,
+    category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (ReflectionUtility.tryGetPrototypeMethod(target.prototype, "handleNext") === undefined) {
+        if (!ReflectionUtility.hasMethod(target.prototype, "handleNext")) {
             throw new PluginError(
                 `@operator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqEnumerator<TInput, TOutput>.",
@@ -60,17 +57,15 @@ export function operator<TArgs extends unknown[] = never>(
         }
 
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, category, "external", TyneqEnumerableBase),
+            metadata: OperatorMetadata.forCategory(category, name, TyneqEnumerableBase),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this;
-                const factory = asSequenceFactory(this);
-                const node = new QueryNode(name, userArgs, factory[tyneqQueryNode], category);
-                return factory.createEnumerable({
+                return RegistrationUtility.buildEnumerable(this, name, userArgs, category, {
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);
                     }
-                }, node);
+                });
             }
         });
         return target;
