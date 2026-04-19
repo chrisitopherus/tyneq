@@ -6,7 +6,9 @@ import { Enumerator } from "../../types/core";
  * @remarks
  * State machine:
  * - `next()` calls `initialize()` on the first invocation, then delegates to `handleNext()`.
- * - When `handleNext()` returns `{ done: true }`, the enumerator marks itself completed and calls `dispose()`.
+ * - When `handleNext()` returns `{ done: true }`, `dispose()` is called then the enumerator marks itself completed.
+ * - `doneWithYield(value)` emits one final element, calls `dispose()`, then marks completed.
+ * - `earlyComplete()` calls `dispose()` and marks completed without yielding.
  * - `return()` triggers early termination: calls `dispose()` then marks completed. Idempotent.
  * - Once completed, all `next()` calls return `{ done: true }` without re-invoking `handleNext()`.
  *
@@ -37,6 +39,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
         const result = this.handleNext();
 
         if (result.done) {
+            this.dispose();
             this._completed = true;
             return this.done();
         }
@@ -74,6 +77,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      * Use when the last element must be emitted together with completion in one step.
      */
     protected doneWithYield(value: TOutput): IteratorResult<TOutput> {
+        this.dispose();
         this._completed = true;
         return this.yield(value);
     }
