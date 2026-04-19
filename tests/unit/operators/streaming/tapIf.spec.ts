@@ -33,6 +33,16 @@ describe("tapIf", () => {
   });
 
   describe("edge cases", () => {
+    it("index resets to 0 on each fresh enumeration", () => {
+      const first: number[] = [];
+      const second: number[] = [];
+      const seq = Tyneq.from(["x", "y"]).tapIf((_, i) => first.push(i), () => true);
+      seq.toArray();
+      Tyneq.from(["x", "y"]).tapIf((_, i) => second.push(i), () => true).toArray();
+      expect(first).toEqual([0, 1]);
+      expect(second).toEqual([0, 1]);
+    });
+
     it("yields no elements and runs no side effects for an empty source", () => {
       const seen: number[] = [];
       const result = Tyneq.from<number>([]).tapIf((x) => seen.push(x), () => true).toArray();

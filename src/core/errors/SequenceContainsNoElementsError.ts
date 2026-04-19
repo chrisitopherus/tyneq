@@ -1,4 +1,5 @@
 import { InvalidOperationError } from "./InvalidOperationError";
+import type { Maybe } from "../../types/utility";
 
 /**
  * Thrown when an element is required from a sequence that contains no elements.
@@ -13,7 +14,7 @@ import { InvalidOperationError } from "./InvalidOperationError";
  * @group Errors
  */
 export class SequenceContainsNoElementsError extends InvalidOperationError {
-    public readonly operatorName: string | undefined;
+    public readonly operatorName: Maybe<string>;
 
     public constructor(operatorName?: string, inner?: Error) {
         const message = operatorName

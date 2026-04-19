@@ -29,4 +29,10 @@ describe("skipWhile", () => {
     Tyneq.from([1, 2, 3, 4]).skipWhile((x, i) => { indices.push(i); return x < 3; }).toArray();
     expect(indices).toEqual([0, 1, 2]);
   });
+
+  it("index resets to 0 on each fresh enumeration", () => {
+    const seq = Tyneq.from([1, 2, 3]).skipWhile((_, i) => i < 1);
+    expect(seq.toArray()).toEqual([2, 3]);
+    expect(seq.toArray()).toEqual([2, 3]);
+  });
 });

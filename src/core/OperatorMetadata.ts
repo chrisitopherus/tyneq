@@ -1,5 +1,4 @@
 import { OperatorKind, OperatorSource, SequenceConstructor } from "../types/core";
-import type { OperatorCategory } from "../types/queryplan";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { PluginError } from "./errors/PluginError";
 import type { Maybe } from "../types/utility";
@@ -89,7 +88,7 @@ export class OperatorMetadata {
      * Only `"streaming"` and `"buffer"` are valid; passing `"terminal"` or `"source"` throws.
      */
     public static forCategory(
-        category: OperatorCategory,
+        category: "streaming" | "buffer",
         name: string,
         targetClass: SequenceConstructor = TyneqEnumerableBase,
         source?: OperatorSource,

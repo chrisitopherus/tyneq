@@ -48,7 +48,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  */
 export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    category: OperatorCategory;
+    category: "streaming" | "buffer";
     factory: (source: Enumerable<TSource>, ...args: TArgs) => EnumeratorFactory<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
     source?: OperatorSource;

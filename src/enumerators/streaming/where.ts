@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ItemPredicate, Predicate } from "../../types/utility";
+import { ItemPredicate } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
@@ -18,7 +18,6 @@ export class WhereEnumerator<T> extends TyneqEnumerator<T> {
     private index: number = 0;
     private readonly predicate: ItemPredicate<T>;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;

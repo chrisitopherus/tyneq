@@ -34,6 +34,12 @@ describe("where", () => {
     expect(Tyneq.from(["a", "b", "c", "d"]).where((_, i) => i % 2 === 0).toArray()).toEqual(["a", "c"]);
   });
 
+  it("index resets to 0 on each fresh enumeration", () => {
+    const seq = Tyneq.from(["a", "b", "c"]).where((_, i) => i % 2 === 0);
+    expect(seq.toArray()).toEqual(["a", "c"]);
+    expect(seq.toArray()).toEqual(["a", "c"]);
+  });
+
   it("throws when predicate is null and sequence is iterated", () => {
     expect(() => Tyneq.from([1, 2, 3]).where(null as any).toArray()).toThrow();
   });

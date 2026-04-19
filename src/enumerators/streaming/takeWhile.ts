@@ -18,7 +18,6 @@ export class TakeWhileEnumerator<T> extends TyneqEnumerator<T> {
     private readonly predicate: ItemPredicate<T>;
     private index: number = 0;
 
-
     public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;

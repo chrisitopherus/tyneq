@@ -18,7 +18,6 @@ export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: ItemSelector<T, U>;
     private index: number = 0;
 
-
     public constructor(sourceEnumerator: Enumerator<T>, selector: ItemSelector<T, U>) {
         super(sourceEnumerator);
         this.selector = selector;

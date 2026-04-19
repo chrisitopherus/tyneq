@@ -122,6 +122,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Returns `false` for an empty sequence.
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -132,6 +133,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Returns `true` for an empty sequence (vacuous truth).
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -158,6 +160,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Returns `0` if no elements match or the sequence is empty.
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -191,6 +194,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the first element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
@@ -198,6 +204,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
 
     /**
      * Returns the first element that satisfies the predicate, or `defaultValue` if none does.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -209,6 +218,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Returns `-1` if no element satisfies the predicate.
      * When `startIndex` is provided, the search starts at that index.
+     * The predicate receives each element and its zero-based index within the full sequence.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -217,6 +227,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the last element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
@@ -224,6 +237,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
 
     /**
      * Returns the last element that satisfies the predicate, or `defaultValue` if none does.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
@@ -277,6 +293,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the only element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
@@ -285,6 +304,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
 
     /**
      * Returns the only element that satisfies the predicate, or `defaultValue` if none does.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
@@ -428,6 +450,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Projects each element through `selector`.
      *
+     * @remarks
+     * The selector receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
     select<TResult>(selector: ItemSelector<TSource, TResult>): TyneqSequence<TResult>;
@@ -463,6 +488,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Skips elements while `predicate` returns `true`, then yields the rest.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     skipWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
@@ -487,6 +515,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Takes elements while `predicate` returns `true`, then stops.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     takeWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
@@ -494,12 +525,18 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Executes `action` for each element as it passes through the pipeline, then yields it unchanged.
      *
+     * @remarks
+     * The action receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `action` is null or undefined.
      */
     tap(action: ItemAction<TSource>): TyneqSequence<TSource>;
 
     /**
      * Executes `action` for each element only while `predicate()` returns `true`.
+     *
+     * @remarks
+     * The action receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `action` or `predicate` is null or undefined.
      */
@@ -514,6 +551,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
 
     /**
      * Yields only elements for which `predicate` returns `true`.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */

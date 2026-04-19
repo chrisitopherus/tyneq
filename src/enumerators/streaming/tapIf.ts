@@ -19,7 +19,6 @@ export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly predicate: () => boolean;
     private index: number = 0;
 
-
     public constructor(sourceEnumerator: Enumerator<TSource>, action: ItemAction<TSource>, predicate: () => boolean) {
         super(sourceEnumerator);
         this.action = action;

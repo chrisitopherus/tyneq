@@ -18,7 +18,6 @@ export class TapEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly action: ItemAction<TSource>;
     private index: number = 0;
 
-
     public constructor(sourceEnumerator: Enumerator<TSource>, action: ItemAction<TSource>) {
         super(sourceEnumerator);
         this.action = action;

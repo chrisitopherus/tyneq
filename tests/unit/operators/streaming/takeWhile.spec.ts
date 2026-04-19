@@ -33,4 +33,10 @@ describe("takeWhile", () => {
     Tyneq.from([1, 2, 3, 4]).takeWhile((x, i) => { indices.push(i); return x < 3; }).toArray();
     expect(indices).toEqual([0, 1, 2]);
   });
+
+  it("index resets to 0 on each fresh enumeration", () => {
+    const seq = Tyneq.from([1, 2, 3]).takeWhile((_, i) => i < 2);
+    expect(seq.toArray()).toEqual([1, 2]);
+    expect(seq.toArray()).toEqual([1, 2]);
+  });
 });

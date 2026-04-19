@@ -19,7 +19,6 @@ export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
     private index: number = 0;
     private isSkipping = true;
 
-
     public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;
