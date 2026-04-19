@@ -1,5 +1,5 @@
 import { BaseEnumerableSorter } from "../core/ordering/BaseEnumerableSorter";
-import { BoundMethod, Nullable } from "./utility";
+import { BoundMethod, ItemAction, ItemPredicate, ItemSelector, Nullable } from "./utility";
 import { tyneqQueryNode } from "./queryplan";
 import type { OperatorCategory, QueryPlanNode } from "./queryplan";
 import { TyneqEnumerableBase } from "../core/TyneqEnumerableBase";
@@ -26,11 +26,6 @@ export interface Enumerator<T> extends Iterator<T> {
      * Idempotent - safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
      */
     return?(value?: unknown): IteratorResult<T>;
-
-    /**
-     * Not supported. Throws {@link NotSupportedError} if called.
-     */
-    throw?(e?: unknown): IteratorResult<T>;
 }
 
 /**
@@ -127,20 +122,22 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Returns `false` for an empty sequence.
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    any(predicate: (item: TSource) => boolean): boolean;
+    any(predicate: ItemPredicate<TSource>): boolean;
 
     /**
      * Returns `true` if all elements satisfy the predicate.
      *
      * @remarks
      * Returns `true` for an empty sequence (vacuous truth).
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    all(predicate: (item: TSource) => boolean): boolean;
+    all(predicate: ItemPredicate<TSource>): boolean;
 
     /**
      * Returns `true` if the sequence contains `value` using strict equality (`===`).
@@ -163,10 +160,11 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Returns `0` if no elements match or the sequence is empty.
+     * The predicate receives each element and its zero-based index.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    countBy(predicate: (item: TSource) => boolean): number;
+    countBy(predicate: ItemPredicate<TSource>): number;
 
     /**
      * Iterates the entire sequence and discards all elements.
@@ -196,17 +194,23 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the first element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
-    first(predicate: (item: TSource) => boolean): TSource;
+    first(predicate: ItemPredicate<TSource>): TSource;
 
     /**
      * Returns the first element that satisfies the predicate, or `defaultValue` if none does.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    firstOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+    firstOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
     /**
      * Returns the zero-based index of the first element that satisfies the predicate.
@@ -214,25 +218,32 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Returns `-1` if no element satisfies the predicate.
      * When `startIndex` is provided, the search starts at that index.
+     * The predicate receives each element and its zero-based index within the full sequence.
      *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    indexOf(predicate: (item: TSource) => boolean, startIndex?: number): number;
+    indexOf(predicate: ItemPredicate<TSource>, startIndex?: number): number;
 
     /**
      * Returns the last element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
-    last(predicate: (item: TSource) => boolean): TSource;
+    last(predicate: ItemPredicate<TSource>): TSource;
 
     /**
      * Returns the last element that satisfies the predicate, or `defaultValue` if none does.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    lastOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+    lastOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
     /**
      * Returns the maximum element according to the comparer.
@@ -282,19 +293,25 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the only element that satisfies the predicate.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
-    single(predicate: (item: TSource) => boolean): TSource;
+    single(predicate: ItemPredicate<TSource>): TSource;
 
     /**
      * Returns the only element that satisfies the predicate, or `defaultValue` if none does.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
-    singleOrDefault(predicate: (item: TSource) => boolean, defaultValue: TSource): TSource;
+    singleOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
     /**
      * Returns `true` if this sequence starts with all elements of `sequence` in order.
@@ -433,9 +450,12 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Projects each element through `selector`.
      *
+     * @remarks
+     * The selector receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `selector` is null or undefined.
      */
-    select<TResult>(selector: (item: TSource) => TResult): TyneqSequence<TResult>;
+    select<TResult>(selector: ItemSelector<TSource, TResult>): TyneqSequence<TResult>;
 
     /**
      * Projects each element to an iterable and flattens the results into a single sequence.
@@ -468,9 +488,12 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Skips elements while `predicate` returns `true`, then yields the rest.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    skipWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
+    skipWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
     /**
      * Splits the sequence at elements where `splitOn` returns `true`.
@@ -492,23 +515,32 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Takes elements while `predicate` returns `true`, then stops.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    takeWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
+    takeWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
     /**
      * Executes `action` for each element as it passes through the pipeline, then yields it unchanged.
      *
+     * @remarks
+     * The action receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `action` is null or undefined.
      */
-    tap(action: (item: TSource) => void): TyneqSequence<TSource>;
+    tap(action: ItemAction<TSource>): TyneqSequence<TSource>;
 
     /**
      * Executes `action` for each element only while `predicate()` returns `true`.
      *
+     * @remarks
+     * The action receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `action` or `predicate` is null or undefined.
      */
-    tapIf(action: (item: TSource) => void, predicate: () => boolean): TyneqSequence<TSource>;
+    tapIf(action: ItemAction<TSource>, predicate: () => boolean): TyneqSequence<TSource>;
 
     /**
      * Yields every `count`-th element (i.e. elements at indices 0, `count`, `2*count`, ...).
@@ -520,9 +552,12 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Yields only elements for which `predicate` returns `true`.
      *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     *
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
-    where(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
+    where(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
     /**
      * Pairs each element with the corresponding element from `other` using `selector`.
@@ -826,13 +861,13 @@ export type KeyValuePair<TKey, TValue> = {
  * Structural interface used by registration machinery to call the protected factory methods
  * on sequence classes without exposing them publicly.
  *
- * The double-cast `(this as unknown as ISequenceFactory<T>)` is intentional:
+ * The double-cast `(this as unknown as SequenceFactory<T>)` is intentional:
  * these methods are `protected`, so the cast is the only way to call them from
  * outside the class hierarchy without changing their access modifier.
  *
  * @internal
  */
-export interface ISequenceFactory<TSource> {
+export interface SequenceFactory<TSource> {
     readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
     createEnumerable(factory: { getEnumerator(): unknown }, node?: Nullable<QueryPlanNode>): unknown;
     createOrderedEnumerable<TKey>(

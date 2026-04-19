@@ -45,7 +45,7 @@ describe("minMax", () => {
     it("throws an error with the expected message for an empty sequence", () => {
       expect(() =>
         Tyneq.from<number>([]).minMax()
-      ).toThrow("Sequence contains no elements.");
+      ).toThrow("Sequence contains no elements (in \"minMax\").");
     });
   });
 });

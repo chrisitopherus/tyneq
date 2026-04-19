@@ -41,8 +41,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
 
     public readonly source: TyneqSequence<TSource>;
     public readonly parent: Nullable<OrderedEnumerable<TSource>>;
-    public readonly [tyneqQueryNode]: QueryPlanNode | null;
-
+    public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
     
     public constructor(
         source: TyneqSequence<TSource>,
@@ -50,7 +49,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         comparer: Comparer<TKey>,
         descending: boolean,
         parent?: OrderedEnumerable<TSource>,
-        node?: QueryPlanNode | null
+        node?: Nullable<QueryPlanNode>
     ) {
         super();
         ArgumentUtility.checkNotOptional({ source });
@@ -152,7 +151,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    protected override createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult> {
+    protected override createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node: Nullable<QueryPlanNode>): TyneqSequence<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
     }
 
@@ -160,7 +159,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (x: TSource) => TKey,
         comparer: Comparer<TKey>,
         descending: boolean,
-        node?: QueryPlanNode | null
+        node: Nullable<QueryPlanNode>
     ): TyneqOrderedSequence<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(
             this.source,
@@ -172,7 +171,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    protected override createCachedEnumerable(source: TyneqSequence<TSource>, node?: QueryPlanNode | null): TyneqCachedSequence<TSource> {
+    protected override createCachedEnumerable(source: TyneqSequence<TSource>, node: Nullable<QueryPlanNode>): TyneqCachedSequence<TSource> {
         return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

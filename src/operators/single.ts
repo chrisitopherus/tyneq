@@ -1,7 +1,7 @@
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
-import { Nullable } from "../types/utility";
+import { ItemPredicate, Nullable } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -17,10 +17,10 @@ import { nameof } from "../utility/nameof";
  * @internal
  */
 export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
-    private readonly predicate: (item: TSource) => boolean;
+    private readonly predicate: ItemPredicate<TSource>;
 
-    
-    public constructor(source: TyneqSequence<TSource>, predicate: (item: TSource) => boolean) {
+
+    public constructor(source: TyneqSequence<TSource>, predicate: ItemPredicate<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });
 
@@ -30,8 +30,9 @@ export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSou
     public process(): TSource {
         let found = false;
         let single: Nullable<TSource> = null;
+        let index = 0;
         for (const element of this.source) {
-            if (this.predicate(element)) {
+            if (this.predicate(element, index++)) {
                 if (found) {
                     throw new InvalidOperationError("Sequence contains more than one matching element");
                 }

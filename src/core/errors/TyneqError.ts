@@ -1,3 +1,4 @@
+import { Maybe } from "../../types/utility";
 
 /**
  * Base class for all errors thrown by Tyneq.
@@ -13,7 +14,7 @@
 export class TyneqError extends Error {
 
     /** The underlying error that caused this error, if any. */
-    public inner: Error | undefined;
+    public inner: Maybe<Error>;
 
     public constructor(message: string, options?: { inner?: Error}) {
         super(message);

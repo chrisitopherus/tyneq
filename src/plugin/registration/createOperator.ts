@@ -1,17 +1,16 @@
-import type { Enumerable, EnumeratorFactory, ISequenceFactory, OperatorSource } from "../../types/core";
+import type { Enumerable, EnumeratorFactory, OperatorSource } from "../../types/core";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import { QueryNode } from "../../queryplan/QueryNode";
 import type { OperatorCategory } from "../../types/queryplan";
-import { tyneqQueryNode } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
+import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
  * Registers a streaming or buffering operator using a factory function.
  *
  * Use this when the operator requires a class-level enumerator with custom state
  * but you want to avoid writing the decorator boilerplate. For simpler generator-based
- * generator-based streaming operators, prefer {@link createGeneratorOperator}.
+ * operators, prefer {@link createGeneratorOperator}.
  *
  * @param config.name - Method name to expose on every sequence.
  * @param config.category - `"streaming"` or `"buffer"`.
@@ -45,24 +44,25 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  * });
  * ```
  *
- * @group Decorators
+ * @group Factory Functions
  */
 export function createOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
-    category: OperatorCategory;
+    category: "streaming" | "buffer";
     factory: (source: Enumerable<TSource>, ...args: TArgs) => EnumeratorFactory<TResult>;
     validate?: (...args: NoInfer<TArgs>) => void;
     source?: OperatorSource;
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, config.category, config.source ?? "external", TyneqEnumerableBase),
+        metadata: OperatorMetadata.forCategory(config.category, config.name, TyneqEnumerableBase, config.source),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
-            const withCreate = this as unknown as ISequenceFactory<unknown>;
-            const node = new QueryNode(config.name, args, withCreate[tyneqQueryNode], config.category);
-            return withCreate.createEnumerable(
-                config.factory(this as Enumerable<TSource>, ...(args as TArgs)),
-                node
+            return RegistrationUtility.buildEnumerable(
+                this,
+                config.name,
+                args,
+                config.category,
+                config.factory(this as Enumerable<TSource>, ...(args as TArgs)) as EnumeratorFactory<unknown>
             );
         }
     });

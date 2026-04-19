@@ -1,5 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
+import { ItemPredicate } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -15,11 +16,11 @@ import { nameof } from "../utility/nameof";
  * @internal
  */
 export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
-    private readonly predicate: (item: T) => boolean;
+    private readonly predicate: ItemPredicate<T>;
     private readonly startIndex: number;
 
-    
-    public constructor(source: Enumerable<T>, predicate: (item: T) => boolean, startIndex: number = 0) {
+
+    public constructor(source: Enumerable<T>, predicate: ItemPredicate<T>, startIndex: number = 0) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });
         ArgumentUtility.checkNonNegative({ startIndex });
@@ -36,12 +37,11 @@ export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
                 continue;
             }
 
-            if (this.predicate(item)) {
+            if (this.predicate(item, index)) {
                 return index;
             }
         }
 
         return -1;
     }
-
 }

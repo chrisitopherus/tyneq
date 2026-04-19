@@ -15,11 +15,8 @@ export class EnumeratorUtility {
      * Safe to call on `null` or `undefined`.
      */
     public static tryDispose<TSource>(enumerator: Optional<Enumerator<TSource>>): void {
-        const enumeratorReturnFunc = enumerator?.return;
-        if (!enumeratorReturnFunc) return;
-
         try {
-            enumeratorReturnFunc.call(enumerator);
+            enumerator?.return?.();
         } catch {
             // swallow
         }
@@ -30,5 +27,21 @@ export class EnumeratorUtility {
         return {
             [Symbol.iterator]: () => enumerator
         };
+    }
+
+    /** Gets an `Enumerator<T>` from any `Iterable<T>`. */
+    public static fromIterable<TSource>(iterable: Iterable<TSource>): Enumerator<TSource> {
+        return iterable[Symbol.iterator]() as Enumerator<TSource>;
+    }
+
+    /**
+     * Advances the enumerator by one position and returns `true` if that position was done.
+     *
+     * **Warning:** this calls `next()` and irrevocably consumes one element.
+     * If the enumerator is not exhausted, the yielded element is discarded.
+     * Only call this when advancing past the current position is intentional.
+     */
+    public static checkAndConsume<TSource>(enumerator: Enumerator<TSource>): boolean {
+        return enumerator.next().done === true;
     }
 }

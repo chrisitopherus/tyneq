@@ -29,7 +29,7 @@ import { OrderedEnumerable } from "../../types/core";
  * });
  * ```
  *
- * @group Decorators
+ * @group Factory Functions
  */
 export function createOrderedTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
@@ -38,7 +38,7 @@ export function createOrderedTerminalOperator<TSource, TArgs extends unknown[], 
     source?: OperatorSource;
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, "terminal", config.source ?? "external", TyneqOrderedEnumerable),
+        metadata: OperatorMetadata.terminal(config.name, TyneqOrderedEnumerable, config.source),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as unknown as OrderedEnumerable<TSource>, ...(args as TArgs));

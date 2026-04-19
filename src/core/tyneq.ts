@@ -1,13 +1,13 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
-import { Enumerable, Enumerator, EnumeratorFactory, IteratorFactory, TyneqSequence } from "../types/core";
+import { Enumerable, TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 import type { SourceKind } from "../types/queryplan";
 import { source } from "../plugin/decorators/source";
+import { Optional } from "../types/utility";
 
 /**
  * Entry point for creating Tyneq sequences.
@@ -75,7 +75,7 @@ export class Tyneq {
     /**
      * Returns `true` if `source` is `null`, `undefined`, or an iterable whose first element is `null` or `undefined`.
      */
-    public static isNullOrEmpty<TSource>(source: Iterable<TSource> | null | undefined): boolean {
+    public static isNullOrEmpty<TSource>(source: Optional<Iterable<TSource>>): boolean {
         if (source === null || source === undefined) {
             return true;
         }

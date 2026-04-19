@@ -14,6 +14,16 @@ describe("countBy", () => {
     it("returns length when all elements match", () => {
       expect(Tyneq.from([2, 4, 6]).countBy((x) => x % 2 === 0)).toBe(3);
     });
+
+    it("passes the zero-based index to the predicate", () => {
+      const indices: number[] = [];
+      Tyneq.from(["a", "b", "c"]).countBy((_, i) => { indices.push(i); return true; });
+      expect(indices).toEqual([0, 1, 2]);
+    });
+
+    it("can count by index (even-indexed elements)", () => {
+      expect(Tyneq.from([10, 20, 30, 40]).countBy((_, i) => i % 2 === 0)).toBe(2);
+    });
   });
 
   describe("edge cases", () => {

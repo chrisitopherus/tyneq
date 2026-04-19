@@ -28,7 +28,7 @@ features:
     details: Compose queries as pipelines — no work happens until you enumerate. Chain dozens of operators without touching the source data.
   - title: Re-iterable sequences
     details: Enumerate the same query multiple times safely. Results are consistent across passes; use memoize() to cache when re-execution is expensive.
-  - title: 50+ typed operators
+  - title: 60+ typed operators
     details: Streaming, buffering, and terminal operators with explicit execution semantics. Every operator's timing and memory impact is documented.
   - title: TypeScript-first
     details: Types flow through the entire pipeline. Projections, groupings, and joins preserve strong typing from source to result.

@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
+import { ItemAction } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
@@ -14,11 +15,11 @@ import { ArgumentUtility } from "../../utility/ArgumentUtility";
  * @internal
  */
 export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
-    private readonly action: (item: TSource) => void;
+    private readonly action: ItemAction<TSource>;
     private readonly predicate: () => boolean;
+    private index: number = 0;
 
-    
-    public constructor(sourceEnumerator: Enumerator<TSource>, action: (item: TSource) => void, predicate: () => boolean) {
+    public constructor(sourceEnumerator: Enumerator<TSource>, action: ItemAction<TSource>, predicate: () => boolean) {
         super(sourceEnumerator);
         this.action = action;
         this.predicate = predicate;
@@ -31,9 +32,10 @@ export class TapIfEnumerator<TSource> extends TyneqEnumerator<TSource> {
         }
 
         if (this.predicate()) {
-            this.action(next.value);
+            this.action(next.value, this.index);
         }
 
+        this.index++;
         return this.yield(next.value);
     }
 }

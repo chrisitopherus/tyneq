@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
+import { ItemSelector } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
@@ -14,10 +15,10 @@ import { ArgumentUtility } from "../../utility/ArgumentUtility";
  * @internal
  */
 export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
-    private readonly selector: (item: T) => U;
+    private readonly selector: ItemSelector<T, U>;
+    private index: number = 0;
 
-    
-    public constructor(sourceEnumerator: Enumerator<T>, selector: (item: T) => U) {
+    public constructor(sourceEnumerator: Enumerator<T>, selector: ItemSelector<T, U>) {
         super(sourceEnumerator);
         this.selector = selector;
     }
@@ -28,7 +29,6 @@ export class SelectEnumerator<T, U> extends TyneqEnumerator<T, U> {
             return this.done();
         }
 
-        const value = next.value;
-        return this.yield(this.selector(value));
+        return this.yield(this.selector(next.value, this.index++));
     }
 }

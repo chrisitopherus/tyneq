@@ -1,5 +1,6 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
+import { ItemPredicate } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
@@ -15,10 +16,10 @@ import { nameof } from "../utility/nameof";
  * @internal
  */
 export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
-    private readonly predicate: (item: T) => boolean;
+    private readonly predicate: ItemPredicate<T>;
 
-    
-    public constructor(source: Enumerable<T>, predicate: (item: T) => boolean) {
+
+    public constructor(source: Enumerable<T>, predicate: ItemPredicate<T>) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });
 
@@ -26,8 +27,9 @@ export class AllOperator<T> extends TyneqTerminalOperator<T, boolean> {
     }
 
     public process(): boolean {
+        let index = 0;
         for (const item of this.source) {
-            if (!this.predicate(item)) {
+            if (!this.predicate(item, index++)) {
                 return false;
             }
         }

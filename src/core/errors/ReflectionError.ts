@@ -1,3 +1,4 @@
+import { Maybe } from "../../types/utility";
 import { TyneqError } from "./TyneqError";
 
 /**
@@ -22,7 +23,7 @@ export class ReflectionError extends TyneqError {
     public readonly methodName: string;
 
     /** The name of the prototype/class that was searched. */
-    public readonly prototypeName: string | undefined;
+    public readonly prototypeName: Maybe<string>;
 
     public constructor(
         message: string,

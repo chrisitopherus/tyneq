@@ -25,16 +25,18 @@
  * }
  * ```
  *
- * @example Factory-based terminal operator:
+ * @example Generator-based streaming operator:
  * ```ts
- * import { createTerminalOperator } from "tyneq/plugin";
+ * import { createGeneratorOperator } from "tyneq/plugin";
  *
- * createTerminalOperator({
- *     name: "product",
- *     execute: (source) => {
- *         let result = 1;
- *         for (const item of source) result *= item as number;
- *         return result;
+ * createGeneratorOperator({
+ *     name: "everyOther",
+ *     *generator(source) {
+ *         let skip = false;
+ *         for (const item of source) {
+ *             if (!skip) yield item;
+ *             skip = !skip;
+ *         }
  *     }
  * });
  * ```

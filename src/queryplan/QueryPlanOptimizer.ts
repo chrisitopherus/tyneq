@@ -1,4 +1,5 @@
 import type { QueryPlanNode } from "../types/queryplan";
+import type { Nullable } from "../types/utility";
 import { QueryNode } from "./QueryNode";
 import { QueryPlanTransformer } from "./QueryPlanTransformer";
 
@@ -57,7 +58,7 @@ import { QueryPlanTransformer } from "./QueryPlanTransformer";
  */
 export class QueryPlanOptimizer extends QueryPlanTransformer {
 
-    protected override transformNode(node: QueryPlanNode, source: QueryPlanNode | null): QueryPlanNode {
+    protected override transformNode(node: QueryPlanNode, source: Nullable<QueryPlanNode>): QueryPlanNode {
         if (node.operatorName === "where" && source?.operatorName === "where") {
             return this.fuseWhere(node, source);
         }

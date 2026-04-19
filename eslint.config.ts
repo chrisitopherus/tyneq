@@ -54,7 +54,7 @@ export default defineConfig(
             ],
 
             // --- Naming conventions ---
-            // Private instance fields: no underscore prefix (use TypeScript access modifiers).
+            // Private instance fields: underscore prefix allowed.
             // Private static fields: underscore prefix allowed (conventional for static singletons).
             "@typescript-eslint/naming-convention": [
                 "error",
@@ -62,7 +62,7 @@ export default defineConfig(
                     "selector": "classProperty",
                     "modifiers": ["private"],
                     "format": ["camelCase"],
-                    "leadingUnderscore": "forbid"
+                    "leadingUnderscore": "allow"
                 },
                 {
                     "selector": "classProperty",

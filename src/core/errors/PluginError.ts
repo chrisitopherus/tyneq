@@ -1,3 +1,4 @@
+import { Maybe } from "../../types/utility";
 import { TyneqError } from "./TyneqError";
 
 /**
@@ -23,7 +24,7 @@ export class PluginError extends TyneqError {
     /**
      * The name of the class or function the decorator was applied to, if available.
      */
-    public readonly targetName: string | undefined;
+    public readonly targetName: Maybe<string>;
 
     public constructor(
         message: string,

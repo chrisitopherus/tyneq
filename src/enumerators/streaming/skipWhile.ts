@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
+import { ItemPredicate } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
@@ -14,11 +15,11 @@ import { ArgumentUtility } from "../../utility/ArgumentUtility";
  * @internal
  */
 export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly predicate: (item: T) => boolean;
+    private readonly predicate: ItemPredicate<T>;
+    private index: number = 0;
     private isSkipping = true;
 
-    
-    public constructor(sourceEnumerator: Enumerator<T>, predicate: (item: T) => boolean) {
+    public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;
     }
@@ -30,7 +31,7 @@ export class SkipWhileEnumerator<T> extends TyneqEnumerator<T> {
                 return this.done();
             }
 
-            this.isSkipping = this.isSkipping && this.predicate(next.value);
+            this.isSkipping = this.isSkipping && this.predicate(next.value, this.index++);
             if (!this.isSkipping) {
                 return this.yield(next.value);
             }
