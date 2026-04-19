@@ -1,4 +1,3 @@
-import { NotSupportedError } from "../core/errors/NotSupportedError";
 import { Enumerator } from "../types/core";
 import { Optional } from "../types/utility";
 
@@ -35,8 +34,14 @@ export class EnumeratorUtility {
         return iterable[Symbol.iterator]() as Enumerator<TSource>;
     }
 
-    /** Checks if the enumerator is already exhausted (i.e., `next().done === true`). */
-    public static isExhausted<TSource>(enumerator: Enumerator<TSource>): boolean {
+    /**
+     * Advances the enumerator by one position and returns `true` if that position was done.
+     *
+     * **Warning:** this calls `next()` and irrevocably consumes one element.
+     * If the enumerator is not exhausted, the yielded element is discarded.
+     * Only call this when advancing past the current position is intentional.
+     */
+    public static checkAndConsume<TSource>(enumerator: Enumerator<TSource>): boolean {
         return enumerator.next().done === true;
     }
 }

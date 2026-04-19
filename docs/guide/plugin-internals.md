@@ -88,7 +88,7 @@ For example, when you call `.where()` on a `TyneqEnumerable`, it calls `this.cre
 
 ### The SequenceFactory interface
 
-The factory methods are `protected` -- they are not part of the public API. But the registration machinery needs to call them. This is solved via the `SequenceFactory` structural interface and the `asSequenceFactory()` helper:
+The factory methods are `protected` -- they are not part of the public API. But the registration machinery needs to call them. This is solved via the `SequenceFactory` structural interface:
 
 ```ts
 // types/core.ts
@@ -100,18 +100,10 @@ export interface SequenceFactory<TSource> {
 }
 ```
 
-```ts
-// plugin/pluginHelpers.ts
-import type { SequenceFactory } from "../types/core";
+This is a structural cast -- it works because `TyneqEnumerableBase` has exactly those methods (they are just `protected`). The internal `RegistrationUtility` class centralizes this cast so it appears in one place instead of scattered across all registration functions. The two key helpers it exposes are:
 
-export function asSequenceFactory<TSource>(
-  sequence: TyneqEnumerableBase<TSource>
-): SequenceFactory<TSource> {
-  return sequence as unknown as SequenceFactory<TSource>;
-}
-```
-
-This is a structural cast -- it works because `TyneqEnumerableBase` has exactly those methods (they are just `protected`). The helper centralizes the cast so it appears in one place instead of scattered across all registration functions.
+- `RegistrationUtility.buildEnumerable(sequence, name, args, category, factory)` -- validates, builds the query node, and calls `createEnumerable`. Use this for standard operators.
+- `RegistrationUtility.buildQueryNode(sequence, name, args, category)` -- builds only the query node. Use this when you need to construct the sequence yourself (ordered/cached operators that need to pass extra context to their enumerator constructor).
 
 ---
 
@@ -251,9 +243,9 @@ A few design decisions to notice:
 Now we need a way for users to enter the `ValidatedSequence` from a regular sequence. We register a method on `TyneqEnumerableBase` that creates a `ValidatedEnumerable`:
 
 ```ts
-import { OperatorRegistry, OperatorMetadata, QueryNode } from "tyneq";
+import { OperatorRegistry, OperatorMetadata, QueryNode, tyneqQueryNode } from "tyneq";
 import { TyneqEnumerableBase } from "tyneq/core";
-import { asSequenceFactory } from "tyneq/plugin"; // internal helper
+import { RegistrationUtility } from "tyneq/plugin";
 
 OperatorRegistry.register({
   metadata: new OperatorMetadata(
@@ -271,13 +263,7 @@ OperatorRegistry.register({
       throw new TypeError("validator must be a function");
     }
 
-    const factory = asSequenceFactory(this);
-    const node = new QueryNode(
-      "validate",
-      [validator, label],
-      factory[tyneqQueryNode],
-      "streaming"
-    );
+    const node = RegistrationUtility.buildQueryNode(this, "validate", [validator, label], "streaming");
 
     return new ValidatedEnumerable(
       this as unknown as TyneqSequence<unknown>,
@@ -350,13 +336,7 @@ OperatorRegistry.register({
     label: string = "revalidate"
   ) {
     // Create a new ValidatedEnumerable with the new validator
-    const factory = asSequenceFactory(this);
-    const node = new QueryNode(
-      "revalidate",
-      [newValidator, label],
-      factory[tyneqQueryNode],
-      "streaming"
-    );
+    const node = RegistrationUtility.buildQueryNode(this, "revalidate", [newValidator, label], "streaming");
 
     return new ValidatedEnumerable(
       this as unknown as TyneqSequence<unknown>,

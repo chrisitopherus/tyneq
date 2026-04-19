@@ -26,6 +26,7 @@ import { TyneqCachedEnumerable } from "../../../src/core/TyneqCachedEnumerable";
 import { TyneqOrderedEnumerable } from "../../../src/core/ordering/TyneqOrderedEnumerable";
 import { Enumerator, Enumerable } from "../../../src/types/core";
 import { PluginError } from "../../../src/core/errors/PluginError";
+import { OperatorMetadata } from "../../../src/core/OperatorMetadata";
 
 // --- @operator ---
 
@@ -379,6 +380,29 @@ describe("@orderedTerminal", () => {
 
         const ordered = Tyneq.from([1, 2]).orderBy((x) => x);
         expect(() => (ordered as any).testOrderedTerminalValidated(-5)).toThrow(ArgumentError);
+    });
+});
+
+// --- OperatorMetadata.forCategory ---
+
+describe("OperatorMetadata.forCategory", () => {
+    it("returns streaming metadata for category 'streaming'", () => {
+        const meta = OperatorMetadata.forCategory("streaming", "testOp");
+        expect(meta.kind).toBe("streaming");
+        expect(meta.name).toBe("testOp");
+    });
+
+    it("returns buffer metadata for category 'buffer'", () => {
+        const meta = OperatorMetadata.forCategory("buffer", "testOp");
+        expect(meta.kind).toBe("buffer");
+    });
+
+    it("throws PluginError for category 'terminal'", () => {
+        expect(() => OperatorMetadata.forCategory("terminal" as any, "testOp")).toThrow(PluginError);
+    });
+
+    it("throws PluginError for category 'source'", () => {
+        expect(() => OperatorMetadata.forCategory("source" as any, "testOp")).toThrow(PluginError);
     });
 });
 

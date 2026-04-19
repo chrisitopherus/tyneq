@@ -41,7 +41,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  */
 export function cachedOperator<TArgs extends unknown[] = never>(
     name: string,
-    category: OperatorCategory,
+    category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends Constructor<any>>(target: TClass, _context: ClassDecoratorContext<TClass>): TClass {

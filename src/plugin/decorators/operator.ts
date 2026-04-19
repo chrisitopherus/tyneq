@@ -40,7 +40,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
-    category: OperatorCategory,
+    category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
