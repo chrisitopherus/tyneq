@@ -90,11 +90,19 @@ export class ReflectionContext<_T extends object> {
      */
     public getMethod(name: string | symbol): MethodDescriptor {
         const descriptor = this.findDescriptor(name);
-        if (descriptor?.kind !== "method") {
+        if (descriptor === undefined) {
             const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
             throw new ReflectionError(
                 `Method "${String(name)}" not found on ${prototypeName}. ` +
                 "Ensure the method is defined directly on the class, not inherited or deleted.",
+                String(name),
+                prototypeName
+            );
+        }
+        if (descriptor.kind !== "method") {
+            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            throw new ReflectionError(
+                `Member "${String(name)}" on ${prototypeName} is a ${descriptor.kind}, not a method.`,
                 String(name),
                 prototypeName
             );
@@ -111,10 +119,18 @@ export class ReflectionContext<_T extends object> {
      */
     public getAccessor(name: string | symbol): AccessorDescriptor {
         const descriptor = this.findDescriptor(name);
-        if (descriptor?.kind !== "accessor") {
+        if (descriptor === undefined) {
             const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
             throw new ReflectionError(
                 `Accessor "${String(name)}" not found on ${prototypeName}.`,
+                String(name),
+                prototypeName
+            );
+        }
+        if (descriptor.kind !== "accessor") {
+            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            throw new ReflectionError(
+                `Member "${String(name)}" on ${prototypeName} is a ${descriptor.kind}, not an accessor.`,
                 String(name),
                 prototypeName
             );
@@ -242,7 +258,7 @@ export function reflect<T extends object>(
     options: ReflectOptions = {}
 ): ReflectionContext<T> {
     const proto = resolveProto(target);
-    return new ReflectionContext<T>(proto, options) as ReflectionContext<T>;
+    return new ReflectionContext<T>(proto, options);
 }
 
 // ---------------------------------------------------------------------------

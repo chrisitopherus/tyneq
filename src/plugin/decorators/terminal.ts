@@ -21,7 +21,7 @@ import { reflect } from "../../utility/reflect";
  *
  * @terminal("product")
  * class ProductOperator extends TyneqTerminalOperator<number, number> {
- *     process(): number {
+ *     public process(): number {
  *         let result = 1;
  *         for (const item of this.source) result *= item;
  *         return result;

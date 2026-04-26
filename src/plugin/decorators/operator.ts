@@ -24,7 +24,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  *     if (typeof predicate !== "function") throw new Error("predicate must be a function");
  * })
  * class MyFilterEnumerator<T> extends TyneqEnumerator<T> {
- *     constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
+ *     public constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
  *         super(source);
  *     }
  *     protected handleNext(): IteratorResult<T> {

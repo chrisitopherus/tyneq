@@ -42,6 +42,11 @@ describe("reflect()", () => {
             expect(ctx.has("describe")).toBe(true);
         });
 
+        it("reflect(Constructor) and reflect(Constructor.prototype) produce identical member sets", () => {
+            const summarize = (m: { kind: string; name: string | symbol }) => ({ kind: m.kind, name: m.name });
+            expect(reflect(Animal).members().map(summarize)).toEqual(reflect(Animal.prototype).members().map(summarize));
+        });
+
         it("accepts a plain object and reflects its own properties", () => {
             const obj = { run() { return 1; } };
             const ctx = reflect(obj);
@@ -102,6 +107,20 @@ describe("reflect()", () => {
             const runDescriptors = ctx.members().filter((m) => m.name === "run");
             expect(runDescriptors).toHaveLength(1);
         });
+
+        it("inherited:true does not include Object.prototype members", () => {
+            const names = reflect(Dog, { inherited: true }).members().map((m) => String(m.name));
+            expect(names).not.toContain("toString");
+            expect(names).not.toContain("hasOwnProperty");
+        });
+
+        it("inherited:true and symbols:true compose correctly", () => {
+            const ctx = reflect(WithSymbol, { inherited: true, symbols: true });
+            const names = ctx.members().map((m) => m.name);
+            expect(names).toContain(SYM);
+            expect(names).toContain("plain");
+            expect(names).not.toContain("toString");
+        });
     });
 
     // -----------------------------------------------------------------------
@@ -127,15 +146,21 @@ describe("reflect()", () => {
     // -----------------------------------------------------------------------
 
     describe("fields()", () => {
-        class WithProtoField {
-            // static field on prototype (not a class instance field)
-            public static staticValue = 42;
-        }
+        class WithProtoField {}
+        Object.defineProperty(WithProtoField.prototype, "protoVal", {
+            value: 42, writable: true, configurable: true, enumerable: true
+        });
 
         it("returns only data descriptors", () => {
             const ctx = reflect(WithProtoField);
             const fields = ctx.fields();
+            expect(fields.length).toBeGreaterThan(0);
             expect(fields.every((f) => f.kind === "data")).toBe(true);
+        });
+
+        it("includes a prototype-level data property with correct value", () => {
+            const field = reflect(WithProtoField).fields().find((f) => f.name === "protoVal");
+            expect(field?.value).toBe(42);
         });
 
         it("returns empty for a prototype with only methods and accessors", () => {
@@ -192,6 +217,24 @@ describe("reflect()", () => {
 
         it("returns true for an inherited member when inherited:true", () => {
             expect(reflect(Dog, { inherited: true }).has("describe")).toBe(true);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // hasMethod()
+    // -----------------------------------------------------------------------
+
+    describe("hasMethod()", () => {
+        it("returns true for an existing method", () => {
+            expect(reflect(Animal).hasMethod("describe")).toBe(true);
+        });
+
+        it("returns false for a name not on the target", () => {
+            expect(reflect(Animal).hasMethod("missing")).toBe(false);
+        });
+
+        it("returns false when the member is an accessor, not a method", () => {
+            expect(reflect(Animal).hasMethod("label")).toBe(false);
         });
     });
 

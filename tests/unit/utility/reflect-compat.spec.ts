@@ -49,8 +49,15 @@ describe("reflect() -- compat surface", () => {
             expect(reflect(proto).tryGetMethod("missing")).toBeUndefined();
         });
 
-        it("returns undefined for a non-function property name", () => {
+        it("returns undefined for a name not on the prototype (instance field)", () => {
+            // value is an instance field set in the constructor, absent from the prototype
             expect(reflect(proto).tryGetMethod("value")).toBeUndefined();
+        });
+
+        it("returns undefined for a prototype-level data property (not a method)", () => {
+            class WithData {}
+            Object.defineProperty(WithData.prototype, "count", { value: 0, writable: true, configurable: true, enumerable: true });
+            expect(reflect(WithData.prototype).tryGetMethod("count")).toBeUndefined();
         });
     });
 
