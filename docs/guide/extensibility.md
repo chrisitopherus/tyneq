@@ -8,7 +8,7 @@ There are two styles: **functional** (quick, minimal boilerplate) and **class-ba
 
 ## When to write a custom operator
 
-The 60+ built-in operators handle most situations. Custom operators make sense when you want to:
+The 55+ built-in operators handle most situations. Custom operators make sense when you want to:
 
 - **Encapsulate domain logic** as a reusable pipeline step (`smoothSeries`, `clampToRange`, `parseLogLine`)
 - **Distribute shared behavior** as a package others import once
@@ -90,12 +90,13 @@ For operators that consume the sequence and return a scalar value.
 
 ```ts
 import { createTerminalOperator } from "tyneq";
+import type { Enumerable } from "tyneq";
 
 createTerminalOperator({
   name: "product",
-  execute(source: Iterable<unknown>, initial: number = 1): number {
+  execute(source: Enumerable<number>, initial: number = 1): number {
     let result = initial;
-    for (const item of source) result *= item as number;
+    for (const item of source) result *= item;
     return result;
   },
   validate(initial) {
@@ -115,7 +116,7 @@ Tyneq.from([2, 3, 4]).product();     // 24
 Tyneq.from([2, 3, 4]).product(10);   // 240
 ```
 
-The `execute` function receives the source as an iterable. Iterate it with `for...of` or destructure it -- whichever fits your logic.
+The `execute` function receives the source as an `Enumerable` (re-iterable). Iterate it with `for...of` -- whichever fits your logic.
 
 ---
 
@@ -367,12 +368,13 @@ Extend `TyneqTerminalOperator<TSource, TResult>` and implement `process()`:
 
 ```ts
 import { terminal, TyneqTerminalOperator } from "tyneq";
+import type { Enumerable } from "tyneq";
 
 @terminal("product")
 class ProductOperator extends TyneqTerminalOperator<number, number> {
   private readonly initial: number;
 
-  public constructor(source: Iterable<number>, initial: number = 1) {
+  public constructor(source: Enumerable<number>, initial: number = 1) {
     super(source);
     this.initial = initial;
   }
@@ -393,7 +395,7 @@ declare module "tyneq" {
 Tyneq.from([1, 2, 3, 4]).product(); // 24
 ```
 
-The terminal receives the source as `this.source` (an `Iterable`). Iterate it with `for...of`.
+The terminal receives the source as `this.source` (an `Enumerable`). Iterate it with `for...of`.
 
 Add validation as the second argument:
 
@@ -404,7 +406,7 @@ Add validation as the second argument:
 class NthOperator<T> extends TyneqTerminalOperator<T, T | undefined> {
   private readonly n: number;
 
-  public constructor(source: Iterable<T>, n: number) {
+  public constructor(source: Enumerable<T>, n: number) {
     super(source);
     this.n = n;
   }

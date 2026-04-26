@@ -110,15 +110,6 @@ Replaces every element with the same `value`. Useful for counting or signaling.
 Tyneq.from([1, 2, 3]).populate(0).toArray();   // -> [0, 0, 0]
 ```
 
-#### `cast<U>()`
-
-A compile-time type assertion. No runtime check is performed - TypeScript will trust the cast. Use `ofType` for safe narrowing.
-
-```ts
-const mixed: TyneqSequence<unknown> = Tyneq.from(data);
-const typed = mixed.cast<string>();  // TypeScript now sees TyneqSequence<string>
-```
-
 ---
 
 ### Filtering
@@ -517,10 +508,10 @@ Execute the pipeline immediately and return a concrete value.
 | `toAsync()` | `AsyncIterable<T>` |
 
 ```ts
-const arr = Tyneq.from([1, 2, 3]).toArray();         // [1, 2, 3]
-const set = Tyneq.from([1, 1, 2]).toSet();            // Set{1, 2}
-const map = Tyneq.from(users).toMap(u => [u.id, u]);  // Map<id, User>
-const rec = Tyneq.from(users).toRecord(u => [u.id, u.name]); // { [id]: name }
+const arr = Tyneq.from([1, 2, 3]).toArray();                              // [1, 2, 3]
+const set = Tyneq.from([1, 1, 2]).toSet();                                // Set{1, 2}
+const map = Tyneq.from(users).toMap(u => ({ key: u.id, value: u }));     // Map<id, User>
+const rec = Tyneq.from(users).toRecord(u => ({ key: u.id, value: u.name })); // { [id]: name }
 ```
 
 ---
@@ -529,14 +520,18 @@ const rec = Tyneq.from(users).toRecord(u => [u.id, u.name]); // { [id]: name }
 
 | Operator | Returns | Throws when |
 |---|---|---|
-| `first(pred?)` | First matching element | No match |
+| `first(pred)` | First matching element | No match |
 | `firstOrDefault(pred, default)` | First match or default | - |
-| `last(pred?)` | Last matching element | No match |
+| `last(pred)` | Last matching element | No match |
 | `lastOrDefault(pred, default)` | Last match or default | - |
-| `single(pred?)` | Exactly one matching element | No match or more than one |
+| `single(pred)` | Exactly one matching element | No match or more than one |
 | `singleOrDefault(pred, default)` | One match or default | More than one found |
 | `elementAt(index)` | Element at index | Out of range |
 | `elementAtOrDefault(index, default)` | Element at index or default | - |
+
+Note: `first`, `last`, and `single` require a predicate. To get the first element unconditionally, use `first(() => true)` or `elementAt(0)`.
+
+
 
 ```ts
 const users = Tyneq.from([

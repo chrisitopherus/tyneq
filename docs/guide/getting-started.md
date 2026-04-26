@@ -156,6 +156,6 @@ const [first, second] = evens;           // first=2, second=4
 You have the basics. Here is where to go next:
 
 - [Core Concepts](./concepts.md) - understand streaming vs. buffering, the execution model, and memoization in depth
-- [Operators](./operators.md) - all 60+ operators with examples
+- [Operators](./operators.md) - all 55+ operators with examples
 - [Custom Operators](./extensibility.md) - add your own operators to every sequence
 - [Query Plan & Compiler](./query-plan.md) - inspect and compile pipelines as metadata
