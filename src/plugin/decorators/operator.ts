@@ -3,7 +3,7 @@ import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { PluginError } from "../../core/errors/PluginError";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
 import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
@@ -47,7 +47,7 @@ export function operator<TArgs extends unknown[] = never>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (!ReflectionUtility.hasMethod(target.prototype, "handleNext")) {
+        if (!reflect(target.prototype).hasMethod("handleNext")) {
             throw new PluginError(
                 `@operator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqEnumerator<TInput, TOutput>.",

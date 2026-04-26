@@ -5,7 +5,7 @@ import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import type { OperatorCategory } from "../../types/queryplan";
 import { Constructor } from "../../types/utility";
 import { PluginError } from "../../core/errors/PluginError";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
 import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
@@ -47,7 +47,7 @@ export function orderedOperator<TArgs extends unknown[] = never>(
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends Constructor<any>>(target: TClass, _context: ClassDecoratorContext<TClass>): TClass {
-        if (!ReflectionUtility.hasMethod(target.prototype, "handleNext")) {
+        if (!reflect(target.prototype).hasMethod("handleNext")) {
             throw new PluginError(
                 `@orderedOperator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqOrderedEnumerator<T>.",

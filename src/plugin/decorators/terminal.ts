@@ -2,7 +2,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { PluginError } from "../../core/errors/PluginError";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
 
 /**
  * Class decorator that registers a class as a terminal operator.
@@ -39,7 +39,7 @@ export function terminal<TArgs extends unknown[] = never>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (!ReflectionUtility.hasMethod(target.prototype, "process")) {
+        if (!reflect(target.prototype).hasMethod("process")) {
             throw new PluginError(
                 `@terminal("${name}"): class "${target.name}" must define a public process(): TResult method. `
                 + "Ensure the class extends TyneqTerminalOperator<TSource, TResult>.",

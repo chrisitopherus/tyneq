@@ -7,7 +7,7 @@ import { TyneqError } from "./TyneqError";
  *
  * @example
  * ```ts
- * try { ReflectionUtility.getPrototypeMethod(proto, "missing"); }
+ * try { reflect(proto).getMethod("missing"); }
  * catch (e) {
  *   if (e instanceof ReflectionError) {
  *     console.log(e.methodName, e.prototypeName, e.message);

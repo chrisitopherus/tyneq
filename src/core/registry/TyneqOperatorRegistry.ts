@@ -1,6 +1,6 @@
 import { OperatorEntry, OperatorSource, SequenceConstructor } from "../../types/core";
 import { OperatorMetadata } from "../OperatorMetadata";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
 import { Lazy } from "../../utility/Lazy";
 import { RegistryError } from "../errors/RegistryError";
 import { Maybe } from "../../types/utility";
@@ -254,7 +254,7 @@ export class OperatorRegistry {
             );
         }
 
-        const lazyMethod = new Lazy(() => ReflectionUtility.getPrototypeMethod(targetClass.prototype, name));
+        const lazyMethod = new Lazy(() => reflect(targetClass.prototype).getMethod(name).value);
         const entry: OperatorEntry = {
             metadata: new OperatorMetadata(name, kind, "internal", targetClass),
             impl: function (this: unknown, ...args: unknown[]) {
