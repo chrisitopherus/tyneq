@@ -62,8 +62,8 @@ export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> =
  * ```ts
  * // Generic return type constrained to the concrete key type:
  * type ValueAt<T, K extends keyof T> = Assume<T[K], string>;
- * // T[K] is string -> resolves to string (narrow)
- * // T[K] is number -> resolves to string (fallback)
+ * // T[K] is string -> resolves to T[K] (the specific type is kept)
+ * // T[K] is number -> resolves to string (falls back to the bound)
  * ```
  *
  * @group Types

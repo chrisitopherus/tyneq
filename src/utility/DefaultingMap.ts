@@ -8,25 +8,20 @@ export class DefaultingMap<TKey, TValue> extends Map<TKey, TValue> {
 
     /** Returns the value for `key`, or initialises and stores it via `initValue()` if absent. */
     public getOrInit(key: TKey, initValue: () => TValue): TValue {
-        let value = this.get(key);
-
-        if (value === undefined) {
-            value = initValue();
-            this.set(key, value);
+        if (!this.has(key)) {
+            this.set(key, initValue());
         }
 
-        return value;
+        return this.get(key) as TValue;
     }
 
     /** Sets `key` to `initValue` if absent; otherwise replaces the current value with `updateValue(current)`. */
     public setOrUpdate(key: TKey, updateValue: (currentValue: TValue) => TValue, initValue: TValue): void {
-        const currentValue = this.get(key);
-        if (currentValue === undefined) {
+        if (!this.has(key)) {
             this.set(key, initValue);
             return;
         }
 
-        const newValue = updateValue(currentValue);
-        this.set(key, newValue);
+        this.set(key, updateValue(this.get(key) as TValue));
     }
 }

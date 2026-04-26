@@ -23,6 +23,15 @@ describe("DefaultingMap", () => {
             map.getOrInit("x", () => { called = true; return 2; });
             expect(called).toBe(false);
         });
+
+        it("returns a falsy stored value (0) without re-initialising", () => {
+            const map = new DefaultingMap<string, number>();
+            map.set("k", 0);
+            let calls = 0;
+            const result = map.getOrInit("k", () => { calls++; return 99; });
+            expect(result).toBe(0);
+            expect(calls).toBe(0);
+        });
     });
 
     describe("setOrUpdate", () => {
@@ -44,6 +53,13 @@ describe("DefaultingMap", () => {
             map.set("k", "hello");
             map.setOrUpdate("k", (v) => v + "!", "ignored");
             expect(map.get("k")).toBe("hello!");
+        });
+
+        it("calls updateValue (not initValue) for a falsy stored value (0)", () => {
+            const map = new DefaultingMap<string, number>();
+            map.set("k", 0);
+            map.setOrUpdate("k", (v) => v + 10, 999);
+            expect(map.get("k")).toBe(10);
         });
     });
 });
