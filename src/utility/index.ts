@@ -21,5 +21,6 @@
 export { ArgumentUtility } from "./ArgumentUtility";
 export { TypeGuardUtility } from "./TypeGuardUtility";
 export { ValidationBuilder } from "./ValidationBuilder";
-export { ReflectionUtility } from "./ReflectionUtility";
 export { Lazy } from "./Lazy";
+export { reflect, ReflectionContext } from "./reflect";
+export type { MemberDescriptor, MethodDescriptor, DataDescriptor, AccessorDescriptor, ReflectOptions } from "../types/reflection";
