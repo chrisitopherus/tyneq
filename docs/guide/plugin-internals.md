@@ -52,7 +52,7 @@ Understanding how sequences work internally is essential for building custom seq
 ```
 TyneqEnumerableCore<T>          (abstract -- adds orderBy, memoize, pipe)
   |
-  +-- TyneqEnumerableBase<T>    (abstract -- adds all 60+ operators)
+  +-- TyneqEnumerableBase<T>    (abstract -- adds all 55+ operators)
         |
         +-- TyneqEnumerable<T>           (concrete -- standard sequences)
         +-- TyneqOrderedEnumerable<T>    (concrete -- ordered sequences)
@@ -149,11 +149,23 @@ This is where it gets interesting. Let's build a `ValidatedSequence` -- a sequen
 
 Your custom sequence extends `TyneqEnumerableBase` and implements the three abstract factory methods:
 
+::: warning Internal API
+`TyneqEnumerableBase`, `TyneqEnumerable`, `TyneqOrderedEnumerable`, and `TyneqCachedEnumerable`
+are internal concrete classes. They are not exported from any public subpath. Building a custom
+sequence type requires access to these internals -- this is an advanced use case intended for
+contributors or library authors who vendor Tyneq and ship their own distribution.
+
+All public-facing types (`TyneqSequence`, `Enumerator`, `Comparer`, etc.) are available from
+`"tyneq"` as usual.
+:::
+
 ```ts
-import { TyneqEnumerableBase } from "tyneq/core"; // internal, see note below
-import { TyneqEnumerable } from "tyneq/core";
-import { TyneqOrderedEnumerable } from "tyneq/core";
-import { TyneqCachedEnumerable } from "tyneq/core";
+// Internal imports -- not available from any public subpath.
+// These are shown for documentation purposes only.
+// import { TyneqEnumerableBase } from "<tyneq-internals>";
+// import { TyneqEnumerable } from "<tyneq-internals>";
+// import { TyneqOrderedEnumerable } from "<tyneq-internals>";
+// import { TyneqCachedEnumerable } from "<tyneq-internals>";
 import type {
   Enumerator, EnumeratorFactory, TyneqSequence,
   TyneqOrderedSequence, TyneqCachedSequence, Comparer,
@@ -244,18 +256,14 @@ Now we need a way for users to enter the `ValidatedSequence` from a regular sequ
 
 ```ts
 import { OperatorRegistry, OperatorMetadata, QueryNode, tyneqQueryNode } from "tyneq";
-import { TyneqEnumerableBase } from "tyneq/core";
-import { RegistrationUtility } from "tyneq/plugin";
+// TyneqEnumerableBase is internal -- not importable from a public subpath.
+// In a real implementation that has access to internals, use it as the target class.
+// Here we cast `this` to access the query node and create the sequence.
 
 OperatorRegistry.register({
-  metadata: new OperatorMetadata(
-    "validate",       // operator name
-    "streaming",      // kind
-    "external",       // source
-    TyneqEnumerableBase // target class -- available on ALL sequences
-  ),
+  metadata: OperatorMetadata.streaming("validate"), // patches onto all sequences
   impl: function (
-    this: TyneqEnumerableBase<unknown>,
+    this: { readonly [tyneqQueryNode]: unknown; [key: string]: unknown },
     validator: (item: unknown) => boolean,
     label: string = "validate"
   ) {
@@ -263,10 +271,11 @@ OperatorRegistry.register({
       throw new TypeError("validator must be a function");
     }
 
-    const node = RegistrationUtility.buildQueryNode(this, "validate", [validator, label], "streaming");
+    const parentNode = this[tyneqQueryNode] as import("tyneq").QueryPlanNode | null;
+    const node = new QueryNode("validate", [validator, label], parentNode, "streaming");
 
     return new ValidatedEnumerable(
-      this as unknown as TyneqSequence<unknown>,
+      this as unknown as import("tyneq").TyneqSequence<unknown>,
       validator,
       label,
       node
@@ -489,7 +498,7 @@ Every registered operator carries an `OperatorMetadata` instance. It describes t
 | Field | Type | Meaning |
 |---|---|---|
 | `name` | `string` | Operator name as it appears on sequences and in query plans |
-| `kind` | `OperatorKind` | `"streaming"`, `"buffer"`, `"terminal"`, `"source"`, `"cache"`, `"extension"` |
+| `kind` | `OperatorKind` | `"streaming"`, `"buffer"`, `"terminal"`, `"source"`, `"cache"`, `"extension"`, `"unknown"` (fallback, not produced by any factory) |
 | `source` | `OperatorSource` | `"internal"` (built-in) or `"external"` (plugin) |
 | `targetClass` | `SequenceConstructor \| undefined` | The class whose prototype gets patched. `undefined` for source operators. |
 | `extensions` | `Record<string, unknown>` | Custom metadata for introspection. Free-form dictionary for plugin-specific data. |

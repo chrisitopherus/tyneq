@@ -280,9 +280,9 @@ const plan = Tyneq.from([1, 2, 3])
 
 const compiler = new QueryPlanCompiler();
 
-compiler.compile(plan).toArray();                       // -> [20, 30]
-compiler.compile(plan, { source: [0, 2, 4] }).toArray() // -> [20, 40]
-compiler.compile(plan, { source: [5, 6, 7] }).toArray() // -> [50, 60, 70]
+compiler.compile(plan).toArray();                       // [20, 30]
+compiler.compile(plan, { source: [0, 2, 4] }).toArray() // [20, 40]
+compiler.compile(plan, { source: [5, 6, 7] }).toArray() // [50, 60, 70]
 ```
 
 The original plan is not mutated. Each `compile` call is independent. This makes it straightforward to build a pipeline once and run it against many data sets - for example, running the same report logic across different time windows or tenants.
