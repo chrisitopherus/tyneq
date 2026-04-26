@@ -64,6 +64,9 @@ export { orderedOperator } from "./decorators/orderedOperator";
 export { cachedTerminal } from "./decorators/cachedTerminal";
 export { orderedTerminal } from "./decorators/orderedTerminal";
 
+// --- Plugin utilities ---
+export { EnumeratorUtility } from "../utility/EnumeratorUtility";
+
 // --- Factory functions ---
 export { createOperator } from "./registration/createOperator";
 export { createGeneratorOperator } from "./registration/createGeneratorOperator";

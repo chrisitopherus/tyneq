@@ -4,7 +4,7 @@
  *
  * @internal
  */
-export class TyneqMap<TKey, TValue> extends Map<TKey, TValue> {
+export class DefaultingMap<TKey, TValue> extends Map<TKey, TValue> {
 
     /** Returns the value for `key`, or initialises and stores it via `initValue()` if absent. */
     public getOrInit(key: TKey, initValue: () => TValue): TValue {

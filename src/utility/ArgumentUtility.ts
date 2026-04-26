@@ -272,11 +272,10 @@ export class ArgumentUtility {
 
     // --- Infrastructure ---
 
-    
-    public static extractParameter<T>(param: Record<string, T>): KeyValuePair<string, T>;
-    public static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;
-    public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T>;
-    public static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T> {
+    private static extractParameter<T>(param: Record<string, T>): KeyValuePair<string, T>;
+    private static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;
+    private static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T>;
+    private static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T> {
         return extractParameter(param as any, paramName as any);
     }
 }

@@ -2,10 +2,12 @@ import { Enumerator } from "../types/core";
 import { Optional } from "../types/utility";
 
 /**
- * Low-level helpers for working with `Enumerator<T>` objects.
+ * Low-level helpers for working with `Enumerator<T>` objects inside custom operator enumerators.
  *
- * @group Utilities
- * @internal
+ * Import from `"tyneq/plugin"` when writing class-based operators that need to convert
+ * between `Iterable<T>` and `Enumerator<T>`, or that need safe cleanup via `tryDispose`.
+ *
+ * @group Plugin Utilities
  */
 export class EnumeratorUtility {
     private constructor() { }

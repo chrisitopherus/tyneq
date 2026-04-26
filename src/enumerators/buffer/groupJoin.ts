@@ -1,7 +1,7 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
-import { TyneqMap } from "../../utility/TyneqMap";
+import { DefaultingMap } from "../../utility/DefaultingMap";
 
 /**
  * Correlates outer elements with groups of matching inner elements.
@@ -20,7 +20,7 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
     private readonly innerKeySelector: (inner: TInner) => TKey;
     private readonly resultSelector: (outer: TOuter, group: TyneqSequence<TInner>) => TResult;
     private readonly groupFactory: (values: TInner[]) => TyneqSequence<TInner>;
-    private innerLookup = new TyneqMap<TKey, TInner[]>();
+    private innerLookup = new DefaultingMap<TKey, TInner[]>();
 
     
     public constructor(
