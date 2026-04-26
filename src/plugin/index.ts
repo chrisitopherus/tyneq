@@ -13,7 +13,7 @@
  *     if (typeof predicate !== "function") throw new Error("predicate must be a function");
  * })
  * class MyFilterEnumerator<T> extends TyneqEnumerator<T> {
- *     constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
+ *     public constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
  *         super(source);
  *     }
  *     protected handleNext(): IteratorResult<T> {
@@ -63,6 +63,9 @@ export { cachedOperator } from "./decorators/cachedOperator";
 export { orderedOperator } from "./decorators/orderedOperator";
 export { cachedTerminal } from "./decorators/cachedTerminal";
 export { orderedTerminal } from "./decorators/orderedTerminal";
+
+// --- Plugin utilities ---
+export { EnumeratorUtility } from "../utility/EnumeratorUtility";
 
 // --- Factory functions ---
 export { createOperator } from "./registration/createOperator";

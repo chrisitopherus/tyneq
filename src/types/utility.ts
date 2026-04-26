@@ -51,17 +51,41 @@ export type Method = BoundMethod<unknown>;
 export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> = (...args: TArgs) => TInstance;
 
 /**
- * Narrows `T` to `U` if `T extends U`, otherwise uses `U`.
+ * Narrows `T` to `U` if `T extends U`; otherwise falls back to `U`.
+ *
+ * @remarks
+ * Use this when you have a type variable `T` that you know satisfies `U` in context
+ * but TypeScript cannot prove it statically. `Assume<T, U>` resolves to `T` when the
+ * constraint holds and to `U` as a safe fallback when it does not -- avoiding `any`.
+ *
+ * @example
+ * ```ts
+ * // Generic return type constrained to the concrete key type:
+ * type ValueAt<T, K extends keyof T> = Assume<T[K], string>;
+ * // T[K] is string -> resolves to T[K] (the specific type is kept)
+ * // T[K] is number -> resolves to string (falls back to the bound)
+ * ```
  *
  * @group Types
  */
 export type Assume<T, U> = T extends U ? T : U;
 
 /**
- * Identity type - preserves `T` as-is.
+ * Identity type -- preserves `T` as-is with no structural transformation.
  *
  * @remarks
- * Used in positions where an explicit type annotation is needed but no transformation is intended.
+ * Use `Cast<T>` as an explicit annotation in generic contexts where inference would
+ * widen or lose the type, or where you want to document that a type is intentionally
+ * passed through unchanged. It is a zero-cost no-op at both compile time and runtime.
+ *
+ * @example
+ * ```ts
+ * // Annotate a computed property type without changing it:
+ * type Passthrough<T> = Cast<{ [K in keyof T]: T[K] }>;
+ *
+ * // Use as a readable annotation instead of a bare type parameter:
+ * function identity<T>(value: Cast<T>): T { return value; }
+ * ```
  *
  * @group Types
  */

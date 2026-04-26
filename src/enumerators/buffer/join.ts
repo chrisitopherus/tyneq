@@ -2,7 +2,7 @@ import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
-import { TyneqMap } from "../../utility/TyneqMap";
+import { DefaultingMap } from "../../utility/DefaultingMap";
 
 /**
  * Correlates outer elements with matching inner elements using a key equality comparison.
@@ -20,7 +20,7 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
     private readonly outerKeySelector: (outer: TOuter) => TKey;
     private readonly innerKeySelector: (inner: TInner) => TKey;
     private readonly resultSelector: (outer: TOuter, inner: TInner) => TResult;
-    private innerLookup = new TyneqMap<TKey, TInner[]>();
+    private innerLookup = new DefaultingMap<TKey, TInner[]>();
     private pendingOuter!: TOuter;
     private pendingMatches: Nullable<TInner[]> = null;
     private pendingIndex = 0;
