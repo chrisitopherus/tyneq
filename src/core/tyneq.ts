@@ -126,10 +126,12 @@ export class Tyneq {
      * ```
      *
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
      */
     @source({ source: "internal" })
     public static repeat<TSource>(value: TSource, count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
 
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new RepeatEnumerator<TSource>(value, count)
@@ -149,10 +151,16 @@ export class Tyneq {
      * ```
      *
      * @throws {ArgumentNullError} When `next` is null or undefined.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
      */
     @source({ source: "internal" })
     public static generate<TSource, TResult extends TSource>(seed: TSource, next: ItemSelector<TSource, TResult>, count?: number): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ next });
+        if (count !== undefined) {
+            ArgumentUtility.checkNonNegative({ count });
+            ArgumentUtility.checkInteger({ count });
+        }
 
         return new TyneqEnumerable<TResult>({
             getEnumerator: () => new GenerateEnumerator<TSource, TResult>(seed, next, count)
@@ -169,9 +177,17 @@ export class Tyneq {
      * ```ts
      * Tyneq.concat([1, 2], [3, 4], [5]).toArray(); // -> [1, 2, 3, 4, 5]
      * ```
+     * 
+     * @throws {ArgumentNullError} When any `source` is null or undefined.
+     * @throws {ArgumentTypeError} When any `source` is not iterable.
      */
     @source({ source: "internal" })
     public static concat<TSource>(...sources: Iterable<TSource>[]): TyneqSequence<TSource> {
+        for (const source of sources) {
+            ArgumentUtility.checkNotOptional({ source });
+            ArgumentUtility.checkIterable({ source });
+        }
+
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new SourceConcatEnumerator<TSource>(...sources)
         }, new QueryNode("concat", sources, null, "source"));

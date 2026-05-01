@@ -18,6 +18,16 @@ export class SourceConcatEnumerator<TSource> extends TyneqBaseEnumerator<TSource
         this.sources = sources;
     }
 
+    protected override disposeAdditional(): void {
+        try {
+            this.currentIterator?.return?.();
+        } catch {
+            // swallow
+        }
+
+        this.currentIterator = null;
+    }
+
     protected override handleNext(): IteratorResult<TSource> {
         while (this.currentSourceIndex < this.sources.length) {
             if (this.currentIterator === null) {
