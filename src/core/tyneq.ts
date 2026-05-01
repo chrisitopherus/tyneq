@@ -64,6 +64,7 @@ export class Tyneq {
     @source({ source: "internal" })
     public static random<TSource>(count: number, randomizer: () => TSource): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
         ArgumentUtility.checkNotOptional({ randomizer });
 
         return new TyneqEnumerable<TSource>({
