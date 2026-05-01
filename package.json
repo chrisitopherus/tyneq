@@ -50,8 +50,8 @@
     "type": "git",
     "url": "git+https://github.com/chrisitopherus/tyneq.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["linq", "lazy", "enumerable", "sequence", "query", "pipeline", "iterator", "typescript"],
+  "author": "Chris",
   "license": "MIT",
   "type": "module",
   "bugs": {
