@@ -44,18 +44,13 @@
  * @module tyneq/plugin
  */
 
-// --- Enumerator base classes ---
 export { TyneqBaseEnumerator } from "../core/enumerators/TyneqBaseEnumerator";
 export { TyneqEnumerator } from "../core/enumerators/TyneqEnumerator";
 export { TyneqCachedEnumerator } from "../core/enumerators/TyneqCachedEnumerator";
 export { TyneqOrderedEnumerator } from "../core/enumerators/TyneqOrderedEnumerator";
-
-// --- Terminal operator base classes ---
 export { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 export { TyneqCachedTerminalOperator } from "../core/terminal/TyneqCachedTerminalOperator";
 export { TyneqOrderedTerminalOperator } from "../core/terminal/TyneqOrderedTerminalOperator";
-
-// --- Class decorators ---
 export { operator } from "./decorators/operator";
 export { terminal } from "./decorators/terminal";
 export { source } from "./decorators/source";
@@ -63,11 +58,7 @@ export { cachedOperator } from "./decorators/cachedOperator";
 export { orderedOperator } from "./decorators/orderedOperator";
 export { cachedTerminal } from "./decorators/cachedTerminal";
 export { orderedTerminal } from "./decorators/orderedTerminal";
-
-// --- Plugin utilities ---
 export { EnumeratorUtility } from "../utility/EnumeratorUtility";
-
-// --- Factory functions ---
 export { createOperator } from "./registration/createOperator";
 export { createGeneratorOperator } from "./registration/createGeneratorOperator";
 export { createTerminalOperator } from "./registration/createTerminalOperator";

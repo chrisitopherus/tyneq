@@ -413,7 +413,7 @@ describe("OperatorRegistry.registerSource", () => {
     const results: unknown[] = [];
     OperatorRegistry.registerSource(name, (...args) => { results.push(...args); return null; });
 
-    const entry = OperatorRegistry.get(name)!;
+    const entry = OperatorRegistry.getSource(name)!;
     entry.impl.call(null as never, "a", "b");
 
     expect(results).toEqual(["a", "b"]);
@@ -438,5 +438,87 @@ describe("OperatorRegistry.registerSource", () => {
     OperatorRegistry.registerSource(name, () => null);
 
     expect((TyneqEnumerableBase.prototype as any)[name]).toBeUndefined();
+  });
+});
+
+// Namespace coexistence
+
+describe("OperatorRegistry namespace coexistence", () => {
+  it("source factory and instance operator with the same name coexist without collision", () => {
+    const name = nextName("coexist");
+
+    OperatorRegistry.registerSource(name, () => null);
+    expect(() =>
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: function () { return null; } })
+    ).not.toThrow();
+
+    expect(OperatorRegistry.hasSource(name)).toBe(true);
+    expect(OperatorRegistry.hasOperator(name)).toBe(true);
+
+    OperatorRegistry.unregisterSource(name);
+    OperatorRegistry.unregisterOperator(name, TyneqEnumerableBase);
+  });
+
+  it("two instance operators with the same name on different targetClasses coexist", () => {
+    const name = nextName("crossProto");
+
+    abstract class TargetA extends TyneqEnumerableBase<unknown> { }
+    abstract class TargetB extends TyneqEnumerableBase<unknown> { }
+
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "external", TargetA as never), impl: function () { return null; } });
+    expect(() =>
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "external", TargetB as never), impl: function () { return null; } })
+    ).not.toThrow();
+
+    expect(OperatorRegistry.hasOperator(name, TargetA as never)).toBe(true);
+    expect(OperatorRegistry.hasOperator(name, TargetB as never)).toBe(true);
+
+    OperatorRegistry.unregisterOperator(name, TargetA as never);
+    OperatorRegistry.unregisterOperator(name, TargetB as never);
+  });
+
+  it("getOperator returns undefined for an unregistered (name, targetClass) pair", () => {
+    abstract class Stranger extends TyneqEnumerableBase<unknown> { }
+    expect(OperatorRegistry.getOperator("where", Stranger as never)).toBeUndefined();
+  });
+
+  it("hasSource returns false for a name only in the operator namespace", () => {
+    expect(OperatorRegistry.hasSource("where")).toBe(false);
+  });
+
+  it("hasOperator returns false for a name only in the source namespace", () => {
+    expect(OperatorRegistry.hasOperator("from")).toBe(false);
+  });
+
+  it("same-name duplicate in source namespace still throws", () => {
+    const name = nextName("srcDupCoexist");
+    OperatorRegistry.registerSource(name, () => null);
+    expect(() => OperatorRegistry.registerSource(name, () => null)).toThrow(Error);
+    OperatorRegistry.unregisterSource(name);
+  });
+
+  it("same-name duplicate on same targetClass in operator namespace still throws", () => {
+    const name = nextName("opDupCoexist");
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: function () { return null; } });
+    expect(() =>
+      OperatorRegistry.register({ metadata: new OperatorMetadata(name, "buffer"), impl: function () { return null; } })
+    ).toThrow(Error);
+    OperatorRegistry.unregisterOperator(name, TyneqEnumerableBase);
+  });
+
+  it("unregisterOperator removes only the targeted (name, targetClass) pair", () => {
+    const name = nextName("unregOp");
+
+    abstract class TargetC extends TyneqEnumerableBase<unknown> { }
+
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming"), impl: function () { return null; } });
+    OperatorRegistry.register({ metadata: new OperatorMetadata(name, "streaming", "external", TargetC as never), impl: function () { return null; } });
+
+    OperatorRegistry.unregisterOperator(name, TyneqEnumerableBase);
+
+    expect(OperatorRegistry.hasOperator(name, TyneqEnumerableBase)).toBe(false);
+    expect(OperatorRegistry.hasOperator(name, TargetC as never)).toBe(true);
+
+    OperatorRegistry.unregisterOperator(name, TargetC as never);
   });
 });
