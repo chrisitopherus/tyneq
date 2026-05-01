@@ -6,6 +6,7 @@ export { reflect, ReflectionContext } from "./utility/reflect";
 export type { MemberDescriptor, MethodDescriptor, DataDescriptor, AccessorDescriptor, ReflectOptions } from "./types/reflection";
 export { TypeGuardUtility } from "./utility/TypeGuardUtility";
 export { Lazy } from "./utility/Lazy";
+export { TyneqComparer } from "./core/TyneqComparer";
 export * from "./core/errors/TyneqError";
 export * from "./core/errors/InvalidOperationError";
 export * from "./core/errors/KeyNotFoundError";
