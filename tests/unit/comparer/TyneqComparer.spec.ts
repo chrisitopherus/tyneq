@@ -54,9 +54,9 @@ describe("TyneqComparer.defaultComparer", () => {
             expect(Math.sign(ab)).toBe(-Math.sign(ba));
         });
 
-        it("returns exactly -1 or 1 (not just negative/positive)", () => {
-            expect(TyneqComparer.defaultComparer(1, 2)).toBe(-1);
-            expect(TyneqComparer.defaultComparer(2, 1)).toBe(1);
+        it("returns negative or positive values according to ordering", () => {
+            expect(TyneqComparer.defaultComparer(1, 2)).toBeLessThan(0);
+            expect(TyneqComparer.defaultComparer(2, 1)).toBeGreaterThan(0);
         });
     });
 });

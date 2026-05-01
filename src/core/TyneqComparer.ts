@@ -1,5 +1,4 @@
-
-import { Comparer } from "../types/core";
+import { Comparer, EqualityComparer } from "../types/core";
 
 /**
  * Built-in comparers and equality comparers used by ordering and equality operators.
@@ -47,7 +46,7 @@ export class TyneqComparer {
     }
 
     /**
-     * Returns a locale-aware string comparer backed by `String.prototype.localeCompare`.
+     * Returns a locale-aware string comparer backed by `Intl.Collator`.
      *
      * @remarks
      * Pass a `locale` and optional `options` for deterministic cross-environment ordering.
@@ -58,21 +57,25 @@ export class TyneqComparer {
      * seq.orderBy((s) => s, TyneqComparer.createLocaleComparer("en"));
      * ```
      *
-     * @param locale - BCP 47 language tag(s) forwarded to `localeCompare`.
-     * @param options - `Intl.CollatorOptions` forwarded to `localeCompare`.
+     * @param locale - BCP 47 language tag(s) passed to `Intl.Collator`.
+     * @param options - `Intl.CollatorOptions` passed to `Intl.Collator`.
      *
-     * @see {@link caseInsensitiveComparer} for a zero-config case-insensitive ordering comparer.
+     * @see {@link caseInsensitiveComparer} for a locale-independent case-insensitive ordering comparer.
      */
     public static createLocaleComparer(locale?: string | string[], options?: Intl.CollatorOptions): Comparer<string> {
-        return (a, b) => a.localeCompare(b, locale, options);
+        const collator = new Intl.Collator(locale, options);
+        return (a, b) => collator.compare(a, b);
     }
 
     /**
      * Case-insensitive string equality comparer.
      *
      * @remarks
-     * Converts both values to lower-case before comparing with `===`.
-     * Use {@link createLocaleComparer} with `{ sensitivity: "base" }` for locale-aware case-insensitivity.
+     * Converts both values to lower-case with `toLowerCase()` before comparing with `===`.
+     * Locale-independent: results are consistent across environments.
+     *
+     * Use {@link createLocaleComparer} with `{ sensitivity: "base" }` for locale-aware
+     * case-insensitive equality.
      *
      * @see {@link caseInsensitiveComparer} for the ordering (negative/zero/positive) counterpart.
      */
@@ -81,12 +84,15 @@ export class TyneqComparer {
     }
 
     /**
-     * Case-insensitive ordering comparer using `localeCompare` with `sensitivity: "accent"`.
+     * Case-insensitive ordering comparer.
      *
      * @remarks
-     * Returns negative when `a` sorts before `b`, positive when `a` sorts after `b`, and `0`
-     * when `a` and `b` are equal ignoring case. Accented characters are treated as distinct
-     * (e.g. "e" and "e-with-accent" are not equal), but "apple" and "Apple" compare as equal.
+     * Converts both values to lower-case with `toLowerCase()` and compares with `<` / `>`.
+     * Locale-independent: results are consistent across environments and match
+     * {@link caseInsensitiveEqualityComparer} -- strings that compare equal here return `true`
+     * there, and vice versa.
+     *
+     * Use {@link createLocaleComparer} when you need locale-aware case-insensitive ordering.
      *
      * @example
      * ```ts
@@ -94,9 +100,11 @@ export class TyneqComparer {
      * ```
      *
      * @see {@link caseInsensitiveEqualityComparer} for the boolean equality counterpart.
-     * @see {@link createLocaleComparer} for full locale and collation control.
+     * @see {@link createLocaleComparer} for locale-aware ordering.
      */
     public static caseInsensitiveComparer(a: string, b: string): number {
-        return a.localeCompare(b, undefined, { sensitivity: "accent" });
+        const la = a.toLowerCase();
+        const lb = b.toLowerCase();
+        return la > lb ? 1 : la < lb ? -1 : 0;
     }
 }
