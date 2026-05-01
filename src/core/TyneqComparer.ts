@@ -16,7 +16,7 @@ export class TyneqComparer {
      * Natural-order comparer using `<` and `>`.
      *
      * @remarks
-     * Works correctly for numbers, strings, dates, and any type that overloads the relational operators.
+     * Works correctly for numbers, strings, dates, and any type that supports the relational operators.
      *
      * @returns Negative if `a < b`, positive if `a > b`, `0` if equal.
      */
@@ -33,33 +33,37 @@ export class TyneqComparer {
      * Returns a comparer that reverses the order of `comparer`.
      *
      * @remarks
-     * Wraps any existing comparer to sort in descending order without rewriting it.
+     * Use this to invert any custom comparer -- for example, to sort by a locale-aware comparer
+     * in descending order without rewriting it.
+     *
+     * @example
+     * ```ts
+     * const desc = TyneqComparer.reverse(TyneqComparer.createLocaleComparer("en"));
+     * seq.orderBy((s) => s, desc);
+     * ```
      */
     public static reverse<T>(comparer: Comparer<T>): Comparer<T> {
         return (a, b) => comparer(b, a);
     }
 
     /**
-     * Numeric comparer using subtraction (`a - b`).
+     * Returns a locale-aware string comparer backed by `String.prototype.localeCompare`.
      *
      * @remarks
-     * Only correct for finite numbers. Do not use when values may be `NaN` or `Infinity`.
-     */
-    public static numericComparer(a: number, b: number): number {
-        return a - b;
-    }
-
-    /**
-     * Case-sensitive string comparer using `String.prototype.localeCompare`.
+     * Pass a `locale` and optional `options` for deterministic cross-environment ordering.
+     * Without arguments the comparer uses the runtime locale, which may vary across environments.
      *
-     * @remarks
-     * Respects the runtime locale. Pass a `locale` and optional `options` for deterministic
-     * cross-environment ordering (e.g., `TyneqComparer.localeComparer("en")`).
+     * @example
+     * ```ts
+     * seq.orderBy((s) => s, TyneqComparer.createLocaleComparer("en"));
+     * ```
      *
      * @param locale - BCP 47 language tag(s) forwarded to `localeCompare`.
      * @param options - `Intl.CollatorOptions` forwarded to `localeCompare`.
+     *
+     * @see {@link caseInsensitiveComparer} for a zero-config case-insensitive ordering comparer.
      */
-    public static localeComparer(locale?: string | string[], options?: Intl.CollatorOptions): Comparer<string> {
+    public static createLocaleComparer(locale?: string | string[], options?: Intl.CollatorOptions): Comparer<string> {
         return (a, b) => a.localeCompare(b, locale, options);
     }
 
@@ -68,9 +72,31 @@ export class TyneqComparer {
      *
      * @remarks
      * Converts both values to lower-case before comparing with `===`.
-     * Use {@link localeComparer} with `{ sensitivity: "base" }` for locale-aware case-insensitivity.
+     * Use {@link createLocaleComparer} with `{ sensitivity: "base" }` for locale-aware case-insensitivity.
+     *
+     * @see {@link caseInsensitiveComparer} for the ordering (negative/zero/positive) counterpart.
      */
     public static caseInsensitiveEqualityComparer(a: string, b: string): boolean {
         return a.toLowerCase() === b.toLowerCase();
+    }
+
+    /**
+     * Case-insensitive ordering comparer using `localeCompare` with `sensitivity: "accent"`.
+     *
+     * @remarks
+     * Returns negative when `a` sorts before `b`, positive when `a` sorts after `b`, and `0`
+     * when `a` and `b` are equal ignoring case. Accented characters are treated as distinct
+     * (e.g. "e" and "e-with-accent" are not equal), but "apple" and "Apple" compare as equal.
+     *
+     * @example
+     * ```ts
+     * seq.orderBy((s) => s, TyneqComparer.caseInsensitiveComparer)
+     * ```
+     *
+     * @see {@link caseInsensitiveEqualityComparer} for the boolean equality counterpart.
+     * @see {@link createLocaleComparer} for full locale and collation control.
+     */
+    public static caseInsensitiveComparer(a: string, b: string): number {
+        return a.localeCompare(b, undefined, { sensitivity: "accent" });
     }
 }
