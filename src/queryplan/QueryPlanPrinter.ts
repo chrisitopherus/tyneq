@@ -42,8 +42,6 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         return new QueryPlanPrinter(options).visit(node);
     }
 
-    // --- Template methods ---
-
     /**
      * Formats a single operator argument for display.
      * Override to customise how arguments appear in printed plans.
@@ -74,8 +72,6 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         const prefix = isRoot ? "" : `${this.indent}${this.arrow} `;
         return `${prefix}${name}(${argStr})`;
     }
-
-    // --- Private helpers ---
 
     private buildPlan(node: QueryPlanNode): string {
         const nodes = this.collectNodes(node);

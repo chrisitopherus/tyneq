@@ -30,9 +30,7 @@ import type { Enumerable, Enumerator } from "../types/core";
 export class ArgumentUtility {
     private constructor() { }
 
-    // --- Null guards ---
 
-    
     public static checkNotNull<T>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
     public static checkNotNull<T>(param: Nullable<T>, paramName: string): asserts param is T;
     public static checkNotNull<T>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
@@ -72,9 +70,7 @@ export class ArgumentUtility {
         NullGuards.checkNotOptionalOrEmpty(value, key);
     }
 
-    // --- String guards ---
 
-    
     public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>>): asserts param is Record<string, string>;
     public static checkNotNullOrWhiteSpace(param: Optional<string>, paramName: string): asserts param is string;
     public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>> | Optional<string>, paramName?: string): void {
@@ -82,9 +78,7 @@ export class ArgumentUtility {
         StringGuards.checkNotNullOrWhiteSpace(value, key);
     }
 
-    // --- Numeric guards ---
 
-    
     public static checkNonNegative(param: Record<string, number>): void;
     public static checkNonNegative(param: number, paramName: string): void;
     public static checkNonNegative(param: Record<string, number> | number, paramName?: string): void {
@@ -172,10 +166,8 @@ export class ArgumentUtility {
         NumericGuards.checkArrayIndex(value, key, resolvedArrayLength);
     }
 
-    // --- Type guards ---
 
-    
-     
+
     public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, Function>;
      
     public static checkFunction(param: unknown, paramName: string): asserts param is Function;
@@ -269,8 +261,6 @@ export class ArgumentUtility {
             : this.extractParameter(param as Record<string, T>);
         TypeGuards.check(value, key, predicate, validationMessage);
     }
-
-    // --- Infrastructure ---
 
     private static extractParameter<T>(param: Record<string, T>): KeyValuePair<string, T>;
     private static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;

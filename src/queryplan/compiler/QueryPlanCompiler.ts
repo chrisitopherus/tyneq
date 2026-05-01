@@ -1,4 +1,4 @@
-import { TyneqSequence } from "../../types/core";
+import { TyneqSequence, SequenceConstructor } from "../../types/core";
 import { QueryPlanNode } from "../../types/queryplan";
 import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
@@ -148,8 +148,8 @@ export class QueryPlanCompiler {
     }
 
     private compileSource(node: QueryPlanNode, options?: CompileOptions): unknown {
-        const entry = OperatorRegistry.get(node.operatorName);
-        if (!entry || entry.metadata.kind !== "source") {
+        const entry = OperatorRegistry.getSource(node.operatorName);
+        if (!entry) {
             throw new CompilerError(
                 `Unknown source operator "${node.operatorName}". ` +
                 "Register it via OperatorRegistry.registerSource() before compiling.",
@@ -166,28 +166,43 @@ export class QueryPlanCompiler {
     }
 
     private applyOperator(source: unknown, node: QueryPlanNode): unknown {
-        const entry = OperatorRegistry.get(node.operatorName);
+        const entry = this.findOperatorEntry(node.operatorName, source);
 
         if (!entry) {
-            throw new CompilerError(
-                `Operator "${node.operatorName}" is not registered. ` +
-                "Register it via @operator, createOperator, or createGeneratorOperator before compiling.",
-                "operator",
-                node.operatorName
-            );
-        }
-
-        if (entry.metadata.targetClass !== undefined && !(source instanceof entry.metadata.targetClass)) {
-            const expected = entry.metadata.targetClass.name;
-            const actual = source !== null && source !== undefined ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source : "null";
-            throw new CompilerError(
-                `Operator "${node.operatorName}" requires a ${expected} but received ${actual}. ` +
-                "Ensure the source sequence is of the correct type for this operator.",
-                "operator",
-                node.operatorName
-            );
+            const sourceType = source !== null && source !== undefined
+                ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source
+                : "null";
+            const knownForAnyTarget = OperatorRegistry.hasOperator(node.operatorName);
+            const message = knownForAnyTarget
+                ? `Operator "${node.operatorName}" is not registered for sequence type ${sourceType}. ` +
+                  "Ensure the source sequence is of the correct type for this operator."
+                : `Operator "${node.operatorName}" is not registered. ` +
+                  "Register it via @operator, createOperator, or createGeneratorOperator before compiling.";
+            throw new CompilerError(message, "operator", node.operatorName);
         }
 
         return entry.impl.apply(source as never, [...node.args]);
+    }
+
+    // Walk the prototype chain of source to find the most-specific registered entry.
+    private findOperatorEntry(operatorName: string, source: unknown): ReturnType<typeof OperatorRegistry.getOperator> {
+        if (source === null || source === undefined) {
+            return undefined;
+        }
+
+        let proto = Object.getPrototypeOf(source) as object | null;
+        while (proto !== null) {
+            const ctor = (proto as { constructor?: SequenceConstructor }).constructor;
+            if (ctor !== undefined) {
+                const entry = OperatorRegistry.getOperator(operatorName, ctor);
+                if (entry !== undefined) {
+                    return entry;
+                }
+            }
+
+            proto = Object.getPrototypeOf(proto) as object | null;
+        }
+
+        return undefined;
     }
 }

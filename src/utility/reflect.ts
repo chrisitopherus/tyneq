@@ -10,10 +10,6 @@ import type {
 
 export type { AccessorDescriptor, DataDescriptor, MemberDescriptor, MethodDescriptor, ReflectOptions };
 
-// ---------------------------------------------------------------------------
-// ReflectionContext
-// ---------------------------------------------------------------------------
-
 /**
  * The result of a {@link reflect} call. Provides typed access to the members of
  * the reflected target.
@@ -29,10 +25,6 @@ export class ReflectionContext<_T extends object> {
         this.proto = proto;
         this.options = options;
     }
-
-    // -----------------------------------------------------------------------
-    // Bulk accessors
-    // -----------------------------------------------------------------------
 
     /**
      * Returns descriptors for all own (and optionally inherited) members,
@@ -63,10 +55,6 @@ export class ReflectionContext<_T extends object> {
     public accessors(): readonly AccessorDescriptor[] {
         return this.members().filter((d): d is AccessorDescriptor => d.kind === "accessor");
     }
-
-    // -----------------------------------------------------------------------
-    // Single-member lookup
-    // -----------------------------------------------------------------------
 
     /**
      * Returns the descriptor for the named member, or `undefined` if not found.
@@ -157,10 +145,6 @@ export class ReflectionContext<_T extends object> {
         return descriptor?.kind === "method" ? descriptor : undefined;
     }
 
-    // -----------------------------------------------------------------------
-    // Internal
-    // -----------------------------------------------------------------------
-
     private findDescriptor(name: string | symbol): Maybe<MemberDescriptor> {
         let current: object | null = this.proto;
         const stop = Object.prototype;
@@ -213,10 +197,6 @@ export class ReflectionContext<_T extends object> {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Factory
-// ---------------------------------------------------------------------------
-
 /**
  * Creates a {@link ReflectionContext} for the given target.
  *
@@ -261,18 +241,11 @@ export function reflect<T extends object>(
     return new ReflectionContext<T>(proto, options);
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function resolveProto(target: (new (...args: any[]) => unknown) | object): object {
     if (typeof target === "function") {
-        // Constructor: reflect the prototype (instance members).
         return (target as any).prototype as object;
     }
 
-    // Object passed directly: reflect it as-is.
-    // This covers both prototype objects (Dog.prototype) and plain objects.
     return target;
 }
 

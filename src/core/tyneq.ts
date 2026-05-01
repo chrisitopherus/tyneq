@@ -7,7 +7,10 @@ import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 import type { SourceKind } from "../types/queryplan";
 import { source } from "../plugin/decorators/source";
-import { Optional } from "../types/utility";
+import { ItemSelector, Optional } from "../types/utility";
+import { RepeatEnumerator } from "./generators/repeat";
+import { GenerateEnumerator } from "./generators/generate";
+import { SourceConcatEnumerator } from "./generators/sourceConcat";
 
 /**
  * Entry point for creating Tyneq sequences.
@@ -63,10 +66,6 @@ export class Tyneq {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkNotOptional({ randomizer });
 
-        if (count === 0) {
-            return this.empty<TSource>();
-        }
-
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new RandomEnumerator<TSource>(count, randomizer)
         }, new QueryNode("random", [count, randomizer], null, "source"));
@@ -102,10 +101,6 @@ export class Tyneq {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
 
-        if (count === 0) {
-            return this.empty<number>();
-        }
-
         const end = start + count - 1;
         return new TyneqEnumerable<number>({
             getEnumerator: () => new RangeEnumerator(start, end)
@@ -119,6 +114,66 @@ export class Tyneq {
             new EnumerableAdapter<TSource>([]),
             new QueryNode("empty", [], null, "source")
         );
+    }
+
+    /**
+     * Creates a sequence that yields `value` exactly `count` times.
+     *
+     * @example
+     * ```ts
+     * Tyneq.repeat("x", 3).toArray(); // -> ["x", "x", "x"]
+     * ```
+     *
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     */
+    @source({ source: "internal" })
+    public static repeat<TSource>(value: TSource, count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkNonNegative({ count });
+
+        return new TyneqEnumerable<TSource>({
+            getEnumerator: () => new RepeatEnumerator<TSource>(value, count)
+        }, new QueryNode("repeat", [value, count], null, "source"));
+    }
+
+    /**
+     * Creates a sequence by repeatedly applying `next` to produce each element from the previous one.
+     *
+     * @remarks
+     * The selector receives `(currentValue, index)`. Each call's return value becomes the input
+     * for the next call. Omit `count` for an infinite sequence; pair with `take` to bound it.
+     *
+     * @example
+     * ```ts
+     * Tyneq.generate(1, (x) => x * 2, 4).toArray(); // -> [2, 4, 8, 16]
+     * ```
+     *
+     * @throws {ArgumentNullError} When `next` is null or undefined.
+     */
+    @source({ source: "internal" })
+    public static generate<TSource, TResult extends TSource>(seed: TSource, next: ItemSelector<TSource, TResult>, count?: number): TyneqSequence<TResult> {
+        ArgumentUtility.checkNotOptional({ next });
+
+        return new TyneqEnumerable<TResult>({
+            getEnumerator: () => new GenerateEnumerator<TSource, TResult>(seed, next, count)
+        }, new QueryNode("generate", [seed, next, count], null, "source"));
+    }
+
+    /**
+     * Creates a sequence that yields all elements from each source in order.
+     *
+     * @remarks
+     * Returns an empty sequence when called with no arguments.
+     *
+     * @example
+     * ```ts
+     * Tyneq.concat([1, 2], [3, 4], [5]).toArray(); // -> [1, 2, 3, 4, 5]
+     * ```
+     */
+    @source({ source: "internal" })
+    public static concat<TSource>(...sources: Iterable<TSource>[]): TyneqSequence<TSource> {
+        return new TyneqEnumerable<TSource>({
+            getEnumerator: () => new SourceConcatEnumerator<TSource>(...sources)
+        }, new QueryNode("concat", sources, null, "source"));
     }
 
     /**

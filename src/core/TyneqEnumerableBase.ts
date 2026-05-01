@@ -5,7 +5,6 @@ import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
 import { sequence } from "../plugin/decorators/sequence";
 import { builtin } from "../plugin/decorators/builtin";
 
-// --- Terminal operators ---
 import { AggregateOperator } from "../operators/aggregate";
 import { AllOperator } from "../operators/all";
 import { AnyOperator } from "../operators/any";
@@ -34,7 +33,6 @@ import { ToAsyncOperator } from "../operators/toAsync";
 import { ToMapOperator } from "../operators/toMap";
 import { ToRecordOperator } from "../operators/toRecord";
 import { ToSetOperator } from "../operators/toSet";
-// --- Streaming enumerators ---
 import { AppendEnumerator } from "../enumerators/streaming/append";
 import { ChunkEnumerator } from "../enumerators/streaming/chunk";
 import { ConcatEnumerator } from "../enumerators/streaming/concat";
@@ -57,7 +55,6 @@ import { TapIfEnumerator } from "../enumerators/streaming/tapIf";
 import { ThrottleEnumerator } from "../enumerators/streaming/throttle";
 import { WhereEnumerator } from "../enumerators/streaming/where";
 import { ZipEnumerator } from "../enumerators/streaming/zip";
-// --- Buffer enumerators ---
 import { BacksertEnumerator } from "../enumerators/buffer/backsert";
 import { DistinctEnumerator } from "../enumerators/buffer/distinct";
 import { DistinctByEnumerator } from "../enumerators/buffer/distinctBy";
@@ -87,8 +84,6 @@ import { PermutationsEnumerator } from "../enumerators/buffer/permutations";
  */
 @sequence
 export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<TSource> implements TyneqSequence<TSource> {
-    // --- Terminal operators ---
-
     @builtin({ kind: "terminal" })
     public aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
@@ -262,8 +257,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     public toSet(): Set<TSource> {
         return new ToSetOperator(this).process();
     }
-
-    // --- Streaming operators ---
 
     @builtin({ kind: "streaming" })
     public ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U> {
@@ -473,8 +466,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
             this.createNode("zip", "streaming", [other, selector])
         );
     }
-
-    // --- Buffer operators ---
 
     @builtin({ kind: "buffer" })
     public backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource> {
