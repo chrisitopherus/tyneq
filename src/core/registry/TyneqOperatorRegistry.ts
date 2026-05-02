@@ -236,6 +236,7 @@ export class OperatorRegistry {
         if (targetMap === undefined) {
             return undefined;
         }
+        
         if (targetClass !== undefined) {
             return targetMap.get(targetClass);
         }
