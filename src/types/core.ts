@@ -339,9 +339,10 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * ); // true
      * ```
      *
-     * @throws {ArgumentNullError} When `sequence` is null or undefined.
-     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
+     * @throws {ArgumentNullError} When `sequence` is null.
+     * @throws {ArgumentError} When `sequence` is undefined.
      * @throws {ArgumentTypeError} When `sequence` is not iterable.
+     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
      */
     endsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean;
 
@@ -353,9 +354,10 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns `true` when `sequence` is empty (vacuous truth).
      * Returns `false` when `sequence` is longer than the source.
      *
-     * @throws {ArgumentNullError} When `sequence` is null or undefined.
-     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
+     * @throws {ArgumentNullError} When `sequence` is null.
+     * @throws {ArgumentError} When `sequence` is undefined.
      * @throws {ArgumentTypeError} When `sequence` is not iterable.
+     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
      */
     startsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean;
 

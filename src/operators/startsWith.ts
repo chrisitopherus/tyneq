@@ -7,7 +7,7 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns `true` if the source sequence begins with all elements of `sequence` in order.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Enumerates the source only until the result is determined.
  * Uses `equalityComparer` for element comparison, or `===` when omitted.
  * Returns `true` when `sequence` is empty (vacuous truth).
  * Returns `false` when `sequence` is longer than the source.
