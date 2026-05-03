@@ -1,4 +1,5 @@
 import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult, Comparer, EqualityComparer } from "../types/core";
+import { ArgumentOutOfRangeError } from "./errors/argument/ArgumentOutOfRangeError";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { ItemAction, ItemPredicate, ItemSelector } from "../types/utility";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
@@ -37,6 +38,7 @@ import { ToSetOperator } from "../operators/toSet";
 import { AppendEnumerator } from "../enumerators/streaming/append";
 import { ChunkEnumerator } from "../enumerators/streaming/chunk";
 import { ConcatEnumerator } from "../enumerators/streaming/concat";
+import { FlattenEnumerator } from "../enumerators/streaming/flatten";
 import { DefaultIfEmptyEnumerator } from "../enumerators/streaming/defaultIfEmpty";
 import { OfTypeEnumerator } from "../enumerators/streaming/ofType";
 import { PairwiseEnumerator } from "../enumerators/streaming/pairwise";
@@ -45,16 +47,21 @@ import { PrependEnumerator } from "../enumerators/streaming/prepend";
 import { ScanEnumerator } from "../enumerators/streaming/scan";
 import { SelectEnumerator } from "../enumerators/streaming/select";
 import { SelectManyEnumerator } from "../enumerators/streaming/selectMany";
+import { RepeatSequenceEnumerator } from "../enumerators/streaming/repeatSequence";
 import { SkipEnumerator } from "../enumerators/streaming/skip";
 import { SkipLastEnumerator } from "../enumerators/streaming/skipLast";
+import { SkipUntilEnumerator } from "../enumerators/streaming/skipUntil";
 import { SkipWhileEnumerator } from "../enumerators/streaming/skipWhile";
+import { SliceEnumerator } from "../enumerators/streaming/slice";
 import { SplitEnumerator } from "../enumerators/streaming/split";
 import { TakeEnumerator } from "../enumerators/streaming/take";
+import { TakeUntilEnumerator } from "../enumerators/streaming/takeUntil";
 import { TakeWhileEnumerator } from "../enumerators/streaming/takeWhile";
 import { TapEnumerator } from "../enumerators/streaming/tap";
 import { TapIfEnumerator } from "../enumerators/streaming/tapIf";
 import { ThrottleEnumerator } from "../enumerators/streaming/throttle";
 import { WhereEnumerator } from "../enumerators/streaming/where";
+import { WindowEnumerator } from "../enumerators/streaming/window";
 import { ZipEnumerator } from "../enumerators/streaming/zip";
 import { BacksertEnumerator } from "../enumerators/buffer/backsert";
 import { DistinctEnumerator } from "../enumerators/buffer/distinct";
@@ -310,6 +317,15 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "streaming" })
+    public flatten<TInner>(): TyneqSequence<TInner> {
+        const self = this as unknown as TyneqEnumerableBase<Iterable<TInner>>;
+        return self.createSequence(
+            () => new FlattenEnumerator<TInner>(self.getEnumerator()),
+            self.createNode("flatten", "streaming")
+        );
+    }
+
+    @builtin({ kind: "streaming" })
     public pairwise(): TyneqSequence<[TSource, TSource]> {
         return this.createSequence(
             () => new PairwiseEnumerator<TSource>(this.getEnumerator()),
@@ -370,6 +386,28 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "streaming" })
+    public window(size: number, step: number = 1): TyneqSequence<TSource[]> {
+        ArgumentUtility.checkSafeInteger({ size });
+        ArgumentUtility.checkPositive({ size });
+        ArgumentUtility.checkSafeInteger({ step });
+        ArgumentUtility.checkPositive({ step });
+        return this.createSequence(
+            () => new WindowEnumerator<TSource>(this.getEnumerator(), size, step),
+            this.createNode("window", "streaming", [size, step])
+        );
+    }
+
+    @builtin({ kind: "streaming" })
+    public repeat(count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
+        return this.createSequence(
+            () => new RepeatSequenceEnumerator<TSource>(this.getEnumerator(), this, count),
+            this.createNode("repeat", "streaming", [count])
+        );
+    }
+
+    @builtin({ kind: "streaming" })
     public skip(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
         return this.createSequence(
@@ -387,11 +425,39 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "streaming" })
+    public skipUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ predicate });
+        return this.createSequence(
+            () => new SkipUntilEnumerator<TSource>(this.getEnumerator(), predicate),
+            this.createNode("skipUntil", "streaming", [predicate])
+        );
+    }
+
+    @builtin({ kind: "streaming" })
     public skipWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ predicate });
         return this.createSequence(
             () => new SkipWhileEnumerator<TSource>(this.getEnumerator(), predicate),
             this.createNode("skipWhile", "streaming", [predicate])
+        );
+    }
+
+    @builtin({ kind: "streaming" })
+    public slice(start: number, end?: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkNonNegative({ start });
+        ArgumentUtility.checkSafeInteger({ start });
+        if (end !== undefined) {
+            ArgumentUtility.checkNonNegative({ end });
+            ArgumentUtility.checkSafeInteger({ end });
+            if (end < start) {
+                throw new ArgumentOutOfRangeError("end", "`end` must be greater than or equal to `start`.");
+            }
+        }
+
+        const resolvedEnd = end ?? Number.MAX_SAFE_INTEGER;
+        return this.createSequence(
+            () => new SliceEnumerator<TSource>(this.getEnumerator(), start, resolvedEnd),
+            this.createNode("slice", "streaming", [start, end])
         );
     }
 
@@ -409,6 +475,15 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         return this.createSequence(
             () => new TakeEnumerator<TSource>(this.getEnumerator(), count),
             this.createNode("take", "streaming", [count])
+        );
+    }
+
+    @builtin({ kind: "streaming" })
+    public takeUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ predicate });
+        return this.createSequence(
+            () => new TakeUntilEnumerator<TSource>(this.getEnumerator(), predicate),
+            this.createNode("takeUntil", "streaming", [predicate])
         );
     }
 
