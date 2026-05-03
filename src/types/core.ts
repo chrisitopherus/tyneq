@@ -462,6 +462,25 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     defaultIfEmpty(defaultValue: TSource): TyneqSequence<TSource>;
 
     /**
+     * Flattens one level of nesting from a sequence of iterables.
+     *
+     * @remarks
+     * Deferred. Each inner iterable is consumed lazily as the outer sequence advances.
+     * Returns an empty sequence when the source is empty.
+     * Equivalent to `selectMany(x => x)` but without requiring a selector.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([[1, 2], [3, 4], [5]]).flatten().toArray();
+     * // [1, 2, 3, 4, 5]
+     *
+     * Tyneq.from(["hello", "world"]).flatten().toArray();
+     * // ["h", "e", "l", "l", "o", "w", "o", "r", "l", "d"]
+     * ```
+     */
+    flatten<TInner>(this: TyneqSequence<Iterable<TInner>>): TyneqSequence<TInner>;
+
+    /**
      * Returns consecutive overlapping pairs of elements: `[e0,e1]`, `[e1,e2]`, ...
      *
      * @remarks
@@ -478,6 +497,27 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
 
     /** Returns a new sequence with `item` prepended before all source elements. */
     prepend(item: TSource): TyneqSequence<TSource>;
+
+    /**
+     * Repeats the source sequence `count` times.
+     *
+     * @remarks
+     * Deferred. Re-enumerates the source from the beginning for each repetition.
+     * Returns an empty sequence when `count` is `0`.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2]).repeat(3).toArray();
+     * // [1, 2, 1, 2, 1, 2]
+     *
+     * Tyneq.from([1, 2]).repeat(0).toArray();
+     * // []
+     * ```
+     *
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
+     */
+    repeat(count: number): TyneqSequence<TSource>;
 
     /**
      * Replaces each element with `value`, keeping the same sequence length.
@@ -505,6 +545,33 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): TyneqSequence<TResult>;
 
     /**
+     * Yields fixed-size windows (sub-arrays) over the source sequence.
+     *
+     * @remarks
+     * Deferred. O(`size`) memory -- only the current window is held in memory.
+     * When `step` is 1 (the default), windows slide one element at a time (overlapping).
+     * When `step` equals `size`, windows are non-overlapping (tumbling).
+     * When `step` exceeds `size`, elements between windows are skipped (gaps).
+     * Yields no windows when the source has fewer than `size` elements.
+     * Each yielded array is a snapshot -- mutating it does not affect subsequent windows.
+     *
+     * @example
+     * ```ts
+     * // Sliding (default step = 1)
+     * Tyneq.range(1, 5).window(3).toArray();
+     * // [[1,2,3], [2,3,4], [3,4,5]]
+     *
+     * // Tumbling (step = size)
+     * Tyneq.range(1, 6).window(2, 2).toArray();
+     * // [[1,2], [3,4], [5,6]]
+     * ```
+     *
+     * @throws {ArgumentOutOfRangeError} When `size` is less than `1`.
+     * @throws {ArgumentOutOfRangeError} When `step` is less than `1`.
+     */
+    window(size: number, step?: number): TyneqSequence<TSource[]>;
+
+    /**
      * Skips the first `count` elements.
      *
      * @remarks
@@ -526,6 +593,19 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     skipLast(count: number): TyneqSequence<TSource>;
 
     /**
+     * Skips elements until `predicate` returns `true`, then yields all remaining elements
+     * including the one that triggered the predicate.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     * Once the predicate returns `true` it is never called again.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
+     */
+    skipUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
+
+    /**
      * Skips elements while `predicate` returns `true`, then yields the rest.
      *
      * @remarks
@@ -534,6 +614,28 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @throws {ArgumentNullError} When `predicate` is null or undefined.
      */
     skipWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
+
+    /**
+     * Yields elements between `start` (inclusive) and `end` (exclusive) by index.
+     *
+     * @remarks
+     * Deferred. Enumerates only as far as `end`.
+     * When `end` is omitted, yields all elements from `start` to the end of the sequence.
+     * Returns an empty sequence when `start` is beyond the sequence length.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([0, 1, 2, 3, 4]).slice(1, 4).toArray();
+     * // [1, 2, 3]
+     *
+     * Tyneq.from([0, 1, 2, 3, 4]).slice(2).toArray();
+     * // [2, 3, 4]
+     * ```
+     *
+     * @throws {ArgumentOutOfRangeError} When `start` is negative.
+     * @throws {ArgumentOutOfRangeError} When `end` is negative or less than `start`.
+     */
+    slice(start: number, end?: number): TyneqSequence<TSource>;
 
     /**
      * Splits the sequence at elements where `splitOn` returns `true`.
@@ -551,6 +653,19 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
     take(count: number): TyneqSequence<TSource>;
+
+    /**
+     * Yields elements until `predicate` returns `true`, then stops.
+     * The element that triggered the predicate is not included.
+     *
+     * @remarks
+     * The predicate receives each element and its zero-based index.
+     * Once the predicate returns `true` the sequence ends immediately.
+     *
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
+     */
+    takeUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
     /**
      * Takes elements while `predicate` returns `true`, then stops.
