@@ -140,12 +140,16 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     all(predicate: ItemPredicate<TSource>): boolean;
 
     /**
-     * Returns `true` if the sequence contains `value` using strict equality (`===`).
+     * Returns `true` if the source sequence contains `value`.
      *
      * @remarks
+     * Uses `equalityComparer` for element comparison, or `===` when omitted.
      * Returns `false` for an empty sequence.
+     * Enumerates the source until a match is found or the sequence is exhausted.
+     *
+     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
      */
-    contains(value: TSource): boolean;
+    contains(value: TSource, equalityComparer?: EqualityComparer<TSource>): boolean;
 
     /**
      * Returns the number of elements.
@@ -314,12 +318,48 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     singleOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
     /**
+     * Returns `true` if this sequence ends with all elements of `sequence` in order.
+     *
+     * @remarks
+     * Uses `equalityComparer` for element comparison, or `===` when omitted.
+     * Returns `true` when `sequence` is empty (vacuous truth).
+     * Returns `false` when `sequence` is longer than the source.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2, 3, 4, 5]).endsWith([4, 5]);        // true
+     * Tyneq.from([1, 2, 3, 4, 5]).endsWith([3, 5]);        // false
+     * Tyneq.from([1, 2, 3]).endsWith([]);                   // true
+     * Tyneq.from([1, 2]).endsWith([1, 2, 3]);               // false
+     *
+     * // Custom equality
+     * Tyneq.from(["A", "B", "C"]).endsWith(
+     *   ["b", "c"],
+     *   (a, b) => a.toLowerCase() === b.toLowerCase()
+     * ); // true
+     * ```
+     *
+     * @throws {ArgumentNullError} When `sequence` is null.
+     * @throws {ArgumentError} When `sequence` is undefined.
+     * @throws {ArgumentTypeError} When `sequence` is not iterable.
+     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
+     */
+    endsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean;
+
+    /**
      * Returns `true` if this sequence starts with all elements of `sequence` in order.
      *
      * @remarks
-     * Uses `===` for element comparison. Returns `true` when `sequence` is empty.
+     * Uses `equalityComparer` for element comparison, or `===` when omitted.
+     * Returns `true` when `sequence` is empty (vacuous truth).
+     * Returns `false` when `sequence` is longer than the source.
+     *
+     * @throws {ArgumentNullError} When `sequence` is null.
+     * @throws {ArgumentError} When `sequence` is undefined.
+     * @throws {ArgumentTypeError} When `sequence` is not iterable.
+     * @throws {ArgumentNullError} When `equalityComparer` is null (undefined is allowed).
      */
-    startsWith(sequence: Iterable<TSource>): boolean;
+    startsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean;
 
     /**
      * Returns the sum of `selector` applied to each element.

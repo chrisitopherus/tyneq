@@ -26,6 +26,7 @@ import { MinMaxOperator } from "../operators/minMax";
 import { SequenceEqualOperator } from "../operators/sequenceEqual";
 import { SingleOperator } from "../operators/single";
 import { SingleOrDefaultOperator } from "../operators/singleOrDefault";
+import { EndsWithOperator } from "../operators/endsWith";
 import { StartsWithOperator } from "../operators/startsWith";
 import { SumOperator } from "../operators/sum";
 import { ToArrayOperator } from "../operators/toArray";
@@ -115,8 +116,8 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "terminal" })
-    public contains(value: TSource): boolean {
-        return new ContainsOperator(this, value).process();
+    public contains(value: TSource, equalityComparer?: EqualityComparer<TSource>): boolean {
+        return new ContainsOperator(this, value, equalityComparer).process();
     }
 
     @builtin({ kind: "terminal" })
@@ -220,8 +221,13 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "terminal" })
-    public startsWith(sequence: Iterable<TSource>): boolean {
-        return new StartsWithOperator(this, sequence).process();
+    public endsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean {
+        return new EndsWithOperator(this, sequence, equalityComparer).process();
+    }
+
+    @builtin({ kind: "terminal" })
+    public startsWith(sequence: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>): boolean {
+        return new StartsWithOperator(this, sequence, equalityComparer).process();
     }
 
     @builtin({ kind: "terminal" })
