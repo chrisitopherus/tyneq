@@ -1,5 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
-import { Enumerator, TyneqSequence } from "../../types/core";
+import { Enumerator } from "../../types/core";
 import { Nullable } from "../../types/utility";
 
 /**

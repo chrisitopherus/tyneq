@@ -600,7 +600,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * The predicate receives each element and its zero-based index.
      * Once the predicate returns `true` it is never called again.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     skipUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
@@ -661,7 +662,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * The predicate receives each element and its zero-based index.
      * Once the predicate returns `true` the sequence ends immediately.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     takeUntil(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 

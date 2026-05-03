@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentOutOfRangeError } from "../../../../src";
+import { Tyneq } from "../../../../src";
 
 describe("flatten", () => {
   describe("normal usage", () => {

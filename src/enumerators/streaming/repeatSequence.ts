@@ -28,18 +28,28 @@ export class RepeatSequenceEnumerator<T> extends TyneqEnumerator<T> {
     }
 
     protected override handleNext(): IteratorResult<T> {
-        while (true) {
-            if (this.repetition >= this.count) {
-                return this.done();
-            }
-
+        while (this.repetition < this.count) {
             const next = this.currentEnumerator.next();
             if (!next.done) {
                 return this.yield(next.value);
             }
 
             this.repetition++;
-            this.currentEnumerator = this.source[Symbol.iterator]();
+
+            if (this.repetition < this.count) {
+                const fresh = this.source[Symbol.iterator]();
+                const probe = fresh.next();
+                if (probe.done) {
+                    // Source is empty; all remaining repetitions will also be empty.
+                    this.repetition = this.count;
+                    return this.done();
+                }
+
+                this.currentEnumerator = fresh;
+                return this.yield(probe.value);
+            }
         }
+
+        return this.done();
     }
 }
