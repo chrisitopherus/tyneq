@@ -3,7 +3,7 @@ import { Enumerable } from "../types/core";
 import { EnumeratorUtility } from "../utility/EnumeratorUtility";
 
 /**
- * Returns true if the sequence is null or contains no elements.
+ * Returns true if the sequence has no elements, or if its first element is null or undefined.
  *
  * @remarks
  * Immediate. Reads at most one element from the source (O(1) enumeration) and then disposes the iterator.
