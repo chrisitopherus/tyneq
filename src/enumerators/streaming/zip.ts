@@ -1,6 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**

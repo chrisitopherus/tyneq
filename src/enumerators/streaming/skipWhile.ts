@@ -1,7 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ItemPredicate } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Skips elements from the beginning of the source sequence as long as a predicate is true.

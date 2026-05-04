@@ -3,7 +3,6 @@ import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ItemPredicate } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns the first element matching a predicate, or throws if no match is found.

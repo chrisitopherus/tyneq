@@ -139,12 +139,15 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "terminal" })
     public elementAt(index: number): TSource {
+        ArgumentUtility.checkSafeInteger({ index });
         ArgumentUtility.checkNonNegative({ index });
         return new ElementAtOperator(this, index).process();
     }
 
     @builtin({ kind: "terminal" })
     public elementAtOrDefault(index: number, defaultValue: TSource): TSource {
+        ArgumentUtility.checkSafeInteger({ index });
+        ArgumentUtility.checkNonNegative({ index });
         return new ElementAtOrDefaultOperator(this, index, defaultValue).process();
     }
 
@@ -354,7 +357,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         seed: TResult,
         accumulator: (acc: TResult, item: TSource) => TResult
     ): TyneqSequence<TResult> {
-        ArgumentUtility.checkNotOptional({ seed });
         ArgumentUtility.checkNotOptional({ accumulator });
         ArgumentUtility.checkFunction({ accumulator });
         return this.createSequence(
@@ -409,6 +411,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "streaming" })
     public skip(count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkSafeInteger({ count });
         ArgumentUtility.checkNonNegative({ count });
         return this.createSequence(
             () => new SkipEnumerator<TSource>(this.getEnumerator(), count),
@@ -418,6 +421,8 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "streaming" })
     public skipLast(count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkSafeInteger({ count });
+        ArgumentUtility.checkNonNegative({ count });
         return this.createSequence(
             () => new SkipLastEnumerator<TSource>(this.getEnumerator(), count),
             this.createNode("skipLast", "streaming", [count])
@@ -472,6 +477,8 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "streaming" })
     public take(count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkSafeInteger({ count });
+        ArgumentUtility.checkNonNegative({ count });
         return this.createSequence(
             () => new TakeEnumerator<TSource>(this.getEnumerator(), count),
             this.createNode("take", "streaming", [count])
@@ -550,7 +557,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "buffer" })
     public backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource> {
-        ArgumentUtility.checkNotOptional({ index });
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkSafeInteger({ index });
         ArgumentUtility.checkNonNegative({ index });
