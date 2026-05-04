@@ -411,6 +411,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
 
     @builtin({ kind: "streaming" })
     public skip(count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkSafeInteger({ count });
         ArgumentUtility.checkNonNegative({ count });
         return this.createSequence(
             () => new SkipEnumerator<TSource>(this.getEnumerator(), count),

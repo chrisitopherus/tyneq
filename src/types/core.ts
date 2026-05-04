@@ -210,7 +210,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {ArgumentNullError} When `predicate` is null.
      * @throws {ArgumentError} When `predicate` is undefined.
-     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
+     * @throws {InvalidOperationError} When no element satisfies the predicate.
      */
     first(predicate: ItemPredicate<TSource>): TSource;
 
@@ -247,7 +247,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {ArgumentNullError} When `predicate` is null.
      * @throws {ArgumentError} When `predicate` is undefined.
-     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
+     * @throws {InvalidOperationError} When no element satisfies the predicate.
      */
     last(predicate: ItemPredicate<TSource>): TSource;
 
@@ -317,8 +317,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @throws {ArgumentNullError} When `predicate` is null.
      * @throws {ArgumentError} When `predicate` is undefined.
-     * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
-     * @throws {InvalidOperationError} When more than one element satisfies the predicate.
+     * @throws {InvalidOperationError} When no element satisfies the predicate, or when more than one does.
      */
     single(predicate: ItemPredicate<TSource>): TSource;
 
@@ -605,6 +604,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns an empty sequence when `count` exceeds the sequence length.
      * `count` must be non-negative.
      *
+     * @throws {ArgumentError} When `count` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
     skip(count: number): TyneqSequence<TSource>;

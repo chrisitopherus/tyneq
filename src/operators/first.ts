@@ -1,4 +1,4 @@
-import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
+import { InvalidOperationError } from "../core/errors/InvalidOperationError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ItemPredicate } from "../types/utility";
@@ -33,6 +33,6 @@ export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSour
             }
         }
 
-        throw new SequenceContainsNoElementsError("first");
+        throw new InvalidOperationError("Sequence contains no matching element");
     }
 }

@@ -67,5 +67,17 @@ describe("scan", () => {
         Tyneq.from([1]).scan(0, undefined as any)
       ).toThrow(ArgumentError);
     });
+
+    it("accepts null as seed without throwing", () => {
+      expect(() =>
+        Tyneq.from([1]).scan(null as any, (acc, n) => n).toArray()
+      ).not.toThrow();
+    });
+
+    it("accepts undefined as seed without throwing", () => {
+      expect(() =>
+        Tyneq.from([1]).scan(undefined as any, (acc, n) => n).toArray()
+      ).not.toThrow();
+    });
   });
 });
