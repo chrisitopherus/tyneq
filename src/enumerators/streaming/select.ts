@@ -1,7 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ItemSelector } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Projects each element through a selector.

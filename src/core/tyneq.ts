@@ -1,6 +1,6 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
-import { Enumerable, TyneqSequence } from "../types/core";
+import { TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
@@ -208,7 +208,7 @@ export class Tyneq {
      * @throws {ArgumentNullError} When `source` is null or undefined.
      * @throws {ArgumentTypeError} When `source` is not iterable.
      */
-    public static enumerate<TSource>(source: Iterable<TSource>): Enumerable<[number, TSource]> {
+    public static enumerate<TSource>(source: Iterable<TSource>): TyneqSequence<[number, TSource]> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
         // A fresh `index` counter is created per enumeration via [Symbol.iterator],

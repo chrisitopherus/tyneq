@@ -1,6 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 import { DefaultingMap } from "../../utility/DefaultingMap";
 
 /**

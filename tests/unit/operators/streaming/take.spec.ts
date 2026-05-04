@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../../src";
+import { Tyneq, ArgumentOutOfRangeError } from "../../../../src";
 
 describe("take", () => {
   it("takes first N elements", () => {
@@ -14,8 +14,8 @@ describe("take", () => {
     expect(Tyneq.from([1, 2, 3]).take(100).toArray()).toEqual([1, 2, 3]);
   });
 
-  it("take negative count returns empty sequence", () => {
-    expect(Tyneq.from([1, 2, 3]).take(-5).toArray()).toEqual([]);
+  it("take negative count throws ArgumentOutOfRangeError", () => {
+    expect(() => Tyneq.from([1, 2, 3]).take(-5)).toThrow(ArgumentOutOfRangeError);
   });
 
   it("returns single element when take count is 1", () => {

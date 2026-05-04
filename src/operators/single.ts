@@ -1,9 +1,9 @@
 import { InvalidOperationError } from "../core/errors/InvalidOperationError";
+import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ItemPredicate, Nullable } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns the single element matching a predicate, or throws if there is not exactly one match.
@@ -43,7 +43,7 @@ export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSou
         }
 
         if (!found) {
-            throw new InvalidOperationError("Sequence contains no matching element");
+            throw new SequenceContainsNoElementsError("single");
         }
 
         return single as TSource;

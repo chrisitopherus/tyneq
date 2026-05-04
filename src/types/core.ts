@@ -124,7 +124,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns `false` for an empty sequence.
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     any(predicate: ItemPredicate<TSource>): boolean;
 
@@ -135,7 +136,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns `true` for an empty sequence (vacuous truth).
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     all(predicate: ItemPredicate<TSource>): boolean;
 
@@ -166,7 +168,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns `0` if no elements match or the sequence is empty.
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     countBy(predicate: ItemPredicate<TSource>): number;
 
@@ -186,12 +189,16 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Returns the element at `index`.
      *
+     * @throws {ArgumentError} When `index` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `index` is negative or greater than or equal to the sequence length.
      */
     elementAt(index: number): TSource;
 
     /**
      * Returns the element at `index`, or `defaultValue` if the index is out of range.
+     *
+     * @throws {ArgumentError} When `index` is not a safe integer.
+     * @throws {ArgumentOutOfRangeError} When `index` is negative.
      */
     elementAtOrDefault(index: number, defaultValue: TSource): TSource;
 
@@ -201,7 +208,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
     first(predicate: ItemPredicate<TSource>): TSource;
@@ -212,7 +220,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     firstOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
@@ -224,7 +233,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * When `startIndex` is provided, the search starts at that index.
      * The predicate receives each element and its zero-based index within the full sequence.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
+     * @throws {ArgumentOutOfRangeError} When `startIndex` is negative.
      */
     indexOf(predicate: ItemPredicate<TSource>, startIndex?: number): number;
 
@@ -234,7 +245,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      */
     last(predicate: ItemPredicate<TSource>): TSource;
@@ -245,7 +257,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     lastOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
 
@@ -263,7 +276,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns the element with the maximum key.
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     maxBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: Comparer<TKey>): TSource;
 
@@ -281,7 +295,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns the element with the minimum key.
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     minBy<TKey>(keySelector: (element: TSource) => TKey, comparer?: Comparer<TKey>): TSource;
 
@@ -300,7 +315,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      * @throws {SequenceContainsNoElementsError} When no element satisfies the predicate.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
@@ -312,7 +328,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      * @throws {InvalidOperationError} When more than one element satisfies the predicate.
      */
     singleOrDefault(predicate: ItemPredicate<TSource>, defaultValue: TSource): TSource;
@@ -367,7 +384,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Returns `0` for an empty sequence.
      *
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     sum(selector: (item: TSource) => number): number;
 
@@ -390,14 +408,16 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Materializes the sequence into a `Map`.
      *
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     toMap<TKey, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Map<TKey, TValue>;
 
     /**
      * Materializes the sequence into a plain object record.
      *
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     toRecord<TKey extends string | number | symbol, TValue>(selector: (item: TSource) => KeyValuePair<TKey, TValue>): Record<TKey, TValue>;
 
@@ -413,7 +433,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Returns the arithmetic mean of `selector` applied to each element.
      *
      * @throws {SequenceContainsNoElementsError} When the sequence is empty.
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     average(selector: (item: TSource) => number): number;
 
@@ -423,7 +444,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Applies `func` to each element in order, starting from `seed`. Returns `resultSelector(seed)` for an empty sequence.
      *
-     * @throws {ArgumentNullError} When `func` or `resultSelector` is null or undefined.
+     * @throws {ArgumentNullError} When `func` or `resultSelector` is null.
+     * @throws {ArgumentError} When `func` or `resultSelector` is undefined.
      */
     aggregate<UAccumulate, VResult>(
         seed: UAccumulate,
@@ -446,6 +468,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The last chunk may be shorter than `size` if the sequence length is not divisible by `size`.
      *
+     * @throws {ArgumentError} When `size` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `size` is less than or equal to `0`.
      */
     chunk(size: number): TyneqSequence<TSource[]>;
@@ -491,7 +514,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     /**
      * Filters elements to those for which `guard` returns `true`, narrowing the type to `U`.
      *
-     * @throws {ArgumentNullError} When `guard` is null or undefined.
+     * @throws {ArgumentNullError} When `guard` is null.
+     * @throws {ArgumentError} When `guard` is undefined.
      */
     ofType<U extends TSource>(guard: (value: TSource) => value is U): TyneqSequence<U>;
 
@@ -533,14 +557,16 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The selector receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     select<TResult>(selector: ItemSelector<TSource, TResult>): TyneqSequence<TResult>;
 
     /**
      * Projects each element to an iterable and flattens the results into a single sequence.
      *
-     * @throws {ArgumentNullError} When `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `selector` is null.
+     * @throws {ArgumentError} When `selector` is undefined.
      */
     selectMany<TResult>(selector: (item: TSource) => Iterable<TResult>): TyneqSequence<TResult>;
 
@@ -566,6 +592,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * // [[1,2], [3,4], [5,6]]
      * ```
      *
+     * @throws {ArgumentError} When `size` or `step` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `size` is less than `1`.
      * @throws {ArgumentOutOfRangeError} When `step` is less than `1`.
      */
@@ -588,6 +615,7 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Buffers `count` elements to determine the cutoff.
      *
+     * @throws {ArgumentError} When `count` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
     skipLast(count: number): TyneqSequence<TSource>;
@@ -611,7 +639,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     skipWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
@@ -643,13 +672,15 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The delimiter elements are consumed and not included in any sub-array.
      *
-     * @throws {ArgumentNullError} When `splitOn` is null or undefined.
+     * @throws {ArgumentNullError} When `splitOn` is null.
+     * @throws {ArgumentError} When `splitOn` is undefined.
      */
     split(splitOn: (item: TSource) => boolean): TyneqSequence<TSource[]>;
 
     /**
      * Takes at most the first `count` elements.
      *
+     * @throws {ArgumentError} When `count` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
      */
     take(count: number): TyneqSequence<TSource>;
@@ -673,7 +704,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     takeWhile(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
@@ -683,7 +715,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The action receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `action` is null or undefined.
+     * @throws {ArgumentNullError} When `action` is null.
+     * @throws {ArgumentError} When `action` is undefined.
      */
     tap(action: ItemAction<TSource>): TyneqSequence<TSource>;
 
@@ -693,13 +726,15 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The action receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `action` or `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `action` or `predicate` is null.
+     * @throws {ArgumentError} When `action` or `predicate` is undefined.
      */
     tapIf(action: ItemAction<TSource>, predicate: () => boolean): TyneqSequence<TSource>;
 
     /**
      * Yields every `count`-th element (i.e. elements at indices 0, `count`, `2*count`, ...).
      *
+     * @throws {ArgumentError} When `count` is not a safe integer.
      * @throws {ArgumentOutOfRangeError} When `count` is less than or equal to `0`.
      */
     throttle(count: number): TyneqSequence<TSource>;
@@ -710,7 +745,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The predicate receives each element and its zero-based index.
      *
-     * @throws {ArgumentNullError} When `predicate` is null or undefined.
+     * @throws {ArgumentNullError} When `predicate` is null.
+     * @throws {ArgumentError} When `predicate` is undefined.
      */
     where(predicate: ItemPredicate<TSource>): TyneqSequence<TSource>;
 
@@ -720,7 +756,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Stops at the shorter of the two sequences.
      *
-     * @throws {ArgumentNullError} When `other` or `selector` is null or undefined.
+     * @throws {ArgumentNullError} When `other` or `selector` is null.
+     * @throws {ArgumentError} When `other` or `selector` is undefined.
+     * @throws {ArgumentTypeError} When `other` is not iterable.
      */
     zip<TOther, TResult>(other: Iterable<TOther>, selector: (first: TSource, second: TOther) => TResult): TyneqSequence<TResult>;
 
@@ -730,30 +768,33 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
     // They enumerate part or all of the source during execution.
     // ========================================================================
 
-    /** Returns the sequence without duplicate elements (using `===` equality). */
+    /** Returns the sequence without duplicate elements, using SameValueZero (Set) equality. */
     distinct(): TyneqSequence<TSource>;
 
     /**
      * Returns the sequence without duplicate elements, comparing by the result of `keySelector`.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
-    /** Returns elements not present in `excludedValues`, using `===` equality. */
+    /** Returns elements not present in `excludedValues`, using SameValueZero (Set) equality. */
     except(excludedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns elements whose key (via `keySelector`) is not found in `excludedKeys`.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     exceptBy<TKey>(excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     /**
      * Groups elements by key and projects each group with `resultSelector`.
      *
-     * @throws {ArgumentNullError} When `keySelector`, `valueSelector`, or `resultSelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector`, `valueSelector`, or `resultSelector` is null.
+     * @throws {ArgumentError} When `keySelector`, `valueSelector`, or `resultSelector` is undefined.
      */
     groupBy<TKey, TValue, TResult>(
         keySelector: (item: TSource) => TKey,
@@ -767,7 +808,9 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Elements with no match in `inner` receive an empty group.
      *
-     * @throws {ArgumentNullError} When any selector is null or undefined.
+     * @throws {ArgumentNullError} When any selector is null.
+     * @throws {ArgumentError} When any selector is undefined.
+     * @throws {ArgumentTypeError} When `inner` is not iterable.
      */
     groupJoin<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
@@ -776,20 +819,22 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
         resultSelector: (outer: TSource, group: TyneqSequence<TInner>) => TResult
     ): TyneqSequence<TResult>;
 
-    /** Returns elements that are also present in `intersectedValues`, using `===` equality. */
+    /** Returns elements that are also present in `intersectedValues`, using SameValueZero (Set) equality. */
     intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns elements whose key (via `keySelector`) is found in `intersectedKeys`.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     intersectBy<TKey>(intersectedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
     /**
      * Performs an inner join: produces one result for each matching pair of outer and inner elements.
      *
-     * @throws {ArgumentNullError} When any selector is null or undefined.
+     * @throws {ArgumentNullError} When any selector is null.
+     * @throws {ArgumentError} When any selector is undefined.
      */
     join<TInner, TKey, TResult>(
         inner: Iterable<TInner>,
@@ -813,7 +858,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Stable sort. Append `thenBy`/`thenByDescending` for multi-key sorting.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     orderBy<TKey>(
         keySelector: (item: TSource) => TKey,
@@ -826,7 +872,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * Stable sort. Append `thenBy`/`thenByDescending` for multi-key sorting.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     orderByDescending<TKey>(
         keySelector: (item: TSource) => TKey,
@@ -853,13 +900,14 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      */
     backsert(index: number, other: Iterable<TSource>): TyneqSequence<TSource>;
 
-    /** Returns the distinct elements from both this sequence and `otherValues`, using `===` equality. */
+    /** Returns the distinct elements from both this sequence and `otherValues`, using SameValueZero (Set) equality. */
     union(otherValues: Iterable<TSource>): TyneqSequence<TSource>;
 
     /**
      * Returns the elements from both sequences whose keys are distinct.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     unionBy<TKey>(otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey): TyneqSequence<TSource>;
 
@@ -876,7 +924,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * as the argument. Use this for one-off operator compositions that do not need to be
      * registered via the plugin API.
      *
-     * @throws {ArgumentNullError} When `factory` is null or undefined.
+     * @throws {ArgumentNullError} When `factory` is null.
+     * @throws {ArgumentError} When `factory` is undefined.
      */
     pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult>;
 
@@ -894,7 +943,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * @remarks
      * The first element of the output is `accumulator(seed, source[0])`. Returns an empty sequence when the source is empty.
      *
-     * @throws {ArgumentNullError} When `accumulator` is null or undefined.
+     * @throws {ArgumentNullError} When `accumulator` is null.
+     * @throws {ArgumentError} When `accumulator` is undefined.
      */
     scan<TResult>(seed: TResult, accumulator: (acc: TResult, item: TSource) => TResult): TyneqSequence<TResult>;
 
@@ -922,14 +972,16 @@ export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
     /**
      * Adds an ascending secondary sort key.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     thenBy<TKey>(keySelector: (item: TSource) => TKey, comparer?: Comparer<TKey>): TyneqOrderedSequence<TSource>;
 
     /**
      * Adds a descending secondary sort key.
      *
-     * @throws {ArgumentNullError} When `keySelector` is null or undefined.
+     * @throws {ArgumentNullError} When `keySelector` is null.
+     * @throws {ArgumentError} When `keySelector` is undefined.
      */
     thenByDescending<TKey>(keySelector: (item: TSource) => TKey, comparer?: Comparer<TKey>): TyneqOrderedSequence<TSource>;
 

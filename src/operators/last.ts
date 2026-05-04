@@ -1,9 +1,8 @@
-import { InvalidOperationError } from "../core/errors/InvalidOperationError";
+import { SequenceContainsNoElementsError } from "../core/errors/SequenceContainsNoElementsError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
 import { ItemPredicate, Nullable } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns the last element matching a predicate, or throws if no match is found.
@@ -40,7 +39,7 @@ export class LastOperator<TSource> extends TyneqTerminalOperator<TSource, TSourc
         }
 
         if (!found) {
-            throw new InvalidOperationError("Sequence contains no matching element");
+            throw new SequenceContainsNoElementsError("last");
         }
 
         return lastMatchingElement as TSource;

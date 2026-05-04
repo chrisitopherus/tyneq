@@ -1,7 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
 import { ItemAction } from "../../types/utility";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Invokes a side-effect action for each element without modifying the sequence.

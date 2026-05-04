@@ -23,6 +23,6 @@ export class IsNullOrEmptyOperator<T> extends TyneqTerminalOperator<T, boolean> 
         const first = iterator.next();
 
         EnumeratorUtility.tryDispose(iterator);
-        return first.done === true;
+        return first.done === true || first.value === null || first.value === undefined;
     }
 }
