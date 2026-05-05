@@ -43,8 +43,7 @@
     "docs:publish": "npm run docs:build:pages && gh-pages -d docs/.vitepress/dist -b gh-pages",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
-    "prepublishOnly": "npm test && npm run build",
-    "postbuild": "node --input-type=module --eval \"import{rmSync,readdirSync,statSync}from'fs';function clean(d){for(const e of readdirSync(d)){const p=d+'/'+e;if(statSync(p).isDirectory()){clean(p);try{readdirSync(p).length===0&&rmSync(p,{recursive:true})}catch{}}}}; clean('dist')\""
+    "prepublishOnly": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
