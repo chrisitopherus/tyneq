@@ -7,19 +7,16 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
     },
     "./plugin": {
-      "types": "./dist/plugin/index.d.ts",
-      "import": "./dist/plugin/index.js",
-      "require": "./dist/plugin/index.cjs"
+      "import": { "types": "./dist/plugin/index.d.ts", "default": "./dist/plugin/index.js" },
+      "require": { "types": "./dist/plugin/index.d.cts", "default": "./dist/plugin/index.cjs" }
     },
     "./utility": {
-      "types": "./dist/utility/index.d.ts",
-      "import": "./dist/utility/index.js",
-      "require": "./dist/utility/index.cjs"
+      "import": { "types": "./dist/utility/index.d.ts", "default": "./dist/utility/index.js" },
+      "require": { "types": "./dist/utility/index.d.cts", "default": "./dist/utility/index.cjs" }
     }
   },
   "files": [
@@ -28,7 +25,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc --noEmit && eslint src tests && tsup && tsc --project tsconfig.build.json --emitDeclarationOnly",
+    "build": "tsc --noEmit && eslint src tests && tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
