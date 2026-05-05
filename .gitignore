@@ -156,3 +156,7 @@ vite.config.ts.timestamp-*
 
 # Internal task files (not shipped)
 tasks
+
+# Local scratch directories (not shipped)
+examples
+scripts

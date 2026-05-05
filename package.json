@@ -30,7 +30,6 @@
   "scripts": {
     "build": "tsc --noEmit && eslint src tests && tsup",
     "dev": "tsup --watch",
-    "verify:guides": "npx tsx scripts/verify-guides.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
