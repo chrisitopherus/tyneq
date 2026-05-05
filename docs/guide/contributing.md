@@ -50,6 +50,10 @@ tests/
 
 ## Adding a New Operator
 
+::: tip Plugin authors
+This recipe is for adding a new **built-in** operator to the Tyneq codebase itself. For writing operators in your own package without modifying Tyneq, see [Custom Operators](./extensibility.md).
+:::
+
 ### 1. Choose a category
 
 | Category | When to use | Memory |
@@ -142,7 +146,8 @@ In `src/types/core.ts`:
  * @remarks
  * Deferred. Source is not enumerated until the returned sequence is iterated.
  *
- * @throws {ArgumentNullError} When `predicate` is null or undefined.
+ * @throws {ArgumentNullError} When `predicate` is null.
+ * @throws {ArgumentError} When `predicate` is undefined.
  */
 dropWhile(predicate: (item: TSource) => boolean): TyneqSequence<TSource>;
 ```

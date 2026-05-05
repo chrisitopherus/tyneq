@@ -1,6 +1,5 @@
 import type { Enumerable, EnumeratorFactory, OperatorSource } from "../../types/core";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { RegistrationUtility } from "../RegistrationUtility";

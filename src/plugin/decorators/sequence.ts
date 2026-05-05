@@ -1,7 +1,7 @@
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { SequenceConstructor } from "../../types/core";
 import { reflect } from "../../utility/reflect";
-import { builtinMeta, BuiltinMetadata, BuiltinOptions, MethodWithMetadata } from "./builtin";
+import { builtinMeta, BuiltinMetadata, MethodWithMetadata } from "./builtin";
 
 /**
  * Class decorator - declares this class as a sequence whose `@builtin` methods are operators.

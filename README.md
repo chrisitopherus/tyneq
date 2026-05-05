@@ -4,7 +4,7 @@
     <img src="./docs/public/logo.svg" alt="Tyneq" width="180" height="180" />
   </a>
   <h1>tyneq</h1>
-  <p><strong>Lazy, re-iterable query pipelines for TypeScript.</strong></p>
+  <p><strong>Lazy query pipelines for TypeScript.</strong></p>
 
   <p>
     <a href="https://www.npmjs.com/package/tyneq">
@@ -61,7 +61,7 @@ It is not a thin wrapper around `Array.prototype`. It is a pipeline engine with 
 
 ### Sequences, not cursors
 
-Most iterator libraries give you a one-shot cursor. Once you consume it, it is gone. Tyneq sequences are re-iterable by default -- call any terminal as many times as you want, each gets independent state.
+Most iterator libraries give you a one-shot cursor. Once you consume it, it is gone. Tyneq sequences are re-iterable by default - call any terminal as many times as you want, each gets independent state.
 
 ```ts
 const active = Tyneq.from(users)
@@ -82,9 +82,9 @@ Every operator is explicitly **streaming** (O(1) memory, one element at a time) 
 ```ts
 Tyneq.from(largeDataset)
   .where((x) => x.active)     // streaming
-  .orderBy((x) => x.score)    // buffering -- reads all matching, sorts once
-  .take(10)                    // streaming -- stops after 10
-  .toArray();                  // terminal -- kicks everything off
+  .orderBy((x) => x.score)    // buffering - reads all matching, sorts once
+  .take(10)                    // streaming - stops after 10
+  .toArray();                  // terminal - kicks everything off
 ```
 
 ### Query plans you can actually use
@@ -106,7 +106,7 @@ console.log(QueryPlanPrinter.print(seq[tyneqQueryNode]!));
 //   -> where(<fn>)
 //   -> select(<fn>)
 
-// Compile with optimization -- fuses the two where nodes
+// Compile with optimization - fuses the two where nodes
 const compiler = new QueryPlanCompiler([new QueryPlanOptimizer()]);
 compiler.compile(seq[tyneqQueryNode]!).toArray();
 ```
@@ -143,7 +143,7 @@ Tyneq.from([1, 2, 3]).repeatEach(2).toArray();
 // [1, 1, 2, 2, 3, 3]
 ```
 
-Two registration styles: functional (generators, factories, terminals) and class-based (decorators with full lifecycle). Ship it as a package -- consumers import once and every sequence gains the operator.
+Two registration styles: functional (generators, factories, terminals) and class-based (decorators with full lifecycle). Ship it as a package - consumers import once and every sequence gains the operator.
 
 ---
 
@@ -184,7 +184,7 @@ Tyneq.from(new Set(["a", "b"]));
 Tyneq.range(1, 5);    // [1, 2, 3, 4, 5]
 Tyneq.empty<number>();
 
-// Compose operators -- nothing runs yet
+// Compose operators - nothing runs yet
 const query = Tyneq.range(1, 1_000_000)
   .where((n) => n % 2 === 0)
   .select((n) => n * n)
@@ -192,7 +192,7 @@ const query = Tyneq.range(1, 1_000_000)
 
 // Execute with a terminal
 query.toArray();  // [4, 16, 36, 64, 100]
-query.count();    // 5 -- same query, independent traversal
+query.count();    // 5 - same query, independent traversal
 query.first();    // 4
 
 // Standard iteration works too
@@ -200,7 +200,7 @@ for (const n of query) console.log(n);
 const arr = [...query];
 ```
 
-Multi-key sorting, grouping, joins -- all built in:
+Multi-key sorting, grouping, joins - all built in:
 
 ```ts
 Tyneq.from(employees)
@@ -219,19 +219,19 @@ Tyneq.from(employees)
 
 ## Operators
 
-60+ operators across three categories.
+80+ operators across three categories.
 
 ### Streaming (O(1) memory)
 
-`select` `where` `take` `takeWhile` `skip` `skipWhile` `skipLast` `selectMany` `append` `prepend` `concat` `zip` `scan` `pairwise` `chunk` `split` `defaultIfEmpty` `populate` `cast` `ofType` `tap` `tapIf` `throttle` `pipe`
+`select` `where` `take` `takeWhile` `takeUntil` `skip` `skipWhile` `skipLast` `skipUntil` `slice` `selectMany` `flatten` `append` `prepend` `concat` `zip` `scan` `pairwise` `window` `chunk` `split` `repeat` `defaultIfEmpty` `populate` `ofType` `tap` `tapIf` `throttle` `pipe`
 
 ### Buffering (reads full source once)
 
-`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `distinct` `distinctBy` `reverse` `shuffle` `union` `unionBy` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize`
+`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `distinct` `distinctBy` `reverse` `shuffle` `union` `unionBy` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize` `permutations`
 
 ### Terminal (executes the pipeline)
 
-`toArray` `toSet` `toMap` `toRecord` `toAsync` `first` `firstOrDefault` `last` `lastOrDefault` `single` `singleOrDefault` `elementAt` `elementAtOrDefault` `count` `countBy` `sum` `average` `min` `max` `minBy` `maxBy` `minMax` `aggregate` `any` `all` `contains` `indexOf` `sequenceEqual` `startsWith` `isNullOrEmpty` `consume`
+`toArray` `toSet` `toMap` `toRecord` `toAsync` `first` `firstOrDefault` `last` `lastOrDefault` `single` `singleOrDefault` `elementAt` `elementAtOrDefault` `count` `countBy` `sum` `average` `min` `max` `minBy` `maxBy` `minMax` `aggregate` `any` `all` `contains` `indexOf` `sequenceEqual` `startsWith` `endsWith` `isNullOrEmpty` `consume`
 
 ---
 
@@ -276,12 +276,24 @@ Store pipelines as metadata, optimize them, replay them on any source. See the [
 |---|---|
 | [Getting Started](https://chrisitopherus.github.io/tyneq/guide/getting-started) | Install, first query, sources, re-iteration |
 | [Core Concepts](https://chrisitopherus.github.io/tyneq/guide/concepts) | Execution model, streaming vs. buffering, memoization |
-| [Operators](https://chrisitopherus.github.io/tyneq/guide/operators) | All 60+ operators with examples |
+| [Operators](https://chrisitopherus.github.io/tyneq/guide/operators) | All 80+ operators with examples |
 | [Custom Operators](https://chrisitopherus.github.io/tyneq/guide/extensibility) | Functional API and decorators |
 | [Plugin Internals](https://chrisitopherus.github.io/tyneq/guide/plugin-internals) | Registry, custom enumerators, utility helpers |
 | [Query Plan](https://chrisitopherus.github.io/tyneq/guide/query-plan) | Plan access, printing, walking, transforming, compiling |
 | [Best Practices](https://chrisitopherus.github.io/tyneq/guide/best-practices) | Patterns, pitfalls, and performance guidance |
 | [API Reference](https://chrisitopherus.github.io/tyneq/api/) | Full generated API docs |
+
+---
+
+## Stability
+
+Tyneq follows [Semantic Versioning](https://semver.org/). The public API contract covers:
+
+- All methods on `TyneqSequence`, `TyneqOrderedSequence`, and `TyneqCachedSequence`
+- All symbols exported from the `tyneq`, `tyneq/plugin`, and `tyneq/utility` subpaths
+- The `Tyneq` static factory class
+
+Internal classes (`TyneqEnumerableBase`, `TyneqEnumerableCore`, and anything tagged `@internal`) are **not** part of the contract and may change between minor versions.
 
 ---
 
@@ -296,10 +308,12 @@ npm run lint     # check style
 npm run docs:dev # local docs site
 ```
 
+See the [Contributing guide](https://chrisitopherus.github.io/tyneq/guide/contributing) for the full workflow, including how to add operators, run the test suite, and submit a PR.
+
 Bug reports and feature requests: [github.com/chrisitopherus/tyneq/issues](https://github.com/chrisitopherus/tyneq/issues)
 
 ---
 
 ## License
 
-[MIT](./LICENSE) (c) [chrisitopherus](https://github.com/chrisitopherus)
+[MIT](./LICENSE) Copyright (c) 2026 [chrisitopherus](https://github.com/chrisitopherus)

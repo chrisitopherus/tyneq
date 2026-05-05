@@ -2,7 +2,6 @@ import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ItemPredicate } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns true if any element satisfies a predicate.

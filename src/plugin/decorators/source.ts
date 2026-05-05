@@ -23,7 +23,7 @@ export interface SourceDecoratorOptions {
  *
  * The method itself becomes the factory: when the compiler resolves a source node
  * whose `operatorName` matches the registered name, it calls the method with the
- * node's `args`. No duplication of implementation -- the registration points directly
+ * node's `args`. No duplication of implementation - the registration points directly
  * at the method.
  *
  * The operator name defaults to the method name, so `@source()` is sufficient when

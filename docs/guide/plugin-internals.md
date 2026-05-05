@@ -2,7 +2,7 @@
 
 This guide is for people who want to understand how operator registration works under the hood, how to build custom sequence types, and how to wire bridge methods that let users enter your custom sequence from a regular one.
 
-If you just want to add a custom operator, start with [Custom Operators](./extensibility.md) -- that covers everything for the common cases. Come back here when you want the full architecture.
+If you just want to add a custom operator, start with [Custom Operators](./extensibility.md) - that covers everything for the common cases. Come back here when you want the full architecture.
 
 ---
 
@@ -10,8 +10,8 @@ If you just want to add a custom operator, start with [Custom Operators](./exten
 
 When you call any registration function (`createGeneratorOperator`, `@operator`, etc.), four things happen in order:
 
-1. **Metadata is created** -- name, kind, category, source (`"internal"` or `"external"`), and the target class to patch onto.
-2. **Guards run** -- any guards added via `OperatorRegistry.addGuard` are called synchronously. If a guard throws, registration is aborted.
+1. **Metadata is created** - name, kind, category, source (`"internal"` or `"external"`), and the target class to patch onto.
+2. **Guards run** - any guards added via `OperatorRegistry.addGuard` are called synchronously. If a guard throws, registration is aborted.
 3. **The entry is stored** in `OperatorRegistry`, keyed by name, with the metadata and the implementation function.
 4. **The method is patched** onto the target class's prototype. For standard operators, that is `TyneqEnumerableBase`. For specialized operators, it is `TyneqOrderedEnumerable` or `TyneqCachedEnumerable`.
 
@@ -50,13 +50,13 @@ Since `TyneqOrderedEnumerable` and `TyneqCachedEnumerable` both extend `TyneqEnu
 Understanding how sequences work internally is essential for building custom sequence types. Here is the full class hierarchy:
 
 ```
-TyneqEnumerableCore<T>          (abstract -- adds orderBy, memoize, pipe)
+TyneqEnumerableCore<T>          (abstract - adds orderBy, memoize, pipe)
   |
-  +-- TyneqEnumerableBase<T>    (abstract -- adds all 55+ operators)
+  +-- TyneqEnumerableBase<T>    (abstract - adds all 55+ operators)
         |
-        +-- TyneqEnumerable<T>           (concrete -- standard sequences)
-        +-- TyneqOrderedEnumerable<T>    (concrete -- ordered sequences)
-        +-- TyneqCachedEnumerable<T>     (concrete -- cached sequences)
+        +-- TyneqEnumerable<T>           (concrete - standard sequences)
+        +-- TyneqOrderedEnumerable<T>    (concrete - ordered sequences)
+        +-- TyneqCachedEnumerable<T>     (concrete - cached sequences)
 ```
 
 ### Factory methods
@@ -84,11 +84,11 @@ protected abstract createCachedEnumerable(
 
 Every operator in `TyneqEnumerableBase` delegates to `createEnumerable()` to produce its output sequence. This is what allows different sequence types to control which concrete class gets instantiated.
 
-For example, when you call `.where()` on a `TyneqEnumerable`, it calls `this.createEnumerable(...)` which returns a new `TyneqEnumerable`. When you call `.where()` on a `TyneqOrderedEnumerable`, it calls the same abstract method -- but the ordered class overrides it to return a `TyneqEnumerable` too (ordered-ness does not survive a `where`).
+For example, when you call `.where()` on a `TyneqEnumerable`, it calls `this.createEnumerable(...)` which returns a new `TyneqEnumerable`. When you call `.where()` on a `TyneqOrderedEnumerable`, it calls the same abstract method - but the ordered class overrides it to return a `TyneqEnumerable` too (ordered-ness does not survive a `where`).
 
 ### The SequenceFactory interface
 
-The factory methods are `protected` -- they are not part of the public API. But the registration machinery needs to call them. This is solved via the `SequenceFactory` structural interface:
+The factory methods are `protected` - they are not part of the public API. But the registration machinery needs to call them. This is solved via the `SequenceFactory` structural interface:
 
 ```ts
 // types/core.ts
@@ -100,10 +100,11 @@ export interface SequenceFactory<TSource> {
 }
 ```
 
-This is a structural cast -- it works because `TyneqEnumerableBase` has exactly those methods (they are just `protected`). The internal `RegistrationUtility` class centralizes this cast so it appears in one place instead of scattered across all registration functions. The two key helpers it exposes are:
+This is a structural cast - it works because `TyneqEnumerableBase` has exactly those methods (they are just `protected`). The internal `RegistrationUtility` class centralizes this cast, but it is `@internal` and is not exported from any public subpath - plugin authors cannot import it directly.
 
-- `RegistrationUtility.buildEnumerable(sequence, name, args, category, factory)` -- validates, builds the query node, and calls `createEnumerable`. Use this for standard operators.
-- `RegistrationUtility.buildQueryNode(sequence, name, args, category)` -- builds only the query node. Use this when you need to construct the sequence yourself (ordered/cached operators that need to pass extra context to their enumerator constructor).
+::: warning Internal helper
+`RegistrationUtility` is not part of the public API. The two helpers it provides (`buildEnumerable` and `buildQueryNode`) are used by the library's own registration machinery. In your plugin code, use `new QueryNode(...)` directly (it is exported) and cast via `SequenceFactory<TSource>` as shown in the examples below.
+:::
 
 ---
 
@@ -143,7 +144,7 @@ The result: calling `.orderBy()` on any sequence produces a `TyneqOrderedEnumera
 
 ## Building a custom sequence type
 
-This is where it gets interesting. Let's build a `ValidatedSequence` -- a sequence that carries a validation function and enforces it on every element.
+This is where it gets interesting. Let's build a `ValidatedSequence` - a sequence that carries a validation function and enforces it on every element.
 
 ### Step 1: Define the sequence class
 
@@ -152,7 +153,7 @@ Your custom sequence extends `TyneqEnumerableBase` and implements the three abst
 ::: warning Internal API
 `TyneqEnumerableBase`, `TyneqEnumerable`, `TyneqOrderedEnumerable`, and `TyneqCachedEnumerable`
 are internal concrete classes. They are not exported from any public subpath. Building a custom
-sequence type requires access to these internals -- this is an advanced use case intended for
+sequence type requires access to these internals - this is an advanced use case intended for
 contributors or library authors who vendor Tyneq and ship their own distribution.
 
 All public-facing types (`TyneqSequence`, `Enumerator`, `Comparer`, etc.) are available from
@@ -160,7 +161,7 @@ All public-facing types (`TyneqSequence`, `Enumerator`, `Comparer`, etc.) are av
 :::
 
 ```ts
-// Internal imports -- not available from any public subpath.
+// Internal imports - not available from any public subpath.
 // These are shown for documentation purposes only.
 // import { TyneqEnumerableBase } from "<tyneq-internals>";
 // import { TyneqEnumerable } from "<tyneq-internals>";
@@ -216,12 +217,16 @@ export class ValidatedEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
   }
 
   // When an operator is called on a ValidatedSequence,
-  // the result is a regular TyneqEnumerable -- validation was already applied.
+  // the result should be a regular sequence - validation was already applied.
+  // TyneqEnumerable is not exported publicly. Use the SequenceFactory cast pattern
+  // to call createEnumerable on the parent instead, or keep the ValidatedSequence
+  // hierarchy by returning `new ValidatedEnumerable(...)` here.
   protected override createEnumerable<TResult>(
     factory: EnumeratorFactory<TResult>,
     node: Nullable<QueryPlanNode>
   ): TyneqSequence<TResult> {
-    return new TyneqEnumerable(factory, node);
+    // Delegate to the parent implementation via the SequenceFactory cast.
+    return (this as unknown as import("tyneq").SequenceFactory<TResult>).createEnumerable(factory, node) as TyneqSequence<TResult>;
   }
 
   protected override createOrderedEnumerable<TKey>(
@@ -256,7 +261,7 @@ Now we need a way for users to enter the `ValidatedSequence` from a regular sequ
 
 ```ts
 import { OperatorRegistry, OperatorMetadata, QueryNode, tyneqQueryNode } from "tyneq";
-// TyneqEnumerableBase is internal -- not importable from a public subpath.
+// TyneqEnumerableBase is internal - not importable from a public subpath.
 // In a real implementation that has access to internals, use it as the target class.
 // Here we cast `this` to access the query node and create the sequence.
 
@@ -357,13 +362,13 @@ OperatorRegistry.register({
 });
 ```
 
-This method only shows up on `ValidatedEnumerable` instances -- not on regular sequences. TypeScript enforces this through module augmentation on a custom interface.
+This method only shows up on `ValidatedEnumerable` instances - not on regular sequences. TypeScript enforces this through module augmentation on a custom interface.
 
 ---
 
 ## OperatorRegistry
 
-`OperatorRegistry` is the central catalog of all operators -- built-in and external. Use it for introspection, governance, and test isolation.
+`OperatorRegistry` is the central catalog of all operators - built-in and external. Use it for introspection, governance, and test isolation.
 
 ### Querying the registry
 
@@ -388,11 +393,11 @@ OperatorRegistry.count();                 // total count
 ```
 
 Each `OperatorEntry` contains:
-- `metadata.name` -- the operator name
-- `metadata.kind` -- `"streaming"`, `"buffer"`, `"terminal"`, etc.
-- `metadata.source` -- `"internal"` or `"external"`
-- `metadata.targetClass` -- the class whose prototype was patched
-- `impl` -- the actual function that was patched onto the prototype
+- `metadata.name` - the operator name
+- `metadata.kind` - `"streaming"`, `"buffer"`, `"terminal"`, etc.
+- `metadata.source` - `"internal"` or `"external"`
+- `metadata.targetClass` - the class whose prototype was patched
+- `impl` - the actual function that was patched onto the prototype
 
 ### Guards
 
@@ -434,11 +439,11 @@ Remove a registered operator. Useful in tests for cleanup.
 OperatorRegistry.unregister("mylib_slidingAverage");
 ```
 
-Unregistering deletes the prototype method (for external operators) and removes the registry entry. Internal operators keep their prototype method -- only the entry is removed.
+Unregistering deletes the prototype method (for external operators) and removes the registry entry. Internal operators keep their prototype method - only the entry is removed.
 
 ### Source operators
 
-Source operators produce the root sequence (like `Tyneq.from` or `Tyneq.range`). They are not patched onto any prototype -- they are static factories. Register them with `registerSource`:
+Source operators produce the root sequence (like `Tyneq.from` or `Tyneq.range`). They are not patched onto any prototype - they are static factories. Register them with `registerSource`:
 
 ```ts
 OperatorRegistry.registerSource("fibonacci", (count: number) => {
@@ -453,7 +458,7 @@ OperatorRegistry.registerSource("fibonacci", (count: number) => {
 });
 ```
 
-Source operators registered this way are automatically compilable by `QueryPlanCompiler` -- no changes to the compiler needed.
+Source operators registered this way are automatically compilable by `QueryPlanCompiler` - no changes to the compiler needed.
 
 ### Test isolation
 
@@ -591,12 +596,12 @@ Tested, stable comparers for ordering logic. Prefer these over inline comparers:
 ```ts
 import { TyneqComparer } from "tyneq";
 
-TyneqComparer.defaultComparer;                // generic <, > comparison
-TyneqComparer.numericComparer;                // a - b (numbers only)
-TyneqComparer.localeComparer();               // locale-aware string comparison
-TyneqComparer.caseInsensitiveEqualityComparer; // EqualityComparer<string>
-TyneqComparer.reverse(cmp);                   // reverses any Comparer<T>
-TyneqComparer.defaultEqualityComparer;        // === equality
+TyneqComparer.defaultComparer;                    // generic <, > comparison
+TyneqComparer.createLocaleComparer();             // locale-aware string comparison
+TyneqComparer.caseInsensitiveComparer;            // case-insensitive ordering
+TyneqComparer.caseInsensitiveEqualityComparer;    // case-insensitive equality
+TyneqComparer.reverse(cmp);                       // reverses any Comparer<T>
+TyneqComparer.defaultEqualityComparer;            // === equality
 ```
 
 ---
@@ -606,10 +611,10 @@ TyneqComparer.defaultEqualityComparer;        // === equality
 If a custom operator does not appear on sequences:
 
 1. **Confirm the module is imported.** Side-effect imports are tree-shaken if unused. Make sure the import is present and not dead-code eliminated.
-2. **Check `OperatorRegistry.has("yourOperator")`** -- if `false`, registration did not run.
+2. **Check `OperatorRegistry.has("yourOperator")`** - if `false`, registration did not run.
 3. **Look for guard failures.** Add `OperatorRegistry.onRegister((e) => console.log(e))` before importing the plugin.
 4. **Verify the `declare module "tyneq"` block** is in scope for TypeScript (included in `tsconfig.json` includes or referenced directly).
-5. **Check for name collisions** -- registering a name that already exists throws `RegistryError`.
+5. **Check for name collisions** - registering a name that already exists throws `RegistryError`.
 
 If behavior is wrong at runtime, print the query plan:
 
@@ -647,7 +652,7 @@ export type { MySmoothingOptions } from "./operators/mylib_smoothing";
 ```
 
 ```ts
-// Consumer -- once in entry point
+// Consumer - once in entry point
 import "@my-org/tyneq-plugin-analytics";
 
 // Now available everywhere

@@ -110,7 +110,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      * Called after `disposeSource()`. `value` is the return value passed to `return()`.
      * Must be idempotent and must not throw.
      */
-    protected disposeAdditional(value?: unknown): void { }
+    protected disposeAdditional(_value?: unknown): void { }
 
     /** Produces the next element. Return `{ done: true }` to signal exhaustion. */
     protected abstract handleNext(): IteratorResult<TOutput>;

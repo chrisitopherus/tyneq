@@ -29,17 +29,17 @@ For everyday usage, you only ever touch `TyneqSequence<T>`. The others appear wh
 
 Two sequence types extend `TyneqSequence<T>` with additional capabilities:
 
-**`TyneqOrderedSequence<T>`** -- returned by `orderBy()` and `orderByDescending()`. Adds `thenBy()` and `thenByDescending()` for multi-key sorting, plus `asc()` and `desc()` for fluent direction changes. Custom operators can be added via `createOrderedOperator` or `@orderedOperator`.
+**`TyneqOrderedSequence<T>`** - returned by `orderBy()` and `orderByDescending()`. Adds `thenBy()` and `thenByDescending()` for multi-key sorting, plus `asc()` and `desc()` for fluent direction changes. Custom operators can be added via `createOrderedOperator` or `@orderedOperator`.
 
-**`TyneqCachedSequence<T>`** -- returned by `memoize()`. Adds `refresh()` to invalidate the internal cache. Custom operators can be added via `createCachedOperator` or `@cachedOperator`.
+**`TyneqCachedSequence<T>`** - returned by `memoize()`. Adds `refresh()` to invalidate the internal cache. Custom operators can be added via `createCachedOperator` or `@cachedOperator`.
 
 Both carry all the standard operators too. The extra methods only appear when you are in the right context:
 
 ```ts
 Tyneq.from(data)
-  .orderBy((x) => x.name)     // TyneqOrderedSequence -- thenBy() is available
+  .orderBy((x) => x.name)     // TyneqOrderedSequence - thenBy() is available
   .thenBy((x) => x.age)       // still TyneqOrderedSequence
-  .where((x) => x.active)     // back to TyneqSequence -- thenBy() no longer available
+  .where((x) => x.active)     // back to TyneqSequence - thenBy() no longer available
   .toArray();
 ```
 
@@ -192,7 +192,7 @@ See [Query Plan & Compiler](./query-plan.md) for the full guide.
 
 You do not need to understand enumerators to use Tyneq. But if you write custom operators or want to know what happens under the hood, here is the model.
 
-Every operator is backed by an enumerator -- a stateful cursor that knows how to produce one element at a time. When you call a terminal like `toArray()`, the pipeline creates a chain of enumerators from source to terminal, and pulls elements through them.
+Every operator is backed by an enumerator - a stateful cursor that knows how to produce one element at a time. When you call a terminal like `toArray()`, the pipeline creates a chain of enumerators from source to terminal, and pulls elements through them.
 
 ### The state machine
 
@@ -202,10 +202,10 @@ Every enumerator follows this lifecycle:
 Created --> [initialize()] --> Running --> [done or earlyComplete()] --> Done
 ```
 
-1. **Created** -- the constructor ran, but no elements have been produced yet.
-2. **`initialize()`** -- called once, before the first element is requested. Streaming operators usually do nothing here. Buffering operators read the full source into an internal buffer.
-3. **Running** -- `handleNext()` is called repeatedly. Each call either yields an element (`{ done: false, value }`) or signals completion (`{ done: true }`).
-4. **Done** -- no more elements. The source enumerator is disposed. Further calls to `next()` return `{ done: true }` immediately.
+1. **Created** - the constructor ran, but no elements have been produced yet.
+2. **`initialize()`** - called once, before the first element is requested. Streaming operators usually do nothing here. Buffering operators read the full source into an internal buffer.
+3. **Running** - `handleNext()` is called repeatedly. Each call either yields an element (`{ done: false, value }`) or signals completion (`{ done: true }`).
+4. **Done** - no more elements. The source enumerator is disposed. Further calls to `next()` return `{ done: true }` immediately.
 
 ### Streaming vs. buffering in the enumerator
 
@@ -220,7 +220,7 @@ handleNext() {
     const next = this.sourceEnumerator.next();
     if (next.done) return { done: true };
     if (this.predicate(next.value)) return { done: false, value: next.value };
-    // skip -- loop again
+    // skip - loop again
   }
 }
 ```

@@ -14,8 +14,8 @@ import { Maybe } from "../../types/utility";
  * prototype-level implementation.
  *
  * Internally the registry maintains two separate namespaces:
- * - Source factories (`Tyneq.from`, `Tyneq.range`, etc.) -- keyed by name alone.
- * - Instance operators (`.where`, `.select`, etc.) -- keyed by (name, targetClass).
+ * - Source factories (`Tyneq.from`, `Tyneq.range`, etc.) - keyed by name alone.
+ * - Instance operators (`.where`, `.select`, etc.) - keyed by (name, targetClass).
  *
  * This means a source factory and an instance method can share a name without
  * conflict (e.g. `Tyneq.concat` and `seq.concat`), and two instance operators
@@ -314,7 +314,7 @@ export class OperatorRegistry {
      *
      * @remarks
      * Source operators differ from prototype operators in two ways:
-     * - They are called with `null` as `this` -- they have no instance.
+     * - They are called with `null` as `this` - they have no instance.
      * - They are looked up by the compiler via {@link getSource} rather than
      *   being patched onto a prototype.
      *

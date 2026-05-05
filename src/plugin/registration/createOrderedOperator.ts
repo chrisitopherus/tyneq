@@ -12,7 +12,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  *
  * Use this when the operator must return a `TyneqOrderedSequence` (e.g. a `thenBy` variant).
  * The factory receives the ordered source and a query plan node. It is responsible for
- * constructing and returning the result sequence -- typically by instantiating
+ * constructing and returning the result sequence - typically by instantiating
  * `TyneqOrderedEnumerable` directly.
  *
  * For operators that return a plain sequence from an enumerator class, use `@orderedOperator`.

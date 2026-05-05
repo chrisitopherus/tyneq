@@ -1,6 +1,6 @@
 # Custom Operators
 
-Tyneq has a first-class plugin system. You can add custom operators that appear on every sequence at import time, behave exactly like built-ins, and show up in query plans. No forking, no monkey-patching -- just register and go.
+Tyneq has a first-class plugin system. You can add custom operators that appear on every sequence at import time, behave exactly like built-ins, and show up in query plans. No forking, no monkey-patching - just register and go.
 
 There are two styles: **functional** (quick, minimal boilerplate) and **class-based** (decorators with full lifecycle control). This guide covers both in depth, with real examples you can copy and adapt.
 
@@ -8,12 +8,12 @@ There are two styles: **functional** (quick, minimal boilerplate) and **class-ba
 
 ## When to write a custom operator
 
-The 55+ built-in operators handle most situations. Custom operators make sense when you want to:
+The built-in operators handle most situations. Custom operators make sense when you want to:
 
 - **Encapsulate domain logic** as a reusable pipeline step (`smoothSeries`, `clampToRange`, `parseLogLine`)
 - **Distribute shared behavior** as a package others import once
 - **Add type-specific operators** for ordered or cached sequences
-- **Control execution precisely** -- stateful cursors, multi-source operators, custom buffering strategies
+- **Control execution precisely** - stateful cursors, multi-source operators, custom buffering strategies
 
 Custom operators are full citizens: they live in `OperatorRegistry`, participate in query plans, and compile with `QueryPlanCompiler`.
 
@@ -38,7 +38,7 @@ If you are not sure, start with the functional API. If you outgrow it, switching
 
 ### `createGeneratorOperator`
 
-The simplest way to add a streaming operator. Write a generator function -- Tyneq handles the rest.
+The simplest way to add a streaming operator. Write a generator function - Tyneq handles the rest.
 
 ```ts
 import { createGeneratorOperator } from "tyneq";
@@ -68,16 +68,16 @@ Tyneq.from([1, 2, 3]).repeatEach(2).toArray();
 
 A few things to notice:
 
-- **`source` is `Iterable<unknown>`** -- the generator receives the upstream as a plain iterable. Use `for...of` to consume it.
+- **`source` is `Iterable<unknown>`** - the generator receives the upstream as a plain iterable. Use `for...of` to consume it.
 - **`validate` runs eagerly** at the call site, before any lazy factory is created. Errors surface immediately, not during iteration.
 - **`declare module "tyneq"`** makes TypeScript aware of the new method. Without it, the method exists at runtime but TypeScript does not know about it.
 
 ::: warning Validate at the call site
-Do not put argument validation inside the generator body. Errors thrown inside a generator are deferred until iteration -- the user gets a confusing stack trace pointing at `toArray()` instead of the call that passed bad arguments.
+Do not put argument validation inside the generator body. Errors thrown inside a generator are deferred until iteration - the user gets a confusing stack trace pointing at `toArray()` instead of the call that passed bad arguments.
 :::
 
 ```ts
-// validate runs here -- before any iteration
+// validate runs here - before any iteration
 Tyneq.from([1, 2, 3]).repeatEach(-1);
 // -> RangeError: times must be >= 1
 ```
@@ -116,13 +116,13 @@ Tyneq.from([2, 3, 4]).product();     // 24
 Tyneq.from([2, 3, 4]).product(10);   // 240
 ```
 
-The `execute` function receives the source as an `Enumerable` (re-iterable). Iterate it with `for...of` -- whichever fits your logic.
+The `execute` function receives the source as an `Enumerable` (re-iterable). Iterate it with `for...of` - whichever fits your logic.
 
 ---
 
 ### `createOperator`
 
-Use when you need full control over the enumeration cursor -- non-trivial state machines, multi-source operators, or custom buffering.
+Use when you need full control over the enumeration cursor - non-trivial state machines, multi-source operators, or custom buffering.
 
 ```ts
 import { createOperator } from "tyneq";
@@ -183,7 +183,7 @@ createCachedOperator({ name: "myCachedOp", /* ... */ });
 import { createOrderedTerminalOperator, createCachedTerminalOperator } from "tyneq";
 ```
 
-TypeScript enforces this at compile time -- the method only shows up on `TyneqOrderedSequence` or `TyneqCachedSequence`.
+TypeScript enforces this at compile time - the method only shows up on `TyneqOrderedSequence` or `TyneqCachedSequence`.
 
 ---
 
@@ -191,10 +191,12 @@ TypeScript enforces this at compile time -- the method only shows up on `TyneqOr
 
 Decorators are the right choice when your operator has:
 
-- **Non-trivial state** -- private fields in a class are cleaner than captured variables in closures
-- **A lifecycle** -- streaming operators have `handleNext()`, buffering operators add `initialize()`, and the base class calls them in the right order
-- **Shared logic** -- inherit from a common base to share behavior across multiple operators
-- **Consistency with built-ins** -- all internal Tyneq operators use this pattern
+- **Non-trivial state** - private fields in a class are cleaner than captured variables in closures
+- **A lifecycle** - streaming operators have `handleNext()`, buffering operators add `initialize()`, and the base class calls them in the right order
+- **Shared logic** - inherit from a common base to share behavior across multiple operators
+- **Consistency with built-ins** - all internal Tyneq operators use this pattern
+
+The signature is `@operator(name, category, validate?)`. `category` is required and must be `"streaming"` or `"buffer"`. It is not just metadata - it determines how the `QueryPlanOptimizer` classifies and fuses nodes, and it controls the `category` field on each `QueryPlanNode` produced by your operator.
 
 ### Streaming operator with `@operator`
 
@@ -234,7 +236,7 @@ Tyneq.from([1, 2, 3, 4, 5]).everyOther().toArray(); // [1, 3, 5]
 Let's break down what `handleNext()` does:
 
 1. Pull the next element from upstream with `this.sourceEnumerator.next()`
-2. If the source is exhausted (`done: true`), return that -- your operator is done too
+2. If the source is exhausted (`done: true`), return that - your operator is done too
 3. Otherwise, decide whether to yield the element or skip it and pull again
 4. Return `{ done: false, value }` to yield, or loop to skip
 
@@ -250,9 +252,9 @@ Created -> [initialize()] -> Running -> [earlyComplete() or source exhausted] ->
 
 | Phase | What happens | When to override |
 |---|---|---|
-| **Created** | Constructor has run. `initialize()` has not been called yet. | Always -- set up fields. |
+| **Created** | Constructor has run. `initialize()` has not been called yet. | Always - set up fields. |
 | **`initialize()`** | Called once, before the first `handleNext()`. | For buffering operators: read the full source here. For streaming: setup work if needed. |
-| **`handleNext()`** | Called for each element requested. | Always -- this is where your operator logic lives. |
+| **`handleNext()`** | Called for each element requested. | Always - this is where your operator logic lives. |
 | **Done** | Either `handleNext()` returned `{ done: true }` or `earlyComplete()` was called. | No more calls to `handleNext()`. |
 
 Helper methods available inside `handleNext()`:
@@ -288,7 +290,7 @@ class TakeEveryEnumerator<T> extends TyneqEnumerator<T, T> {
 }
 ```
 
-The validate function runs **at the call site** -- before the class is even instantiated. This is a core design rule: argument errors surface immediately, never during deferred iteration.
+The validate function runs **at the call site** - before the class is even instantiated. This is a core design rule: argument errors surface immediately, never during deferred iteration.
 
 ### Buffering operator with `@operator`
 
@@ -323,8 +325,8 @@ class StableChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
 ```
 
 The pattern is always the same for buffering operators:
-1. `initialize()` -- drain the source into a local data structure
-2. `handleNext()` -- serve from that data structure
+1. `initialize()` - drain the source into a local data structure
+2. `handleNext()` - serve from that data structure
 
 ### Early completion
 
@@ -460,7 +462,7 @@ declare module "tyneq" {
 
 ## Sharing operators as a package
 
-Registration happens as a side effect of import. Consumers import your package once -- usually in their app entry point -- and every sequence gains the operators.
+Registration happens as a side effect of import. Consumers import your package once - usually in their app entry point - and every sequence gains the operators.
 
 ```ts
 // my-lib/src/operators/slidingAverage.ts
@@ -515,13 +517,13 @@ The timing rules apply everywhere, no exceptions:
 |---|---|
 | `validate` in functional APIs | Eagerly at the call site |
 | Third argument to `@operator` / `@terminal` | Eagerly at the call site |
-| Enumerator constructor | At iteration time -- do **not** put argument validation here |
-| `handleNext()` | At iteration time -- do **not** put argument validation here |
+| Enumerator constructor | At iteration time - do **not** put argument validation here |
+| `handleNext()` | At iteration time - do **not** put argument validation here |
 
 This is a deliberate design choice. Argument errors should surface at the point where the user wrote the bad call, with a clean stack trace pointing right at the problem. Deferring them to iteration time produces confusing errors that point at `toArray()` or a `for...of` loop instead.
 
 ```ts
-// throws immediately -- stack trace points at the call site
+// throws immediately - stack trace points at the call site
 const query = Tyneq.from([1, 2, 3]).stride(-1);
 
 // this would be wrong: error deferred until iteration
@@ -559,66 +561,58 @@ There are four base classes. Which one you extend depends on the operator's cont
 | `TyneqEnumerator<TInput, TOutput>` | `Enumerator<TInput>` | Operator on any sequence (`@operator`) |
 | `TyneqOrderedEnumerator<TSource>` | `OrderedEnumerable<TSource>` | Operator only on ordered sequences (`@orderedOperator`) |
 | `TyneqCachedEnumerator<TSource>` | `CachedEnumerable<TSource>` | Operator only on cached sequences (`@cachedOperator`) |
-| `TyneqBaseEnumerator<TOutput>` | (none -- bring your own) | Enumerator with no upstream, or fully custom source wiring |
+| `TyneqBaseEnumerator<TOutput>` | (none - bring your own) | Enumerator with no upstream, or fully custom source wiring |
 
 **`TyneqEnumerator`** is the standard choice. It holds the upstream as `this.sourceEnumerator` and disposes it automatically.
 
-**`TyneqOrderedEnumerator`** and **`TyneqCachedEnumerator`** receive the full sequence object (not just an enumerator) as `this.orderedSource` or `this.cachedSource`. This is necessary because ordered and cached sequences manage their own lifecycle -- the enumerator must not dispose them. It also gives access to sequence-level properties like the sort key chain.
+**`TyneqOrderedEnumerator`** and **`TyneqCachedEnumerator`** receive the full sequence object (not just an enumerator) as `this.orderedSource` or `this.cachedSource`. This is necessary because ordered and cached sequences manage their own lifecycle - the enumerator must not dispose them. It also gives access to sequence-level properties like the sort key chain.
 
-**`TyneqBaseEnumerator`** is the raw foundation. Use it when you need total control -- for example, an enumerator that generates values without a source, or one that holds multiple heterogeneous sources. You are responsible for disposal.
+**`TyneqBaseEnumerator`** is the raw foundation. Use it when you need total control - for example, an enumerator that generates values without a source, or one that holds multiple heterogeneous sources. You are responsible for disposal.
 
 ---
 
 ## Putting it all together: a real-world example
 
-Here is a complete, non-trivial example -- a `slidingWindow` operator that yields overlapping windows of a fixed size:
+Here is a complete, non-trivial example - a `deltaMap` operator that emits the difference between consecutive elements, with an optional transform applied to each delta:
 
 ```ts
 import { operator, TyneqEnumerator, ArgumentUtility } from "tyneq";
 import type { Enumerator } from "tyneq";
 
-@operator("slidingWindow", "streaming", (size: number) => {
-  ArgumentUtility.checkPositive({ size });
-  ArgumentUtility.checkInteger({ size });
-})
-class SlidingWindowEnumerator<T> extends TyneqEnumerator<T, T[]> {
-  private readonly buffer: T[] = [];
-  private readonly size: number;
+@operator<[transform: (delta: number) => number]>(
+  "deltaMap",
+  "streaming",
+  (transform) => {
+    ArgumentUtility.checkNotOptional({ transform });
+  }
+)
+class DeltaMapEnumerator<T extends number> extends TyneqEnumerator<T, number> {
+  private prev: T | undefined = undefined;
+  private readonly transform: (delta: number) => number;
 
-  public constructor(source: Enumerator<T>, size: number) {
+  public constructor(source: Enumerator<T>, transform: (delta: number) => number) {
     super(source);
-    this.size = size;
+    this.transform = transform;
   }
 
-  protected override handleNext(): IteratorResult<T[]> {
-    while (this.buffer.length < this.size) {
+  protected override handleNext(): IteratorResult<number> {
+    while (true) {
       const next = this.sourceEnumerator.next();
-      if (next.done) {
-        // source exhausted before filling the first window
-        return this.done();
+      if (next.done) return this.done();
+      if (this.prev === undefined) {
+        this.prev = next.value;
+        continue; // skip the first element - no previous to diff against
       }
-      this.buffer.push(next.value);
+      const delta = next.value - this.prev;
+      this.prev = next.value;
+      return this.yield(this.transform(delta));
     }
-
-    // yield a copy of the current window
-    const window = [...this.buffer];
-
-    // slide: remove the oldest, pull the next
-    const next = this.sourceEnumerator.next();
-    if (next.done) {
-      // this is the last window -- yield it, then we are done
-      return this.yield(window);
-    }
-
-    this.buffer.shift();
-    this.buffer.push(next.value);
-    return this.yield(window);
   }
 }
 
 declare module "tyneq" {
   interface TyneqSequence<T> {
-    slidingWindow(size: number): TyneqSequence<T[]>;
+    deltaMap(transform: (delta: number) => number): TyneqSequence<number>;
   }
 }
 ```
@@ -626,22 +620,28 @@ declare module "tyneq" {
 Usage:
 
 ```ts
-Tyneq.from([1, 2, 3, 4, 5]).slidingWindow(3).toArray();
-// [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+Tyneq.from([10, 13, 9, 14]).deltaMap(d => d).toArray();
+// [3, -4, 5]  (13-10, 9-13, 14-9)
 
-Tyneq.from([1, 2]).slidingWindow(5).toArray();
-// [] -- source shorter than window, no output
+// Apply a transform to normalize deltas
+Tyneq.from([10, 13, 9, 14]).deltaMap(d => Math.abs(d)).toArray();
+// [3, 4, 5]
+
+// Empty or single-element source produces no output
+Tyneq.from([42]).deltaMap(d => d).toArray();
+// []
 ```
 
 What this demonstrates:
 - Argument validation with `ArgumentUtility` in the validate callback
-- Internal state via class fields (`buffer`, `size`)
-- Streaming behavior -- yields one window at a time, O(windowSize) memory
-- Correct handling of edge cases (source shorter than window)
+- Internal state across calls (`prev`) via a class field
+- Streaming behavior - O(1) memory, one element at a time
+- Skipping the first element without exiting (using `continue` rather than early return)
+- Correct handling of edge cases (single element, empty source)
 
 ---
 
 ## Next steps
 
-- [Plugin Internals](./plugin-internals.md) -- the registry, custom sequence types, bridge methods, and how registration works under the hood
-- [Best Practices & Pitfalls](./best-practices.md) -- naming, test isolation, packaging patterns
+- [Plugin Internals](./plugin-internals.md) - the registry, custom sequence types, bridge methods, and how registration works under the hood
+- [Best Practices & Pitfalls](./best-practices.md) - naming, test isolation, packaging patterns

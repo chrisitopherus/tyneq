@@ -20,13 +20,5 @@
   "enumMembersFormat": "table",
   "navigationJson": "docs/api/reference/navigation.json",
   "hideBreadcrumbs": false,
-  "externalSymbolLinkMappings": {
-    "tyneq": {
-      "EnumeratorUtility.tryDispose": "#",
-      "BaseEnumerableSorter": "#",
-      "TyneqEnumerableBase": "#",
-      "TyneqEnumerableCore": "#",
-      "OperatorRegistry.registerBuiltin": "#"
-    }
-  }
+  "externalSymbolLinkMappings": {}
 }

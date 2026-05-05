@@ -1,7 +1,6 @@
 import { Nullable } from "../../types/utility";
 import { Comparer } from "../../types/core";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
-import { nameof } from "../../utility/nameof";
 import { BaseEnumerableSorter } from "./BaseEnumerableSorter";
 
 /**

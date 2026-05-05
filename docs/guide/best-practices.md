@@ -272,8 +272,7 @@ Inline comparers are error-prone. The built-in comparers in `TyneqComparer` are 
 // Good
 import { TyneqComparer } from "tyneq";
 .orderBy(x => x, TyneqComparer.defaultComparer)
-.orderBy(x => x, TyneqComparer.numericComparer)    // numbers only
-.orderBy(x => x, TyneqComparer.localeComparer())   // locale-aware strings
+.orderBy(x => x, TyneqComparer.createLocaleComparer())   // locale-aware strings
 ```
 
 ---

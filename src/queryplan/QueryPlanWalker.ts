@@ -12,13 +12,13 @@ import { Maybe } from "../types/utility";
  *
  * ### Usage patterns
  *
- * **Direct instantiation with a callback** -- no subclass needed for simple traversals:
+ * **Direct instantiation with a callback** - no subclass needed for simple traversals:
  * ```ts
  * const names: string[] = [];
  * new QueryPlanWalker({ callback: node => names.push(node.operatorName) }).visit(plan);
  * ```
  *
- * **Subclass** -- for stateful walkers that accumulate results across nodes:
+ * **Subclass** - for stateful walkers that accumulate results across nodes:
  * ```ts
  * class NodeCounter extends QueryPlanWalker {
  *     public count = 0;
@@ -38,7 +38,7 @@ import { Maybe } from "../types/utility";
  * }).visit(plan);
  * ```
  *
- * **Subclass with direction override** -- pass options to `super`:
+ * **Subclass with direction override** - pass options to `super`:
  * ```ts
  * class ReverseCollector extends QueryPlanWalker {
  *     public readonly names: string[] = [];
