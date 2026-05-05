@@ -24,9 +24,9 @@ const people = [
 
 const topCore = Tyneq
   .from(people)
-  .where(p => p.team === "core")
-  .orderByDescending(p => p.score)
-  .select(p => `${p.name} (${p.score})`)
+  .where((p) => p.team === "core")
+  .orderByDescending((p) => p.score)
+  .select((p) => `${p.name} (${p.score})`)
   .toArray();
 
 // -> ["Grace (97)", "Ada (84)"]
@@ -64,11 +64,10 @@ Tyneq.range(1, 5);         // -> [1, 2, 3, 4, 5]
 Tyneq.range(0, 3);         // -> [0, 1, 2]
 Tyneq.empty<number>();     // zero-element sequence
 Tyneq.repeat(0, 3);        // -> [0, 0, 0]
-Tyneq.generate(1, x => x * 2, 4); // -> [2, 4, 8, 16]
-Tyneq.concat([1, 2], [3, 4]);      // -> [1, 2, 3, 4]
-[...Tyneq.enumerate(["a", "b", "c"])];
+Tyneq.generate(1, (x) => x * 2, 4); // -> [2, 4, 8, 16]
+Tyneq.concat([1, 2], [3, 4]);        // -> [1, 2, 3, 4]
+Tyneq.enumerate(["a", "b", "c"]).toArray();
 // -> [[0, "a"], [1, "b"], [2, "c"]]
-// (wrap with Tyneq.from() to chain operators)
 ```
 
 ### Generator functions

@@ -44,14 +44,14 @@ Tyneq.empty<string>().toArray(); // -> []
 
 ### `Tyneq.enumerate(source)`
 
-Pairs each element with its zero-based index as `[index, element]`. Returns a plain `Iterable` - wrap with `Tyneq.from()` to chain operators.
+Pairs each element with its zero-based index as `[index, element]`. Returns a `TyneqSequence` - operators can be chained directly.
 
 ```ts
-[...Tyneq.enumerate(["a", "b", "c"])];
+Tyneq.enumerate(["a", "b", "c"]).toArray();
 // -> [[0, "a"], [1, "b"], [2, "c"]]
 
-// Wrap with Tyneq.from() to use operators
-Tyneq.from(Tyneq.enumerate(users))
+// Chain operators directly
+Tyneq.enumerate(users)
   .where(([i, u]) => u.score > 90)
   .select(([i, u]) => `#${i + 1}: ${u.name}`)
   .toArray();
@@ -207,7 +207,7 @@ Tyneq.range(1, 7).chunk(3).toArray();   // -> [[1,2,3],[4,5,6],[7]]
 Tyneq.range(1, 6).chunk(2).toArray();   // -> [[1,2],[3,4],[5,6]]
 
 // Process a large dataset in batches
-Tyneq.from(records).chunk(100).tap(b(atch) => saveBatch(batch)).consume();
+Tyneq.from(records).chunk(100).tap((batch) => saveBatch(batch)).consume();
 ```
 
 ---
