@@ -44,17 +44,48 @@ Tyneq.empty<string>().toArray(); // -> []
 
 ### `Tyneq.enumerate(source)`
 
-Pairs each element with its zero-based index as `[index, element]`.
+Pairs each element with its zero-based index as `[index, element]`. Returns a plain `Iterable` - wrap with `Tyneq.from()` to chain operators.
 
 ```ts
-Tyneq.enumerate(["a", "b", "c"]).toArray();
+[...Tyneq.enumerate(["a", "b", "c"])];
 // -> [[0, "a"], [1, "b"], [2, "c"]]
 
-// Useful when you need both the element and its position
-Tyneq.enumerate(users)
+// Wrap with Tyneq.from() to use operators
+Tyneq.from(Tyneq.enumerate(users))
   .where(([i, u]) => u.score > 90)
   .select(([i, u]) => `#${i + 1}: ${u.name}`)
   .toArray();
+```
+
+### `Tyneq.repeat(value, count)`
+
+Produces a sequence of `count` elements all equal to `value`.
+
+```ts
+Tyneq.repeat(0, 3).toArray();       // -> [0, 0, 0]
+Tyneq.repeat("x", 5).toArray();    // -> ["x", "x", "x", "x", "x"]
+```
+
+### `Tyneq.generate(seed, next, count?)`
+
+Produces a sequence by repeatedly applying `next` to the previous value, starting from `seed`. The seed itself is not yielded - `next` is called `count` times and each result is an element. If `count` is omitted the sequence is infinite - chain with `take()` to bound it.
+
+```ts
+Tyneq.generate(1, (x) => x * 2, 4).toArray();
+// -> [2, 4, 8, 16]  (next applied 4 times to seed 1)
+
+// Infinite powers of 2 - take however many you need
+Tyneq.generate(1, (x) => x * 2).take(6).toArray();
+// -> [2, 4, 8, 16, 32, 64]
+```
+
+### `Tyneq.concat(...sources)`
+
+Concatenates multiple iterables into a single sequence.
+
+```ts
+Tyneq.concat([1, 2], [3, 4], [5]).toArray(); // -> [1, 2, 3, 4, 5]
+Tyneq.concat(activeUsers, pendingUsers, inactiveUsers).count();
 ```
 
 ### `Tyneq.random(count, fn)`
@@ -176,7 +207,7 @@ Tyneq.range(1, 7).chunk(3).toArray();   // -> [[1,2,3],[4,5,6],[7]]
 Tyneq.range(1, 6).chunk(2).toArray();   // -> [[1,2],[3,4],[5,6]]
 
 // Process a large dataset in batches
-Tyneq.from(records).chunk(100).tap(batch => saveBatch(batch)).consume();
+Tyneq.from(records).chunk(100).tap(b(atch) => saveBatch(batch)).consume();
 ```
 
 ---
@@ -242,9 +273,9 @@ Tyneq.from(readings)
   .toArray();
 ```
 
-#### `split(pred)`
+#### `split(splitOn)`
 
-Splits the sequence into sub-arrays on elements matching `pred`. The matching element is not included.
+Splits the sequence into sub-arrays on elements matching `splitOn`. The matching element is not included.
 
 ```ts
 Tyneq.from([1, 0, 2, 3, 0, 4]).split(x => x === 0).toArray();
@@ -303,12 +334,88 @@ Tyneq.from(data)
 Passes the sequence through a custom factory function. Useful for applying a reusable transformation without registering a full operator. Records a `"pipe"` node in the query plan.
 
 ```ts
-function normalize<T extends { score: number }>(seq: TyneqSequence<T>) {
-  const max = seq.max(x => x.score);
-  return seq.select(x => ({ ...x, score: x.score / max }));
+function* normalize(source: Iterable<{ score: number }>): IterableIterator<{ score: number }> {
+  const items = [...source];
+  const max = Math.max(...items.map((i) => i.score));
+  for (const i of items) yield { ...i, score: i.score / max };
 }
 
 Tyneq.from(users).pipe(normalize).toArray();
+```
+
+---
+
+### Flattening
+
+#### `flatten()`
+
+Flattens a sequence of iterables into a single sequence. Equivalent to `selectMany(x => x)`.
+
+```ts
+Tyneq.from([[1, 2], [3, 4], [5]]).flatten().toArray();
+// -> [1, 2, 3, 4, 5]
+
+Tyneq.from(departments).select(d => d.employees).flatten().toArray();
+```
+
+---
+
+### Repetition
+
+#### `repeat(count)`
+
+Repeats the entire source sequence `count` times.
+
+```ts
+Tyneq.from([1, 2, 3]).repeat(3).toArray();
+// -> [1, 2, 3, 1, 2, 3, 1, 2, 3]
+
+Tyneq.from(["ping"]).repeat(5).toArray();
+// -> ["ping", "ping", "ping", "ping", "ping"]
+```
+
+---
+
+### Advanced slicing
+
+#### `slice(start, end?)`
+
+Returns elements from position `start` up to (but not including) `end`. If `end` is omitted, slices to the end of the sequence. Zero-based, like `Array.prototype.slice`.
+
+```ts
+Tyneq.range(0, 10).slice(2, 5).toArray();  // -> [2, 3, 4]
+Tyneq.range(0, 10).slice(7).toArray();     // -> [7, 8, 9]
+```
+
+#### `skipUntil(pred)`
+
+Skips elements until `pred` returns `true` for the first time, then yields that element and all subsequent ones (including the trigger element).
+
+```ts
+Tyneq.from([1, 2, 3, 4, 5]).skipUntil(x => x >= 3).toArray();
+// -> [3, 4, 5]
+```
+
+#### `takeUntil(pred)`
+
+Yields elements until `pred` returns `true` for the first time. The triggering element is NOT included.
+
+```ts
+Tyneq.from([1, 2, 3, 4, 5]).takeUntil(x => x >= 3).toArray();
+// -> [1, 2]
+```
+
+#### `window(size, step?)`
+
+Produces overlapping (or non-overlapping) sliding windows of `size` elements. `step` controls how many elements to advance between windows (default `1`).
+
+```ts
+Tyneq.range(1, 5).window(3).toArray();
+// -> [[1,2,3],[2,3,4],[3,4,5]]
+
+// Non-overlapping windows (step = size)
+Tyneq.range(1, 6).window(2, 2).toArray();
+// -> [[1,2],[3,4],[5,6]]
 ```
 
 ---
@@ -331,7 +438,7 @@ Tyneq.from(users).orderByDescending(u => u.score).toArray();
 
 // With a custom comparer
 import { TyneqComparer } from "tyneq";
-Tyneq.from(users).orderBy(u => u.name, TyneqComparer.localeComparer()).toArray();
+Tyneq.from(users).orderBy(u => u.name, TyneqComparer.createLocaleComparer()).toArray();
 ```
 
 #### `thenBy(key, cmp?)` / `thenByDescending(key, cmp?)`
@@ -397,8 +504,8 @@ Groups elements by a key, projects each element's value, and transforms each gro
 ```ts
 Tyneq.from(employees)
   .groupBy(
-    e => e.department,
-    e => e.name,
+    (e) => e.department,
+    (e) => e.name,
     (dept, names) => ({ dept, members: names.toArray() })
   )
   .toArray();
@@ -412,8 +519,8 @@ Inner join: matches elements from both sequences by key.
 ```ts
 Tyneq.from(orders).join(
   products,
-  o => o.productId,
-  p => p.id,
+  (o) => o.productId,
+  (p) => p.id,
   (order, product) => ({ ...order, productName: product.name })
 ).toArray();
 ```
@@ -425,8 +532,8 @@ Left outer join: each outer element is paired with all matching inner elements a
 ```ts
 Tyneq.from(customers).groupJoin(
   orders,
-  c => c.id,
-  o => o.customerId,
+  (c) => c.id,
+  (o) => o.customerId,
   (customer, orders) => ({ customer, orderCount: orders.count() })
 ).toArray();
 ```
@@ -467,6 +574,19 @@ Inserts `other` into the sequence at a position counted from the end. `index=0` 
 Tyneq.from([1, 2, 3]).backsert(0, [9, 10]).toArray(); // -> [1, 2, 3, 9, 10]
 Tyneq.from([1, 2, 3]).backsert(1, [9]).toArray();      // -> [1, 2, 9, 3]
 Tyneq.from([1, 2, 3]).backsert(2, [9]).toArray();      // -> [1, 9, 2, 3]
+```
+
+---
+
+### Combinatorics
+
+#### `permutations()`
+
+Returns all permutations of the source sequence as an array of arrays. Buffering - reads the full source first.
+
+```ts
+Tyneq.from([1, 2, 3]).permutations().toArray();
+// -> [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
 ```
 
 ---
@@ -563,14 +683,14 @@ nums.average(x => x);       // -> 3
 nums.aggregate(
   0,
   (acc, x) => acc + x,
-  acc => acc
+  (acc) => acc
 ); // -> 15
 
 // With result projection
 nums.aggregate(
   { sum: 0, count: 0 },
   (acc, x) => ({ sum: acc.sum + x, count: acc.count + 1 }),
-  acc => acc.sum / acc.count
+  (acc) => acc.sum / acc.count
 ); // -> 3 (average)
 ```
 
@@ -605,9 +725,18 @@ nums.contains(3);            // -> true
 // Sequence equality
 nums.sequenceEqual(Tyneq.from([1, 2, 3, 4, 5]));  // -> true
 nums.startsWith(Tyneq.from([1, 2, 3]));            // -> true
+nums.endsWith(Tyneq.from([3, 4, 5]));              // -> true
+
+// Both startsWith and endsWith accept an optional equality comparer
+import { TyneqComparer } from "tyneq";
+Tyneq.from(["Hello", "World"]).endsWith(
+  ["hello", "world"],
+  TyneqComparer.caseInsensitiveEqualityComparer
+); // -> true
 
 nums.isNullOrEmpty();  // -> false
 Tyneq.empty<number>().isNullOrEmpty(); // -> true
+// Also available as a static: Tyneq.isNullOrEmpty(source)
 ```
 
 ---

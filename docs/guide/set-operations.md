@@ -1,6 +1,6 @@
 # Set Operations
 
-Tyneq provides six set-style operators. All are buffering operators - they read the full source before producing output. Each comes in two variants: equality-based (`===`) and key-based (`keySelector`).
+Tyneq provides six set-style operators. All are buffering operators - they read the full source before producing output. Each comes in two variants: equality-based and key-based (`keySelector`).
 
 ---
 
@@ -99,12 +99,15 @@ Tyneq.from(all)
 
 ## Equality Semantics
 
-All equality-based variants use `===`. Objects are compared by reference, not by value.
+All equality-based variants use **SameValueZero** semantics (the same as JavaScript's `Set`). This is like `===` with one difference: `NaN` is considered equal to `NaN`.
 
 ```ts
 const a = { x: 1 };
 const b = { x: 1 };
-Tyneq.from([a]).union([b]).count(); // -> 2 - a !== b even though they look the same
+Tyneq.from([a]).union([b]).count(); // -> 2 - a and b are different references
+
+// NaN deduplication: NaN === NaN is false, but SameValueZero treats them as equal
+Tyneq.from([NaN, NaN, 1]).distinct().toArray(); // -> [NaN, 1]
 ```
 
 When comparing objects by content, use the key-based variants and select the identifying property.

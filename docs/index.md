@@ -3,12 +3,12 @@ layout: home
 
 title: Tyneq
 
-tagline: Typed Enumerable Queries for TypeScript
+tagline: Lazy query pipelines for TypeScript
 
 hero:
   name: Tyneq
-  text: LINQ-style querying for TypeScript
-  tagline: Build readable, composable, and predictable data pipelines over any iterable source.
+  text: Lazy query pipelines for TypeScript
+  tagline: LINQ-expressive, type-safe, and infinitely extensible. Compose operators over any iterable - nothing runs until you ask for it.
   image:
     src: /logo.svg
     alt: Tyneq
@@ -25,10 +25,10 @@ hero:
 
 features:
   - title: Lazy by default
-    details: Compose queries as pipelines — no work happens until you enumerate. Chain dozens of operators without touching the source data.
+    details: Compose queries as pipelines - no work happens until you enumerate. Chain dozens of operators without touching the source data.
   - title: Re-iterable sequences
     details: Enumerate the same query multiple times safely. Results are consistent across passes; use memoize() to cache when re-execution is expensive.
-  - title: 60+ typed operators
+  - title: 80+ typed operators
     details: Streaming, buffering, and terminal operators with explicit execution semantics. Every operator's timing and memory impact is documented.
   - title: TypeScript-first
     details: Types flow through the entire pipeline. Projections, groupings, and joins preserve strong typing from source to result.

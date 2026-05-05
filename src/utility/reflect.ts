@@ -201,9 +201,9 @@ export class ReflectionContext<_T extends object> {
  * Creates a {@link ReflectionContext} for the given target.
  *
  * The `target` can be:
- * - A **constructor function** -- reflects the class prototype (instance members). Preferred form.
- * - A **prototype object** (`MyClass.prototype`) -- reflects it directly.
- * - Any **object** -- reflects the object's own properties directly.
+ * - A **constructor function** - reflects the class prototype (instance members). Preferred form.
+ * - A **prototype object** (`MyClass.prototype`) - reflects it directly.
+ * - Any **object** - reflects the object's own properties directly.
  *
  * @example
  * ```ts

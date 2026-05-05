@@ -24,7 +24,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  * @param config.generator - Generator that yields transformed elements from `source`.
  * @param config.validate - Optional eager validation for user-supplied arguments.
  *
- * @example Streaming -- yield elements lazily one at a time:
+ * @example Streaming - yield elements lazily one at a time:
  * ```ts
  * import { createGeneratorOperator } from "tyneq/plugin";
  *
@@ -40,7 +40,7 @@ import { RegistrationUtility } from "../RegistrationUtility";
  * });
  * ```
  *
- * @example Buffering -- materialise the entire input first, then yield results:
+ * @example Buffering - materialise the entire input first, then yield results:
  * ```ts
  * import { createGeneratorOperator } from "tyneq/plugin";
  *

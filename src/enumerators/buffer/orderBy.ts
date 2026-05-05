@@ -14,7 +14,7 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
  * @category Buffering
  * @internal
  */
-export class OrderByEnumerator<TSource, TKey> extends TyneqBaseEnumerator<TSource> {
+export class OrderByEnumerator<TSource, _TKey> extends TyneqBaseEnumerator<TSource> {
     private buffer: TSource[] = [];
     private indexMap: number[] = [];
     private currentIndex = 0;

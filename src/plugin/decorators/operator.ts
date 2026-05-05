@@ -1,5 +1,4 @@
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { PluginError } from "../../core/errors/PluginError";

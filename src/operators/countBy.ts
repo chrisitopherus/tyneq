@@ -2,7 +2,6 @@ import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { Enumerable } from "../types/core";
 import { ItemPredicate } from "../types/utility";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns the number of elements that satisfy a predicate.

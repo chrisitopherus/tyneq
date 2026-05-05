@@ -56,7 +56,7 @@ export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> =
  * @remarks
  * Use this when you have a type variable `T` that you know satisfies `U` in context
  * but TypeScript cannot prove it statically. `Assume<T, U>` resolves to `T` when the
- * constraint holds and to `U` as a safe fallback when it does not -- avoiding `any`.
+ * constraint holds and to `U` as a safe fallback when it does not - avoiding `any`.
  *
  * @example
  * ```ts
@@ -71,7 +71,7 @@ export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> =
 export type Assume<T, U> = T extends U ? T : U;
 
 /**
- * Identity type -- preserves `T` as-is with no structural transformation.
+ * Identity type - preserves `T` as-is with no structural transformation.
  *
  * @remarks
  * Use `Cast<T>` as an explicit annotation in generic contexts where inference would

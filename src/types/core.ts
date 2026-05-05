@@ -573,12 +573,12 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * Yields fixed-size windows (sub-arrays) over the source sequence.
      *
      * @remarks
-     * Deferred. O(`size`) memory -- only the current window is held in memory.
+     * Deferred. O(`size`) memory - only the current window is held in memory.
      * When `step` is 1 (the default), windows slide one element at a time (overlapping).
      * When `step` equals `size`, windows are non-overlapping (tumbling).
      * When `step` exceeds `size`, elements between windows are skipped (gaps).
      * Yields no windows when the source has fewer than `size` elements.
-     * Each yielded array is a snapshot -- mutating it does not affect subsequent windows.
+     * Each yielded array is a snapshot - mutating it does not affect subsequent windows.
      *
      * @example
      * ```ts
@@ -880,13 +880,24 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
         comparer?: Comparer<TKey>
     ): TyneqOrderedSequence<TSource>;
 
-    /** Returns all possible permutations of the sequence. */
+    /**
+     * Returns all possible permutations of the sequence.
+     *
+     * @remarks
+     * O(n!) time and O(n) auxiliary memory. Use only on short sequences.
+     * For a sequence of length n, produces n! result arrays, each of length n.
+     */
     permutations(): TyneqSequence<TSource[]>;
 
     /** Returns the sequence in reverse order. */
     reverse(): TyneqSequence<TSource>;
 
-    /** Returns the sequence in random order using `Math.random()`. */
+    /**
+     * Returns the sequence in random order using `Math.random()`.
+     *
+     * @remarks
+     * Uses the Fisher-Yates shuffle. Not cryptographically secure.
+     */
     shuffle(): TyneqSequence<TSource>;
 
     /**
@@ -894,7 +905,16 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * `index` is zero-based and counts from the end of the sequence.
-     * Use `0` to append, `1` to insert one before the last element, etc.
+     * Use `0` to append after the last element, `1` to insert before the last element.
+     *
+     * @example
+     * ```ts
+     * Tyneq.from([1, 2, 3]).backsert(0, [4, 5]).toArray();
+     * // [1, 2, 3, 4, 5]  (appended)
+     *
+     * Tyneq.from([1, 2, 3]).backsert(1, [99]).toArray();
+     * // [1, 2, 99, 3]  (inserted before the last element)
+     * ```
      *
      * @throws {ArgumentOutOfRangeError} When `index` is negative.
      */

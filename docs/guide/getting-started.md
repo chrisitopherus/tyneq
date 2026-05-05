@@ -63,8 +63,12 @@ Convenience factories:
 Tyneq.range(1, 5);         // -> [1, 2, 3, 4, 5]
 Tyneq.range(0, 3);         // -> [0, 1, 2]
 Tyneq.empty<number>();     // zero-element sequence
-Tyneq.enumerate(["a", "b", "c"]).toArray();
+Tyneq.repeat(0, 3);        // -> [0, 0, 0]
+Tyneq.generate(1, x => x * 2, 4); // -> [2, 4, 8, 16]
+Tyneq.concat([1, 2], [3, 4]);      // -> [1, 2, 3, 4]
+[...Tyneq.enumerate(["a", "b", "c"])];
 // -> [[0, "a"], [1, "b"], [2, "c"]]
+// (wrap with Tyneq.from() to chain operators)
 ```
 
 ### Generator functions
@@ -156,6 +160,6 @@ const [first, second] = evens;           // first=2, second=4
 You have the basics. Here is where to go next:
 
 - [Core Concepts](./concepts.md) - understand streaming vs. buffering, the execution model, and memoization in depth
-- [Operators](./operators.md) - all 55+ operators with examples
+- [Operators](./operators.md) - the full operator catalogue with examples
 - [Custom Operators](./extensibility.md) - add your own operators to every sequence
 - [Query Plan & Compiler](./query-plan.md) - inspect and compile pipelines as metadata

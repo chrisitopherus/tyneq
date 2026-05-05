@@ -2,7 +2,15 @@
 
 Every Tyneq sequence carries a live, immutable description of its pipeline. This is the **query plan** - a linked chain of `QueryPlanNode` instances from the outermost operator back to the source.
 
-The query plan is not just for debugging. Combined with `QueryPlanCompiler`, it becomes a way to serialize pipelines as metadata, transform them, optimize them, and replay them on any source. This is the heart of Tyneq's introspection system.
+The query plan is not just for debugging. Combined with `QueryPlanCompiler`, it becomes a way to serialize pipelines as metadata, transform them, optimize them, and replay them on any source.
+
+::: tip What you can do with query plans
+- **Print** the pipeline structure for debugging (`QueryPlanPrinter`)
+- **Walk** nodes to analyze the pipeline without running it (`QueryPlanWalker`)
+- **Transform** the plan to rewrite or remove nodes (`QueryPlanTransformer`)
+- **Optimize** the plan before execution (`QueryPlanOptimizer`)
+- **Compile** the plan back to an executable sequence (`QueryPlanCompiler`)
+:::
 
 ---
 
@@ -243,7 +251,7 @@ const plan = seq[tyneqQueryNode]!;
 const compiler = new QueryPlanCompiler();
 const result = compiler.compile(plan);
 
-result.toArray(); // -> [4, 6]  -- same as seq.toArray()
+result.toArray(); // -> [4, 6]  - same as seq.toArray()
 ```
 
 ### Compiling with transformers
@@ -269,7 +277,7 @@ compiler.compileRaw(plan).toArray();
 
 ### Compiling against a different source
 
-Pass a `source` option to replace the data stored in the plan's source node at compile time. All operators (predicates, projections, limits) are replayed exactly as recorded — only the input data changes.
+Pass a `source` option to replace the data stored in the plan's source node at compile time. All operators (predicates, projections, limits) are replayed exactly as recorded - only the input data changes.
 
 ```ts
 import { QueryPlanCompiler, type CompileOptions } from "tyneq";
@@ -303,7 +311,7 @@ const q2Result = compiler.compile<number>(reportPlan, { source: q2Sales }).toArr
 
 ### How `pipe` compiles
 
-`pipe` stores the factory function in the plan node's `args` at the time the pipeline is built. When the compiler replays the plan, it calls the original factory with the compiled source — the same factory that was passed to `pipe()`. There is no special handling needed: `pipe` compiles correctly like any other operator.
+`pipe` stores the factory function in the plan node's `args` at the time the pipeline is built. When the compiler replays the plan, it calls the original factory with the compiled source - the same factory that was passed to `pipe()`. There is no special handling needed: `pipe` compiles correctly like any other operator.
 
 ### Why this is powerful
 

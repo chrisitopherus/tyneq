@@ -1,4 +1,4 @@
-# Tyneq -- Agent Instructions
+# Tyneq - Agent Instructions
 
 This file is loaded automatically by Claude Code at the start of every session.
 It is the single source of truth for how the agent must behave in this repository.
@@ -12,7 +12,7 @@ It is the single source of truth for how the agent must behave in this repositor
 | `LESSONS` | `tasks/lessons.md` | Distilled rules, architecture decisions, common mistakes |
 | `TODO` | `tasks/todo.md` | Active work items and resolved history |
 | `FUTURE` | `tasks/future.md` | Deferred ideas, not actionable yet |
-| `NOTES` | `tasks/notes.md` | Scratch pad -- raw ideas from the user to evaluate |
+| `NOTES` | `tasks/notes.md` | Scratch pad - raw ideas from the user to evaluate |
 | `STATE` | `tasks/workflow-state.md` | Live session state (branch, last run, pending steps) |
 | `RESULTS` | `tasks/results.md` | Accumulated run outputs and findings |
 
@@ -23,8 +23,8 @@ that must not be re-derived.
 
 ## Branch discipline
 
-- `main` -- release branch, protected. Never commit directly.
-- `dev` -- integration branch, protected. Never commit directly.
+- `main` - release branch, protected. Never commit directly.
+- `dev` - integration branch, protected. Never commit directly.
 - Every feature, fix, or doc change gets its own branch off `dev`.
 - Branch naming: `feature/<slug>`, `fix/<slug>`, `docs/<slug>`, `refactor/<slug>`.
 - Always create the branch before making any file changes.
@@ -69,7 +69,7 @@ If violations exist, run `npm run lint:fix`, then re-check. Fix anything lint:fi
 ```bash
 npm test
 ```
-All tests must pass. If a test fails, diagnose and fix -- do not skip or comment out tests.
+All tests must pass. If a test fails, diagnose and fix - do not skip or comment out tests.
 
 ### 7. Review agent (spawn in background)
 After steps 4-6 pass, spawn a `general-purpose` subagent to review the changes:
@@ -78,7 +78,11 @@ After steps 4-6 pass, spawn a `general-purpose` subagent to review the changes:
 > Check for: correctness, edge cases not covered by tests, clarity of code and docs,
 > performance issues, ASCII-only compliance in text files, ESLint style violations,
 > consistency with patterns in tasks/lessons.md, and anything that could be simplified.
-> Report findings as a numbered list. If nothing needs changing, say 'No issues found.'"
+> Report findings as a numbered list. If nothing needs changing, say 'No issues found.'
+>
+> IMPORTANT: Write your complete findings to tasks/results.md before finishing.
+> Append under a heading with the branch name and current date. This persists your output
+> in case the session hits a context limit before you can respond."
 
 Apply any valid findings. Re-run steps 4-6 after applying fixes.
 If the review agent finds nothing, the change is ready to commit.
@@ -102,7 +106,7 @@ git add <specific files>
 git commit -m "<type>: <short description>"
 ```
 Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-Never use `git add -A` or `git add .` -- always stage specific files.
+Never use `git add -A` or `git add .` - always stage specific files.
 
 ---
 
@@ -126,7 +130,7 @@ npm run docs:dev       # local docs site (VitePress)
 | What | Where |
 |---|---|
 | Public API barrel | `src/index.ts` |
-| All sequence methods (types) | `src/types/core.ts` -- `TyneqSequence`, `TyneqOrderedSequence`, `TyneqCachedSequence` |
+| All sequence methods (types) | `src/types/core.ts` - `TyneqSequence`, `TyneqOrderedSequence`, `TyneqCachedSequence` |
 | `@operator` decorator | `src/plugin/decorators/operator.ts` |
 | `@terminal` decorator | `src/plugin/decorators/terminal.ts` |
 | `@orderedOperator` decorator | `src/plugin/decorators/orderedOperator.ts` |
@@ -152,9 +156,9 @@ npm run docs:dev       # local docs site (VitePress)
 
 ---
 
-## Adding a new operator -- checklist
+## Adding a new operator - checklist
 
-1. Create the file in the right folder (see `LESSONS` -- "Where to put a new operator file").
+1. Create the file in the right folder (see `LESSONS` - "Where to put a new operator file").
 2. Add a named import in `src/core/TyneqEnumerableBase.ts`.
 3. Add the method signature to the correct interface in `src/types/core.ts`.
 4. Add an export to `src/index.ts` if the class itself should be public (e.g., base class for plugins).
@@ -167,12 +171,12 @@ npm run docs:dev       # local docs site (VitePress)
 
 - Double quotes everywhere (`"string"`, not `'string'`).
 - Explicit semicolons.
-- `===` / `!==` only -- never `==` / `!=`.
-- `const` / `let` only -- never `var`.
+- `===` / `!==` only - never `==` / `!=`.
+- `const` / `let` only - never `var`.
 - Arrow function params always parenthesized: `(x) => x`, not `x => x`.
 - Spaces inside object braces: `{ key: value }`.
 - Every class member must declare `public`, `private`, or `protected` explicitly.
-- ASCII-only in all text files -- no Unicode arrows (`->`), ellipses (`...` as U+2026), em-dashes, smart quotes.
+- ASCII-only in all text files - no Unicode arrows (`->`), ellipses (`...` as U+2026), em-dashes, smart quotes.
 
 ---
 
@@ -181,7 +185,7 @@ npm run docs:dev       # local docs site (VitePress)
 - `validate` callback in any registration API runs **eagerly at the call site**.
 - Enumerator constructors validate only `sourceEnumerator` (infrastructure). Never user args.
 - `@terminal` validate runs before construction and `process()`.
-- Putting user-arg validation in constructors defers errors until iteration -- a silent failure.
+- Putting user-arg validation in constructors defers errors until iteration - a silent failure.
 
 ---
 
@@ -193,15 +197,20 @@ Use this exact prompt when spawning the review agent (step 7):
 Review the changes on branch [BRANCH] in c:/Users/jochc/Documents/repos/tyneq.
 
 Specifically check:
-1. Correctness -- are there edge cases the implementation misses?
-2. Test coverage -- are there scenarios not covered by the new/changed tests?
-3. Code clarity -- naming, comments, doc examples accurate?
-4. Performance -- unnecessary allocations, redundant work, missed short-circuits?
-5. ASCII compliance -- any Unicode arrows/ellipses/em-dashes/smart quotes in text files?
-6. ESLint style -- double quotes, explicit access modifiers, arrow parens, semicolons?
+1. Correctness - are there edge cases the implementation misses?
+2. Test coverage - are there scenarios not covered by the new/changed tests?
+3. Code clarity - naming, comments, doc examples accurate?
+4. Performance - unnecessary allocations, redundant work, missed short-circuits?
+5. ASCII compliance - any Unicode arrows/ellipses/em-dashes/smart quotes in text files?
+6. ESLint style - double quotes, explicit access modifiers, arrow parens, semicolons?
 7. Consistency with tasks/lessons.md patterns.
-8. README, guide docs, and JSDoc -- do they describe the changed behavior accurately?
+8. README, guide docs, and JSDoc - do they describe the changed behavior accurately?
 
-Report as a numbered list of findings. For each finding include: file, line range, and a
-concrete suggestion. If there are no issues, say exactly: "No issues found."
+IMPORTANT: Write your complete findings to tasks/results.md BEFORE finishing.
+Append a section with the heading "## Review: [BRANCH] [DATE]" and list all findings there.
+This persists your output in case the session hits a context limit before you can respond.
+
+After writing to tasks/results.md, report as a numbered list of findings. For each finding
+include: file, line range, and a concrete suggestion. If there are no issues, write
+"No issues found." in both tasks/results.md and your response.
 ```

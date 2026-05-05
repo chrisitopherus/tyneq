@@ -1,6 +1,3 @@
-# dev files
-examples
-
 # Logs
 logs
 *.log
@@ -146,9 +143,16 @@ vite.config.ts.timestamp-*
 
 # Agents
 .claude
+
+# Tracked .github content
 .github
 !.github/
 !.github/workflows/
 !.github/workflows/*.yml
 !.github/workflows/*.yaml
+!.github/ISSUE_TEMPLATE/
+!.github/ISSUE_TEMPLATE/*.md
+!.github/PULL_REQUEST_TEMPLATE.md
+
+# Internal task files (not shipped)
 tasks

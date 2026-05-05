@@ -67,7 +67,7 @@ export class EndsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
             writeIndex++;
         }
 
-        // Source shorter than the requested window -- suffix cannot match
+        // Source shorter than the requested window - suffix cannot match
         if (writeIndex < windowSize) {
             return null;
         }

@@ -2,7 +2,6 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
 import { TyneqOrderedEnumerable } from "../../core/ordering/TyneqOrderedEnumerable";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
-import type { OperatorCategory } from "../../types/queryplan";
 import { Constructor } from "../../types/utility";
 import { PluginError } from "../../core/errors/PluginError";
 import { reflect } from "../../utility/reflect";

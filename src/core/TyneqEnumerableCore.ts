@@ -1,4 +1,4 @@
-import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, Comparer, OperatorKind } from "../types/core";
+import { Enumerator, EnumeratorFactory, TyneqCachedSequence, TyneqSequence, TyneqOrderedSequence, Comparer } from "../types/core";
 import { TyneqComparer } from "./TyneqComparer";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { tyneqQueryNode } from "../types/queryplan";
@@ -6,7 +6,7 @@ import type { OperatorCategory, QueryPlanNode } from "../types/queryplan";
 import { QueryNode } from "../queryplan/QueryNode";
 import { builtin } from "../plugin/decorators/builtin";
 import { sequence } from "../plugin/decorators/sequence";
-import { Maybe, Nullable } from "../types/utility";
+import { Nullable } from "../types/utility";
 
 /**
  * Abstract base that adds `orderBy`, `orderByDescending`, `memoize`, and `pipe` to a sequence.

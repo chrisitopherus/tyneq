@@ -7,7 +7,7 @@ import { Enumerator } from "../../types/core";
  * @remarks
  * Deferred. Source is not enumerated until the returned sequence is iterated.
  * Windows with fewer elements than `size` are not yielded.
- * Each yielded array is a snapshot -- mutating it does not affect subsequent windows.
+ * Each yielded array is a snapshot - mutating it does not affect subsequent windows.
  *
  * @see {@link TyneqSequence.window}
  * @group Operators

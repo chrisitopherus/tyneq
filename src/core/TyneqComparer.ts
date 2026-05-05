@@ -1,4 +1,4 @@
-import { Comparer, EqualityComparer } from "../types/core";
+import { Comparer } from "../types/core";
 
 /**
  * Built-in comparers and equality comparers used by ordering and equality operators.
@@ -32,7 +32,7 @@ export class TyneqComparer {
      * Returns a comparer that reverses the order of `comparer`.
      *
      * @remarks
-     * Use this to invert any custom comparer -- for example, to sort by a locale-aware comparer
+     * Use this to invert any custom comparer - for example, to sort by a locale-aware comparer
      * in descending order without rewriting it.
      *
      * @example
@@ -89,7 +89,7 @@ export class TyneqComparer {
      * @remarks
      * Converts both values to lower-case with `toLowerCase()` and compares with `<` / `>`.
      * Locale-independent: results are consistent across environments and match
-     * {@link caseInsensitiveEqualityComparer} -- strings that compare equal here return `true`
+     * {@link caseInsensitiveEqualityComparer} - strings that compare equal here return `true`
      * there, and vice versa.
      *
      * Use {@link createLocaleComparer} when you need locale-aware case-insensitive ordering.

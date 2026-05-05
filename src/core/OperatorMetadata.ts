@@ -36,7 +36,7 @@ export class OperatorMetadata {
      * Creates metadata for a source operator.
      *
      * @remarks
-     * `targetClass` is always `undefined` for source operators -- they are static
+     * `targetClass` is always `undefined` for source operators - they are static
      * factories with no prototype and are never patched onto a class instance.
      */
     public static source(

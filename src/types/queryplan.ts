@@ -94,9 +94,9 @@ export function isSourceNode(node: QueryPlanNode): node is QueryPlanNode & { sou
 /**
  * Traversal direction for {@link QueryPlanWalker}.
  *
- * - `"source-to-terminal"` -- visits from the source node up to the terminal (bottom-up).
+ * - `"source-to-terminal"` - visits from the source node up to the terminal (bottom-up).
  *   `from` is visited before `where`, `where` before `select`. This is the default.
- * - `"terminal-to-source"` -- visits from the terminal node down to the source (top-down).
+ * - `"terminal-to-source"` - visits from the terminal node down to the source (top-down).
  *   `select` is visited before `where`, `where` before `from`.
  *
  * @group QueryPlan

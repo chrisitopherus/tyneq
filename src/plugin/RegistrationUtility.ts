@@ -11,9 +11,9 @@ import { tyneqQueryNode } from "../types/queryplan";
  * These methods centralise two patterns that would otherwise be copy-pasted into every
  * operator `impl` closure:
  *
- * - {@link buildEnumerable} -- validate, create a query node, then call
+ * - {@link buildEnumerable} - validate, create a query node, then call
  *   `createEnumerable`. Used by every standard operator decorator and factory.
- * - {@link buildQueryNode} -- create a query node only. Used by `createOrderedOperator`
+ * - {@link buildQueryNode} - create a query node only. Used by `createOrderedOperator`
  *   and `createCachedOperator`, which construct the result sequence themselves.
  *
  * `asSequenceFactory` is kept private to this class; it exists only to resolve the

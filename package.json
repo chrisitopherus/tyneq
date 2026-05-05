@@ -30,7 +30,7 @@
   "scripts": {
     "build": "tsc --noEmit && eslint src tests && tsup",
     "dev": "tsup --watch",
-    "debug": "node --inspect-brk --enable-source-maps ./node_modules/tsx/dist/cli.mjs examples/dev.ts",
+    "verify:guides": "npx tsx scripts/verify-guides.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -44,15 +44,23 @@
     "docs:publish": "npm run docs:build:pages && gh-pages -d docs/.vitepress/dist -b gh-pages",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm test && npm run build",
+    "postbuild": "node --input-type=module --eval \"import{rmSync,readdirSync,statSync}from'fs';function clean(d){for(const e of readdirSync(d)){const p=d+'/'+e;if(statSync(p).isDirectory()){clean(p);try{readdirSync(p).length===0&&rmSync(p,{recursive:true})}catch{}}}}; clean('dist')\""
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chrisitopherus/tyneq.git"
   },
-  "keywords": ["linq", "lazy", "enumerable", "sequence", "query", "pipeline", "iterator", "typescript"],
-  "author": "Chris",
+  "keywords": ["linq", "linq-style", "lazy", "enumerable", "sequence", "query", "query-builder", "pipeline", "iterator", "functional", "functional-programming", "streams", "typescript"],
+  "author": "chrisitopherus",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": ["./dist/index.js", "./dist/index.cjs"],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bugs": {
     "url": "https://github.com/chrisitopherus/tyneq/issues"
