@@ -28,7 +28,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc --noEmit && eslint src tests && tsup",
+    "build": "tsc --noEmit && eslint src tests && tsup && tsc --project tsconfig.build.json --emitDeclarationOnly",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
