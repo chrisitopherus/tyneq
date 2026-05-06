@@ -1,7 +1,7 @@
 {
   "name": "tyneq",
   "version": "1.0.0",
-  "description": "Lazy query pipelines for TypeScript. LINQ-expressive, type-safe, and infinitely extensible.",
+  "description": "Lazy query pipelines for TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -59,8 +59,6 @@
     "query-builder",
     "pipeline",
     "iterator",
-    "functional",
-    "functional-programming",
     "streams",
     "typescript"
   ],
