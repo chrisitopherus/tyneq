@@ -1,22 +1,25 @@
 {
   "name": "tyneq",
   "version": "1.0.0",
-  "description": "Lazy query pipelines for TypeScript. LINQ-expressive, type-safe, and infinitely extensible.",
+  "description": "Lazy query pipelines for TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./plugin": {
-      "import": { "types": "./dist/plugin/index.d.ts", "default": "./dist/plugin/index.js" },
-      "require": { "types": "./dist/plugin/index.d.cts", "default": "./dist/plugin/index.cjs" }
+      "types": "./dist/plugin/index.d.ts",
+      "import": "./dist/plugin/index.js",
+      "require": "./dist/plugin/index.cjs"
     },
     "./utility": {
-      "import": { "types": "./dist/utility/index.d.ts", "default": "./dist/utility/index.js" },
-      "require": { "types": "./dist/utility/index.d.cts", "default": "./dist/utility/index.cjs" }
+      "types": "./dist/utility/index.d.ts",
+      "import": "./dist/utility/index.js",
+      "require": "./dist/utility/index.cjs"
     }
   },
   "files": [
@@ -25,8 +28,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc --noEmit && eslint src tests && node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup",
-    "dev": "tsup --watch",
+    "build": "tsc --noEmit && eslint src tests && tsdown",
+    "dev": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -46,13 +49,28 @@
     "type": "git",
     "url": "git+https://github.com/chrisitopherus/tyneq.git"
   },
-  "keywords": ["linq", "linq-style", "lazy", "enumerable", "sequence", "query", "query-builder", "pipeline", "iterator", "functional", "functional-programming", "streams", "typescript"],
+  "keywords": [
+    "linq",
+    "linq-style",
+    "lazy",
+    "enumerable",
+    "sequence",
+    "query",
+    "query-builder",
+    "pipeline",
+    "iterator",
+    "streams",
+    "typescript"
+  ],
   "author": "chrisitopherus",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19.0"
   },
-  "sideEffects": ["./dist/index.js", "./dist/index.cjs"],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -66,7 +84,7 @@
     "eslint": "^10.0.3",
     "gh-pages": "^6.3.0",
     "jiti": "^2.6.1",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.21.10",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.13",
     "typedoc-plugin-markdown": "^4.9.0",
