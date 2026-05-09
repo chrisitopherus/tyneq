@@ -39,8 +39,11 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
         const result = this.handleNext();
 
         if (result.done) {
-            this.dispose();
-            this._completed = true;
+            if (!this._completed) {
+                this.dispose();
+                this._completed = true;
+            }
+
             return this.done();
         }
 

@@ -19,13 +19,13 @@ export class OperatorMetadata {
         name: string,
         kind: OperatorKind,
         source: OperatorSource = "external",
-        targetClass: Maybe<SequenceConstructor> = TyneqEnumerableBase,
+        targetClass?: Maybe<SequenceConstructor>,
         extensions: Readonly<Record<string, unknown>> = {}
     ) {
         this.name = name;
         this.kind = kind;
         this.source = source;
-        this.targetClass = targetClass;
+        this.targetClass = arguments.length < 4 ? TyneqEnumerableBase : targetClass;
         this.extensions = extensions;
     }
 

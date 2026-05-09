@@ -1,5 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, Enumerable } from "../../types/core";
+import { EnumeratorUtility } from "../../utility/EnumeratorUtility";
 
 /**
  * Repeats the source sequence a specified number of times.
@@ -25,6 +26,12 @@ export class RepeatSequenceEnumerator<T> extends TyneqEnumerator<T> {
         this.source = source;
         this.count = count;
         this.currentEnumerator = sourceEnumerator;
+    }
+
+    protected override disposeAdditional(): void {
+        if (this.currentEnumerator !== this.sourceEnumerator) {
+            EnumeratorUtility.tryDispose(this.currentEnumerator);
+        }
     }
 
     protected override handleNext(): IteratorResult<T> {
