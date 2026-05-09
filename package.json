@@ -65,7 +65,7 @@
   "author": "chrisitopherus",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19.0"
   },
   "sideEffects": [
     "./dist/index.js",
