@@ -1,6 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Yields every nth element from the source sequence.

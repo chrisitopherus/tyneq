@@ -1,8 +1,9 @@
 import { OperatorEntry, OperatorSource, SequenceConstructor } from "../../types/core";
 import { OperatorMetadata } from "../OperatorMetadata";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
 import { Lazy } from "../../utility/Lazy";
 import { RegistryError } from "../errors/RegistryError";
+import { Maybe } from "../../types/utility";
 
 /**
  * Central registry for all Tyneq operators.
@@ -11,6 +12,15 @@ import { RegistryError } from "../errors/RegistryError";
  * `createGeneratorOperator`, `createTerminalOperator` - flows through this class.
  * It is the single source of truth for which operators exist, their kind, and their
  * prototype-level implementation.
+ *
+ * Internally the registry maintains two separate namespaces:
+ * - Source factories (`Tyneq.from`, `Tyneq.range`, etc.) - keyed by name alone.
+ * - Instance operators (`.where`, `.select`, etc.) - keyed by (name, targetClass).
+ *
+ * This means a source factory and an instance method can share a name without
+ * conflict (e.g. `Tyneq.concat` and `seq.concat`), and two instance operators
+ * with the same name on different prototype chains (e.g. `ordered.foo` and
+ * `cached.foo`) also coexist without conflict.
  *
  * @example
  * ```ts
@@ -23,30 +33,19 @@ import { RegistryError } from "../errors/RegistryError";
  * @group Classes
  */
 export class OperatorRegistry {
-    private static readonly _entries = new Map<string, OperatorEntry>();
+    private static readonly _sources = new Map<string, OperatorEntry>();
+    private static readonly _operators = new Map<string, Map<SequenceConstructor, OperatorEntry>>();
+
     private static readonly _registrationHooks: Array<(entry: OperatorEntry) => void> = [];
     private static readonly _registrationGuards: Array<(entry: OperatorEntry) => void> = [];
-
-    // --- Registration ---
 
     /**
      * Registers an operator entry and patches the method onto `entry.metadata.targetClass.prototype`.
      *
-     * @throws {RegistryError} When an operator with the same name is already registered.
+     * @throws {RegistryError} When an operator with the same name is already registered on the same targetClass.
      */
     public static register(input: OperatorEntry): void {
         const { name } = input.metadata;
-
-        if (this._entries.has(name)) {
-            const existing = this._entries.get(name)!.metadata;
-            throw new RegistryError(
-                `Cannot register "${name}" (${input.metadata.kind}): ` +
-                `already registered as "${existing.kind}" from source "${existing.source}".`,
-                name,
-                input.metadata.kind,
-                { kind: existing.kind, source: existing.source }
-            );
-        }
 
         if (input.metadata.targetClass === undefined) {
             throw new RegistryError(
@@ -56,11 +55,27 @@ export class OperatorRegistry {
             );
         }
 
+        const targetMap = this._operators.get(name);
+        if (targetMap?.has(input.metadata.targetClass)) {
+            const existing = targetMap.get(input.metadata.targetClass)!.metadata;
+            throw new RegistryError(
+                `Cannot register "${name}" (${input.metadata.kind}) on ${input.metadata.targetClass.name}: ` +
+                `already registered as "${existing.kind}" from source "${existing.source}".`,
+                name,
+                input.metadata.kind,
+                { kind: existing.kind, source: existing.source }
+            );
+        }
+
         for (const guard of this._registrationGuards) {
             guard(input);
         }
 
-        this._entries.set(name, input);
+        if (!this._operators.has(name)) {
+            this._operators.set(name, new Map());
+        }
+
+        this._operators.get(name)!.set(input.metadata.targetClass, input);
         (input.metadata.targetClass.prototype as Record<string, unknown>)[name] = input.impl;
 
         for (const hook of this._registrationHooks) {
@@ -71,29 +86,72 @@ export class OperatorRegistry {
     /**
      * Removes an operator registration and deletes the prototype method for external operators.
      *
+     * Checks the instance operator namespace first, then the source namespace.
+     *
      * @returns `true` if the operator was found and removed; `false` if no operator with that name existed.
      * @remarks
      * Internal operators (source `"internal"`) are not removed from the prototype - only
      * their registry entry is deleted.
+     *
+     * For targeted removal use {@link unregisterOperator} or {@link unregisterSource}.
      */
     public static unregister(name: string): boolean {
-        const entry = this._entries.get(name);
-        if (!entry) {
+        if (this._operators.has(name)) {
+            const targetMap = this._operators.get(name)!;
+            for (const [targetClass, entry] of targetMap) {
+                if (entry.metadata.source !== "internal" && targetClass !== undefined) {
+                    delete (targetClass.prototype as Record<string, unknown>)[name];
+                }
+            }
+
+            this._operators.delete(name);
+            return true;
+        }
+
+        if (this._sources.has(name)) {
+            this._sources.delete(name);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes a specific instance operator registration for a given (name, targetClass) pair
+     * and deletes the prototype method for external operators.
+     *
+     * @returns `true` if the entry was found and removed; `false` otherwise.
+     */
+    public static unregisterOperator(name: string, targetClass: SequenceConstructor): boolean {
+        const targetMap = this._operators.get(name);
+        if (!targetMap?.has(targetClass)) {
             return false;
         }
 
-        this._entries.delete(name);
-        if (entry.metadata.source !== "internal" && entry.metadata.targetClass !== undefined) {
-            delete (entry.metadata.targetClass.prototype as Record<string, unknown>)[name];
+        const entry = targetMap.get(targetClass)!;
+        if (entry.metadata.source !== "internal") {
+            delete (targetClass.prototype as Record<string, unknown>)[name];
+        }
+
+        targetMap.delete(targetClass);
+        if (targetMap.size === 0) {
+            this._operators.delete(name);
         }
 
         return true;
     }
 
-    // --- Extensibility ---
+    /**
+     * Removes a source factory registration.
+     *
+     * @returns `true` if the source was found and removed; `false` otherwise.
+     */
+    public static unregisterSource(name: string): boolean {
+        return this._sources.delete(name);
+    }
 
     /**
-     * Registers a hook called after every successful operator registration.
+     * Registers a hook called after every successful operator registration (both namespaces).
      *
      * @returns A function that removes the hook when called.
      */
@@ -106,7 +164,7 @@ export class OperatorRegistry {
     }
 
     /**
-     * Registers a guard called before every registration.
+     * Registers a guard called before every registration (both namespaces).
      * Throw from the guard to reject the registration.
      *
      * @returns A function that removes the guard when called.
@@ -119,57 +177,150 @@ export class OperatorRegistry {
         };
     }
 
-    // --- Introspection ---
-
-    /** Returns `true` if an operator with `name` is registered. */
+    /**
+     * Returns `true` if a name exists in either the source or instance operator namespace.
+     * Use {@link hasSource} or {@link hasOperator} for namespace-specific checks.
+     */
     public static has(name: string): boolean {
-        return this._entries.has(name);
+        return this._sources.has(name) || this._operators.has(name);
     }
 
-    /** Returns the full operator entry for `name`, or `undefined` if not registered. */
-    public static get(name: string): OperatorEntry | undefined {
-        return this._entries.get(name);
+    /**
+     * Returns `true` if a source factory with `name` is registered.
+     */
+    public static hasSource(name: string): boolean {
+        return this._sources.has(name);
     }
 
-    /** Returns the metadata for `name`, or `undefined` if not registered. */
-    public static getMetadata(name: string): OperatorMetadata | undefined {
-        return this._entries.get(name)?.metadata;
+    /**
+     * Returns `true` if an instance operator with `name` is registered.
+     * When `targetClass` is provided, checks only that specific (name, targetClass) pair.
+     * When omitted, returns `true` if any target has an operator with that name.
+     */
+    public static hasOperator(name: string, targetClass?: SequenceConstructor): boolean {
+        if (targetClass !== undefined) {
+            return this._operators.get(name)?.has(targetClass) ?? false;
+        }
+
+        return this._operators.has(name);
     }
 
-    /** Returns metadata for all registered operators. */
+    /**
+     * Returns the operator entry for `name` from either namespace, or `undefined` if not found.
+     * Checks the instance operator namespace first, then the source namespace.
+     * For namespace-specific retrieval use {@link getSource} or {@link getOperator}.
+     */
+    public static get(name: string): Maybe<OperatorEntry> {
+        // Return the first instance operator entry found (any target)
+        const targetMap = this._operators.get(name);
+        if (targetMap !== undefined) {
+            return targetMap.values().next().value;
+        }
+
+        return this._sources.get(name);
+    }
+
+    /**
+     * Returns the source factory entry for `name`, or `undefined` if not registered.
+     */
+    public static getSource(name: string): Maybe<OperatorEntry> {
+        return this._sources.get(name);
+    }
+
+    /**
+     * Returns the instance operator entry for `name` on `targetClass`, or `undefined`.
+     * When `targetClass` is omitted, returns the first entry found across all targets.
+     */
+    public static getOperator(name: string, targetClass?: SequenceConstructor): Maybe<OperatorEntry> {
+        const targetMap = this._operators.get(name);
+        if (targetMap === undefined) {
+            return undefined;
+        }
+
+        if (targetClass !== undefined) {
+            return targetMap.get(targetClass);
+        }
+
+        return targetMap.values().next().value;
+    }
+
+    /**
+     * Returns the metadata for `name` from either namespace, or `undefined` if not found.
+     * Checks instance operators first, then sources.
+     */
+    public static getMetadata(name: string): Maybe<OperatorMetadata> {
+        return this.get(name)?.metadata;
+    }
+
+    /**
+     * Returns metadata for all registered operators and source factories.
+     * Use {@link listOperators} or {@link listSources} for namespace-specific lists.
+     */
     public static list(): readonly OperatorMetadata[] {
-        return [...this._entries.values()].map((e) => e.metadata);
+        return [...this.listSources(), ...this.listOperators()];
     }
 
-    /** Returns metadata for all operators of `kind`. */
+    /**
+     * Returns metadata for all registered source factories.
+     */
+    public static listSources(): readonly OperatorMetadata[] {
+        return [...this._sources.values()].map((e) => e.metadata);
+    }
+
+    /**
+     * Returns metadata for all registered instance operators.
+     * When `targetClass` is provided, returns only entries for that specific target class.
+     */
+    public static listOperators(targetClass?: SequenceConstructor): readonly OperatorMetadata[] {
+        const all: OperatorMetadata[] = [];
+        for (const targetMap of this._operators.values()) {
+            if (targetClass !== undefined) {
+                const entry = targetMap.get(targetClass);
+                if (entry !== undefined) {
+                    all.push(entry.metadata);
+                }
+            } else {
+                for (const entry of targetMap.values()) {
+                    all.push(entry.metadata);
+                }
+            }
+        }
+
+        return all;
+    }
+
+    /** Returns metadata for all operators of `kind` across both namespaces. */
     public static listByKind(kind: OperatorMetadata["kind"]): readonly OperatorMetadata[] {
         return this.list().filter((m) => m.kind === kind);
     }
 
-    /** Returns metadata for all operators from `source`. */
+    /** Returns metadata for all operators from `source` across both namespaces. */
     public static listBySource(source: OperatorMetadata["source"]): readonly OperatorMetadata[] {
         return this.list().filter((m) => m.source === source);
     }
 
-    /** Returns the total number of registered operators. */
+    /** Returns the total number of registered operators across both namespaces. */
     public static count(): number {
-        return this._entries.size;
-    }
+        let operatorCount = 0;
+        for (const targetMap of this._operators.values()) {
+            operatorCount += targetMap.size;
+        }
 
-    // --- Internal registration ---
+        return this._sources.size + operatorCount;
+    }
 
     /**
      * Registers a source operator (a static factory, not a prototype method).
      *
      * @remarks
      * Source operators differ from prototype operators in two ways:
-     * - They are called with `null` as `this` -- they have no instance.
-     * - They are looked up by the compiler via `kind === "source"` rather than
+     * - They are called with `null` as `this` - they have no instance.
+     * - They are looked up by the compiler via {@link getSource} rather than
      *   being patched onto a prototype.
      *
-     * The entry is stored with `kind = "source"` and is never patched onto any prototype.
+     * The entry is stored in the source namespace and is never patched onto any prototype.
      * Registration guards run for `"external"` sources (same policy as {@link register}).
-     * Guards are skipped for `"internal"` sources (same policy as {@link registerBuiltin}).
+    * Guards are skipped for `"internal"` sources (same policy used for internal builtins).
      *
      * Third-party source operators registered here are automatically compiled by
      * `QueryPlanCompiler` without any changes to the compiler.
@@ -195,8 +346,8 @@ export class OperatorRegistry {
         factory: (...args: unknown[]) => unknown,
         source: OperatorSource = "external"
     ): void {
-        if (this._entries.has(name)) {
-            const existing = this._entries.get(name)!.metadata;
+        if (this._sources.has(name)) {
+            const existing = this._sources.get(name)!.metadata;
             throw new RegistryError(
                 `Cannot register source "${name}": ` +
                 `already registered as "${existing.kind}" from source "${existing.source}".`,
@@ -208,7 +359,6 @@ export class OperatorRegistry {
 
         const entry: OperatorEntry = {
             metadata: OperatorMetadata.source(name, source),
-            // Source factories have no `this` -- the impl ignores it and delegates to factory.
             impl: function (this: unknown, ...args: unknown[]) {
                 return factory(...args);
             },
@@ -220,7 +370,7 @@ export class OperatorRegistry {
             }
         }
 
-        this._entries.set(name, entry);
+        this._sources.set(name, entry);
 
         for (const hook of this._registrationHooks) {
             hook(entry);
@@ -228,7 +378,7 @@ export class OperatorRegistry {
     }
 
     /**
-     * Records a built-in operator in the registry without patching the prototype.
+     * Records a built-in operator in the instance operator namespace without patching the prototype.
      * Built-in operators already live as direct methods on their target class.
      *
      * @remarks
@@ -242,10 +392,11 @@ export class OperatorRegistry {
         kind: OperatorMetadata["kind"],
         targetClass: SequenceConstructor
     ): void {
-        if (this._entries.has(name)) {
-            const existing = this._entries.get(name)!.metadata;
+        const targetMap = this._operators.get(name);
+        if (targetMap?.has(targetClass)) {
+            const existing = targetMap.get(targetClass)!.metadata;
             throw new RegistryError(
-                `Cannot register builtin "${name}" (${kind}): ` +
+                `Cannot register builtin "${name}" (${kind}) on ${targetClass.name}: ` +
                 `already registered as "${existing.kind}" from source "${existing.source}".`,
                 name,
                 kind,
@@ -253,7 +404,7 @@ export class OperatorRegistry {
             );
         }
 
-        const lazyMethod = new Lazy(() => ReflectionUtility.getPrototypeMethod(targetClass.prototype, name));
+        const lazyMethod = new Lazy(() => reflect(targetClass.prototype).tryGetMethod(name)?.value);
         const entry: OperatorEntry = {
             metadata: new OperatorMetadata(name, kind, "internal", targetClass),
             impl: function (this: unknown, ...args: unknown[]) {
@@ -271,7 +422,11 @@ export class OperatorRegistry {
             },
         };
 
-        this._entries.set(name, entry);
+        if (!this._operators.has(name)) {
+            this._operators.set(name, new Map());
+        }
+
+        this._operators.get(name)!.set(targetClass, entry);
 
         for (const hook of this._registrationHooks) {
             hook(entry);

@@ -67,13 +67,13 @@ Pass an optional `comparer: Comparer<TKey>` as the second argument to control so
 ```ts
 import { TyneqComparer } from "tyneq";
 
-// Numeric comparer (avoids string coercion pitfall)
-Tyneq.from([10, 2, 30]).orderBy(x => x, TyneqComparer.numericComparer).toArray();
+// Default comparer works for numbers, strings, and dates
+Tyneq.from([10, 2, 30]).orderBy(x => x, TyneqComparer.defaultComparer).toArray();
 // -> [2, 10, 30]
 
 // Locale-aware string sort
 Tyneq.from(words)
-  .orderBy(w => w, TyneqComparer.localeComparer("de"))
+  .orderBy(w => w, TyneqComparer.createLocaleComparer("de"))
   .toArray();
 
 // Reverse sort using a wrapper
@@ -87,11 +87,11 @@ Tyneq.from(scores)
 | Method | Use |
 |---|---|
 | `TyneqComparer.defaultComparer` | Natural order via `<` / `>` (works for numbers, strings, dates) |
-| `TyneqComparer.numericComparer` | Subtraction-based (`a - b`) for numbers only |
 | `TyneqComparer.reverse(cmp)` | Flip any comparer to reverse order |
-| `TyneqComparer.localeComparer(locale?, options?)` | String sort with locale and collation options |
+| `TyneqComparer.createLocaleComparer(locale?, options?)` | String sort with locale and collation options |
 | `TyneqComparer.defaultEqualityComparer` | `===` equality |
 | `TyneqComparer.caseInsensitiveEqualityComparer` | Case-insensitive string equality |
+| `TyneqComparer.caseInsensitiveComparer` | Case-insensitive ordering comparer |
 
 ## Custom Inline Comparer
 

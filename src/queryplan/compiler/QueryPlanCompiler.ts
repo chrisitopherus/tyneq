@@ -1,8 +1,39 @@
-import { TyneqSequence } from "../../types/core";
+import { TyneqSequence, SequenceConstructor } from "../../types/core";
 import { QueryPlanNode } from "../../types/queryplan";
 import { QueryPlanTransformer } from "../QueryPlanTransformer";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { CompilerError } from "../../core/errors/CompilerError";
+
+/**
+ * Options for {@link QueryPlanCompiler.compile} and {@link QueryPlanCompiler.compileRaw}.
+ *
+ * @group QueryPlan
+ */
+export interface CompileOptions {
+    /**
+     * Replaces the source data when compiling.
+     *
+     * When provided, the compiler passes this value as the first argument to the source
+     * operator instead of the value stored in the plan node's `args`. This lets you reuse
+     * the same pipeline structure (operators, predicates, projections) against a different
+     * data set without rebuilding the sequence.
+     *
+     * @example
+     * ```ts
+     * const plan = Tyneq.from([1, 2, 3]).where(x => x > 1).select(x => x * 2)[tyneqQueryNode]!;
+     * const compiler = new QueryPlanCompiler();
+     *
+     * compiler.compile(plan).toArray();                         // -> [4, 6]
+     * compiler.compile(plan, { source: [10, 20, 30] }).toArray(); // -> [40, 60]
+     * ```
+     *
+     * @remarks
+     * Only affects source nodes (the root of the plan). All operator nodes are replayed
+     * exactly as recorded. If the plan has no source node (e.g. it starts from an operator
+     * node with a missing parent), this option has no effect.
+     */
+    readonly source?: Iterable<unknown>;
+}
 
 /**
  * Compiles a query plan tree into an executable `TyneqSequence`.
@@ -39,12 +70,14 @@ export class QueryPlanCompiler {
      * the transform phase when the plan is already optimised.
      *
      * @param node - The root node of the query plan to compile.
+     * @param options - Optional compile-time overrides. Use `options.source` to supply a
+     * different data source than the one stored in the plan.
      * @returns The compiled sequence typed as `TyneqSequence<T>` by default.
      * If you know the plan ends in an operator that returns a subtype (e.g. `orderBy` ->
      * `TyneqOrderedSequence`, `memoize` -> `TyneqCachedSequence`), supply `TResult` explicitly:
      * `compiler.compile<number, TyneqOrderedSequence<number>>(node)`.
      */
-    public compile<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
+    public compile<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode, options?: CompileOptions): TResult {
         if (node === null || node === undefined) {
             throw new CompilerError(
                 "compile() received a null or undefined query plan node. Ensure the sequence was created via Tyneq.from(), Tyneq.range(), or another source operator before compiling.",
@@ -53,7 +86,7 @@ export class QueryPlanCompiler {
         }
 
         const transformedNode = this.transform(node);
-        return this.compileNode(transformedNode) as TResult;
+        return this.compileNode(transformedNode, options) as TResult;
     }
 
     /**
@@ -66,8 +99,10 @@ export class QueryPlanCompiler {
      * a `QueryPlanCompiler` with no transformers and calling `compile()`.
      *
      * @param node - The root node of the already-transformed query plan to compile.
+     * @param options - Optional compile-time overrides. Use `options.source` to supply a
+     * different data source than the one stored in the plan.
      */
-    public compileRaw<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode): TResult {
+    public compileRaw<T = unknown, TResult extends TyneqSequence<T> = TyneqSequence<T>>(node: QueryPlanNode, options?: CompileOptions): TResult {
         if (node === null || node === undefined) {
             throw new CompilerError(
                 "compileRaw() received a null or undefined query plan node. Ensure the sequence was created via Tyneq.from(), Tyneq.range(), or another source operator before compiling.",
@@ -75,7 +110,7 @@ export class QueryPlanCompiler {
             );
         }
 
-        return this.compileNode(node) as TResult;
+        return this.compileNode(node, options) as TResult;
     }
 
     private transform(node: QueryPlanNode): QueryPlanNode {
@@ -96,9 +131,9 @@ export class QueryPlanCompiler {
         return transformedNode;
     }
 
-    private compileNode(node: QueryPlanNode): unknown {
+    private compileNode(node: QueryPlanNode, options?: CompileOptions): unknown {
         if (node.category === "source") {
-            return this.compileSource(node);
+            return this.compileSource(node, options);
         }
 
         if (node.source === null) {
@@ -109,12 +144,12 @@ export class QueryPlanCompiler {
             );
         }
 
-        return this.applyOperator(this.compileNode(node.source), node);
+        return this.applyOperator(this.compileNode(node.source, options), node);
     }
 
-    private compileSource(node: QueryPlanNode): unknown {
-        const entry = OperatorRegistry.get(node.operatorName);
-        if (!entry || entry.metadata.kind !== "source") {
+    private compileSource(node: QueryPlanNode, options?: CompileOptions): unknown {
+        const entry = OperatorRegistry.getSource(node.operatorName);
+        if (!entry) {
             throw new CompilerError(
                 `Unknown source operator "${node.operatorName}". ` +
                 "Register it via OperatorRegistry.registerSource() before compiling.",
@@ -123,32 +158,51 @@ export class QueryPlanCompiler {
             );
         }
 
-        return entry.impl.apply(null as never, [...node.args]);
+        const args = options?.source !== undefined
+            ? [options.source, ...node.args.slice(1)]
+            : [...node.args];
+
+        return entry.impl.apply(null as never, args);
     }
 
     private applyOperator(source: unknown, node: QueryPlanNode): unknown {
-        const entry = OperatorRegistry.get(node.operatorName);
+        const entry = this.findOperatorEntry(node.operatorName, source);
 
         if (!entry) {
-            throw new CompilerError(
-                `Operator "${node.operatorName}" is not registered. ` +
-                "Register it via @operator, createOperator, or createGeneratorOperator before compiling.",
-                "operator",
-                node.operatorName
-            );
-        }
-
-        if (entry.metadata.targetClass !== undefined && !(source instanceof entry.metadata.targetClass)) {
-            const expected = entry.metadata.targetClass.name;
-            const actual = source !== null && source !== undefined ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source : "null";
-            throw new CompilerError(
-                `Operator "${node.operatorName}" requires a ${expected} but received ${actual}. ` +
-                "Ensure the source sequence is of the correct type for this operator.",
-                "operator",
-                node.operatorName
-            );
+            const sourceType = source !== null && source !== undefined
+                ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source
+                : "null";
+            const knownForAnyTarget = OperatorRegistry.hasOperator(node.operatorName);
+            const message = knownForAnyTarget
+                ? `Operator "${node.operatorName}" is not registered for sequence type ${sourceType}. ` +
+                  "Ensure the source sequence is of the correct type for this operator."
+                : `Operator "${node.operatorName}" is not registered. ` +
+                  "Register it via @operator, createOperator, or createGeneratorOperator before compiling.";
+            throw new CompilerError(message, "operator", node.operatorName);
         }
 
         return entry.impl.apply(source as never, [...node.args]);
+    }
+
+    // Walk the prototype chain of source to find the most-specific registered entry.
+    private findOperatorEntry(operatorName: string, source: unknown): ReturnType<typeof OperatorRegistry.getOperator> {
+        if (source === null || source === undefined) {
+            return undefined;
+        }
+
+        let proto = Object.getPrototypeOf(source) as object | null;
+        while (proto !== null) {
+            const ctor = (proto as { constructor?: SequenceConstructor }).constructor;
+            if (ctor !== undefined) {
+                const entry = OperatorRegistry.getOperator(operatorName, ctor);
+                if (entry !== undefined) {
+                    return entry;
+                }
+            }
+
+            proto = Object.getPrototypeOf(proto) as object | null;
+        }
+
+        return undefined;
     }
 }

@@ -24,7 +24,7 @@ import type { CachedEnumerable, OperatorSource } from "../../types/core";
  * });
  * ```
  *
- * @group Decorators
+ * @group Factory Functions
  */
 export function createCachedTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
@@ -33,7 +33,7 @@ export function createCachedTerminalOperator<TSource, TArgs extends unknown[], T
     source?: OperatorSource;
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, "terminal", config.source ?? "external", TyneqCachedEnumerable),
+        metadata: OperatorMetadata.terminal(config.name, TyneqCachedEnumerable, config.source),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as unknown as CachedEnumerable<TSource>, ...(args as TArgs));

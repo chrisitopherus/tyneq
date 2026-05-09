@@ -1,4 +1,5 @@
 import type { QueryPlanNode, QueryPlanVisitor, OperatorCategory, SourceKind } from "../types/queryplan";
+import type { Nullable } from "../types/utility";
 
 /**
  * Concrete `QueryPlanNode` implementation.
@@ -13,7 +14,7 @@ export class QueryNode implements QueryPlanNode {
     public constructor(
         public readonly operatorName: string,
         public readonly args: readonly unknown[],
-        public readonly source: QueryPlanNode | null,
+        public readonly source: Nullable<QueryPlanNode>,
         public readonly category: OperatorCategory,
         public readonly sourceKind?: SourceKind
     ) {}

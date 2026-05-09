@@ -1,0 +1,25 @@
+/*
+ * Remove excess whitespace on the home/landing page so the hero + features
+ * fit snugly without an unnecessary scrollbar.
+ */
+
+/* Tighten the gap between the hero and the feature cards */
+.VPHero {
+  padding-bottom: 32px !important;
+}
+
+.VPHomeFeatures {
+  padding-top: 0 !important;
+}
+
+/* Reduce the large empty space inside the hero on tall viewports */
+.VPHero .container {
+  padding-top: 48px !important;
+  padding-bottom: 0 !important;
+}
+
+/* Pull the overall home layout together */
+.VPHome {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}

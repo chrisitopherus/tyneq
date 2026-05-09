@@ -36,7 +36,7 @@ export function cachedTerminal<TArgs extends unknown[] = never>(
         _context: ClassDecoratorContext<TClass>
     ): TClass {
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, "terminal", "external", TyneqCachedEnumerable),
+            metadata: OperatorMetadata.terminal(name, TyneqCachedEnumerable),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const source = this as unknown as CachedEnumerable<unknown>;

@@ -20,12 +20,8 @@
   "enumMembersFormat": "table",
   "navigationJson": "docs/api/reference/navigation.json",
   "hideBreadcrumbs": false,
-  "externalSymbolLinkMappings": {
-    "tyneq": {
-      "TyneqEnumerableEnumerator": "#",
-      "EnumeratorUtility.tryDispose": "#",
-      "BaseEnumerableSorter": "#",
-      "TyneqEnumerableBase": "#"
-    }
+  "externalSymbolLinkMappings": {},
+  "validation": {
+    "notExported": false
   }
 }

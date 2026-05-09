@@ -1,13 +1,16 @@
 import { RangeEnumerator } from "./generators/range";
 import { RandomEnumerator } from "./generators/random";
-import { Enumerable, Enumerator, EnumeratorFactory, IteratorFactory, TyneqSequence } from "../types/core";
+import { TyneqSequence } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 import { EnumerableAdapter } from "./EnumerableAdapter";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { QueryNode } from "../queryplan/QueryNode";
 import type { SourceKind } from "../types/queryplan";
 import { source } from "../plugin/decorators/source";
+import { ItemSelector, Optional } from "../types/utility";
+import { RepeatEnumerator } from "./generators/repeat";
+import { GenerateEnumerator } from "./generators/generate";
+import { SourceConcatEnumerator } from "./generators/sourceConcat";
 
 /**
  * Entry point for creating Tyneq sequences.
@@ -61,11 +64,8 @@ export class Tyneq {
     @source({ source: "internal" })
     public static random<TSource>(count: number, randomizer: () => TSource): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
         ArgumentUtility.checkNotOptional({ randomizer });
-
-        if (count === 0) {
-            return this.empty<TSource>();
-        }
 
         return new TyneqEnumerable<TSource>({
             getEnumerator: () => new RandomEnumerator<TSource>(count, randomizer)
@@ -75,7 +75,7 @@ export class Tyneq {
     /**
      * Returns `true` if `source` is `null`, `undefined`, or an iterable whose first element is `null` or `undefined`.
      */
-    public static isNullOrEmpty<TSource>(source: Iterable<TSource> | null | undefined): boolean {
+    public static isNullOrEmpty<TSource>(source: Optional<Iterable<TSource>>): boolean {
         if (source === null || source === undefined) {
             return true;
         }
@@ -102,10 +102,6 @@ export class Tyneq {
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
 
-        if (count === 0) {
-            return this.empty<number>();
-        }
-
         const end = start + count - 1;
         return new TyneqEnumerable<number>({
             getEnumerator: () => new RangeEnumerator(start, end)
@@ -119,6 +115,82 @@ export class Tyneq {
             new EnumerableAdapter<TSource>([]),
             new QueryNode("empty", [], null, "source")
         );
+    }
+
+    /**
+     * Creates a sequence that yields `value` exactly `count` times.
+     *
+     * @example
+     * ```ts
+     * Tyneq.repeat("x", 3).toArray(); // -> ["x", "x", "x"]
+     * ```
+     *
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
+     */
+    @source({ source: "internal" })
+    public static repeat<TSource>(value: TSource, count: number): TyneqSequence<TSource> {
+        ArgumentUtility.checkNonNegative({ count });
+        ArgumentUtility.checkInteger({ count });
+
+        return new TyneqEnumerable<TSource>({
+            getEnumerator: () => new RepeatEnumerator<TSource>(value, count)
+        }, new QueryNode("repeat", [value, count], null, "source"));
+    }
+
+    /**
+     * Creates a sequence by repeatedly applying `next` to produce each element from the previous one.
+     *
+     * @remarks
+     * The selector receives `(currentValue, index)`. Each call's return value becomes the input
+     * for the next call. Omit `count` for an infinite sequence; pair with `take` to bound it.
+     *
+     * @example
+     * ```ts
+     * Tyneq.generate(1, (x) => x * 2, 4).toArray(); // -> [2, 4, 8, 16]
+     * ```
+     *
+     * @throws {ArgumentNullError} When `next` is null or undefined.
+     * @throws {ArgumentOutOfRangeError} When `count` is negative.
+     * @throws {ArgumentError} When `count` is not an integer.
+     */
+    @source({ source: "internal" })
+    public static generate<TSource, TResult extends TSource>(seed: TSource, next: ItemSelector<TSource, TResult>, count?: number): TyneqSequence<TResult> {
+        ArgumentUtility.checkNotOptional({ next });
+        if (count !== undefined) {
+            ArgumentUtility.checkNonNegative({ count });
+            ArgumentUtility.checkInteger({ count });
+        }
+
+        return new TyneqEnumerable<TResult>({
+            getEnumerator: () => new GenerateEnumerator<TSource, TResult>(seed, next, count)
+        }, new QueryNode("generate", [seed, next, count], null, "source"));
+    }
+
+    /**
+     * Creates a sequence that yields all elements from each source in order.
+     *
+     * @remarks
+     * Returns an empty sequence when called with no arguments.
+     *
+     * @example
+     * ```ts
+     * Tyneq.concat([1, 2], [3, 4], [5]).toArray(); // -> [1, 2, 3, 4, 5]
+     * ```
+     * 
+     * @throws {ArgumentNullError} When any `source` is null or undefined.
+     * @throws {ArgumentTypeError} When any `source` is not iterable.
+     */
+    @source({ source: "internal" })
+    public static concat<TSource>(...sources: Iterable<TSource>[]): TyneqSequence<TSource> {
+        for (const source of sources) {
+            ArgumentUtility.checkNotOptional({ source });
+            ArgumentUtility.checkIterable({ source });
+        }
+
+        return new TyneqEnumerable<TSource>({
+            getEnumerator: () => new SourceConcatEnumerator<TSource>(...sources)
+        }, new QueryNode("concat", sources, null, "source"));
     }
 
     /**
@@ -136,7 +208,7 @@ export class Tyneq {
      * @throws {ArgumentNullError} When `source` is null or undefined.
      * @throws {ArgumentTypeError} When `source` is not iterable.
      */
-    public static enumerate<TSource>(source: Iterable<TSource>): Enumerable<[number, TSource]> {
+    public static enumerate<TSource>(source: Iterable<TSource>): TyneqSequence<[number, TSource]> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
         // A fresh `index` counter is created per enumeration via [Symbol.iterator],

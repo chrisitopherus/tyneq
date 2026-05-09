@@ -27,7 +27,7 @@ import { OperatorMetadata } from "../../core/OperatorMetadata";
  * });
  * ```
  *
- * @group Decorators
+ * @group Factory Functions
  */
 export function createTerminalOperator<TSource, TArgs extends unknown[], TResult>(config: {
     name: string;
@@ -36,7 +36,7 @@ export function createTerminalOperator<TSource, TArgs extends unknown[], TResult
     source?: OperatorSource;
 }): void {
     OperatorRegistry.register({
-        metadata: new OperatorMetadata(config.name, "terminal", config.source ?? "external", TyneqEnumerableBase),
+        metadata: OperatorMetadata.terminal(config.name, TyneqEnumerableBase, config.source),
         impl: function (this: TyneqEnumerableBase<unknown>, ...args: unknown[]) {
             config.validate?.(...(args as TArgs));
             return config.execute(this as Enumerable<TSource>, ...(args as TArgs));

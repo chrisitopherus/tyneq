@@ -6,7 +6,9 @@ import { Enumerator } from "../../types/core";
  * @remarks
  * State machine:
  * - `next()` calls `initialize()` on the first invocation, then delegates to `handleNext()`.
- * - When `handleNext()` returns `{ done: true }`, the enumerator marks itself completed and calls `dispose()`.
+ * - When `handleNext()` returns `{ done: true }`, `dispose()` is called then the enumerator marks itself completed.
+ * - `doneWithYield(value)` emits one final element, calls `dispose()`, then marks completed.
+ * - `earlyComplete()` calls `dispose()` and marks completed without yielding.
  * - `return()` triggers early termination: calls `dispose()` then marks completed. Idempotent.
  * - Once completed, all `next()` calls return `{ done: true }` without re-invoking `handleNext()`.
  *
@@ -18,27 +20,30 @@ import { Enumerator } from "../../types/core";
  * @group Plugin
  */
 export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements Enumerator<TOutput> {
-    private initialized = false;
-    protected sourceDisposed = false;
-    protected completed = false;
+    private _initialized = false;
+    private _completed = false;
 
     public constructor() { }
 
     /** Advances the iterator, calling `initialize()` on first call. Idempotent after completion. */
     public next(): IteratorResult<TOutput> {
-        if (this.completed) {
+        if (this._completed) {
             return this.done();
         }
 
-        if (!this.initialized) {
+        if (!this._initialized) {
             this.initialize();
-            this.initialized = true;
+            this._initialized = true;
         }
 
         const result = this.handleNext();
 
         if (result.done) {
-            this.completed = true;
+            if (!this._completed) {
+                this.dispose();
+                this._completed = true;
+            }
+
             return this.done();
         }
 
@@ -47,9 +52,9 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
 
     /** Terminates iteration early, disposes resources, and marks completed. Idempotent. */
     public return(value?: unknown): IteratorResult<TOutput> {
-        if (!this.completed) {
+        if (!this._completed) {
             this.dispose(value);
-            this.completed = true;
+            this._completed = true;
         }
 
         return this.done();
@@ -75,7 +80,8 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      * Use when the last element must be emitted together with completion in one step.
      */
     protected doneWithYield(value: TOutput): IteratorResult<TOutput> {
-        this.completed = true;
+        this.dispose();
+        this._completed = true;
         return this.yield(value);
     }
 
@@ -87,7 +93,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      */
     protected earlyComplete(reason?: unknown): IteratorResult<TOutput> {
         this.dispose(reason);
-        this.completed = true;
+        this._completed = true;
         return this.done();
     }
 
@@ -107,7 +113,7 @@ export abstract class TyneqBaseEnumerator<TInput, TOutput = TInput> implements E
      * Called after `disposeSource()`. `value` is the return value passed to `return()`.
      * Must be idempotent and must not throw.
      */
-    protected disposeAdditional(value?: unknown): void { }
+    protected disposeAdditional(_value?: unknown): void { }
 
     /** Produces the next element. Return `{ done: true }` to signal exhaustion. */
     protected abstract handleNext(): IteratorResult<TOutput>;

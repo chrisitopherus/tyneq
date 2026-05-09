@@ -1,7 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator, TyneqSequence } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
-import { TyneqMap } from "../../utility/TyneqMap";
+import { DefaultingMap } from "../../utility/DefaultingMap";
 
 /**
  * Groups elements by a key selector and projects each group through a result selector.
@@ -20,7 +19,7 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
     private readonly resultSelector: (key: TKey, values: TyneqSequence<TValue>) => TResult;
     private readonly groupFactory: (values: TValue[]) => TyneqSequence<TValue>;
     private lookupEnumerator?: Enumerator<[TKey, TValue[]]>;
-    private lookup = new TyneqMap<TKey, TValue[]>();
+    private lookup = new DefaultingMap<TKey, TValue[]>();
 
     
     public constructor(

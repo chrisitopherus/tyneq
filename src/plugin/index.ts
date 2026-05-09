@@ -13,7 +13,7 @@
  *     if (typeof predicate !== "function") throw new Error("predicate must be a function");
  * })
  * class MyFilterEnumerator<T> extends TyneqEnumerator<T> {
- *     constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
+ *     public constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
  *         super(source);
  *     }
  *     protected handleNext(): IteratorResult<T> {
@@ -25,16 +25,18 @@
  * }
  * ```
  *
- * @example Factory-based terminal operator:
+ * @example Generator-based streaming operator:
  * ```ts
- * import { createTerminalOperator } from "tyneq/plugin";
+ * import { createGeneratorOperator } from "tyneq/plugin";
  *
- * createTerminalOperator({
- *     name: "product",
- *     execute: (source) => {
- *         let result = 1;
- *         for (const item of source) result *= item as number;
- *         return result;
+ * createGeneratorOperator({
+ *     name: "everyOther",
+ *     *generator(source) {
+ *         let skip = false;
+ *         for (const item of source) {
+ *             if (!skip) yield item;
+ *             skip = !skip;
+ *         }
  *     }
  * });
  * ```
@@ -42,18 +44,13 @@
  * @module tyneq/plugin
  */
 
-// --- Enumerator base classes ---
 export { TyneqBaseEnumerator } from "../core/enumerators/TyneqBaseEnumerator";
 export { TyneqEnumerator } from "../core/enumerators/TyneqEnumerator";
 export { TyneqCachedEnumerator } from "../core/enumerators/TyneqCachedEnumerator";
 export { TyneqOrderedEnumerator } from "../core/enumerators/TyneqOrderedEnumerator";
-
-// --- Terminal operator base classes ---
 export { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 export { TyneqCachedTerminalOperator } from "../core/terminal/TyneqCachedTerminalOperator";
 export { TyneqOrderedTerminalOperator } from "../core/terminal/TyneqOrderedTerminalOperator";
-
-// --- Class decorators ---
 export { operator } from "./decorators/operator";
 export { terminal } from "./decorators/terminal";
 export { source } from "./decorators/source";
@@ -61,8 +58,7 @@ export { cachedOperator } from "./decorators/cachedOperator";
 export { orderedOperator } from "./decorators/orderedOperator";
 export { cachedTerminal } from "./decorators/cachedTerminal";
 export { orderedTerminal } from "./decorators/orderedTerminal";
-
-// --- Factory functions ---
+export { EnumeratorUtility } from "../utility/EnumeratorUtility";
 export { createOperator } from "./registration/createOperator";
 export { createGeneratorOperator } from "./registration/createGeneratorOperator";
 export { createTerminalOperator } from "./registration/createTerminalOperator";

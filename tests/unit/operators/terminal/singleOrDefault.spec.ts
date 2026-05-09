@@ -14,6 +14,16 @@ describe("singleOrDefault", () => {
     it("returns default for an empty source", () => {
       expect(Tyneq.from<number>([]).singleOrDefault((x) => x > 0, -1)).toBe(-1);
     });
+
+    it("passes the zero-based index to the predicate", () => {
+      const indices: number[] = [];
+      Tyneq.from([1, 2, 3]).singleOrDefault((x, i) => { indices.push(i); return x === 9; }, -1);
+      expect(indices).toEqual([0, 1, 2]);
+    });
+
+    it("can find single by index", () => {
+      expect(Tyneq.from(["a", "b", "c"]).singleOrDefault((_, i) => i === 1, "z")).toBe("b");
+    });
   });
 
   describe("error conditions", () => {

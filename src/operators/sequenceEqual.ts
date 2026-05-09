@@ -1,8 +1,7 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqComparer } from "../core/TyneqComparer";
-import { Enumerable, TyneqSequence, EqualityComparer } from "../types/core";
+import { TyneqSequence, EqualityComparer } from "../types/core";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns true if the source and a second sequence contain equal elements in the same order.

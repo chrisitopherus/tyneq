@@ -1,4 +1,5 @@
 import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, QueryPlanWalkerOptions } from "../types/queryplan";
+import { Maybe } from "../types/utility";
 
 /**
  * Concrete base class for side-effect query plan visitors.
@@ -11,13 +12,13 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, Quer
  *
  * ### Usage patterns
  *
- * **Direct instantiation with a callback** -- no subclass needed for simple traversals:
+ * **Direct instantiation with a callback** - no subclass needed for simple traversals:
  * ```ts
  * const names: string[] = [];
  * new QueryPlanWalker({ callback: node => names.push(node.operatorName) }).visit(plan);
  * ```
  *
- * **Subclass** -- for stateful walkers that accumulate results across nodes:
+ * **Subclass** - for stateful walkers that accumulate results across nodes:
  * ```ts
  * class NodeCounter extends QueryPlanWalker {
  *     public count = 0;
@@ -37,7 +38,7 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, Quer
  * }).visit(plan);
  * ```
  *
- * **Subclass with direction override** -- pass options to `super`:
+ * **Subclass with direction override** - pass options to `super`:
  * ```ts
  * class ReverseCollector extends QueryPlanWalker {
  *     public readonly names: string[] = [];
@@ -52,7 +53,7 @@ import type { QueryPlanNode, QueryPlanTraversalDirection, QueryPlanVisitor, Quer
  */
 export class QueryPlanWalker implements QueryPlanVisitor<void> {
 
-    private readonly callback: ((node: QueryPlanNode) => void) | undefined;
+    private readonly callback: Maybe<(node: QueryPlanNode) => void>;
     private readonly direction: QueryPlanTraversalDirection;
 
     /**

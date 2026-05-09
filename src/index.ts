@@ -2,9 +2,11 @@ export * from "./types/core";
 export * from "./types/utility";
 export * from "./core/tyneq";
 export * from "./utility/ArgumentUtility";
-export { ReflectionUtility } from "./utility/ReflectionUtility";
+export { reflect, ReflectionContext } from "./utility/reflect";
+export type { MemberDescriptor, MethodDescriptor, DataDescriptor, AccessorDescriptor, ReflectOptions } from "./types/reflection";
 export { TypeGuardUtility } from "./utility/TypeGuardUtility";
 export { Lazy } from "./utility/Lazy";
+export { TyneqComparer } from "./core/TyneqComparer";
 export * from "./core/errors/TyneqError";
 export * from "./core/errors/InvalidOperationError";
 export * from "./core/errors/KeyNotFoundError";
@@ -33,7 +35,7 @@ export { QueryPlanPrinter } from "./queryplan/QueryPlanPrinter";
 export { QueryPlanWalker } from "./queryplan/QueryPlanWalker";
 export { QueryPlanTransformer } from "./queryplan/QueryPlanTransformer";
 export { QueryPlanOptimizer } from "./queryplan/QueryPlanOptimizer";
-export { QueryPlanCompiler } from "./queryplan/compiler/QueryPlanCompiler";
+export { QueryPlanCompiler, type CompileOptions } from "./queryplan/compiler/QueryPlanCompiler";
 
 // plugin - decorators
 export { operator } from "./plugin/decorators/operator";

@@ -1,7 +1,5 @@
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/ArgumentUtility";
-import { nameof } from "../utility/nameof";
 
 /**
  * Returns the element at a specified index, or a default value if the index is out of range.
@@ -21,8 +19,6 @@ export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<T
     
     public constructor(source: TyneqSequence<TSource>, index: number, defaultValue: TSource) {
         super(source);
-        ArgumentUtility.checkNonNegative({ index });
-
         this.index = index;
         this.defaultValue = defaultValue;
     }

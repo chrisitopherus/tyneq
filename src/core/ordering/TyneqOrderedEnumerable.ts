@@ -10,10 +10,19 @@ import { OrderByEnumerator } from "../../enumerators/buffer/orderBy";
 import { TyneqEnumerableBase } from "../TyneqEnumerableBase";
 import { TyneqComparer } from "../TyneqComparer";
 import { ArgumentUtility } from "../../utility/ArgumentUtility";
-import { nameof } from "../../utility/nameof";
 import { TyneqCachedEnumerable } from "../TyneqCachedEnumerable";
 import { sequence } from "../../plugin/decorators/sequence";
 import { builtin } from "../../plugin/decorators/builtin";
+
+const ASC_TO_DESC: Readonly<Record<string, string>> = {
+    "orderBy": "orderByDescending",
+    "thenBy": "thenByDescending",
+};
+
+const DESC_TO_ASC: Readonly<Record<string, string>> = {
+    "orderByDescending": "orderBy",
+    "thenByDescending": "thenBy",
+};
 
 /**
  * Concrete implementation of {@link TyneqOrderedSequence}.
@@ -32,8 +41,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
 
     public readonly source: TyneqSequence<TSource>;
     public readonly parent: Nullable<OrderedEnumerable<TSource>>;
-    public readonly [tyneqQueryNode]: QueryPlanNode | null;
-
+    public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
     
     public constructor(
         source: TyneqSequence<TSource>,
@@ -41,7 +49,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         comparer: Comparer<TKey>,
         descending: boolean,
         parent?: OrderedEnumerable<TSource>,
-        node?: QueryPlanNode | null
+        node?: Nullable<QueryPlanNode>
     ) {
         super();
         ArgumentUtility.checkNotOptional({ source });
@@ -54,6 +62,44 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         this.descending = descending;
         this.parent = parent ?? null;
         this[tyneqQueryNode] = node ?? null;
+    }
+
+    public asc(): TyneqOrderedSequence<TSource> {
+        if (!this.descending) {
+            return this;
+        }
+
+        const currentNode = this[tyneqQueryNode];
+        const node = currentNode
+            ? new QueryNode(DESC_TO_ASC[currentNode.operatorName] ?? currentNode.operatorName, currentNode.args, currentNode.source, currentNode.category, currentNode.sourceKind)
+            : null;
+
+        return new TyneqOrderedEnumerable(
+            this.source,
+            this.keySelector,
+            this.comparer,
+            false,
+            this.parent ?? undefined,
+            node);
+    }
+
+    public desc(): TyneqOrderedSequence<TSource> {
+        if (this.descending) {
+            return this;
+        }
+
+        const currentNode = this[tyneqQueryNode];
+        const node = currentNode
+            ? new QueryNode(ASC_TO_DESC[currentNode.operatorName] ?? currentNode.operatorName, currentNode.args, currentNode.source, currentNode.category, currentNode.sourceKind)
+            : null;
+
+        return new TyneqOrderedEnumerable(
+            this.source,
+            this.keySelector,
+            this.comparer,
+            true,
+            this.parent ?? undefined,
+            node);
     }
 
     public override getEnumerator(): Enumerator<TSource> {
@@ -77,6 +123,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     ): TyneqOrderedSequence<TSource> {
         const thenByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("thenBy", thenByArgs, this[tyneqQueryNode], "buffer");
+
         return new TyneqOrderedEnumerable<TSource, UKey>(
             this.source,
             keySelector,
@@ -104,7 +151,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    protected override createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node?: QueryPlanNode | null): TyneqSequence<TResult> {
+    protected override createEnumerable<TResult>(factory: EnumeratorFactory<TResult>, node: Nullable<QueryPlanNode>): TyneqSequence<TResult> {
         return new TyneqEnumerable<TResult>(factory, node);
     }
 
@@ -112,7 +159,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (x: TSource) => TKey,
         comparer: Comparer<TKey>,
         descending: boolean,
-        node?: QueryPlanNode | null
+        node: Nullable<QueryPlanNode>
     ): TyneqOrderedSequence<TSource> {
         return new TyneqOrderedEnumerable<TSource, TKey>(
             this.source,
@@ -124,7 +171,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         );
     }
 
-    protected override createCachedEnumerable(source: TyneqSequence<TSource>, node?: QueryPlanNode | null): TyneqCachedSequence<TSource> {
+    protected override createCachedEnumerable(source: TyneqSequence<TSource>, node: Nullable<QueryPlanNode>): TyneqCachedSequence<TSource> {
         return new TyneqCachedEnumerable<TSource>(source, node);
     }
 }

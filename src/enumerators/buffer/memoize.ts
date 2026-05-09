@@ -22,13 +22,7 @@ export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
         this.cachedEnumerable = cachedEnumerable;
     }
 
-    protected override dispose(value?: unknown): void {
-        // noop - no resources to dispose
-    }
-
-    protected override disposeSource(): void {
-        // noop - no source enumerator to dispose
-    }
+    protected override disposeSource(): void { }
 
     protected override handleNext(): IteratorResult<TSource> {
         const result = this.cachedEnumerable.tryGetAtFromCache(this.index);

@@ -1,12 +1,9 @@
 import { TyneqEnumerableBase } from "../../core/TyneqEnumerableBase";
-import { QueryNode } from "../../queryplan/QueryNode";
-import { tyneqQueryNode } from "../../types/queryplan";
-import { ISequenceFactory } from "../../types/core";
-import type { OperatorCategory } from "../../types/queryplan";
 import { OperatorRegistry } from "../../core/registry/TyneqOperatorRegistry";
 import { OperatorMetadata } from "../../core/OperatorMetadata";
 import { PluginError } from "../../core/errors/PluginError";
-import { ReflectionUtility } from "../../utility/ReflectionUtility";
+import { reflect } from "../../utility/reflect";
+import { RegistrationUtility } from "../RegistrationUtility";
 
 /**
  * Class decorator that registers a `TyneqEnumerator` subclass as an operator on every sequence.
@@ -19,15 +16,14 @@ import { ReflectionUtility } from "../../utility/ReflectionUtility";
  *
  * @example
  * ```ts
- * import { operator } from "tyneq/plugin";
- * import { TyneqEnumerator } from "tyneq/plugin";
+ * import { operator, TyneqEnumerator } from "tyneq/plugin";
  * import type { Enumerator } from "tyneq";
  *
  * @operator<[predicate: (item: unknown) => boolean]>("myFilter", "streaming", (predicate) => {
  *     if (typeof predicate !== "function") throw new Error("predicate must be a function");
  * })
  * class MyFilterEnumerator<T> extends TyneqEnumerator<T> {
- *     constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
+ *     public constructor(source: Enumerator<T>, private readonly predicate: (item: T) => boolean) {
  *         super(source);
  *     }
  *     protected handleNext(): IteratorResult<T> {
@@ -43,34 +39,32 @@ import { ReflectionUtility } from "../../utility/ReflectionUtility";
  */
 export function operator<TArgs extends unknown[] = never>(
     name: string,
-    category: OperatorCategory,
+    category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (ReflectionUtility.tryGetPrototypeMethod(target.prototype, "handleNext") === undefined) {
+        if (!reflect(target.prototype).hasMethod("handleNext")) {
             throw new PluginError(
-                `@operator("${name}"): class "${target.name}" must define a handleNext() method (expected a TyneqEnumerator subclass).`,
+                `@operator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
+                + "Ensure the class extends TyneqEnumerator<TInput, TOutput>.",
                 "operator",
                 target.name
             );
         }
 
         OperatorRegistry.register({
-            metadata: new OperatorMetadata(name, category, "external", TyneqEnumerableBase),
+            metadata: OperatorMetadata.forCategory(category, name, TyneqEnumerableBase),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
                 const base = this;
-                // TypeScript cannot narrow 'this' inside a decorator-generated closure - cast is necessary
-                const withCreate = this as unknown as ISequenceFactory<unknown>;
-                const node = new QueryNode(name, userArgs, withCreate[tyneqQueryNode], category);
-                return withCreate.createEnumerable({
+                return RegistrationUtility.buildEnumerable(this, name, userArgs, category, {
                     getEnumerator() {
                         return new target(base.getEnumerator(), ...userArgs);
                     }
-                }, node);
+                });
             }
         });
         return target;

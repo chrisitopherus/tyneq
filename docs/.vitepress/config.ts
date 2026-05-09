@@ -58,7 +58,8 @@ export default defineConfig({
           text: "Start Here",
           items: [
             { text: "Getting Started", link: "/guide/getting-started" },
-            { text: "Core Concepts", link: "/guide/concepts" }
+            { text: "Core Concepts", link: "/guide/concepts" },
+            { text: "Best Practices & Pitfalls", link: "/guide/best-practices" }
           ]
         },
         {
@@ -78,16 +79,15 @@ export default defineConfig({
           ]
         },
         {
-          text: "Query Plan",
+          text: "Diving Deeper",
           items: [
-            { text: "Query Plan & Compiler", link: "/guide/query-plan" }
+            { text: "Query Plan & Compiler", link: "/guide/query-plan" },
+            { text: "Terminology", link: "/guide/terminology" }
           ]
         },
         {
-          text: "Reference",
+          text: "Project",
           items: [
-            { text: "Best Practices & Pitfalls", link: "/guide/best-practices" },
-            { text: "Terminology", link: "/guide/terminology" },
             { text: "Contributing", link: "/guide/contributing" }
           ]
         }

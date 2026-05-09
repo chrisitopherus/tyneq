@@ -1,7 +1,6 @@
 import { ArgumentOutOfRangeError } from "../core/errors/argument/ArgumentOutOfRangeError";
 import { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 import { TyneqSequence } from "../types/core";
-import { ArgumentUtility } from "../utility/ArgumentUtility";
 import { nameof } from "../utility/nameof";
 
 /**
@@ -21,7 +20,6 @@ export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, T
     
     public constructor(source: TyneqSequence<TSource>, index: number) {
         super(source);
-        ArgumentUtility.checkNonNegative({ index });
         this.index = index;
     }
 

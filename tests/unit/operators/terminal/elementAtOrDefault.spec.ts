@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentOutOfRangeError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentOutOfRangeError } from "../../../../src";
 
 describe("elementAtOrDefault", () => {
   describe("normal usage", () => {
@@ -23,6 +23,14 @@ describe("elementAtOrDefault", () => {
   describe("invalid arguments", () => {
     it("throws ArgumentOutOfRangeError for a negative index", () => {
       expect(() => Tyneq.from([1]).elementAtOrDefault(-1, 0)).toThrow(ArgumentOutOfRangeError);
+    });
+
+    it("throws ArgumentError for a non-integer index (float)", () => {
+      expect(() => Tyneq.from([1, 2, 3]).elementAtOrDefault(1.5, 0)).toThrow(ArgumentError);
+    });
+
+    it("throws ArgumentError for NaN index", () => {
+      expect(() => Tyneq.from([1, 2, 3]).elementAtOrDefault(NaN, 0)).toThrow(ArgumentError);
     });
   });
 });

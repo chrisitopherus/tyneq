@@ -1,6 +1,5 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
 
 /**
  * Skips a specified number of elements from the beginning of the source sequence.

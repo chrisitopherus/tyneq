@@ -21,7 +21,7 @@ export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
-        this.count = count < 0 ? 0 : count;
+        this.count = count;
         this.buffer = new Array<T>(this.count);
     }
 

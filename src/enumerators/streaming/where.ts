@@ -1,6 +1,6 @@
 import { TyneqEnumerator } from "../../core/enumerators/TyneqEnumerator";
 import { Enumerator } from "../../types/core";
-import { ArgumentUtility } from "../../utility/ArgumentUtility";
+import { ItemPredicate } from "../../types/utility";
 
 /**
  * Filters elements using a predicate.
@@ -14,10 +14,10 @@ import { ArgumentUtility } from "../../utility/ArgumentUtility";
  * @internal
  */
 export class WhereEnumerator<T> extends TyneqEnumerator<T> {
-    private readonly predicate: (item: T) => boolean;
+    private index: number = 0;
+    private readonly predicate: ItemPredicate<T>;
 
-    
-    public constructor(sourceEnumerator: Enumerator<T>, predicate: (item: T) => boolean) {
+    public constructor(sourceEnumerator: Enumerator<T>, predicate: ItemPredicate<T>) {
         super(sourceEnumerator);
         this.predicate = predicate;
     }
@@ -29,7 +29,7 @@ export class WhereEnumerator<T> extends TyneqEnumerator<T> {
                 return this.done();
             }
 
-            if (this.predicate(value)) {
+            if (this.predicate(value, this.index++)) {
                 return this.yield(value);
             }
         }

@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
     entry: ["src/index.ts", "src/plugin/index.ts", "src/utility/index.ts"],
@@ -6,6 +6,9 @@ export default defineConfig({
     tsconfig: "tsconfig.build.json",
     dts: true,
     sourcemap: true,
+    target: "es2022",
+    platform: "node",
+    hash: false,
     clean: true,
-    target: "es2019"
+    fixedExtension: false,
 });
