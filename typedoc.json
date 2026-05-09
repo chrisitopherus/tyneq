@@ -20,5 +20,8 @@
   "enumMembersFormat": "table",
   "navigationJson": "docs/api/reference/navigation.json",
   "hideBreadcrumbs": false,
-  "externalSymbolLinkMappings": {}
+  "externalSymbolLinkMappings": {},
+  "validation": {
+    "notExported": false
+  }
 }

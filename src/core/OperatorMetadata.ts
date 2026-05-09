@@ -3,9 +3,6 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
 import { PluginError } from "./errors/PluginError";
 import type { Maybe } from "../types/utility";
 
-/** @internal Sentinel value for explicitly omitting `targetClass`. */
-const NO_TARGET: unique symbol = Symbol("NO_TARGET");
-
 /**
  * Metadata describing a registered operator.
  *
@@ -22,13 +19,13 @@ export class OperatorMetadata {
         name: string,
         kind: OperatorKind,
         source: OperatorSource = "external",
-        targetClass: Maybe<SequenceConstructor> | typeof NO_TARGET = TyneqEnumerableBase,
+        targetClass: Maybe<SequenceConstructor> = TyneqEnumerableBase,
         extensions: Readonly<Record<string, unknown>> = {}
     ) {
         this.name = name;
         this.kind = kind;
         this.source = source;
-        this.targetClass = targetClass === NO_TARGET ? undefined : targetClass;
+        this.targetClass = targetClass;
         this.extensions = extensions;
     }
 
@@ -43,7 +40,7 @@ export class OperatorMetadata {
         name: string,
         src: OperatorSource = "external"
     ): OperatorMetadata {
-        return new OperatorMetadata(name, "source", src, NO_TARGET);
+        return new OperatorMetadata(name, "source", src, undefined);
     }
 
     /** Creates metadata for a streaming operator. Defaults targetClass to TyneqEnumerableBase. */

@@ -320,7 +320,7 @@ export class OperatorRegistry {
      *
      * The entry is stored in the source namespace and is never patched onto any prototype.
      * Registration guards run for `"external"` sources (same policy as {@link register}).
-     * Guards are skipped for `"internal"` sources (same policy as {@link registerBuiltin}).
+    * Guards are skipped for `"internal"` sources (same policy used for internal builtins).
      *
      * Third-party source operators registered here are automatically compiled by
      * `QueryPlanCompiler` without any changes to the compiler.
