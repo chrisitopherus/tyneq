@@ -6,6 +6,62 @@ There are two styles: **functional** (quick, minimal boilerplate) and **class-ba
 
 ---
 
+## Decorator model and requirements
+
+tyneq is implemented with TC39 Stage 3 decorators - the standard decorator proposal
+that shipped in TypeScript 5.0+ without any tsconfig flag. This is a different model
+from the legacy `experimentalDecorators` syntax used by NestJS, Angular, and InversifyJS.
+
+### What this means for you as a plugin author
+
+You have two choices regardless of your project's decorator setup:
+
+| Your project | Functional API | Class-based decorator API |
+|---|---|---|
+| `experimentalDecorators: true` (NestJS, Angular, InversifyJS) | Yes | No |
+| TypeScript 5.0+, no `experimentalDecorators` | Yes | Yes |
+
+**Functional API** (`createGeneratorOperator`, `createOperator`, `createTerminalOperator`,
+etc.) works everywhere. No decorator support needed in your project.
+
+**Class-based decorator API** (`@operator`, `@terminal`, `@orderedOperator`, `@cachedOperator`)
+requires Stage 3 decorators in your project. TypeScript only supports one decorator model at
+a time: if your tsconfig has `experimentalDecorators: true`, the Stage 3 syntax is not available.
+
+### What this means for users of built-in operators
+
+Nothing. The decorator machinery lives entirely inside tyneq's compiled output and is compiled
+away to helper functions before publishing. Calling `.where()`, `.select()`, or any other
+operator is just calling a plain method.
+
+### How tyneq's dist handles decorators
+
+The published `dist` is compiled with tsup (esbuild) targeting `es2017`. esbuild transforms
+Stage 3 decorator syntax into plain helper functions (`__decorateClass`, `__decorateElement`)
+at build time. The output works in every Node version, bundler, and project - including those
+with no native decorator support.
+
+**Why not pass the raw syntax through?** Shipping `@decorator class {}` syntax in a published
+package would silently break consumers running on Node versions or build tools that cannot
+handle it. Helper-function output is universally compatible.
+
+**Overhead:** The helpers are small and shared across all operators in an entry point. In
+practice the size impact is minimal.
+
+**Future:** When Stage 3 decorators are universally supported in target runtimes and bundlers,
+the build toolchain will be updated to pass decorator syntax through natively, removing the
+helper overhead. Until then, the helper-based output is the correct approach for a published
+package.
+
+::: warning NestJS / Angular / InversifyJS projects
+If your project has `experimentalDecorators: true`, do not use the class-based decorator API
+(`@operator`, `@terminal`, and related decorators). TypeScript supports only one decorator model
+at a time. Use the functional API instead - it is fully equivalent and has no such constraint:
+[Functional API](#functional-api).
+:::
+
+---
+
 ## When to write a custom operator
 
 The built-in operators handle most situations. Custom operators make sense when you want to:
