@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.19.0
+          node-version: 18
           cache: npm
 
       - name: Install dependencies
@@ -34,4 +34,4 @@ jobs:
         run: npm test
 
       - name: Build
-        run: npx tsdown
+        run: npx tsup
