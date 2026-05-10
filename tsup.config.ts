@@ -8,7 +8,11 @@ export default defineConfig({
     },
     format: ["esm", "cjs"],
     tsconfig: "tsconfig.build.json",
-    dts: true,
+    dts: {
+        compilerOptions: {
+            declarationMap: false,
+        },
+    },
     sourcemap: false,
     target: "es2017",
     platform: "node",

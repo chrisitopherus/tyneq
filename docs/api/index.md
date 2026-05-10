@@ -20,6 +20,7 @@ This reference covers every symbol exported from `tyneq` and its subpath exports
 
 - **`tyneq`** - the main public API (sequences, factories, comparers, errors, query plan tooling)
 - **`tyneq/plugin`** - operator authoring API (`createOperator`, `@operator`, `@terminal`, enumerator base classes, `OperatorRegistry`)
+	(`OperatorRegistry` is also available from the `tyneq` root export)
 - **`tyneq/utility`** - `ValidationBuilder` and `ArgumentUtility` for use in custom operator validate callbacks
 
 ## Error hierarchy
