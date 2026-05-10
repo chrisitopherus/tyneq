@@ -6,6 +6,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.0.2] - 2026-05-10
+
+### Fixed
+
+- Disabled emitted sourcemaps in published `dist` output (`sourcemap: false` in
+  `tsup.config.ts`) to prevent `.cjs.map` `sources` entries from containing
+  absolute local Windows paths (for example `C:\\Users\\...`). This avoids
+  consumer tooling (for example `tsx`) resolving into local development paths
+  during source-map loading.
+
 ## [1.0.1] - 2026-05-10
 
 ### Fixed

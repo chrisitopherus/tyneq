@@ -9,7 +9,7 @@ export default defineConfig({
     format: ["esm", "cjs"],
     tsconfig: "tsconfig.build.json",
     dts: true,
-    sourcemap: true,
+    sourcemap: false,
     target: "es2017",
     platform: "node",
     clean: true,
