@@ -1,6 +1,6 @@
 {
   "name": "tyneq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lazy query pipelines for TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -28,8 +28,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc --noEmit && eslint src tests && tsdown",
-    "dev": "tsdown --watch",
+    "build": "tsc --noEmit && eslint src tests && tsup",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -65,7 +65,7 @@
   "author": "chrisitopherus",
   "license": "MIT",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=18"
   },
   "sideEffects": [
     "./dist/index.js",
@@ -84,7 +84,7 @@
     "eslint": "^10.0.3",
     "gh-pages": "^6.3.0",
     "jiti": "^2.6.1",
-    "tsdown": "^0.21.10",
+    "tsup": "8.5.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.13",
     "typedoc-plugin-markdown": "^4.9.0",

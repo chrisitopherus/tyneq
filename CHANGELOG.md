@@ -6,6 +6,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.0.1] - 2026-05-10
+
+### Fixed
+
+- Replaced tsdown (rolldown/oxc) with tsup (esbuild) as the build bundler.
+  oxc-transform passes Stage 3 decorator syntax through unchanged regardless of
+  target, so the compiled dist contained raw `@decorator class` syntax that
+  runtimes and bundlers without native Stage 3 decorator support could not handle.
+  esbuild 0.21+ correctly transforms Stage 3 decorators to helper-function calls
+  (`__decorateClass`, `__decorateElement`) when targeting environments below
+  native support. The published dist now works in all Node versions, bundlers,
+  and in projects that use `experimentalDecorators: true`.
+- Lowered the Node.js engine constraint from `>=20.19.0` back to `>=18`; the
+  higher constraint was imposed solely by tsdown's own requirement.
+- Lowered tsup build target to `es2017` for maximum runtime compatibility.
+
 ## [1.0.0] - 2026-05-05
 
 First stable release.

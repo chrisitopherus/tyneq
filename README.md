@@ -169,7 +169,73 @@ Two registration styles: functional (generators, factories, terminals) and class
 npm install tyneq
 ```
 
-TypeScript 5.x with `"strictNullChecks": true`. No `@types` package needed.
+## Requirements
+
+- TypeScript 5.0 or higher
+- `"strictNullChecks": true` in your tsconfig
+
+No `@types` package needed.
+
+## Stage 3 Decorators
+
+tyneq is implemented with TC39 Stage 3 decorators - the standardized decorator proposal
+that shipped in TypeScript 5.0 and requires no extra tsconfig flags. This is a different
+model from the legacy `experimentalDecorators` syntax used by NestJS, Angular, and
+InversifyJS.
+
+**Using built-in operators requires nothing from you.** The decorator machinery lives
+entirely inside tyneq's compiled output. Calling `.where()`, `.select()`, or any terminal
+is just calling a plain method. No decorator support is needed on your side at all.
+
+**Using the class-based plugin API does require Stage 3 decorators in your project.**
+If you write custom operators using `@operator`, `@terminal`, `@orderedOperator`, or
+`@cachedOperator`, your tsconfig must not have `experimentalDecorators: true`, because
+TypeScript supports only one decorator model at a time. If your project already uses
+the legacy model, the functional plugin API is fully equivalent and has no such constraint.
+
+### How the dist handles decorators
+
+The published `dist` is compiled by tsup (esbuild) targeting `es2017`. esbuild
+transforms Stage 3 decorator syntax into plain helper functions (`__decorateClass`,
+`__decorateElement`) at build time, so the output works in every Node version, bundler,
+and consumer project - including those with no native decorator support at all.
+
+| Aspect | Detail |
+|---|---|
+| Raw `@decorator` syntax in dist | No - compiled to helper functions |
+| Node 18+ | Works |
+| Projects with `experimentalDecorators: true` | Works (built-ins and functional plugin API) |
+| Extra bundle overhead | Small - one shared set of helpers per entry point |
+
+**Trade-offs to be aware of:**
+
+- Helper-function output is slightly larger than native decorator syntax would be. The
+  helpers are small and shared across all operators within an entry point, so in practice
+  the impact is minimal.
+- Tools that understand Stage 3 decorator syntax natively (newer runtimes, bundlers) do
+  not get any advantage from the raw syntax - they just run the helper functions instead.
+- This is the correct approach for a published package right now. Shipping raw `@decorator`
+  syntax would silently break consumers on Node versions or bundlers that do not handle it.
+
+**Future:** When TC39 Stage 3 decorators are universally supported in all target runtimes
+and bundlers, the build toolchain will be updated to pass decorator syntax through natively,
+removing the helper-function overhead. Until that point, the helper-based output is the safe
+and correct choice.
+
+## Compatibility
+
+**All projects:** Built-in operators and sequences work without any decorator support. Import
+and use normally.
+
+**Projects with `experimentalDecorators: true`** (NestJS, Angular, InversifyJS): The built-in
+operators and the functional plugin API (`createGeneratorOperator`, `createOperator`, and
+related helpers) work without any changes. The class-based decorator plugin API (`@operator`,
+`@terminal`, and related decorators) cannot be used because TypeScript supports only one
+decorator model at a time. Use the functional API instead - it is fully equivalent and the
+recommended path in these projects.
+
+**Projects with TypeScript 5.0+ and no `experimentalDecorators`:** Full access to everything,
+including the class-based plugin API decorators.
 
 ---
 
