@@ -405,8 +405,11 @@ export class OperatorRegistry {
         }
 
         const lazyMethod = new Lazy(() => reflect(targetClass.prototype).tryGetMethod(name)?.value);
+        const lazyMetadata = new Lazy(() => new OperatorMetadata(name, kind, "internal", targetClass));
         const entry: OperatorEntry = {
-            metadata: new OperatorMetadata(name, kind, "internal", targetClass),
+            get metadata() {
+                return lazyMetadata.value;
+            },
             impl: function (this: unknown, ...args: unknown[]) {
                 const method = lazyMethod.value;
                 if (!method) {

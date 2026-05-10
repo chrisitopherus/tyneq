@@ -260,7 +260,8 @@ A few design decisions to notice:
 Now we need a way for users to enter the `ValidatedSequence` from a regular sequence. We register a method on `TyneqEnumerableBase` that creates a `ValidatedEnumerable`:
 
 ```ts
-import { OperatorRegistry, OperatorMetadata, QueryNode, tyneqQueryNode } from "tyneq";
+import { OperatorRegistry } from "tyneq/plugin";
+import { OperatorMetadata, QueryNode, tyneqQueryNode } from "tyneq";
 // TyneqEnumerableBase is internal - not importable from a public subpath.
 // In a real implementation that has access to internals, use it as the target class.
 // Here we cast `this` to access the query node and create the sequence.
@@ -373,7 +374,7 @@ This method only shows up on `ValidatedEnumerable` instances - not on regular se
 ### Querying the registry
 
 ```ts
-import { OperatorRegistry } from "tyneq";
+import { OperatorRegistry } from "tyneq/plugin";
 
 // All registered operators
 OperatorRegistry.list();
@@ -465,7 +466,8 @@ Source operators registered this way are automatically compilable by `QueryPlanC
 Cross-test contamination is a common issue with prototype-patched registrations. Clean up after yourself:
 
 ```ts
-import { OperatorRegistry, createGeneratorOperator } from "tyneq";
+import { Tyneq } from "tyneq";
+import { OperatorRegistry, createGeneratorOperator } from "tyneq/plugin";
 import { afterEach, it, expect } from "vitest";
 
 let registered: string | null = null;

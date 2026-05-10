@@ -51,6 +51,7 @@ export { TyneqOrderedEnumerator } from "../core/enumerators/TyneqOrderedEnumerat
 export { TyneqTerminalOperator } from "../core/terminal/TyneqTerminalOperator";
 export { TyneqCachedTerminalOperator } from "../core/terminal/TyneqCachedTerminalOperator";
 export { TyneqOrderedTerminalOperator } from "../core/terminal/TyneqOrderedTerminalOperator";
+export { OperatorRegistry } from "../core/registry/TyneqOperatorRegistry";
 export { operator } from "./decorators/operator";
 export { terminal } from "./decorators/terminal";
 export { source } from "./decorators/source";
