@@ -15,6 +15,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
   absolute local Windows paths (for example `C:\\Users\\...`). This avoids
   consumer tooling (for example `tsx`) resolving into local development paths
   during source-map loading.
+- Disabled declaration map emission for DTS output (`declarationMap: false` in
+  tsup dts compiler options) to prevent `.d.ts.map` path leakage in published
+  artifacts.
+- Fixed consumer import-time failure (`TypeError: OperatorMetadata is not a
+  constructor`) by deferring built-in registry metadata construction with the
+  shared `Lazy` wrapper in `OperatorRegistry.registerBuiltin()`.
+- Exported `OperatorRegistry` from `tyneq/plugin` in addition to the root
+  `tyneq` export for consistent plugin-author import ergonomics.
+- Clarified plugin documentation examples to show `OperatorRegistry` imports from
+  `tyneq/plugin` while keeping root-export availability documented.
 
 ## [1.0.1] - 2026-05-10
 
