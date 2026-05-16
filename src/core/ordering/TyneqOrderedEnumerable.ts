@@ -166,7 +166,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
             keySelector,
             comparer,
             descending,
-            undefined, //TODO:✅ BUG:FIX creating new root ordered enumerable, so parent is undefined CREDITS: KOMINO
+            undefined, //♥: BUG:FIX creating new root ordered enumerable, so parent is undefined CREDITS: KOMINO
             node
         );
     }
