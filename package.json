@@ -1,6 +1,6 @@
 {
   "name": "tyneq",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lazy query pipelines for TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
