@@ -166,7 +166,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
             keySelector,
             comparer,
             descending,
-            this,
+            undefined, // CREDITS: KOMINO
             node
         );
     }
