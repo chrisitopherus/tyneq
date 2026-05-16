@@ -6,6 +6,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.0.3] - 2026-05-16
+
+### Fixed
+
+- Fixed ordered-sequence `orderBy` and `orderByDescending` calls to reset the
+  parent chain correctly by passing `undefined` for the nested ordered sequence
+  constructor. This keeps a fresh primary sort from inheriting `thenBy` state
+  from the previous ordered wrapper.
+
+---
+
 ## [1.0.2] - 2026-05-10
 
 ### Fixed
