@@ -289,11 +289,11 @@ Tyneq.from(employees)
 
 ### Streaming (O(1) memory)
 
-`select` `where` `take` `takeWhile` `takeUntil` `skip` `skipWhile` `skipLast` `skipUntil` `slice` `selectMany` `flatten` `append` `prepend` `concat` `zip` `scan` `pairwise` `window` `chunk` `split` `repeat` `defaultIfEmpty` `populate` `ofType` `tap` `tapIf` `throttle` `pipe`
+`select` `where` `take` `takeWhile` `takeUntil` `skip` `skipWhile` `skipLast` `skipUntil` `slice` `selectMany` `flatten` `append` `prepend` `concat` `zip` `scan` `pairwise` `window` `chunk` `split` `repeat` `defaultIfEmpty` `populate` `ofType` `tap` `tapIf` `throttle` `pipe` `distinct` `distinctBy` `union` `unionBy`
 
 ### Buffering (reads full source once)
 
-`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `distinct` `distinctBy` `reverse` `shuffle` `union` `unionBy` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize` `permutations`
+`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `reverse` `shuffle` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize` `permutations`
 
 ### Terminal (executes the pipeline)
 

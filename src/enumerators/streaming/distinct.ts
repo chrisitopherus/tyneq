@@ -5,11 +5,12 @@ import { Enumerator } from "../../types/core";
  * Returns distinct elements by eliminating duplicates.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Streams the source incrementally, holding a seen-value `Set` that grows to at most
+ * the number of distinct elements yielded so far - it never reads the full source eagerly.
  *
  * @see {@link TyneqSequence.distinct}
  * @group Operators
- * @category Buffering
+ * @category Streaming
  * @internal
  */
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {

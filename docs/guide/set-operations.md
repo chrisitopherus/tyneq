@@ -1,6 +1,10 @@
 # Set Operations
 
-Tyneq provides six set-style operators. All are buffering operators - they read the full source before producing output. Each comes in two variants: equality-based and key-based (`keySelector`).
+Tyneq provides six set-style operators, each in two variants: equality-based and key-based
+(`keySelector`). `distinct`/`distinctBy` and `union`/`unionBy` stream - they hold a seen-value
+`Set` that grows with the number of distinct elements/keys yielded, not the size of the source.
+`intersect`/`intersectBy` and `except`/`exceptBy` buffer their second argument (the excluded or
+intersected set) but still stream the source itself.
 
 ---
 

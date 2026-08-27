@@ -29,4 +29,14 @@ describe("union", () => {
     expect(seq.toArray()).toEqual([1, 2, 3]);
     expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
+
+  it("streams the source incrementally and does not hang on an infinite source (F4)", () => {
+    function* naturals() {
+      let n = 0;
+      while (true) yield n++;
+    }
+
+    const result = Tyneq.from(naturals()).union([100, 200]).take(3).toArray();
+    expect(result).toEqual([0, 1, 2]);
+  });
 });

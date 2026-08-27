@@ -21,4 +21,14 @@ describe("distinct", () => {
   it("preserves first-seen order of unique elements", () => {
     expect(Tyneq.from([3, 1, 2, 1, 3]).distinct().toArray()).toEqual([3, 1, 2]);
   });
+
+  it("streams the source incrementally and does not hang on an infinite source (F4)", () => {
+    function* naturals() {
+      let n = 0;
+      while (true) yield n++;
+    }
+
+    const result = Tyneq.from(naturals()).distinct().take(3).toArray();
+    expect(result).toEqual([0, 1, 2]);
+  });
 });

@@ -65,8 +65,8 @@ import { WhereEnumerator } from "../enumerators/streaming/where";
 import { WindowEnumerator } from "../enumerators/streaming/window";
 import { ZipEnumerator } from "../enumerators/streaming/zip";
 import { BacksertEnumerator } from "../enumerators/buffer/backsert";
-import { DistinctEnumerator } from "../enumerators/buffer/distinct";
-import { DistinctByEnumerator } from "../enumerators/buffer/distinctBy";
+import { DistinctEnumerator } from "../enumerators/streaming/distinct";
+import { DistinctByEnumerator } from "../enumerators/streaming/distinctBy";
 import { ExceptEnumerator } from "../enumerators/buffer/except";
 import { ExceptByEnumerator } from "../enumerators/buffer/exceptBy";
 import { GroupByEnumerator } from "../enumerators/buffer/groupBy";
@@ -76,8 +76,8 @@ import { IntersectByEnumerator } from "../enumerators/buffer/intersectBy";
 import { JoinEnumerator } from "../enumerators/buffer/join";
 import { ReverseEnumerator } from "../enumerators/buffer/reverse";
 import { ShuffleEnumerator } from "../enumerators/buffer/shuffle";
-import { UnionEnumerator } from "../enumerators/buffer/union";
-import { UnionByEnumerator } from "../enumerators/buffer/unionBy";
+import { UnionEnumerator } from "../enumerators/streaming/union";
+import { UnionByEnumerator } from "../enumerators/streaming/unionBy";
 import { PermutationsEnumerator } from "../enumerators/buffer/permutations";
 
 /**
@@ -571,20 +571,20 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         );
     }
 
-    @builtin({ kind: "buffer" })
+    @builtin({ kind: "streaming" })
     public distinct(): TyneqSequence<TSource> {
         return this.createSequence(
             () => new DistinctEnumerator<TSource>(this.getEnumerator()),
-            this.createNode("distinct", "buffer")
+            this.createNode("distinct", "streaming")
         );
     }
 
-    @builtin({ kind: "buffer" })
+    @builtin({ kind: "streaming" })
     public distinctBy<TKey>(keySelector: (item: TSource) => TKey): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ keySelector });
         return this.createSequence(
             () => new DistinctByEnumerator<TSource, TKey>(this.getEnumerator(), keySelector),
-            this.createNode("distinctBy", "buffer", [keySelector])
+            this.createNode("distinctBy", "streaming", [keySelector])
         );
     }
 
@@ -727,18 +727,18 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         );
     }
 
-    @builtin({ kind: "buffer" })
+    @builtin({ kind: "streaming" })
     public union(otherValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
         const guardedOtherValues = EnumeratorUtility.guardReiterable(otherValues, "otherValues");
         return this.createSequence(
             () => new UnionEnumerator<TSource>(this.getEnumerator(), guardedOtherValues),
-            this.createNode("union", "buffer", [otherValues])
+            this.createNode("union", "streaming", [otherValues])
         );
     }
 
-    @builtin({ kind: "buffer" })
+    @builtin({ kind: "streaming" })
     public unionBy<TKey>(
         otherValues: Iterable<TSource>,
         keySelector: (item: TSource) => TKey
@@ -749,7 +749,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         const guardedOtherValues = EnumeratorUtility.guardReiterable(otherValues, "otherValues");
         return this.createSequence(
             () => new UnionByEnumerator<TSource, TKey>(this.getEnumerator(), guardedOtherValues, keySelector),
-            this.createNode("unionBy", "buffer", [otherValues, keySelector])
+            this.createNode("unionBy", "streaming", [otherValues, keySelector])
         );
     }
 }

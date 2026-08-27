@@ -52,7 +52,7 @@ Every operator on a sequence belongs to exactly one of three categories:
 | Category | Memory | When work happens | Examples |
 |---|---|---|---|
 | **Streaming** | O(1) | One element at a time, lazily | `where`, `select`, `take`, `scan` |
-| **Buffering** | O(n) | Full source is read before any output | `orderBy`, `groupBy`, `distinct` |
+| **Buffering** | O(n) | Full source is read before any output | `orderBy`, `groupBy`, `reverse` |
 | **Terminal** | - | Immediately executes the full pipeline | `toArray`, `count`, `first`, `sum` |
 
 This categorization is explicit and stable. Knowing which category an operator belongs to tells you its memory footprint and when it will execute.

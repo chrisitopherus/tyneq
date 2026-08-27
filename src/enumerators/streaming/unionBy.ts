@@ -5,11 +5,13 @@ import { Enumerator } from "../../types/core";
  * Returns the set union of the source and a second sequence, eliminating duplicates by key.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Streams the source, then streams `otherValues`, holding a seen-key `Set` that
+ * grows to at most the number of distinct keys yielded so far - neither sequence is read fully
+ * eagerly.
  *
  * @see {@link TyneqSequence.unionBy}
  * @group Operators
- * @category Buffering
+ * @category Streaming
  * @internal
  */
 export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
