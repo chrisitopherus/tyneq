@@ -297,6 +297,48 @@ describe("QueryPlanCompiler", () => {
             const result = new QueryPlanCompiler().compileRaw<number>(plan, { source: [100, 200] });
             expect(result.toArray()).toEqual([101, 201]);
         });
+
+        it("throws CompilerError instead of misapplying the override to a non-from source (range) (F6)", () => {
+            const plan = Tyneq.range(1, 5)[tyneqQueryNode]!;
+            let caught: CompilerError | undefined;
+            try {
+                new QueryPlanCompiler().compile(plan, { source: [10, 20] });
+            } catch (e) {
+                caught = e as CompilerError;
+            }
+
+            expect(caught).toBeInstanceOf(CompilerError);
+            expect(caught?.phase).toBe("source");
+            expect(caught?.operatorName).toBe("range");
+            expect(caught?.message).toContain("range");
+        });
+
+        it("throws CompilerError instead of misapplying the override to a non-from source (random) (F6)", () => {
+            const plan = Tyneq.random(3, () => 1)[tyneqQueryNode]!;
+            expect(() =>
+                new QueryPlanCompiler().compile(plan, { source: [10, 20] })
+            ).toThrow(CompilerError);
+        });
+
+        it("throws CompilerError for a non-from source even via compileRaw (F6)", () => {
+            const plan = Tyneq.empty<number>()[tyneqQueryNode]!;
+            let caught: CompilerError | undefined;
+            try {
+                new QueryPlanCompiler().compileRaw(plan, { source: [1] });
+            } catch (e) {
+                caught = e as CompilerError;
+            }
+
+            expect(caught).toBeInstanceOf(CompilerError);
+            expect(caught?.phase).toBe("source");
+            expect(caught?.operatorName).toBe("empty");
+        });
+
+        it("still allows the override when the source node is 'from' downstream of no other operators (F6)", () => {
+            const plan = Tyneq.from([1, 2, 3])[tyneqQueryNode]!;
+            const result = new QueryPlanCompiler().compile<number>(plan, { source: [7, 8, 9] });
+            expect(result.toArray()).toEqual([7, 8, 9]);
+        });
     });
 
     describe("compileRaw()", () => {
