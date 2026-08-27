@@ -75,6 +75,11 @@ active.select((u) => u.email).toArray(); // ["g@...", "l@...", "a@..."]
 
 No re-wrapping. No rebuilding. Same query, three independent evaluations.
 
+Re-iterating re-executes the whole pipeline, including buffering stages - the example above
+re-sorts on every call since `orderByDescending` buffers. If a pipeline has an expensive
+buffering or I/O-bound stage you call repeatedly, insert `.memoize()` after it to pay the cost
+once and replay the cached result on every later iteration.
+
 ### You always know what is happening
 
 Every operator is explicitly **streaming** (O(1) memory, one element at a time) or **buffering** (reads the full source once, then serves from a buffer). There is no hidden materialization and no guessing about when data gets copied.
