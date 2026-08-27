@@ -35,6 +35,9 @@ export function terminal<TArgs extends unknown[] = never>(
     name: string,
     validate?: (...args: TArgs) => void
 ) {
+    // `any[]` is a required decorator idiom, not a shortcut - see tasks/lessons.md,
+    // "Architecture Decisions": TS contravariant parameter checking rejects `unknown[]` here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function <TClass extends new (...args: any[]) => { process(): unknown }>(
         target: TClass,
         _context: ClassDecoratorContext

@@ -193,7 +193,8 @@ export class QueryPlanCompiler {
 
         if (!entry) {
             const sourceType = source !== null && source !== undefined
-                ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source
+                ? ((Object.getPrototypeOf(source) as { constructor?: { name?: string } } | null)
+                    ?.constructor?.name ?? typeof source)
                 : "null";
             const knownForAnyTarget = OperatorRegistry.hasOperator(node.operatorName);
             const message = knownForAnyTarget

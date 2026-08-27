@@ -13,13 +13,30 @@ export type HasLength = { length: number };
 /** Any function with any number of arguments. */
 export type GenericFunction = (...x: never[]) => unknown;
 
-/** A constructor type that can be instantiated with `new`. */
+/**
+ * A constructor type that can be instantiated with `new`.
+ *
+ * @remarks
+ * `TArgs`'s bound is `any[]`, not `unknown[]` - a documented, required idiom throughout this
+ * file (see tasks/lessons.md, "Architecture Decisions"): TS's contravariant parameter checking
+ * rejects `unknown[]` in these constraint positions, so a narrower bound would reject real
+ * constructor/function types callers actually pass. Type safety is enforced by each usage's own
+ * explicit type parameters, not by this bound.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<TInstance = unknown, TArgs extends readonly any[] = any[]> = new (...args: TArgs) => TInstance;
 
 /** A type that extracts the instance type from a constructor. */
 export type InstanceOf<C> = C extends Constructor<infer TInstance> ? TInstance : never;
 
-/** A type that prevents inference of `T` in generic functions. */
+/**
+ * A type that prevents inference of `T` in generic functions.
+ *
+ * @remarks
+ * `extends any` (not `extends unknown`) is required here - this is the standard TS `NoInfer`
+ * idiom, which relies specifically on `any`'s non-distributive behavior in this position.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type NoInfer<T> = [T][T extends any ? 0 : never];
 
 /** A function that takes arguments of type `TArgs` (tuple) and returns void. */
@@ -40,13 +57,15 @@ export type ItemAction<T> = (item: T, index: number) => void;
 /** A function that takes arguments of type `TArgs` (tuple) and returns a value of type `TResult`. */
 export type Func<TArgs extends readonly unknown[] = [], TResult = unknown> = (...args: TArgs) => TResult;
 
-/** A method callable on a specific `this` context, returning `TReturn`. */
+/** A method callable on a specific `this` context, returning `TReturn`. See {@link Constructor}'s remarks on the `any[]` bound. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type BoundMethod<TThis = unknown, TReturn = unknown> = (this: TThis, ...args: any[]) => TReturn;
 
 /** A method callable on any `this` context with unknown arguments. */
 export type Method = BoundMethod<unknown>;
 
-/** A factory function that creates an instance of type `TInstance` given arguments of type `TArgs`. */
+/** A factory function that creates an instance of type `TInstance` given arguments of type `TArgs`. See {@link Constructor}'s remarks on the `any[]` bound. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Factory<TInstance = unknown, TArgs extends readonly any[] = any[]> = (...args: TArgs) => TInstance;
 
 /**
@@ -97,9 +116,15 @@ export type WithProperties<K extends PropertyKey, V> =
 /**
  * Extracts the keys of `T` whose value type extends `Function` (i.e. methods).
  *
+ * @remarks
+ * `(...args: any[]) => any` in the conditional check is the widest possible function shape,
+ * intentionally matching any callable regardless of its real signature - see {@link Constructor}'s
+ * remarks on this file's `any[]`/`any` idiom.
+ *
  * @group Types
  */
 export type MethodKeys<T> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 
@@ -109,5 +134,6 @@ export type MethodKeys<T> = {
  * @group Types
  */
 export type FieldKeys<T> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K;
 }[keyof T];

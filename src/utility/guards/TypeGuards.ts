@@ -12,7 +12,7 @@ import { TypeGuardUtility } from "../TypeGuardUtility";
 export class TypeGuards {
     private constructor() { }
 
-    public static checkFunction(value: unknown, paramName: string): asserts value is Function {
+    public static checkFunction(value: unknown, paramName: string): asserts value is (...args: unknown[]) => unknown {
         if (typeof value !== "function") {
             throw new ArgumentTypeError(paramName, "function", typeof value);
         }
@@ -46,8 +46,11 @@ export class TypeGuards {
         }
     }
 
+    // `any[]` is a required constructor-shape idiom, not a shortcut - see
+    // src/types/utility.ts's Constructor remarks.
     public static checkInstanceOf<T>(
         value: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor: new (...args: any[]) => T,
         paramName: string
     ): asserts value is T {
@@ -59,7 +62,7 @@ export class TypeGuards {
     }
 
     public static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
-        if (typeof value !== "object" || value === null || typeof (value as any).length !== "number") {
+        if (typeof value !== "object" || value === null || typeof (value as Record<string, unknown>).length !== "number") {
             throw new ArgumentTypeError(paramName, "object with numeric length property", typeof value);
         }
     }

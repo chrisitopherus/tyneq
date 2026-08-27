@@ -150,42 +150,46 @@ export class ArgumentUtility {
         NumericGuards.checkArrayIndex(value, key, resolvedArrayLength);
     }
 
-    public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, Function>;
+    public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, (...args: unknown[]) => unknown>;
 
-    public static checkFunction(param: unknown, paramName: string): asserts param is Function;
-    public static checkFunction(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkFunction(param: unknown, paramName: string): asserts param is (...args: unknown[]) => unknown;
+    public static checkFunction(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkFunction(value, key);
     }
 
     public static checkIterable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterable<T>>;
     public static checkIterable<T = unknown>(param: unknown, paramName: string): asserts param is Iterable<T>;
-    public static checkIterable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkIterable<T = unknown>(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkIterable<T>(value, key);
     }
 
     public static checkIterator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterator<T>>;
     public static checkIterator<T = unknown>(param: unknown, paramName: string): asserts param is Iterator<T>;
-    public static checkIterator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkIterator<T = unknown>(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkIterator<T>(value, key);
     }
 
     public static checkEnumerable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerable<T>>;
     public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is Enumerable<T>;
-    public static checkEnumerable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkEnumerable<T = unknown>(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkEnumerable<T>(value, key);
     }
 
     public static checkEnumerator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerator<T>>;
     public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is Enumerator<T>;
-    public static checkEnumerator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkEnumerator<T = unknown>(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkEnumerator<T>(value, key);
     }
 
+    // `any[]` is a required constructor-shape idiom, not a shortcut - see
+    // src/types/utility.ts's Constructor remarks: TS contravariant parameter checking
+    // rejects `unknown[]` here, and any real constructor is still assignable to this bound.
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public static checkInstanceOf<T>(
         param: Record<string, unknown>,
         constructor: new (...args: any[]) => T
@@ -196,17 +200,18 @@ export class ArgumentUtility {
         paramName: string
     ): asserts param is T;
     public static checkInstanceOf<T>(
-        param: Record<string, unknown> | unknown,
+        param: unknown,
         constructor: new (...args: any[]) => T,
         paramName?: string
     ): void {
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkInstanceOf(value, constructor, key);
     }
 
     public static checkHasLength(param: Record<string, unknown>): asserts param is Record<string, HasLength>;
     public static checkHasLength(param: unknown, paramName: string): asserts param is HasLength;
-    public static checkHasLength(param: Record<string, unknown> | unknown, paramName?: string): void {
+    public static checkHasLength(param: unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkHasLength(value, key);
     }
@@ -241,6 +246,8 @@ export class ArgumentUtility {
     private static extractParameter<T>(param: T, paramName: string): KeyValuePair<string, T>;
     private static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T>;
     private static extractParameter<T>(param: Record<string, T> | T, paramName?: string): KeyValuePair<string, T> {
-        return extractParameter(param as any, paramName as any);
+        return paramName === undefined
+            ? extractParameter(param as Record<string, T>)
+            : extractParameter(param as T, paramName);
     }
 }

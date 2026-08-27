@@ -79,7 +79,7 @@ export class ReflectionContext<_T extends object> {
     public getMethod(name: string | symbol): MethodDescriptor {
         const descriptor = this.findDescriptor(name);
         if (descriptor === undefined) {
-            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            const prototypeName = this.prototypeName();
             throw new ReflectionError(
                 `Method "${String(name)}" not found on ${prototypeName}. ` +
                 "Ensure the method is defined directly on the class, not inherited or deleted.",
@@ -88,7 +88,7 @@ export class ReflectionContext<_T extends object> {
             );
         }
         if (descriptor.kind !== "method") {
-            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            const prototypeName = this.prototypeName();
             throw new ReflectionError(
                 `Member "${String(name)}" on ${prototypeName} is a ${descriptor.kind}, not a method.`,
                 String(name),
@@ -108,7 +108,7 @@ export class ReflectionContext<_T extends object> {
     public getAccessor(name: string | symbol): AccessorDescriptor {
         const descriptor = this.findDescriptor(name);
         if (descriptor === undefined) {
-            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            const prototypeName = this.prototypeName();
             throw new ReflectionError(
                 `Accessor "${String(name)}" not found on ${prototypeName}.`,
                 String(name),
@@ -116,7 +116,7 @@ export class ReflectionContext<_T extends object> {
             );
         }
         if (descriptor.kind !== "accessor") {
-            const prototypeName = (this.proto as any)?.constructor?.name ?? "unknown";
+            const prototypeName = this.prototypeName();
             throw new ReflectionError(
                 `Member "${String(name)}" on ${prototypeName} is a ${descriptor.kind}, not an accessor.`,
                 String(name),
@@ -145,6 +145,12 @@ export class ReflectionContext<_T extends object> {
         return descriptor?.kind === "method" ? descriptor : undefined;
     }
 
+    /** Best-effort constructor name of `this.proto`, for error messages only. */
+    private prototypeName(): string {
+        const ctor = (this.proto as { constructor?: { name?: string } }).constructor;
+        return ctor?.name ?? "unknown";
+    }
+
     private findDescriptor(name: string | symbol): Maybe<MemberDescriptor> {
         let current: object | null = this.proto;
         const stop = Object.prototype;
@@ -156,7 +162,7 @@ export class ReflectionContext<_T extends object> {
             }
             if (!this.options.inherited) break;
 
-            current = Object.getPrototypeOf(current);
+            current = Object.getPrototypeOf(current) as object | null;
         }
 
         return undefined;
@@ -190,7 +196,7 @@ export class ReflectionContext<_T extends object> {
 
             if (!this.options.inherited) break;
 
-            current = Object.getPrototypeOf(current);
+            current = Object.getPrototypeOf(current) as object | null;
         }
 
         return results;
@@ -234,6 +240,10 @@ export class ReflectionContext<_T extends object> {
  * @group Reflection
  */
 export function reflect<T extends object>(
+    // `any[]` accepts constructors of any arity/parameter types - narrowing to `unknown[]`
+    // would reject real constructor types under TS's contravariant parameter checking
+    // (the same idiom documented in tasks/lessons.md for decorator constraints).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     target: (new (...args: any[]) => T) | T,
     options: ReflectOptions = {}
 ): ReflectionContext<T> {
@@ -241,9 +251,10 @@ export function reflect<T extends object>(
     return new ReflectionContext<T>(proto, options);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resolveProto(target: (new (...args: any[]) => unknown) | object): object {
     if (typeof target === "function") {
-        return (target as any).prototype as object;
+        return (target as { prototype: object }).prototype;
     }
 
     return target;
@@ -254,8 +265,13 @@ function buildDescriptor(name: string | symbol, raw: PropertyDescriptor): Maybe<
         return {
             kind: "accessor",
             name,
-            get: raw.get as Maybe<() => unknown>,
-            set: raw.set as Maybe<(value: unknown) => void>,
+            // Unbound: a raw property-descriptor getter/setter depends on its receiver.
+            // Call with an explicit `this` (e.g. `get.call(instance)`), never bare - this
+            // reflection API intentionally exposes the raw descriptor functions as-is.
+            /* eslint-disable @typescript-eslint/unbound-method */
+            get: raw.get as Maybe<() => unknown> | undefined,
+            set: raw.set as Maybe<(value: unknown) => void> | undefined,
+            /* eslint-enable @typescript-eslint/unbound-method */
             configurable: raw.configurable ?? false,
             enumerable: raw.enumerable ?? false,
             canRead: typeof raw.get === "function",
@@ -264,7 +280,7 @@ function buildDescriptor(name: string | symbol, raw: PropertyDescriptor): Maybe<
     }
 
     if (typeof raw.value === "function") {
-        const fn = raw.value as Function;
+        const fn = raw.value as (...args: unknown[]) => unknown;
         return {
             kind: "method",
             name,

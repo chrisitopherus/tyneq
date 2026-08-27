@@ -42,6 +42,9 @@ export function operator<TArgs extends unknown[] = never>(
     category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
+    // `any[]`/`any` is a required decorator idiom, not a shortcut - see tasks/lessons.md,
+    // "Architecture Decisions": TS contravariant parameter checking rejects `unknown[]` here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function <TClass extends new (...args: any[]) => any>(
         target: TClass,
         _context: ClassDecoratorContext
@@ -59,9 +62,15 @@ export function operator<TArgs extends unknown[] = never>(
             metadata: OperatorMetadata.forCategory(category, name, TyneqEnumerableBase),
             impl: function (this: TyneqEnumerableBase<unknown>, ...userArgs: unknown[]) {
                 validate?.(...(userArgs as TArgs));
+                // Genuinely needed here (not the redundant kind): the nested getEnumerator()
+                // method below has its own `this` binding, so the outer `this` must be
+                // captured under a different name to stay reachable inside it.
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const base = this;
                 return RegistrationUtility.buildEnumerable(this, name, userArgs, category, {
                     getEnumerator() {
+                        // Same required `any`-decorator idiom as TClass's constraint above.
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         return new target(base.getEnumerator(), ...userArgs);
                     }
                 });

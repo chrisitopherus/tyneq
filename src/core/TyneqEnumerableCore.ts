@@ -66,9 +66,8 @@ export abstract class TyneqEnumerableCore<TSource> {
     @builtin({ kind: "extension" })
     public pipe<TResult>(factory: (source: Iterable<TSource>) => Enumerator<TResult> | IterableIterator<TResult>): TyneqSequence<TResult> {
         ArgumentUtility.checkNotOptional({ factory });
-        const self = this;
         return this.createSequence(
-            () => factory(self),
+            () => factory(this),
             this.createNode("pipe", "streaming", [factory])
         );
     }

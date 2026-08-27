@@ -36,12 +36,8 @@ export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSourc
             const sourceNext = sourceIterator.next();
             const otherNext = otherIterator.next();
 
-            if (sourceNext.done && otherNext.done) {
-                break;
-            }
-
-            if (sourceNext.done !== otherNext.done) {
-                return false;
+            if (sourceNext.done || otherNext.done) {
+                return sourceNext.done === otherNext.done;
             }
 
             if (!this.equalityComparer(sourceNext.value, otherNext.value)) {

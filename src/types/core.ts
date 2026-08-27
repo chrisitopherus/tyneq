@@ -19,7 +19,12 @@ import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
  * @group Interfaces
  */
 export interface Enumerator<T> extends Iterator<T> {
-    next(): IteratorResult<T>;
+    // Pin TReturn to undefined (native IteratorResult<T, TReturn = any> otherwise leaves the
+    // `done: true` branch's `value` typed `any`, leaking through every
+    // `const { done, value } = ...next()` destructuring in the codebase). Every Tyneq
+    // enumerator's `done()`/`doneWithYield()` returns `{ done: true, value: undefined }` -
+    // never a meaningful "return value" - so this is a real narrowing, not a workaround.
+    next(): IteratorResult<T, undefined>;
 
     /**
      * Terminates the iterator early and releases resources.
@@ -27,7 +32,7 @@ export interface Enumerator<T> extends Iterator<T> {
      * @remarks
      * Idempotent - safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
      */
-    return?(value?: unknown): IteratorResult<T>;
+    return?(value?: unknown): IteratorResult<T, undefined>;
 }
 
 /**
@@ -1144,5 +1149,6 @@ export type OperatorSource = "internal" | "external";
 /** Kind of an operator, used internally to categorize operators. Extends `OperatorCategory` with registry-only kinds. */
 export type OperatorKind = OperatorCategory | "cache" | "extension" | "unknown";
 
-/** Constructor type for a sequence class. */
+/** Constructor type for a sequence class. `any[]` is the standard constructor-shape idiom - see {@link Constructor} in types/utility.ts. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SequenceConstructor = abstract new (...args: any[]) => TyneqEnumerableCore<unknown>;

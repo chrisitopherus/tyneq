@@ -19,12 +19,15 @@ export class TyneqComparer {
      *
      * @returns Negative if `a < b`, positive if `a > b`, `0` if equal.
      */
-    public static defaultComparer<T>(a: T, b: T): number {
+    // `this: void` on these documents (and lets the type checker verify) that every member of
+    // this class is a pure function safe to pass around by reference - as every call site does,
+    // e.g. `equalityComparer ?? TyneqComparer.defaultEqualityComparer` - detached from `TyneqComparer`.
+    public static defaultComparer<T>(this: void, a: T, b: T): number {
         return a > b ? 1 : a < b ? -1 : 0;
     }
 
     /** Strict equality comparer using `===`. */
-    public static defaultEqualityComparer<T>(a: T, b: T): boolean {
+    public static defaultEqualityComparer<T>(this: void, a: T, b: T): boolean {
         return a === b;
     }
 
@@ -79,7 +82,7 @@ export class TyneqComparer {
      *
      * @see {@link caseInsensitiveComparer} for the ordering (negative/zero/positive) counterpart.
      */
-    public static caseInsensitiveEqualityComparer(a: string, b: string): boolean {
+    public static caseInsensitiveEqualityComparer(this: void, a: string, b: string): boolean {
         return a.toLowerCase() === b.toLowerCase();
     }
 
@@ -102,7 +105,7 @@ export class TyneqComparer {
      * @see {@link caseInsensitiveEqualityComparer} for the boolean equality counterpart.
      * @see {@link createLocaleComparer} for locale-aware ordering.
      */
-    public static caseInsensitiveComparer(a: string, b: string): number {
+    public static caseInsensitiveComparer(this: void, a: string, b: string): number {
         const la = a.toLowerCase();
         const lb = b.toLowerCase();
         return la > lb ? 1 : la < lb ? -1 : 0;
