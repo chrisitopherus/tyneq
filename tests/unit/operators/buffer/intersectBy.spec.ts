@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, InvalidOperationError } from "../../../../src";
 
 describe("intersectBy", () => {
   it("returns values whose keys are present", () => {
@@ -43,5 +43,13 @@ describe("intersectBy", () => {
 
   it("throws ArgumentNullError when keySelector is null", () => {
     expect(() => Tyneq.from(["a"]).intersectBy([], null as any)).toThrow(ArgumentNullError);
+  });
+
+  it("throws InvalidOperationError on the second full iteration when intersectedKeys is a one-shot generator (F3)", () => {
+    function* gen() { yield 2; }
+    const seq = Tyneq.from(["a", "bb", "ccc", "dd"]).intersectBy(gen(), (x) => x.length);
+
+    expect(seq.toArray()).toEqual(["bb"]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
 });

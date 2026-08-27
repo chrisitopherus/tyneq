@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, InvalidOperationError } from "../../../../src";
 
 describe("exceptBy", () => {
   it("returns values whose keys are not excluded", () => {
@@ -43,5 +43,13 @@ describe("exceptBy", () => {
 
   it("throws ArgumentNullError when keySelector is null", () => {
     expect(() => Tyneq.from(["a"]).exceptBy([], null as any)).toThrow(ArgumentNullError);
+  });
+
+  it("throws InvalidOperationError on the second full iteration when excludedKeys is a one-shot generator (F3)", () => {
+    function* gen() { yield 3; }
+    const seq = Tyneq.from(["a", "bb", "ccc"]).exceptBy(gen(), (x) => x.length);
+
+    expect(seq.toArray()).toEqual(["a", "bb"]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
 });

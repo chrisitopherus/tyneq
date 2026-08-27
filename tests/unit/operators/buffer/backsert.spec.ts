@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, InvalidOperationError } from "../../../../src";
 
 describe("backsert", () => {
     it("backsert(0, other) appends other after all source elements", () => {
@@ -49,5 +49,13 @@ describe("backsert", () => {
 
     it("throws ArgumentError when other is undefined", () => {
         expect(() => Tyneq.from([1]).backsert(0, undefined as any)).toThrow(ArgumentError);
+    });
+
+    it("throws InvalidOperationError on the second full iteration when other is a one-shot generator (F3)", () => {
+        function* gen() { yield 9; }
+        const seq = Tyneq.from([1, 2]).backsert(0, gen());
+
+        expect(seq.toArray()).toEqual([1, 2, 9]);
+        expect(() => seq.toArray()).toThrow(InvalidOperationError);
     });
 });

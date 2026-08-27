@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentNullError, ArgumentError } from "../../../../src";
+import { Tyneq, ArgumentNullError, ArgumentError, InvalidOperationError } from "../../../../src";
 
 describe("zip", () => {
   describe("normal usage", () => {
@@ -52,6 +52,21 @@ describe("zip", () => {
 
     it("throws ArgumentError when selector is undefined", () => {
       expect(() => Tyneq.from([1]).zip([1], undefined as any)).toThrow(ArgumentError);
+    });
+  });
+
+  describe("one-shot other argument (F3)", () => {
+    it("throws InvalidOperationError on the second full iteration when other is a one-shot generator", () => {
+      function* gen() { yield 10; yield 20; }
+      const seq = Tyneq.from([1, 2]).zip(gen(), (a, b) => a + b);
+
+      expect(seq.toArray()).toEqual([11, 22]);
+      expect(() => seq.toArray()).toThrow(InvalidOperationError);
+    });
+
+    it("does not throw on the first iteration of a one-shot other argument", () => {
+      function* gen() { yield 10; yield 20; }
+      expect(() => Tyneq.from([1, 2]).zip(gen(), (a, b) => a + b).toArray()).not.toThrow();
     });
   });
 });

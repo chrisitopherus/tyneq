@@ -1,6 +1,7 @@
 import { Enumerator, TyneqSequence, KeyValuePair, MinMaxResult, Comparer, EqualityComparer } from "../types/core";
 import { ArgumentOutOfRangeError } from "./errors/argument/ArgumentOutOfRangeError";
 import { ArgumentUtility } from "../utility/ArgumentUtility";
+import { EnumeratorUtility } from "../utility/EnumeratorUtility";
 import { ItemAction, ItemPredicate, ItemSelector } from "../types/utility";
 import { TyneqEnumerableCore } from "./TyneqEnumerableCore";
 import { sequence } from "../plugin/decorators/sequence";
@@ -305,8 +306,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     public concat(other: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
+        const guardedOther = EnumeratorUtility.guardReiterable(other, "other");
         return this.createSequence(
-            () => new ConcatEnumerator<TSource>(this.getEnumerator(), other),
+            () => new ConcatEnumerator<TSource>(this.getEnumerator(), guardedOther),
             this.createNode("concat", "streaming", [other])
         );
     }
@@ -549,8 +551,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ other });
         ArgumentUtility.checkIterable({ other });
         ArgumentUtility.checkNotOptional({ selector });
+        const guardedOther = EnumeratorUtility.guardReiterable(other, "other");
         return this.createSequence(
-            () => new ZipEnumerator<TSource, TOther, TResult>(this.getEnumerator(), other, selector),
+            () => new ZipEnumerator<TSource, TOther, TResult>(this.getEnumerator(), guardedOther, selector),
             this.createNode("zip", "streaming", [other, selector])
         );
     }
@@ -561,8 +564,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkSafeInteger({ index });
         ArgumentUtility.checkNonNegative({ index });
         ArgumentUtility.checkIterable({ other });
+        const guardedOther = EnumeratorUtility.guardReiterable(other, "other");
         return this.createSequence(
-            () => new BacksertEnumerator<TSource>(this.getEnumerator(), index, other),
+            () => new BacksertEnumerator<TSource>(this.getEnumerator(), index, guardedOther),
             this.createNode("backsert", "buffer", [index, other])
         );
     }
@@ -588,8 +592,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     public except(excludedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ excludedValues });
         ArgumentUtility.checkIterable({ excludedValues });
+        const guardedExcludedValues = EnumeratorUtility.guardReiterable(excludedValues, "excludedValues");
         return this.createSequence(
-            () => new ExceptEnumerator<TSource>(this.getEnumerator(), excludedValues),
+            () => new ExceptEnumerator<TSource>(this.getEnumerator(), guardedExcludedValues),
             this.createNode("except", "buffer", [excludedValues])
         );
     }
@@ -602,8 +607,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ excludedKeys });
         ArgumentUtility.checkIterable({ excludedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
+        const guardedExcludedKeys = EnumeratorUtility.guardReiterable(excludedKeys, "excludedKeys");
         return this.createSequence(
-            () => new ExceptByEnumerator<TSource, TKey>(this.getEnumerator(), excludedKeys, keySelector),
+            () => new ExceptByEnumerator<TSource, TKey>(this.getEnumerator(), guardedExcludedKeys, keySelector),
             this.createNode("exceptBy", "buffer", [excludedKeys, keySelector])
         );
     }
@@ -639,11 +645,12 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ outerKeySelector });
         ArgumentUtility.checkNotOptional({ innerKeySelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
+        const guardedInner = EnumeratorUtility.guardReiterable(inner, "inner");
         const groupFactory = (values: TInner[]): TyneqSequence<TInner> =>
             this.createEnumerable({ getEnumerator: () => values[Symbol.iterator]() as Enumerator<TInner> }, null);
         return this.createSequence(
             () => new GroupJoinEnumerator<TSource, TInner, TKey, TResult>(
-                this.getEnumerator(), inner, outerKeySelector, innerKeySelector, resultSelector, groupFactory
+                this.getEnumerator(), guardedInner, outerKeySelector, innerKeySelector, resultSelector, groupFactory
             ),
             this.createNode("groupJoin", "buffer", [inner, outerKeySelector, innerKeySelector, resultSelector])
         );
@@ -653,8 +660,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     public intersect(intersectedValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ intersectedValues });
         ArgumentUtility.checkIterable({ intersectedValues });
+        const guardedIntersectedValues = EnumeratorUtility.guardReiterable(intersectedValues, "intersectedValues");
         return this.createSequence(
-            () => new IntersectEnumerator<TSource>(this.getEnumerator(), intersectedValues),
+            () => new IntersectEnumerator<TSource>(this.getEnumerator(), guardedIntersectedValues),
             this.createNode("intersect", "buffer", [intersectedValues])
         );
     }
@@ -667,8 +675,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ intersectedKeys });
         ArgumentUtility.checkIterable({ intersectedKeys });
         ArgumentUtility.checkNotOptional({ keySelector });
+        const guardedIntersectedKeys = EnumeratorUtility.guardReiterable(intersectedKeys, "intersectedKeys");
         return this.createSequence(
-            () => new IntersectByEnumerator<TSource, TKey>(this.getEnumerator(), intersectedKeys, keySelector),
+            () => new IntersectByEnumerator<TSource, TKey>(this.getEnumerator(), guardedIntersectedKeys, keySelector),
             this.createNode("intersectBy", "buffer", [intersectedKeys, keySelector])
         );
     }
@@ -685,9 +694,10 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ outerKeySelector });
         ArgumentUtility.checkNotOptional({ innerKeySelector });
         ArgumentUtility.checkNotOptional({ resultSelector });
+        const guardedInner = EnumeratorUtility.guardReiterable(inner, "inner");
         return this.createSequence(
             () => new JoinEnumerator<TSource, TInner, TKey, TResult>(
-                this.getEnumerator(), inner, outerKeySelector, innerKeySelector, resultSelector
+                this.getEnumerator(), guardedInner, outerKeySelector, innerKeySelector, resultSelector
             ),
             this.createNode("join", "buffer", [inner, outerKeySelector, innerKeySelector, resultSelector])
         );
@@ -721,8 +731,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     public union(otherValues: Iterable<TSource>): TyneqSequence<TSource> {
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
+        const guardedOtherValues = EnumeratorUtility.guardReiterable(otherValues, "otherValues");
         return this.createSequence(
-            () => new UnionEnumerator<TSource>(this.getEnumerator(), otherValues),
+            () => new UnionEnumerator<TSource>(this.getEnumerator(), guardedOtherValues),
             this.createNode("union", "buffer", [otherValues])
         );
     }
@@ -735,8 +746,9 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
         ArgumentUtility.checkNotOptional({ otherValues });
         ArgumentUtility.checkIterable({ otherValues });
         ArgumentUtility.checkNotOptional({ keySelector });
+        const guardedOtherValues = EnumeratorUtility.guardReiterable(otherValues, "otherValues");
         return this.createSequence(
-            () => new UnionByEnumerator<TSource, TKey>(this.getEnumerator(), otherValues, keySelector),
+            () => new UnionByEnumerator<TSource, TKey>(this.getEnumerator(), guardedOtherValues, keySelector),
             this.createNode("unionBy", "buffer", [otherValues, keySelector])
         );
     }

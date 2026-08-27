@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, InvalidOperationError } from "../../../../src";
 
 describe("groupJoin", () => {
   it("left-joins and groups inner matches", () => {
@@ -91,5 +91,20 @@ describe("groupJoin", () => {
     expect(() =>
       Tyneq.from([1]).groupJoin([], (x) => x, (x) => x, null as any)
     ).toThrow(ArgumentNullError);
+  });
+
+  it("throws InvalidOperationError on the second full iteration when innerSource is a one-shot generator (F3)", () => {
+    const outer = [{ id: 1 }];
+    function* inner() { yield { id: 1, v: "x" }; }
+
+    const seq = Tyneq.from(outer).groupJoin(
+      inner(),
+      (o) => o.id,
+      (i) => i.id,
+      (o, g) => g.select((i) => i.v).toArray()
+    );
+
+    expect(seq.toArray()).toEqual([["x"]]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
 });
