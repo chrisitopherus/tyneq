@@ -59,7 +59,7 @@ export class EndsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
     }
 
     private fillCircularBuffer(elements: Iterable<T>, windowSize: number): Nullable<CircularBufferResult<T>> {
-        const buffer: T[] = new Array(windowSize);
+        const buffer = new Array<T>(windowSize);
         let writeIndex = 0;
 
         for (const item of elements) {

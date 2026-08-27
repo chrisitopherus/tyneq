@@ -15,7 +15,6 @@ import { Enumerator } from "../../types/core";
 export class SplitEnumerator<TSource> extends TyneqEnumerator<TSource, TSource[]> {
     private readonly splitOn: (item: TSource) => boolean;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, splitOn: (item: TSource) => boolean) {
         super(sourceEnumerator);
         this.splitOn = splitOn;

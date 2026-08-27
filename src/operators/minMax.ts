@@ -23,7 +23,6 @@ export class MinMaxOperator<T> extends TyneqTerminalOperator<T, MinMaxResult<T>>
 
     private readonly comparer: Comparer<T>;
 
-
     public constructor(source: Enumerable<T>, comparer?: Comparer<T>) {
         super(source);
         this.comparer = comparer ?? TyneqComparer.defaultComparer;

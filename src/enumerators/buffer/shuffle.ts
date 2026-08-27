@@ -16,7 +16,6 @@ export class ShuffleEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private buffer: TSource[] = [];
     private currentIndex = 0;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>) {
         super(sourceEnumerator);
     }

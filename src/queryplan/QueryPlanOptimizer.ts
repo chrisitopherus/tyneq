@@ -11,12 +11,18 @@ import { QueryPlanTransformer } from "./QueryPlanTransformer";
  * original sequence.** The returned `QueryPlanNode` reflects what an optimized pipeline would
  * look like; the live sequence that produced the original plan is unchanged.
  *
- * **Fusion is only semantics-preserving for pure, side-effect-free functions.**
- * If a predicate or projection has side effects (e.g. logging, mutation), fusing two nodes into
- * one changes when and how many times those effects fire. For example, in a fused `where`, the
- * second predicate is never called for items that fail the first - any mutation inside the second
- * predicate is skipped for those items. Do not use this optimizer on pipelines with impure
- * predicates or projections.
+ * **Fusion preserves call order, call count, and interleaving - including for impure
+ * (side-effecting) predicates and projections.** In the unfused pull pipeline, `where(a).where(b)`
+ * evaluates each upstream element `x` as: `a(x)`, then `b(x)` only if `a(x)` is truthy - the
+ * inner `where(a)` never yields `x` to the outer `where(b)` otherwise. This is exactly the
+ * evaluation rule of the fused predicate `a(x) && b(x)`, so the two are behaviorally identical,
+ * side effects included. The same argument holds for `select` fusion: unfused, `a(x)` is computed
+ * and its result immediately passed to `b` before the next upstream pull - identical to
+ * `b(a(x))`. The one thing fusion changes is the query plan's shape: two `<fn>` nodes become
+ * one, so plan-diffing tools and per-operator node counts see a different tree than the original.
+ * The constraint any future fusion rule must preserve to keep this guarantee is: never reorder
+ * or elide operators across a node boundary, only merge directly adjacent same-shape nodes -
+ * this adjacency requirement is what makes the argument above sound.
  *
  * ### Fusions applied
  *
@@ -71,7 +77,7 @@ export class QueryPlanOptimizer extends QueryPlanTransformer {
     }
 
     /**
-     * @remarks Fusion is only semantics-preserving for pure, side-effect-free predicates.
+     * @remarks Behavior-preserving even for impure predicates - see the class-level `@remarks`.
      */
     private fuseWhere(node: QueryPlanNode, source: QueryPlanNode): QueryPlanNode {
         const predA = source.args[0] as (x: unknown) => boolean;
@@ -81,7 +87,7 @@ export class QueryPlanOptimizer extends QueryPlanTransformer {
     }
 
     /**
-     * @remarks Fusion is only semantics-preserving for pure, side-effect-free projections.
+     * @remarks Behavior-preserving even for impure projections - see the class-level `@remarks`.
      */
     private fuseSelect(node: QueryPlanNode, source: QueryPlanNode): QueryPlanNode {
         const projA = source.args[0] as (x: unknown) => unknown;

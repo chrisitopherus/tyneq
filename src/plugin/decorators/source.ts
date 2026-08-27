@@ -52,6 +52,9 @@ export interface SourceDecoratorOptions {
  * @group Decorators
  */
 export function source(options: SourceDecoratorOptions = {}) {
+    // `any[]`/`any` is a required decorator idiom, not a shortcut - see tasks/lessons.md,
+    // "Architecture Decisions": TS contravariant parameter checking rejects `unknown[]` here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function <TMethod extends (...args: any[]) => any>(
         method: TMethod,
         context: ClassMethodDecoratorContext & { static: true }

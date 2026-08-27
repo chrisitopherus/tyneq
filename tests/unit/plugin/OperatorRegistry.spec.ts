@@ -250,6 +250,86 @@ describe("OperatorRegistry.addGuard", () => {
 
     expect(order).toEqual([1]);
   });
+
+  // F20: register(), registerSource(), and registerBuiltin() previously ran guards under
+  // three different, undocumented policies. They now share one policy via a private
+  // runGuards() helper: guards run for source: "external" registrations only.
+
+  it("register() does not fire guards for an internal registration (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardInternalRegister");
+    OperatorRegistry.register({
+      metadata: new OperatorMetadata(name, "streaming", "internal"),
+      impl: noopImpl,
+    });
+    OperatorRegistry.unregister(name);
+
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it("register() fires guards for an explicit external registration (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardExternalRegister");
+    OperatorRegistry.register({
+      metadata: new OperatorMetadata(name, "streaming", "external"),
+      impl: noopImpl,
+    });
+    OperatorRegistry.unregister(name);
+
+    expect(guard).toHaveBeenCalledTimes(1);
+  });
+
+  it("registerSource() does not fire guards for an internal source (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardInternalSource");
+    OperatorRegistry.registerSource(name, noopImpl, "internal");
+    OperatorRegistry.unregisterSource(name);
+
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it("registerSource() fires guards for an external source (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardExternalSource");
+    OperatorRegistry.registerSource(name, noopImpl, "external");
+    OperatorRegistry.unregisterSource(name);
+
+    expect(guard).toHaveBeenCalledTimes(1);
+  });
+
+  it("registerSource() defaults to external and fires guards when source is omitted (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardDefaultSource");
+    OperatorRegistry.registerSource(name, noopImpl);
+    OperatorRegistry.unregisterSource(name);
+
+    expect(guard).toHaveBeenCalledTimes(1);
+  });
+
+  it("registerBuiltin() never fires guards - always internal, intentionally not routed through runGuards (F20)", () => {
+    const guard = vi.fn();
+    guards.push(OperatorRegistry.addGuard(guard));
+
+    const name = nextName("guardBuiltinNeverFires");
+    class BuiltinTarget {
+      public [name](): number { return 1; }
+    }
+
+    OperatorRegistry.registerBuiltin(name, "streaming", BuiltinTarget as any);
+    OperatorRegistry.unregisterOperator(name, BuiltinTarget as any);
+
+    expect(guard).not.toHaveBeenCalled();
+  });
 });
 
 // Introspection: has(), get(), list(), listByKind(), listBySource(), count()

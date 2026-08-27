@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../../src";
+import { Tyneq, InvalidOperationError } from "../../../../src";
 
 describe("union", () => {
   it("returns distinct union preserving first-seen order", () => {
@@ -20,5 +20,23 @@ describe("union", () => {
 
   it("returns empty sequence when both sequences are empty", () => {
     expect(Tyneq.from<number>([]).union([]).toArray()).toEqual([]);
+  });
+
+  it("throws InvalidOperationError on the second full iteration when otherValues is a one-shot generator (F3)", () => {
+    function* gen() { yield 2; yield 3; }
+    const seq = Tyneq.from([1, 2]).union(gen());
+
+    expect(seq.toArray()).toEqual([1, 2, 3]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
+  });
+
+  it("streams the source incrementally and does not hang on an infinite source (F4)", () => {
+    function* naturals() {
+      let n = 0;
+      while (true) yield n++;
+    }
+
+    const result = Tyneq.from(naturals()).union([100, 200]).take(3).toArray();
+    expect(result).toEqual([0, 1, 2]);
   });
 });

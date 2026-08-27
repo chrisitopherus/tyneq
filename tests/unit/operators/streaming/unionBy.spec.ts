@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError } from "../../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, InvalidOperationError } from "../../../../src";
 
 describe("unionBy", () => {
   it("returns union based on key selector", () => {
@@ -48,5 +48,13 @@ describe("unionBy", () => {
 
   it("throws ArgumentNullError when keySelector is null", () => {
     expect(() => Tyneq.from(["a"]).unionBy([], null as any)).toThrow(ArgumentNullError);
+  });
+
+  it("throws InvalidOperationError on the second full iteration when otherValues is a one-shot generator (F3)", () => {
+    function* gen() { yield "cc"; yield "ddd"; }
+    const seq = Tyneq.from(["a", "bb"]).unionBy(gen(), (x) => x.length);
+
+    expect(seq.toArray()).toEqual(["a", "bb", "ddd"]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
 });

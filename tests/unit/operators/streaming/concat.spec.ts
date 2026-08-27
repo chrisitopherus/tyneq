@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentNullError, ArgumentError } from "../../../../src";
+import { Tyneq, ArgumentNullError, ArgumentError, InvalidOperationError } from "../../../../src";
 
 describe("concat", () => {
   describe("normal usage", () => {
@@ -35,6 +35,16 @@ describe("concat", () => {
 
     it("throws ArgumentError when other is undefined", () => {
       expect(() => Tyneq.from([1]).concat(undefined as any)).toThrow(ArgumentError);
+    });
+  });
+
+  describe("one-shot other argument (F3)", () => {
+    it("throws InvalidOperationError on the second full iteration when other is a one-shot generator", () => {
+      function* gen() { yield 3; yield 4; }
+      const seq = Tyneq.from([1, 2]).concat(gen());
+
+      expect(seq.toArray()).toEqual([1, 2, 3, 4]);
+      expect(() => seq.toArray()).toThrow(InvalidOperationError);
     });
   });
 });

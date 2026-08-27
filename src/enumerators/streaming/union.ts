@@ -5,11 +5,13 @@ import { Enumerator } from "../../types/core";
  * Returns the set union of the source and a second sequence, eliminating duplicates.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Streams the source, then streams `otherValues`, holding a seen-value `Set` that
+ * grows to at most the number of distinct elements yielded so far - neither sequence is read
+ * fully eagerly.
  *
  * @see {@link TyneqSequence.union}
  * @group Operators
- * @category Buffering
+ * @category Streaming
  * @internal
  */
 export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
@@ -18,7 +20,6 @@ export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private currentEnumerator: Enumerator<TSource>;
     private isSourceDone = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

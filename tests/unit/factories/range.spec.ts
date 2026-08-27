@@ -44,5 +44,17 @@ describe("Tyneq.range", () => {
         it("throws ArgumentError when count is a non-integer", () => {
             expect(() => Tyneq.range(0, 1.5)).toThrow(ArgumentError);
         });
+
+        it("throws ArgumentError when start is NaN instead of silently returning an empty sequence (F16)", () => {
+            expect(() => Tyneq.range(NaN, 3)).toThrow(ArgumentError);
+        });
+
+        it("throws ArgumentError when start is Infinity (F16)", () => {
+            expect(() => Tyneq.range(Infinity, 3)).toThrow(ArgumentError);
+        });
+
+        it("throws ArgumentError when start is a non-integer, matching the documented integer-sequence contract (F16)", () => {
+            expect(() => Tyneq.range(1.5, 3)).toThrow(ArgumentError);
+        });
     });
 });

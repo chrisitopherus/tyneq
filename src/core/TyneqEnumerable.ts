@@ -21,7 +21,6 @@ export class TyneqEnumerable<TSource> extends TyneqEnumerableBase<TSource> {
 
     public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
-    
     public constructor(enumeratorFactory: EnumeratorFactory<TSource>, node: Nullable<QueryPlanNode>) {
         super();
         ArgumentUtility.checkNotOptional({ enumeratorFactory });

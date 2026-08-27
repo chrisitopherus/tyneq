@@ -61,6 +61,10 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         }
         if (typeof arg === "object") return "{...}";
 
+        // Only number | boolean | bigint | symbol reach here - all have a correct, non-"[object
+        // Object]" String() conversion. The object case (the one this rule guards against) is
+        // already handled above.
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         return String(arg);
     }
 
@@ -82,7 +86,6 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         return lines.join("\n");
     }
 
-    
     private collectNodes(node: QueryPlanNode): QueryPlanNode[] {
         const nodes: QueryPlanNode[] = [];
         let current: Nullable<QueryPlanNode> = node;

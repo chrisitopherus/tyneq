@@ -16,7 +16,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class ToMapOperator<TSource, TKey, TValue> extends TyneqTerminalOperator<TSource, Map<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 
-    
     public constructor(source: TyneqSequence<TSource>, selector: (item: TSource) => KeyValuePair<TKey, TValue>) {
         super(source);
         ArgumentUtility.checkNotOptional({ selector });

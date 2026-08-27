@@ -42,7 +42,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
     public readonly source: TyneqSequence<TSource>;
     public readonly parent: Nullable<OrderedEnumerable<TSource>>;
     public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
-    
+
     public constructor(
         source: TyneqSequence<TSource>,
         keySelector: (item: TSource) => TKey,
@@ -106,7 +106,6 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         return new OrderByEnumerator<TSource, TKey>(this);
     }
 
-    
     public getSorter(next: Nullable<BaseEnumerableSorter<TSource>>): BaseEnumerableSorter<TSource> {
         return new TyneqEnumerableSorter<TSource, TKey>(
             this.keySelector,
@@ -121,6 +120,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: Comparer<UKey>
     ): TyneqOrderedSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const thenByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("thenBy", thenByArgs, this[tyneqQueryNode], "buffer");
 
@@ -139,6 +139,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: Comparer<UKey>
     ): TyneqOrderedSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const thenByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("thenByDescending", thenByDescArgs, this[tyneqQueryNode], "buffer");
         return new TyneqOrderedEnumerable<TSource, UKey>(
@@ -166,7 +167,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
             keySelector,
             comparer,
             descending,
-            undefined, // CREDITS: KOMINO
+            undefined, // CREDITS: KOMINO - resets the parent chain: a fresh primary sort must not inherit thenBy state
             node
         );
     }

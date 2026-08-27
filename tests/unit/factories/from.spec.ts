@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError, ArgumentTypeError } from "../../../src";
+import { Tyneq, ArgumentError, ArgumentNullError, ArgumentTypeError, InvalidOperationError } from "../../../src";
 
 describe("Tyneq.from", () => {
     describe("normal usage", () => {
@@ -65,6 +65,72 @@ describe("Tyneq.from", () => {
 
         it("throws ArgumentTypeError when source is a plain object", () => {
             expect(() => Tyneq.from({} as any)).toThrow(ArgumentTypeError);
+        });
+    });
+
+    describe("one-shot iterables (F3)", () => {
+        it("throws InvalidOperationError on the second iteration of a generator object, instead of silently returning []", () => {
+            function* gen() { yield 1; yield 2; }
+            const seq = Tyneq.from(gen());
+
+            expect(seq.toArray()).toEqual([1, 2]);
+            expect(() => seq.toArray()).toThrow(InvalidOperationError);
+        });
+
+        it("throws InvalidOperationError on the second getEnumerator() call directly", () => {
+            function* gen() { yield 1; }
+            const seq = Tyneq.from(gen());
+
+            const first = seq.getEnumerator();
+            expect(first.next()).toEqual({ done: false, value: 1 });
+            expect(first.next()).toEqual({ done: true, value: undefined });
+
+            expect(() => seq.getEnumerator()).toThrow(InvalidOperationError);
+        });
+
+        it("does not throw on the first iteration even though the generator is one-shot", () => {
+            function* gen() { yield 1; yield 2; yield 3; }
+            expect(() => Tyneq.from(gen()).toArray()).not.toThrow();
+        });
+
+        it("treats Map.prototype.entries() as one-shot (a built-in iterator-as-iterable)", () => {
+            const map = new Map([["a", 1], ["b", 2]]);
+            const seq = Tyneq.from(map.entries());
+
+            expect(seq.toArray()).toEqual([["a", 1], ["b", 2]]);
+            expect(() => seq.toArray()).toThrow(InvalidOperationError);
+        });
+
+        it("does not affect re-iterability of an ordinary array source", () => {
+            const seq = Tyneq.from([1, 2, 3]);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+        });
+
+        it("does not affect re-iterability of a Set source", () => {
+            const seq = Tyneq.from(new Set([1, 2, 3]));
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+        });
+
+        it("does not affect re-iterability of a custom iterable whose [Symbol.iterator]() returns a fresh iterator each call", () => {
+            const values = [1, 2, 3];
+            const customIterable: Iterable<number> = {
+                [Symbol.iterator]: () => values[Symbol.iterator]()
+            };
+
+            const seq = Tyneq.from(customIterable);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+            expect(seq.toArray()).toEqual([1, 2, 3]);
+        });
+
+        it("chaining operators after a one-shot source still throws on the second full iteration", () => {
+            function* gen() { yield 1; yield 2; yield 3; yield 4; }
+            const seq = Tyneq.from(gen()).where((x) => x % 2 === 0);
+
+            expect(seq.toArray()).toEqual([2, 4]);
+            expect(() => seq.toArray()).toThrow(InvalidOperationError);
         });
     });
 });

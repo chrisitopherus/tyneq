@@ -10,14 +10,21 @@ import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
  * A pull-based iterator over a sequence.
  *
  * @remarks
- * Extends the native `Iterator<T>` protocol. `return()` disposes the iterator early;
- * `throw()` is not supported and throws {@link NotSupportedError} if called.
+ * Extends the native `Iterator<T>` protocol with an optional `return()` to dispose the
+ * iterator early. `throw()` is not part of this interface at all - no Tyneq enumerator
+ * implements it, so calling `.throw()` on one throws a plain `TypeError` (method does not
+ * exist), not a Tyneq-specific error.
  *
  * @typeParam T - Element type.
  * @group Interfaces
  */
 export interface Enumerator<T> extends Iterator<T> {
-    next(): IteratorResult<T>;
+    // Pin TReturn to undefined (native IteratorResult<T, TReturn = any> otherwise leaves the
+    // `done: true` branch's `value` typed `any`, leaking through every
+    // `const { done, value } = ...next()` destructuring in the codebase). Every Tyneq
+    // enumerator's `done()`/`doneWithYield()` returns `{ done: true, value: undefined }` -
+    // never a meaningful "return value" - so this is a real narrowing, not a workaround.
+    next(): IteratorResult<T, undefined>;
 
     /**
      * Terminates the iterator early and releases resources.
@@ -25,7 +32,7 @@ export interface Enumerator<T> extends Iterator<T> {
      * @remarks
      * Idempotent - safe to call multiple times. Calling `next()` after `return()` returns `{ done: true }`.
      */
-    return?(value?: unknown): IteratorResult<T>;
+    return?(value?: unknown): IteratorResult<T, undefined>;
 }
 
 /**
@@ -108,7 +115,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Use {@link QueryPlanPrinter} to render this as a string.
-     * Sequences created via `pipe()` always have `null` here.
+     * Sequences created via `pipe()` carry a `"pipe"` node like any other operator, with
+     * `factory` recorded as its argument - not `null`.
      */
     readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
@@ -944,6 +952,13 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * as the argument. Use this for one-off operator compositions that do not need to be
      * registered via the plugin API.
      *
+     * `factory` is called once per `getEnumerator()` call on the returned sequence, not once
+     * overall - to keep the result re-iterable, return a fresh `Enumerator`/`IterableIterator`
+     * on every call rather than a captured, already-created one. Returning the same iterator
+     * object across calls makes the returned sequence one-shot (see {@link TyneqSequence} for
+     * the re-iterability contract): the first full iteration succeeds normally, but every
+     * iteration after that silently yields fewer elements or none at all, with no error.
+     *
      * @throws {ArgumentNullError} When `factory` is null.
      * @throws {ArgumentError} When `factory` is undefined.
      */
@@ -1018,12 +1033,25 @@ export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
  * @remarks
  * Produced by `memoize()`. Call `refresh()` to clear the cache and allow re-enumeration from the source.
  *
+ * If the source throws mid-enumeration, the successfully cached prefix is kept and the error is
+ * cached alongside it: every iteration that reads past that prefix rethrows the same error until
+ * `refresh()` is called. An error is never silently dropped in favor of treating the prefix as a
+ * complete, successful result.
+ *
  * @typeParam TSource - Element type.
  * @group Interfaces
  */
 export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
     /**
-     * Clears the element cache and returns a new `TyneqCachedSequence` that will re-enumerate from the source.
+     * Clears the element cache (and any cached source error) so the next iteration
+     * re-enumerates from the source. Mutates and returns `this` - it does not create a new
+     * cached sequence.
+     *
+     * @remarks
+     * Calling `refresh()` while another enumerator is mid-iteration over this same sequence is
+     * detected: that enumerator's next `next()` call throws {@link InvalidOperationError} rather
+     * than silently resuming against the new generation of cached data. Enumerators created
+     * after the `refresh()` call are unaffected. See {@link TyneqSequence.memoize}.
      */
     refresh(): TyneqCachedSequence<TSource>;
 }
@@ -1037,11 +1065,15 @@ export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
  */
 export interface CachedEnumerable<TSource> extends Enumerable<TSource> {
     /**
-     * Attempts to return the cached element at `index`.
+     * Attempts to return the cached element at `index`, for a caller reading generation
+     * `generation` of the cache (the value returned by whatever counter the implementation
+     * uses to track `refresh()` calls, captured by the caller when it first started reading).
      *
      * @returns `{ has: true, value }` if cached, `{ has: false }` otherwise.
+     * @throws If `generation` no longer matches the cache's current generation - the cache was
+     * `refresh()`'d since the caller started reading and cannot be resumed.
      */
-    tryGetAtFromCache(index: number): CacheResult<TSource>;
+    tryGetAtFromCache(index: number, generation: number): CacheResult<TSource>;
 }
 
 /** Result returned by the cache-lookup method on a memoized sequence. */
@@ -1058,10 +1090,10 @@ export type CacheResult<TSource> = { has: true, value: TSource } | { has: false 
  * @internal
  */
 export interface OrderedEnumerable<TSource> extends Enumerable<TSource> {
-    source: TyneqSequence<TSource>;
+    readonly source: TyneqSequence<TSource>;
 
     /** The parent ordering level, or `null` for the primary sort. */
-    parent: Nullable<OrderedEnumerable<TSource>>;
+    readonly parent: Nullable<OrderedEnumerable<TSource>>;
 
     /**
      * Produces a sorter chain that combines this level with any chained levels.
@@ -1082,7 +1114,6 @@ export type KeyValuePair<TKey, TValue> = {
     key: TKey;
     value: TValue;
 };
-
 
 /**
  * Structural interface used by registration machinery to call the protected factory methods
@@ -1118,5 +1149,6 @@ export type OperatorSource = "internal" | "external";
 /** Kind of an operator, used internally to categorize operators. Extends `OperatorCategory` with registry-only kinds. */
 export type OperatorKind = OperatorCategory | "cache" | "extension" | "unknown";
 
-/** Constructor type for a sequence class. */
+/** Constructor type for a sequence class. `any[]` is the standard constructor-shape idiom - see {@link Constructor} in types/utility.ts. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SequenceConstructor = abstract new (...args: any[]) => TyneqEnumerableCore<unknown>;

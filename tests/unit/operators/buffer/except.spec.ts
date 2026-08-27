@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../../src";
+import { Tyneq, InvalidOperationError } from "../../../../src";
 
 describe("except", () => {
   it("returns values not in excluded set", () => {
@@ -24,5 +24,13 @@ describe("except", () => {
 
   it("throws when excludedValues is null and sequence is iterated", () => {
     expect(() => Tyneq.from([1, 2, 3]).except(null as any).toArray()).toThrow();
+  });
+
+  it("throws InvalidOperationError on the second full iteration when excludedValues is a one-shot generator (F3)", () => {
+    function* gen() { yield 2; yield 4; }
+    const seq = Tyneq.from([1, 2, 3, 4]).except(gen());
+
+    expect(seq.toArray()).toEqual([1, 3]);
+    expect(() => seq.toArray()).toThrow(InvalidOperationError);
   });
 });

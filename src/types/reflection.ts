@@ -9,7 +9,7 @@ export interface MethodDescriptor {
     readonly kind: "method";
     readonly name: string | symbol;
     /** The raw function value. */
-    readonly value: Function;
+    readonly value: (...args: unknown[]) => unknown;
     /** Calls the method with the given `this` context and arguments. */
     readonly invoke: (thisArg: unknown, ...args: unknown[]) => unknown;
 }
@@ -36,7 +36,9 @@ export interface DataDescriptor {
 export interface AccessorDescriptor {
     readonly kind: "accessor";
     readonly name: string | symbol;
+    /** Unbound - depends on its receiver. Call with an explicit `this`, e.g. `get.call(instance)`. */
     readonly get: Maybe<() => unknown>;
+    /** Unbound - depends on its receiver. Call with an explicit `this`, e.g. `set.call(instance, value)`. */
     readonly set: Maybe<(value: unknown) => void>;
     readonly configurable: boolean;
     readonly enumerable: boolean;

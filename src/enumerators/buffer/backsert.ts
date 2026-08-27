@@ -19,7 +19,6 @@ export class BacksertEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private current = 0;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, backIndex: number, other: Iterable<T>) {
         super(sourceEnumerator);
         this.backIndex = backIndex;

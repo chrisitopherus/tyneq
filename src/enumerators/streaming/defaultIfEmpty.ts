@@ -18,7 +18,6 @@ export class DefaultIfEmptyEnumerator<TSource> extends TyneqEnumerator<TSource> 
     private hasYieldedAny = false;
     private defaultYielded = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, defaultValue: TSource) {
         super(sourceEnumerator);
         this.defaultValue = defaultValue;

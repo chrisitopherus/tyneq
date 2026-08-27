@@ -16,7 +16,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class AverageOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly selector: (item: T) => number;
 
-    
     public constructor(source: Enumerable<T>, selector: (item: T) => number) {
         super(source);
         ArgumentUtility.checkNotOptional({ selector });

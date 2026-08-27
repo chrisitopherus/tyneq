@@ -16,7 +16,6 @@ export class ChunkEnumerator<T> extends TyneqEnumerator<T, T[]> {
     private readonly size: number;
     private currentChunk: T[] = [];
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, size: number) {
         super(sourceEnumerator);
         this.size = size;

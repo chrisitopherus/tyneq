@@ -33,6 +33,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:dist": "tsx tests/dist-smoke/dist-smoke-test.ts",
     "docs:api": "typedoc --options typedoc.json",
     "docs:api:full": "typedoc --options typedoc.dev.json",
     "docs:dev": "npm run docs:api && vitepress dev docs",
@@ -68,8 +69,8 @@
     "node": ">=18"
   },
   "sideEffects": [
-    "./dist/index.js",
-    "./dist/index.cjs"
+    "./dist/**/*.js",
+    "./dist/**/*.cjs"
   ],
   "publishConfig": {
     "access": "public"

@@ -99,7 +99,10 @@ export class OperatorMetadata {
         }
 
         throw new PluginError(
-            `OperatorMetadata.forCategory: unsupported category "${category}". Use .terminal() or .source() directly.`,
+            // `category` is typed "streaming" | "buffer" and both are excluded above - this
+            // branch only runs if a caller bypasses the type system at runtime with an invalid
+            // string, hence the explicit String() and the `never` narrowing ESLint flags here.
+            `OperatorMetadata.forCategory: unsupported category "${String(category)}". Use .terminal() or .source() directly.`,
             "forCategory",
             name
         );

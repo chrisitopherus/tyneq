@@ -43,8 +43,11 @@ export function cachedOperator<TArgs extends unknown[] = never>(
     category: "streaming" | "buffer",
     validate?: (...args: TArgs) => void
 ) {
+    // `any` is a required decorator idiom, not a shortcut - see tasks/lessons.md,
+    // "Architecture Decisions": TS contravariant parameter checking rejects `unknown` here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function <TClass extends Constructor<any>>(target: TClass, _context: ClassDecoratorContext<TClass>): TClass {
-        if (!reflect(target.prototype).hasMethod("handleNext")) {
+        if (!reflect(target.prototype, { inherited: true }).hasMethod("handleNext")) {
             throw new PluginError(
                 `@cachedOperator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqCachedEnumerator<T>.",
@@ -59,6 +62,8 @@ export function cachedOperator<TArgs extends unknown[] = never>(
                 validate?.(...(userArgs as TArgs));
                 const base = this as unknown as TyneqCachedEnumerable<unknown>;
                 return RegistrationUtility.buildEnumerable(this, name, userArgs, category, {
+                    // Same required `any`-decorator idiom as TClass's constraint above.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     getEnumerator: () => new target(base, ...userArgs)
                 });
             }

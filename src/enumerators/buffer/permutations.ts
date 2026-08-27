@@ -21,7 +21,7 @@ export class PermutationsEnumerator<TSource> extends TyneqEnumerator<TSource, TS
     protected override initialize(): void {
         this.buffer = Array.from(EnumeratorUtility.toIterable(this.sourceEnumerator));
         this.n = this.buffer.length;
-        this.c = new Array(this.n).fill(0);
+        this.c = new Array<number>(this.n).fill(0);
     }
 
     protected override handleNext(): IteratorResult<TSource[]> {
@@ -44,7 +44,7 @@ export class PermutationsEnumerator<TSource> extends TyneqEnumerator<TSource, TS
                 this.i++; // go deeper
             }
         }
-        
+
         return this.done();
     }
 

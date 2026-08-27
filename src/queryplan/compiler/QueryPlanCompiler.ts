@@ -28,9 +28,17 @@ export interface CompileOptions {
      * ```
      *
      * @remarks
-     * Only affects source nodes (the root of the plan). All operator nodes are replayed
-     * exactly as recorded. If the plan has no source node (e.g. it starts from an operator
-     * node with a missing parent), this option has no effect.
+     * Only applicable when the plan's source node is `from` - the only built-in source
+     * operator whose first argument is the iterable data itself. Every other source
+     * (`range`, `random`, `repeat`, `generate`, ...) takes non-iterable arguments
+     * (counts, seeds, factories) as `args[0]`, so blindly substituting there would silently
+     * produce nonsense (e.g. `range`'s `count` replaced by an array). Using `options.source`
+     * against a non-`from` source node throws a {@link CompilerError} instead.
+     *
+     * Custom source operators registered via `OperatorRegistry.registerSource()` cannot opt
+     * in to this option, even if their first argument happens to be iterable - there is
+     * currently no metadata flag for a source to declare itself substitutable. Build a
+     * fresh plan (or a new source node) instead if you need this for a custom source.
      */
     readonly source?: Iterable<unknown>;
 }
@@ -158,9 +166,24 @@ export class QueryPlanCompiler {
             );
         }
 
-        const args = options?.source !== undefined
-            ? [options.source, ...node.args.slice(1)]
-            : [...node.args];
+        let args: unknown[];
+        if (options?.source !== undefined) {
+            if (node.operatorName !== "from") {
+                throw new CompilerError(
+                    `options.source is not applicable to source operator "${node.operatorName}" - ` +
+                    "only \"from\" takes the iterable data as its first argument. " +
+                    "Every other source operator takes non-iterable arguments (counts, seeds, " +
+                    "factories) as args[0], so substituting here would produce incorrect results. " +
+                    "Build a new plan with the desired arguments instead of using options.source here.",
+                    "source",
+                    node.operatorName
+                );
+            }
+
+            args = [options.source, ...node.args.slice(1)];
+        } else {
+            args = [...node.args];
+        }
 
         return entry.impl.apply(null as never, args);
     }
@@ -170,7 +193,8 @@ export class QueryPlanCompiler {
 
         if (!entry) {
             const sourceType = source !== null && source !== undefined
-                ? Object.getPrototypeOf(source)?.constructor?.name ?? typeof source
+                ? ((Object.getPrototypeOf(source) as { constructor?: { name?: string } } | null)
+                    ?.constructor?.name ?? typeof source)
                 : "null";
             const knownForAnyTarget = OperatorRegistry.hasOperator(node.operatorName);
             const message = knownForAnyTarget

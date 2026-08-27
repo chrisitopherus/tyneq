@@ -2,7 +2,7 @@
 
 Tyneq has a first-class plugin system. You can add custom operators that appear on every sequence at import time, behave exactly like built-ins, and show up in query plans. No forking, no monkey-patching - just register and go.
 
-There are two styles: **functional** (quick, minimal boilerplate) and **class-based** (decorators with full lifecycle control). This guide covers both in depth, with real examples you can copy and adapt.
+There are two styles: **functional** (quick, minimal boilerplate) and **class-based** (decorators with full lifecycle control). Neither is deprecated or on a path to deprecation - they route through the same registry, produce identical query plan nodes, and dispose correctly on early termination. The functional API is the recommended default: better type inference (the factory signature ties your implementation to its declared argument types by construction), no Stage 3 decorator constraint, and less ceremony for the common case. Reach for the class-based API when an operator genuinely needs multi-phase lifecycle hooks (`initialize()` for buffering, `disposeAdditional()` for extra resources) or direct access to the full ordered/cached sequence object - capabilities the functional API's ordered/cached variants (`createOrderedOperator`, `createCachedOperator`) also cover, so the choice is about ceremony and taste more than capability. This guide covers both in depth, with real examples you can copy and adapt.
 
 ---
 
@@ -499,6 +499,36 @@ declare module "tyneq" {
   }
 }
 ```
+
+### Failure modes
+
+Three ways this can go wrong, and what you will actually see when they do:
+
+**Name collision at import time.** If your package registers an operator name that is already
+taken (a built-in, or another plugin), `OperatorRegistry.register()` throws `RegistryError` -
+loudly, and at *import* time of the second package, not at the call site. This is usually
+surfaced to the app author who installed both packages, not to either plugin's own author, so
+name your operators to avoid this in the first place (see the naming convention below). On the
+TypeScript side, two packages augmenting `TyneqSequence<T>` with the *same* method name and the
+*same* signature merge silently; with *different* signatures, you get a
+"Subsequent property declarations must have the same type" compiler error that points into
+`node_modules`, which is confusing to debug from the app side.
+
+**Augmentation without a matching registration.** A `declare module "tyneq"` block type-checks
+independently of whether the corresponding `createOperator`/`@operator` call ever actually ran.
+If you forget to import the module that performs the registration (remember: registration is a
+side effect of import), TypeScript is fully satisfied but the call fails at runtime with a plain
+`TypeError: seq.yourMethod is not a function` - no Tyneq-specific error, no hint about what went
+wrong. If you see this, the first thing to check is whether the module containing your
+`createOperator`/`@operator` call is actually imported somewhere in the running program, not just
+declared as a type.
+
+**Augmentation target does not match the registration target.** A method registered only for
+ordered sequences (`createOrderedOperator`, `@orderedOperator`) must be augmented on
+`TyneqOrderedSequence<T>`, not `TyneqSequence<T>` - nothing enforces that the interface you augment
+matches the `targetClass` your registration actually used. Augmenting the wrong interface
+type-checks a call site that will throw the same `TypeError` above, because the method was never
+patched onto that prototype chain.
 
 For ordered/cached variants, augment the matching interface:
 

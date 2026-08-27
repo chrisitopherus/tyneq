@@ -17,7 +17,6 @@ export class AppendEnumerator<T> extends TyneqEnumerator<T> {
     private appended = false;
     private readonly item: T;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, item: T) {
         super(sourceEnumerator);
         this.item = item;

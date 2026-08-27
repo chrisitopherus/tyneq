@@ -10,6 +10,8 @@ const EXPECTED_STREAMING_OPERATORS = [
     "chunk",
     "concat",
     "defaultIfEmpty",
+    "distinct",
+    "distinctBy",
     "flatten",
     "ofType",
     "pairwise",
@@ -31,6 +33,8 @@ const EXPECTED_STREAMING_OPERATORS = [
     "tap",
     "tapIf",
     "throttle",
+    "union",
+    "unionBy",
     "where",
     "window",
     "zip",
@@ -38,8 +42,6 @@ const EXPECTED_STREAMING_OPERATORS = [
 
 const EXPECTED_BUFFER_OPERATORS = [
     "backsert",
-    "distinct",
-    "distinctBy",
     "except",
     "exceptBy",
     "groupBy",
@@ -54,8 +56,6 @@ const EXPECTED_BUFFER_OPERATORS = [
     "shuffle",
     "thenBy",
     "thenByDescending",
-    "union",
-    "unionBy",
 ] as const;
 
 const EXPECTED_TERMINAL_OPERATORS = [

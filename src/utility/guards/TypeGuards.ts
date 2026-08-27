@@ -12,14 +12,12 @@ import { TypeGuardUtility } from "../TypeGuardUtility";
 export class TypeGuards {
     private constructor() { }
 
-    
-    public static checkFunction(value: unknown, paramName: string): asserts value is Function {
+    public static checkFunction(value: unknown, paramName: string): asserts value is (...args: unknown[]) => unknown {
         if (typeof value !== "function") {
             throw new ArgumentTypeError(paramName, "function", typeof value);
         }
     }
 
-    
     public static checkIterable<T = unknown>(value: unknown, paramName: string): asserts value is Iterable<T> {
         if (!TypeGuardUtility.isIterable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -27,7 +25,6 @@ export class TypeGuards {
         }
     }
 
-    
     public static checkIterator<T = unknown>(value: unknown, paramName: string): asserts value is Iterator<T> {
         if (!TypeGuardUtility.isIterator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -35,7 +32,6 @@ export class TypeGuards {
         }
     }
 
-    
     public static checkEnumerable<T = unknown>(value: unknown, paramName: string): asserts value is Enumerable<T> {
         if (!TypeGuardUtility.isEnumerable<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -43,7 +39,6 @@ export class TypeGuards {
         }
     }
 
-    
     public static checkEnumerator<T = unknown>(value: unknown, paramName: string): asserts value is Enumerator<T> {
         if (!TypeGuardUtility.isEnumerator<T>(value)) {
             const actualType = value === null ? "null" : value === undefined ? "undefined" : typeof value;
@@ -51,9 +46,11 @@ export class TypeGuards {
         }
     }
 
-    
+    // `any[]` is a required constructor-shape idiom, not a shortcut - see
+    // src/types/utility.ts's Constructor remarks.
     public static checkInstanceOf<T>(
         value: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor: new (...args: any[]) => T,
         paramName: string
     ): asserts value is T {
@@ -64,14 +61,12 @@ export class TypeGuards {
         }
     }
 
-    
     public static checkHasLength(value: unknown, paramName: string): asserts value is HasLength {
-        if (typeof value !== "object" || value === null || typeof (value as any).length !== "number") {
+        if (typeof value !== "object" || value === null || typeof (value as Record<string, unknown>).length !== "number") {
             throw new ArgumentTypeError(paramName, "object with numeric length property", typeof value);
         }
     }
 
-    
     public static check<T>(value: T, paramName: string, predicate: (v: T) => boolean, message: string): void {
         if (!predicate(value)) {
             throw new ArgumentError(message, paramName);

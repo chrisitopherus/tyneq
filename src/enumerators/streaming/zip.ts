@@ -17,7 +17,6 @@ export class ZipEnumerator<T, U, V> extends TyneqEnumerator<T, V> {
     private readonly otherEnumerator: Enumerator<U>;
     private readonly selector: (first: T, second: U) => V;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, other: Iterable<U>, selector: (first: T, second: U) => V) {
         super(sourceEnumerator);
         this.otherEnumerator = other[Symbol.iterator]();

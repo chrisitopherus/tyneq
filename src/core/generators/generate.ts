@@ -16,7 +16,6 @@ export class GenerateEnumerator<TSource, TResult extends TSource> extends TyneqB
     private yieldedCount: number = 0;
     private index: number = 0;
 
-
     public constructor(seed: TSource, next: ItemSelector<TSource, TResult>, count?: number) {
         super();
         this.value = seed;

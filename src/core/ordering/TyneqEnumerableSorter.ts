@@ -19,7 +19,6 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
     private readonly descending: number;
     private next: Nullable<BaseEnumerableSorter<TSource>> = null;
 
-
     public constructor(keySelector: (item: TSource) => TKey, comparer: Comparer<TKey>, descending: boolean, next?: BaseEnumerableSorter<TSource>) {
         super();
         ArgumentUtility.checkNotOptional({ keySelector });
@@ -31,7 +30,6 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
         this.next = next ?? null;
     }
 
-    
     public override computeKeys(source: TSource[], count: number): void {
         this.keys = new Array<TKey>(count);
         for (let i = 0; i < count; i++) {
@@ -41,7 +39,6 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
         this.next?.computeKeys(source, count);
     }
 
-    
     public override compareKeys(i: number, j: number): number {
         const result = this.comparer(this.keys[i], this.keys[j]) * this.descending;
         if (result !== 0) {
@@ -55,7 +52,6 @@ export class TyneqEnumerableSorter<TSource, TKey> extends BaseEnumerableSorter<T
         return this.next.compareKeys(i, j);
     }
 
-    
     protected stabilityCompare(i: number, j: number): number {
         return i - j;
     }

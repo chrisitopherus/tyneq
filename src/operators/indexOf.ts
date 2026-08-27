@@ -7,7 +7,7 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns the zero-based index of the first element matching a predicate, or -1 if not found.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as a match is found.
  *
  * @see {@link TyneqSequence.indexOf}
  * @group Operators
@@ -17,7 +17,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: ItemPredicate<T>;
     private readonly startIndex: number;
-
 
     public constructor(source: Enumerable<T>, predicate: ItemPredicate<T>, startIndex: number = 0) {
         super(source);

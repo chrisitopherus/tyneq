@@ -5,7 +5,9 @@ import { Enumerator } from "../../types/core";
  * Returns elements whose keys appear in both the source and a second key sequence.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Buffers `otherValues` into a `Set` of keys on the first iteration; the source
+ * itself streams - each source element is pulled and checked one at a time, never fully
+ * materialized.
  *
  * @see {@link TyneqSequence.intersectBy}
  * @group Operators
@@ -18,7 +20,6 @@ export class IntersectByEnumerator<TSource, TKey> extends TyneqEnumerator<TSourc
     private intersectionKeys = new Set<TKey>();
     private bufferedKeys = new Set<TKey>();
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

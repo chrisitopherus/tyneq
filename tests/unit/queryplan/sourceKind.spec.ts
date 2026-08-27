@@ -39,4 +39,13 @@ describe("sourceKind", () => {
     it("is undefined on range and random sources (no sourceKind)", () => {
         expect(Tyneq.range(1, 3)[tyneqQueryNode]!.sourceKind).toBeUndefined();
     });
+
+    it("is 'array' for enumerate() backed by an array (F21)", () => {
+        expect(sourceNode(Tyneq.enumerate([1, 2, 3])).sourceKind).toBe("array");
+    });
+
+    it("is 'other' for enumerate() backed by a generator (F21)", () => {
+        function* gen() { yield 1; yield 2; }
+        expect(sourceNode(Tyneq.enumerate(gen())).sourceKind).toBe("other");
+    });
 });

@@ -16,7 +16,6 @@ export class ThrottleEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private index: number = -1;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

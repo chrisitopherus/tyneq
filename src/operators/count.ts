@@ -13,7 +13,7 @@ import { Enumerable } from "../types/core";
  * @internal
  */
 export class CountOperator<T> extends TyneqTerminalOperator<T, number> {
-    
+
     public constructor(source: Enumerable<T>) {
         super(source);
     }

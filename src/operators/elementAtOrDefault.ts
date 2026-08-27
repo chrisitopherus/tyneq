@@ -5,7 +5,7 @@ import { TyneqSequence } from "../types/core";
  * Returns the element at a specified index, or a default value if the index is out of range.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as `index` is reached.
  *
  * @see {@link TyneqSequence.elementAtOrDefault}
  * @group Operators
@@ -16,7 +16,6 @@ export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<T
     private readonly index: number;
     private readonly defaultValue: TSource;
 
-    
     public constructor(source: TyneqSequence<TSource>, index: number, defaultValue: TSource) {
         super(source);
         this.index = index;

@@ -21,7 +21,7 @@ Iterator<T>                  <- native JavaScript protocol
 
 **`Enumerable<T>`** is the re-iteration contract. It can produce a fresh, independent `Enumerator<T>` on demand via `getEnumerator()`. You encounter this when writing custom operators.
 
-**`Enumerator<T>`** is a stateful, forward-only cursor - one active traversal in progress. The native `Iterator<T>` with two additions: `return()` to release resources early, and `throw()` which is not supported. You work with this inside class-based custom operators.
+**`Enumerator<T>`** is a stateful, forward-only cursor - one active traversal in progress. The native `Iterator<T>` with one addition: `return()` to release resources early. `throw()` is not part of the interface - no Tyneq enumerator implements it. You work with this inside class-based custom operators.
 
 For everyday usage, you only ever touch `TyneqSequence<T>`. The others appear when you extend the library.
 
@@ -52,7 +52,7 @@ Every operator on a sequence belongs to exactly one of three categories:
 | Category | Memory | When work happens | Examples |
 |---|---|---|---|
 | **Streaming** | O(1) | One element at a time, lazily | `where`, `select`, `take`, `scan` |
-| **Buffering** | O(n) | Full source is read before any output | `orderBy`, `groupBy`, `distinct` |
+| **Buffering** | O(n) | Full source is read before any output | `orderBy`, `groupBy`, `reverse` |
 | **Terminal** | - | Immediately executes the full pipeline | `toArray`, `count`, `first`, `sum` |
 
 This categorization is explicit and stable. Knowing which category an operator belongs to tells you its memory footprint and when it will execute.

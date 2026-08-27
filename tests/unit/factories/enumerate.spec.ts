@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq, ArgumentError, ArgumentNullError, ArgumentTypeError } from "../../../src";
+import {
+    Tyneq,
+    ArgumentError,
+    ArgumentNullError,
+    ArgumentTypeError,
+    tyneqQueryNode,
+    OperatorRegistry,
+    QueryPlanCompiler,
+} from "../../../src";
 
 describe("Tyneq.enumerate", () => {
     describe("normal usage", () => {
@@ -59,6 +67,52 @@ describe("Tyneq.enumerate", () => {
 
         it("throws ArgumentTypeError when source is not iterable", () => {
             expect(() => Tyneq.enumerate(42 as any)).toThrow(ArgumentTypeError);
+        });
+    });
+
+    describe("proper source registration (F21)", () => {
+        it("is registered in the source namespace as 'enumerate', not delegated to 'from'", () => {
+            expect(OperatorRegistry.hasSource("enumerate")).toBe(true);
+        });
+
+        it("appears in OperatorRegistry.listSources()", () => {
+            const names = OperatorRegistry.listSources().map((m) => m.name);
+            expect(names).toContain("enumerate");
+        });
+
+        it("produces a query plan node named 'enumerate', not 'from'", () => {
+            const seq = Tyneq.enumerate(["a", "b"]);
+            const node = seq[tyneqQueryNode]!;
+            expect(node.operatorName).toBe("enumerate");
+            expect(node.category).toBe("source");
+        });
+
+        it("the plan node's args contain the original source iterable", () => {
+            const source = ["a", "b"];
+            const seq = Tyneq.enumerate(source);
+            const node = seq[tyneqQueryNode]!;
+            expect(node.args).toEqual([source]);
+        });
+
+        it("compiles correctly via QueryPlanCompiler", () => {
+            const seq = Tyneq.enumerate(["x", "y", "z"]);
+            const node = seq[tyneqQueryNode]!;
+            const compiled = new QueryPlanCompiler().compile<[number, string]>(node);
+            expect(compiled.toArray()).toEqual([[0, "x"], [1, "y"], [2, "z"]]);
+        });
+
+        it("compiled result matches the live sequence's output for the same plan", () => {
+            const seq = Tyneq.enumerate(["p", "q"]);
+            const node = seq[tyneqQueryNode]!;
+            const compiled = new QueryPlanCompiler().compile<[number, string]>(node);
+            expect(compiled.toArray()).toEqual(seq.toArray());
+        });
+
+        it("chained operators after enumerate() produce an operator node whose source is the enumerate node", () => {
+            const seq = Tyneq.enumerate(["a", "b", "c"]).where(([index]) => index > 0);
+            const node = seq[tyneqQueryNode]!;
+            expect(node.operatorName).toBe("where");
+            expect(node.source?.operatorName).toBe("enumerate");
         });
     });
 });

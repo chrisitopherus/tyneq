@@ -8,7 +8,7 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns the first element matching a predicate, or throws if no match is found.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as a match is found.
  *
  * @see {@link TyneqSequence.first}
  * @group Operators
@@ -17,7 +17,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  */
 export class FirstOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: ItemPredicate<TSource>;
-
 
     public constructor(source: TyneqSequence<TSource>, predicate: ItemPredicate<TSource>) {
         super(source);

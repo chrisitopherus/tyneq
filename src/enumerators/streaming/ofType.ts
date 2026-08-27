@@ -15,7 +15,6 @@ import { Enumerator } from "../../types/core";
 export class OfTypeEnumerator<T, U extends T> extends TyneqEnumerator<T, U> {
     private readonly guard: (value: T) => value is U;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, guard: (value: T) => value is U) {
         super(sourceEnumerator);
         this.guard = guard;

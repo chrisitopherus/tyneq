@@ -35,3 +35,6 @@ jobs:
 
       - name: Build
         run: npx tsup
+
+      - name: Dist smoke test
+        run: npm run test:dist

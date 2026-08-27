@@ -33,7 +33,7 @@ export class StartsWithOperator<T> extends TyneqTerminalOperator<T, boolean> {
 
     public process(): boolean {
         const sourceEnumerator = this.source[Symbol.iterator]();
-        const sequenceEnumerator = this.sequence[Symbol.iterator]();
+        const sequenceEnumerator = this.sequence[Symbol.iterator]() as Iterator<T, undefined>;
 
         while (true) {
             const { value: sourceValue, done: sourceDone } = sourceEnumerator.next();

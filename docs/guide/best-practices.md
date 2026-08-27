@@ -81,7 +81,7 @@ If the side effects should only run once, use `memoize()` to prevent re-executio
 
 ### Buffering operators read the full source - always
 
-`orderBy`, `reverse`, `groupBy`, `distinct`, and other buffering operators must read the entire upstream before yielding anything. Placing `take` after a buffer stage does not prevent the buffer from materializing.
+`orderBy`, `reverse`, `groupBy`, and other buffering operators must read the entire upstream before yielding anything. Placing `take` after a buffer stage does not prevent the buffer from materializing.
 
 ```ts
 // Bad - orderBy reads ALL of largeCollection, then take(5) discards the rest
@@ -303,7 +303,7 @@ console.log(QueryPlanPrinter.print(query[tyneqQueryNode]!));
 //   -> take(5)
 ```
 
-Buffering operators (`orderBy`, `groupBy`, `distinct`, ...) in the plan are O(n) memory sites. If you see an unexpected buffer stage, the plan will show you where it is.
+Buffering operators (`orderBy`, `groupBy`, `reverse`, ...) in the plan are O(n) memory sites. If you see an unexpected buffer stage, the plan will show you where it is.
 
 ### Use `consume()` for side-effect-only pipelines
 

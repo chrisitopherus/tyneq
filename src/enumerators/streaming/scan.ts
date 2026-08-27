@@ -16,7 +16,6 @@ export class ScanEnumerator<TSource, TResult> extends TyneqEnumerator<TSource, T
     private readonly accumulator: (acc: TResult, item: TSource) => TResult;
     private current: TResult;
 
-    
     public constructor(
         sourceEnumerator: Enumerator<TSource>,
         seed: TResult,

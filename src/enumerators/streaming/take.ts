@@ -16,7 +16,6 @@ export class TakeEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private takenCount = 0;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

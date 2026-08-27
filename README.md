@@ -69,11 +69,16 @@ const active = Tyneq.from(users)
   .orderByDescending((u) => u.score);
 
 active.count();                         // 3
-active.first().name;                    // "Grace"
+active.first((u) => u.score > 90).name; // "Grace"
 active.select((u) => u.email).toArray(); // ["g@...", "l@...", "a@..."]
 ```
 
 No re-wrapping. No rebuilding. Same query, three independent evaluations.
+
+Re-iterating re-executes the whole pipeline, including buffering stages - the example above
+re-sorts on every call since `orderByDescending` buffers. If a pipeline has an expensive
+buffering or I/O-bound stage you call repeatedly, insert `.memoize()` after it to pay the cost
+once and replay the cached result on every later iteration.
 
 ### You always know what is happening
 
@@ -257,9 +262,9 @@ const query = Tyneq.range(1, 1_000_000)
   .take(5);
 
 // Execute with a terminal
-query.toArray();  // [4, 16, 36, 64, 100]
-query.count();    // 5 - same query, independent traversal
-query.first();    // 4
+query.toArray();               // [4, 16, 36, 64, 100]
+query.count();                 // 5 - same query, independent traversal
+query.first((n) => n > 0);     // 4
 
 // Standard iteration works too
 for (const n of query) console.log(n);
@@ -289,11 +294,11 @@ Tyneq.from(employees)
 
 ### Streaming (O(1) memory)
 
-`select` `where` `take` `takeWhile` `takeUntil` `skip` `skipWhile` `skipLast` `skipUntil` `slice` `selectMany` `flatten` `append` `prepend` `concat` `zip` `scan` `pairwise` `window` `chunk` `split` `repeat` `defaultIfEmpty` `populate` `ofType` `tap` `tapIf` `throttle` `pipe`
+`select` `where` `take` `takeWhile` `takeUntil` `skip` `skipWhile` `skipLast` `skipUntil` `slice` `selectMany` `flatten` `append` `prepend` `concat` `zip` `scan` `pairwise` `window` `chunk` `split` `repeat` `defaultIfEmpty` `populate` `ofType` `tap` `tapIf` `throttle` `pipe` `distinct` `distinctBy` `union` `unionBy`
 
 ### Buffering (reads full source once)
 
-`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `distinct` `distinctBy` `reverse` `shuffle` `union` `unionBy` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize` `permutations`
+`orderBy` `orderByDescending` `thenBy` `thenByDescending` `groupBy` `reverse` `shuffle` `intersect` `intersectBy` `except` `exceptBy` `join` `groupJoin` `backsert` `memoize` `permutations`
 
 ### Terminal (executes the pipeline)
 

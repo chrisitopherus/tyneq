@@ -16,7 +16,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class ToRecordOperator<TSource, TKey extends string | number | symbol, TValue> extends TyneqTerminalOperator<TSource, Record<TKey, TValue>> {
     private readonly selector: (item: TSource) => KeyValuePair<TKey, TValue>;
 
-    
     public constructor(source: TyneqSequence<TSource>, selector: (item: TSource) => KeyValuePair<TKey, TValue>) {
         super(source);
         ArgumentUtility.checkNotOptional({ selector });
