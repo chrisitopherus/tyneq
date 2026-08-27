@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../../src";
+import { ArgumentError, Tyneq } from "../../../../src";
 
 describe("orderBy", () => {
   it("sorts ascending and supports thenBy", () => {
@@ -16,5 +16,29 @@ describe("orderBy", () => {
       .toArray();
 
     expect(result).toEqual(["1-a-c", "2-a-b", "2-b-z"]);
+  });
+
+  describe("thenBy / thenByDescending eager validation (F16)", () => {
+    it("thenBy throws ArgumentError immediately when keySelector is undefined", () => {
+      const ordered = Tyneq.from([1, 2, 3]).orderBy((x) => x);
+      expect(() => ordered.thenBy(undefined as any)).toThrow(ArgumentError);
+    });
+
+    it("thenByDescending throws ArgumentError immediately when keySelector is undefined", () => {
+      const ordered = Tyneq.from([1, 2, 3]).orderBy((x) => x);
+      expect(() => ordered.thenByDescending(undefined as any)).toThrow(ArgumentError);
+    });
+
+    it("thenBy validates before any iteration of the source", () => {
+      let iterated = false;
+      const source = (function* () {
+        iterated = true;
+        yield 1;
+      })();
+
+      const ordered = Tyneq.from(source).orderBy((x) => x);
+      expect(() => ordered.thenBy(undefined as any)).toThrow(ArgumentError);
+      expect(iterated).toBe(false);
+    });
   });
 });

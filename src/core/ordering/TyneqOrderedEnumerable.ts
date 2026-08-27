@@ -121,6 +121,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: Comparer<UKey>
     ): TyneqOrderedSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const thenByArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("thenBy", thenByArgs, this[tyneqQueryNode], "buffer");
 
@@ -139,6 +140,7 @@ export class TyneqOrderedEnumerable<TSource, TKey> extends TyneqEnumerableBase<T
         keySelector: (item: TSource) => UKey,
         comparer?: Comparer<UKey>
     ): TyneqOrderedSequence<TSource> {
+        ArgumentUtility.checkNotOptional({ keySelector });
         const thenByDescArgs = comparer !== undefined ? [keySelector, comparer] : [keySelector];
         const node = new QueryNode("thenByDescending", thenByDescArgs, this[tyneqQueryNode], "buffer");
         return new TyneqOrderedEnumerable<TSource, UKey>(

@@ -95,10 +95,11 @@ export class Tyneq {
      * ```
      *
      * @throws {ArgumentOutOfRangeError} When `count` is negative.
-     * @throws {ArgumentError} When `count` is not an integer.
+     * @throws {ArgumentError} When `count` or `start` is not an integer.
      */
     @source({ source: "internal" })
     public static range(start: number, count: number): TyneqSequence<number> {
+        ArgumentUtility.checkInteger({ start });
         ArgumentUtility.checkNonNegative({ count });
         ArgumentUtility.checkInteger({ count });
 

@@ -402,7 +402,7 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     @builtin({ kind: "streaming" })
     public repeat(count: number): TyneqSequence<TSource> {
         ArgumentUtility.checkNonNegative({ count });
-        ArgumentUtility.checkInteger({ count });
+        ArgumentUtility.checkSafeInteger({ count });
         return this.createSequence(
             () => new RepeatSequenceEnumerator<TSource>(this.getEnumerator(), this, count),
             this.createNode("repeat", "streaming", [count])

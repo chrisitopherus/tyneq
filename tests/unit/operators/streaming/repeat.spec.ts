@@ -40,5 +40,9 @@ describe("repeat", () => {
     it("throws ArgumentError when count is not an integer", () => {
       expect(() => Tyneq.from([1]).repeat(1.5)).toThrow(ArgumentError);
     });
+
+    it("throws ArgumentError when count is not a safe integer, matching sibling count-taking operators (F16)", () => {
+      expect(() => Tyneq.from([1]).repeat(2 ** 60)).toThrow(ArgumentError);
+    });
   });
 });
