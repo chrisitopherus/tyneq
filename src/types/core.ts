@@ -1018,12 +1018,23 @@ export interface TyneqOrderedSequence<TSource> extends TyneqSequence<TSource> {
  * @remarks
  * Produced by `memoize()`. Call `refresh()` to clear the cache and allow re-enumeration from the source.
  *
+ * If the source throws mid-enumeration, the successfully cached prefix is kept and the error is
+ * cached alongside it: every iteration that reads past that prefix rethrows the same error until
+ * `refresh()` is called. An error is never silently dropped in favor of treating the prefix as a
+ * complete, successful result.
+ *
  * @typeParam TSource - Element type.
  * @group Interfaces
  */
 export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
     /**
-     * Clears the element cache and returns a new `TyneqCachedSequence` that will re-enumerate from the source.
+     * Clears the element cache (and any cached source error) so the next iteration
+     * re-enumerates from the source. Mutates and returns `this` - it does not create a new
+     * cached sequence.
+     *
+     * @remarks
+     * Calling `refresh()` while another enumerator is mid-iteration over this same sequence is
+     * observable by that enumerator: it will see the reset cache. See {@link TyneqSequence.memoize}.
      */
     refresh(): TyneqCachedSequence<TSource>;
 }

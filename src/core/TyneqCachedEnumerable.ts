@@ -5,6 +5,7 @@ import { CacheResult, CachedEnumerable, Enumerator, EnumeratorFactory, TyneqCach
 import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import type { Nullable } from "../types/utility";
+import { EnumeratorUtility } from "../utility/EnumeratorUtility";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
@@ -17,6 +18,12 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
  * and each element is appended to an internal array. Subsequent iterations replay the cache;
  * the source is not re-enumerated. Call `refresh()` to clear the cache and start over.
  *
+ * If the source throws mid-enumeration, the error is cached alongside the successfully cached
+ * prefix: every read past the cached prefix rethrows the same error object (by reference) until
+ * `refresh()` is called. This treats an error as a legitimate (if unfortunate) first-computation
+ * outcome that a cache must replay consistently, rather than silently retrying the source - or
+ * worse, certifying the truncated prefix as the complete, successful sequence.
+ *
  * @internal
  */
 @sequence
@@ -25,6 +32,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     private cache: TSource[] = [];
     private done: boolean = false;
     private sourceEnumerator: Nullable<Enumerator<TSource>> = null;
+    private cachedError: { has: true; error: unknown } | { has: false } = { has: false };
 
     public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
@@ -42,7 +50,8 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     public refresh(): TyneqCachedSequence<TSource> {
         this.cache = [];
         this.done = false;
-        this.sourceEnumerator?.return?.();
+        this.cachedError = { has: false };
+        EnumeratorUtility.tryDispose(this.sourceEnumerator);
         this.sourceEnumerator = null;
         return this;
     }
@@ -50,6 +59,10 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     public tryGetAtFromCache(index: number): CacheResult<TSource> {
         if (index < this.cache.length) {
             return { has: true, value: this.cache[index] };
+        }
+
+        if (this.cachedError.has) {
+            throw this.cachedError.error;
         }
 
         if (this.done) {
@@ -60,7 +73,15 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
             this.sourceEnumerator = this.source.getEnumerator();
         }
 
-        const next = this.sourceEnumerator.next();
+        let next: IteratorResult<TSource>;
+        try {
+            next = this.sourceEnumerator.next();
+        } catch (error) {
+            this.cachedError = { has: true, error };
+            EnumeratorUtility.tryDispose(this.sourceEnumerator);
+            this.sourceEnumerator = null;
+            throw error;
+        }
 
         if (!next.done) {
             const value = next.value;
@@ -69,7 +90,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         }
 
         this.done = true;
-        this.sourceEnumerator.return?.();
+        EnumeratorUtility.tryDispose(this.sourceEnumerator);
         this.sourceEnumerator = null;
         return { has: false };
     }
