@@ -67,9 +67,7 @@ export class OperatorRegistry {
             );
         }
 
-        for (const guard of this._registrationGuards) {
-            guard(input);
-        }
+        this.runGuards(input);
 
         if (!this._operators.has(name)) {
             this._operators.set(name, new Map());
@@ -164,8 +162,15 @@ export class OperatorRegistry {
     }
 
     /**
-     * Registers a guard called before every registration (both namespaces).
+     * Registers a guard called before every external registration (both namespaces).
      * Throw from the guard to reject the registration.
+     *
+     * @remarks
+     * Guards run for `source: "external"` registrations only - the same single policy
+     * applied uniformly by {@link register}, {@link registerSource}, and
+     * {@link registerBuiltin}. Internal registrations (Tyneq's own built-in operators and
+     * sources) are trusted and never see guards; a guard enforcing naming conventions or
+     * other plugin-author policy will never fire for `"internal"` entries.
      *
      * @returns A function that removes the guard when called.
      */
@@ -175,6 +180,20 @@ export class OperatorRegistry {
             const i = this._registrationGuards.indexOf(guard);
             if (i !== -1) this._registrationGuards.splice(i, 1);
         };
+    }
+
+    /**
+     * Runs all registered guards against `entry` if its `metadata.source` is `"external"`.
+     * Internal registrations (builtins and internal sources) are trusted and skip guards.
+     */
+    private static runGuards(entry: OperatorEntry): void {
+        if (entry.metadata.source !== "external") {
+            return;
+        }
+
+        for (const guard of this._registrationGuards) {
+            guard(entry);
+        }
     }
 
     /**
@@ -364,11 +383,7 @@ export class OperatorRegistry {
             },
         };
 
-        if (source !== "internal") {
-            for (const guard of this._registrationGuards) {
-                guard(entry);
-            }
-        }
+        this.runGuards(entry);
 
         this._sources.set(name, entry);
 
@@ -382,8 +397,14 @@ export class OperatorRegistry {
      * Built-in operators already live as direct methods on their target class.
      *
      * @remarks
-     * Registration guards are intentionally skipped - builtins are internal and
-     * trusted; guards exist to validate external plugin registrations only.
+     * Registration guards are intentionally skipped, consistent with the single guard policy
+     * documented on {@link addGuard} (guards run for `source: "external"` only - builtins are
+     * always `"internal"`, so the outcome is identical to routing through {@link runGuards}).
+     * Skipped via an explicit early return rather than by calling `runGuards(entry)` because
+     * this entry's `metadata` is a lazy getter (see `lazyMetadata` below) - `runGuards` reads
+     * `entry.metadata.source`, and calling it here would force that getter to evaluate eagerly,
+     * defeating the deferral this method depends on. The source is always `"internal"` here by
+     * construction, so no guard check is lost by skipping explicitly instead.
      *
      * @internal
      */

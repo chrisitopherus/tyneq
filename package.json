@@ -68,8 +68,8 @@
     "node": ">=18"
   },
   "sideEffects": [
-    "./dist/index.js",
-    "./dist/index.cjs"
+    "./dist/**/*.js",
+    "./dist/**/*.cjs"
   ],
   "publishConfig": {
     "access": "public"
