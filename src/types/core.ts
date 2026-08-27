@@ -944,6 +944,13 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      * as the argument. Use this for one-off operator compositions that do not need to be
      * registered via the plugin API.
      *
+     * `factory` is called once per `getEnumerator()` call on the returned sequence, not once
+     * overall - to keep the result re-iterable, return a fresh `Enumerator`/`IterableIterator`
+     * on every call rather than a captured, already-created one. Returning the same iterator
+     * object across calls makes the returned sequence one-shot (see {@link TyneqSequence} for
+     * the re-iterability contract): the first full iteration succeeds normally, but every
+     * iteration after that silently yields fewer elements or none at all, with no error.
+     *
      * @throws {ArgumentNullError} When `factory` is null.
      * @throws {ArgumentError} When `factory` is undefined.
      */
@@ -1069,10 +1076,10 @@ export type CacheResult<TSource> = { has: true, value: TSource } | { has: false 
  * @internal
  */
 export interface OrderedEnumerable<TSource> extends Enumerable<TSource> {
-    source: TyneqSequence<TSource>;
+    readonly source: TyneqSequence<TSource>;
 
     /** The parent ordering level, or `null` for the primary sort. */
-    parent: Nullable<OrderedEnumerable<TSource>>;
+    readonly parent: Nullable<OrderedEnumerable<TSource>>;
 
     /**
      * Produces a sorter chain that combines this level with any chained levels.
