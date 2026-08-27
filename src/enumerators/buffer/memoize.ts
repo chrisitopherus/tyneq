@@ -14,17 +14,19 @@ import { TyneqBaseEnumerator } from "../../core/enumerators/TyneqBaseEnumerator"
  */
 export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
+    private readonly generation: number;
     private index = 0;
 
-    public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>) {
+    public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>, generation: number) {
         super();
         this.cachedEnumerable = cachedEnumerable;
+        this.generation = generation;
     }
 
     protected override disposeSource(): void { }
 
     protected override handleNext(): IteratorResult<TSource> {
-        const result = this.cachedEnumerable.tryGetAtFromCache(this.index);
+        const result = this.cachedEnumerable.tryGetAtFromCache(this.index, this.generation);
 
         if (!result.has) {
             return this.done();

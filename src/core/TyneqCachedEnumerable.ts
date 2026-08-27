@@ -6,6 +6,7 @@ import { tyneqQueryNode } from "../types/queryplan";
 import type { QueryPlanNode } from "../types/queryplan";
 import type { Nullable } from "../types/utility";
 import { EnumeratorUtility } from "../utility/EnumeratorUtility";
+import { InvalidOperationError } from "./errors/InvalidOperationError";
 import { TyneqOrderedEnumerable } from "./ordering/TyneqOrderedEnumerable";
 import { TyneqEnumerable } from "./TyneqEnumerable";
 import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
@@ -24,6 +25,13 @@ import { TyneqEnumerableBase } from "./TyneqEnumerableBase";
  * outcome that a cache must replay consistently, rather than silently retrying the source - or
  * worse, certifying the truncated prefix as the complete, successful sequence.
  *
+ * Calling `refresh()` while another `MemoizeEnumerator` is mid-iteration over this same cache is
+ * detected: that enumerator's next `next()` call throws {@link InvalidOperationError} instead of
+ * silently resuming against the new, unrelated generation of cached data (which would otherwise
+ * splice together elements from two different runs of the source with no indication anything
+ * went wrong). Enumerators created after the `refresh()` see only the new generation and are
+ * unaffected.
+ *
  * @internal
  */
 @sequence
@@ -33,6 +41,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     private done: boolean = false;
     private sourceEnumerator: Nullable<Enumerator<TSource>> = null;
     private cachedError: { has: true; error: unknown } | { has: false } = { has: false };
+    private generation = 0;
 
     public readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 
@@ -43,7 +52,7 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
     }
 
     public getEnumerator(): Enumerator<TSource> {
-        return new MemoizeEnumerator(this);
+        return new MemoizeEnumerator(this, this.generation);
     }
 
     @builtin({ kind: "cache" })
@@ -51,12 +60,21 @@ export class TyneqCachedEnumerable<TSource> extends TyneqEnumerableBase<TSource>
         this.cache = [];
         this.done = false;
         this.cachedError = { has: false };
+        this.generation++;
         EnumeratorUtility.tryDispose(this.sourceEnumerator);
         this.sourceEnumerator = null;
         return this;
     }
 
-    public tryGetAtFromCache(index: number): CacheResult<TSource> {
+    public tryGetAtFromCache(index: number, generation: number): CacheResult<TSource> {
+        if (generation !== this.generation) {
+            throw new InvalidOperationError(
+                "The cache was refresh()'d while this enumerator was mid-iteration. " +
+                "This enumerator's generation is stale and cannot be resumed - obtain a fresh " +
+                "enumerator (e.g. by calling toArray() again) to read the refreshed cache."
+            );
+        }
+
         if (index < this.cache.length) {
             return { has: true, value: this.cache[index] };
         }

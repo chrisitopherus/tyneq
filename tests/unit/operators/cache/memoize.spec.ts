@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Tyneq } from "../../../../src";
+import { Tyneq, InvalidOperationError } from "../../../../src";
 
 describe("memoize", () => {
     it("caches sequence values until refresh", () => {
@@ -115,5 +115,68 @@ describe("memoize", () => {
         expect(secondEnumerator.next()).toEqual({ done: false, value: 1 });
         expect(secondEnumerator.next()).toEqual({ done: false, value: 2 });
         expect(() => secondEnumerator.next()).toThrow("flaky");
+    });
+
+    describe("refresh() mid-iteration (F13)", () => {
+        it("throws InvalidOperationError on a stale enumerator's next() after a concurrent refresh()", () => {
+            const cached = Tyneq.range(1, 5).memoize();
+            const enumerator = cached.getEnumerator();
+
+            expect(enumerator.next()).toEqual({ done: false, value: 1 });
+            expect(enumerator.next()).toEqual({ done: false, value: 2 });
+
+            cached.refresh();
+
+            expect(() => enumerator.next()).toThrow(InvalidOperationError);
+        });
+
+        it("does not silently replay from the new generation's start, splicing generations together", () => {
+            let generationValues = [1, 2, 3];
+            const cached = Tyneq.from({
+                [Symbol.iterator]: () => generationValues[Symbol.iterator]()
+            }).memoize();
+
+            const staleEnumerator = cached.getEnumerator();
+            expect(staleEnumerator.next()).toEqual({ done: false, value: 1 });
+
+            generationValues = [10, 20, 30];
+            cached.refresh();
+
+            // Without the fix, this would silently yield 10 (from the new generation)
+            // instead of continuing generation 0's sequence - now it throws instead.
+            expect(() => staleEnumerator.next()).toThrow(InvalidOperationError);
+        });
+
+        it("a fresh enumerator created after refresh() is unaffected and reads the new generation normally", () => {
+            let executions = 0;
+            const cached = Tyneq.range(1, 3).tap(() => { executions++; }).memoize();
+
+            const staleEnumerator = cached.getEnumerator();
+            staleEnumerator.next();
+
+            cached.refresh();
+
+            const freshEnumerator = cached.getEnumerator();
+            expect(freshEnumerator.next()).toEqual({ done: false, value: 1 });
+            expect(freshEnumerator.next()).toEqual({ done: false, value: 2 });
+            expect(freshEnumerator.next()).toEqual({ done: false, value: 3 });
+            expect(freshEnumerator.next()).toEqual({ done: true, value: undefined });
+        });
+
+        it("a fully-consumed enumerator (already done) is unaffected by a later refresh()", () => {
+            const cached = Tyneq.range(1, 2).memoize();
+            expect(cached.toArray()).toEqual([1, 2]);
+
+            const enumerator = cached.getEnumerator();
+            expect(enumerator.next()).toEqual({ done: false, value: 1 });
+            expect(enumerator.next()).toEqual({ done: false, value: 2 });
+            expect(enumerator.next()).toEqual({ done: true, value: undefined });
+
+            cached.refresh();
+
+            // TyneqBaseEnumerator's own completed-state guard returns done without
+            // ever reaching tryGetAtFromCache again, so no stale-generation error fires here.
+            expect(enumerator.next()).toEqual({ done: true, value: undefined });
+        });
     });
 });

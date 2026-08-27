@@ -1044,7 +1044,9 @@ export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
      *
      * @remarks
      * Calling `refresh()` while another enumerator is mid-iteration over this same sequence is
-     * observable by that enumerator: it will see the reset cache. See {@link TyneqSequence.memoize}.
+     * detected: that enumerator's next `next()` call throws {@link InvalidOperationError} rather
+     * than silently resuming against the new generation of cached data. Enumerators created
+     * after the `refresh()` call are unaffected. See {@link TyneqSequence.memoize}.
      */
     refresh(): TyneqCachedSequence<TSource>;
 }
@@ -1058,11 +1060,15 @@ export interface TyneqCachedSequence<TSource> extends TyneqSequence<TSource> {
  */
 export interface CachedEnumerable<TSource> extends Enumerable<TSource> {
     /**
-     * Attempts to return the cached element at `index`.
+     * Attempts to return the cached element at `index`, for a caller reading generation
+     * `generation` of the cache (the value returned by whatever counter the implementation
+     * uses to track `refresh()` calls, captured by the caller when it first started reading).
      *
      * @returns `{ has: true, value }` if cached, `{ has: false }` otherwise.
+     * @throws If `generation` no longer matches the cache's current generation - the cache was
+     * `refresh()`'d since the caller started reading and cannot be resumed.
      */
-    tryGetAtFromCache(index: number): CacheResult<TSource>;
+    tryGetAtFromCache(index: number, generation: number): CacheResult<TSource>;
 }
 
 /** Result returned by the cache-lookup method on a memoized sequence. */
