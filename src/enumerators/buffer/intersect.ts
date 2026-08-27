@@ -5,7 +5,8 @@ import { Enumerator } from "../../types/core";
  * Returns elements that are present in both the source and a second sequence.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Buffers `otherValues` into a `Set` on the first iteration; the source itself
+ * streams - each source element is pulled and checked one at a time, never fully materialized.
  *
  * @see {@link TyneqSequence.intersect}
  * @group Operators

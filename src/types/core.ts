@@ -10,8 +10,10 @@ import { TyneqEnumerableCore } from "../core/TyneqEnumerableCore";
  * A pull-based iterator over a sequence.
  *
  * @remarks
- * Extends the native `Iterator<T>` protocol. `return()` disposes the iterator early;
- * `throw()` is not supported and throws {@link NotSupportedError} if called.
+ * Extends the native `Iterator<T>` protocol with an optional `return()` to dispose the
+ * iterator early. `throw()` is not part of this interface at all - no Tyneq enumerator
+ * implements it, so calling `.throw()` on one throws a plain `TypeError` (method does not
+ * exist), not a Tyneq-specific error.
  *
  * @typeParam T - Element type.
  * @group Interfaces
@@ -108,7 +110,8 @@ export interface TyneqSequence<TSource> extends Enumerable<TSource> {
      *
      * @remarks
      * Use {@link QueryPlanPrinter} to render this as a string.
-     * Sequences created via `pipe()` always have `null` here.
+     * Sequences created via `pipe()` carry a `"pipe"` node like any other operator, with
+     * `factory` recorded as its argument - not `null`.
      */
     readonly [tyneqQueryNode]: Nullable<QueryPlanNode>;
 

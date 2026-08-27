@@ -251,7 +251,7 @@ Tyneq.from([]).defaultIfEmpty(0).toArray();              // -> [0]
 Tyneq.from([1, 2]).defaultIfEmpty(0).toArray();          // -> [1, 2]
 
 // Useful for providing a fallback in aggregate pipelines
-Tyneq.from(matches).defaultIfEmpty(noMatchSentinel).first();
+Tyneq.from(matches).defaultIfEmpty(noMatchSentinel).first(() => true);
 ```
 
 ---

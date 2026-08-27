@@ -7,7 +7,7 @@ import { nameof } from "../utility/nameof";
  * Returns the element at a specified index, or throws if the index is out of range.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as `index` is reached.
  *
  * @see {@link TyneqSequence.elementAt}
  * @group Operators

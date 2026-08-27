@@ -7,7 +7,9 @@ import { DefaultingMap } from "../../utility/DefaultingMap";
  * Correlates outer elements with matching inner elements using a key equality comparison.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Buffers `innerSource` into a lookup on the first iteration; the outer (source)
+ * sequence itself streams - each outer element is pulled one at a time and matched against
+ * the already-built inner lookup.
  *
  * @see {@link TyneqSequence.join}
  * @group Operators

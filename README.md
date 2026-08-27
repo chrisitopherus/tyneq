@@ -69,7 +69,7 @@ const active = Tyneq.from(users)
   .orderByDescending((u) => u.score);
 
 active.count();                         // 3
-active.first().name;                    // "Grace"
+active.first((u) => u.score > 90).name; // "Grace"
 active.select((u) => u.email).toArray(); // ["g@...", "l@...", "a@..."]
 ```
 
@@ -257,9 +257,9 @@ const query = Tyneq.range(1, 1_000_000)
   .take(5);
 
 // Execute with a terminal
-query.toArray();  // [4, 16, 36, 64, 100]
-query.count();    // 5 - same query, independent traversal
-query.first();    // 4
+query.toArray();               // [4, 16, 36, 64, 100]
+query.count();                 // 5 - same query, independent traversal
+query.first((n) => n > 0);     // 4
 
 // Standard iteration works too
 for (const n of query) console.log(n);

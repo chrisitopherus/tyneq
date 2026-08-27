@@ -5,7 +5,8 @@ import { Enumerator } from "../../types/core";
  * Returns elements from the source sequence whose keys are not present in a second key sequence.
  *
  * @remarks
- * Deferred. Source is fully buffered on the first iteration of the returned sequence.
+ * Deferred. Buffers `excludedKeys` into a `Set` on the first iteration; the source itself
+ * streams - each source element is pulled and checked one at a time, never fully materialized.
  *
  * @see {@link TyneqSequence.exceptBy}
  * @group Operators

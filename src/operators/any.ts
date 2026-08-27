@@ -7,7 +7,7 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns true if any element satisfies a predicate.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as a match is found.
  *
  * @see {@link TyneqSequence.any}
  * @group Operators

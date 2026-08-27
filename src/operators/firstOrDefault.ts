@@ -7,7 +7,7 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns the first element matching a predicate, or a default value if no match is found.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating the source as soon as a match is found.
  *
  * @see {@link TyneqSequence.firstOrDefault}
  * @group Operators

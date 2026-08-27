@@ -7,7 +7,8 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
  * Returns true if the source and a second sequence contain equal elements in the same order.
  *
  * @remarks
- * Immediate. Source is fully enumerated when this method is called.
+ * Immediate. Short-circuits: stops enumerating both sequences as soon as a mismatch (differing
+ * elements, or one sequence ending before the other) is found.
  *
  * @see {@link TyneqSequence.sequenceEqual}
  * @group Operators

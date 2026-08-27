@@ -21,7 +21,7 @@ Iterator<T>                  <- native JavaScript protocol
 
 **`Enumerable<T>`** is the re-iteration contract. It can produce a fresh, independent `Enumerator<T>` on demand via `getEnumerator()`. You encounter this when writing custom operators.
 
-**`Enumerator<T>`** is a stateful, forward-only cursor - one active traversal in progress. The native `Iterator<T>` with two additions: `return()` to release resources early, and `throw()` which is not supported. You work with this inside class-based custom operators.
+**`Enumerator<T>`** is a stateful, forward-only cursor - one active traversal in progress. The native `Iterator<T>` with one addition: `return()` to release resources early. `throw()` is not part of the interface - no Tyneq enumerator implements it. You work with this inside class-based custom operators.
 
 For everyday usage, you only ever touch `TyneqSequence<T>`. The others appear when you extend the library.
 

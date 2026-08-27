@@ -102,7 +102,7 @@ const active = Tyneq.from(people).where(p => p.score >= 85);
 // All three use the same query object
 active.count();                              // -> 2
 active.select(p => p.name).toArray();        // -> ["Linus", "Grace"]
-active.orderByDescending(p => p.score).first().name; // -> "Grace"
+active.orderByDescending(p => p.score).first(() => true).name; // -> "Grace"
 ```
 
 Each call re-executes the pipeline from the source. There is no internal cursor to exhaust. If re-executing the pipeline is expensive (e.g. the source involves I/O or random data), use `memoize()`:
