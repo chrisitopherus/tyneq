@@ -1,12 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   Tyneq,
   createOperator,
+  operator,
+  terminal,
+  orderedOperator,
+  cachedOperator,
+  OperatorRegistry,
+  TyneqEnumerator,
+  TyneqTerminalOperator,
+  TyneqOrderedEnumerator,
+  TyneqCachedEnumerator,
   SequenceContainsNoElementsError,
   ArgumentNullError,
   ArgumentError,
   ArgumentOutOfRangeError,
 } from "../../../src";
+import type { Enumerator, TyneqSequence, OrderedEnumerable, CachedEnumerable } from "../../../src";
 
 // @operator decorator tests
 //
@@ -205,5 +215,111 @@ describe("@terminal decorator", () => {
         })
       ).toThrow("minMax");
     });
+  });
+});
+
+// F5 regression: decorators must accept handleNext()/process() inherited from an
+// intermediate base class, not just methods declared directly on the decorated class.
+describe("class decorators accept inherited lifecycle methods (F5)", () => {
+  afterEach(() => {
+    OperatorRegistry.unregister("f5InheritedOperator");
+    OperatorRegistry.unregister("f5InheritedTerminal");
+    OperatorRegistry.unregister("f5InheritedOrdered");
+    OperatorRegistry.unregister("f5InheritedCached");
+  });
+
+  it("@operator accepts handleNext() inherited from an intermediate base class", () => {
+    abstract class BaseIntermediate<T> extends TyneqEnumerator<T> {
+      protected override handleNext(): IteratorResult<T> {
+        return this.sourceEnumerator.next();
+      }
+    }
+
+    expect(() => {
+      @operator("f5InheritedOperator", "streaming")
+      class F5InheritedOperator<T> extends BaseIntermediate<T> {
+        public constructor(source: Enumerator<T>) {
+          super(source);
+        }
+      }
+      return F5InheritedOperator;
+    }).not.toThrow();
+
+    const result = (Tyneq.from([1, 2, 3]) as unknown as { f5InheritedOperator(): TyneqSequence<number> })
+      .f5InheritedOperator()
+      .toArray();
+    expect(result).toEqual([1, 2, 3]);
+  });
+
+  it("@terminal accepts process() inherited from an intermediate base class", () => {
+    abstract class BaseIntermediate<TSource, TResult> extends TyneqTerminalOperator<TSource, TResult> {
+      public override process(): TResult {
+        let count = 0;
+        for (const _ of this.source) count++;
+
+        return count as unknown as TResult;
+      }
+    }
+
+    expect(() => {
+      @terminal("f5InheritedTerminal")
+      class F5InheritedTerminal<TSource> extends BaseIntermediate<TSource, number> { }
+      return F5InheritedTerminal;
+    }).not.toThrow();
+
+    const result = (Tyneq.from([1, 2, 3, 4]) as unknown as { f5InheritedTerminal(): number }).f5InheritedTerminal();
+    expect(result).toBe(4);
+  });
+
+  it("@orderedOperator accepts handleNext() inherited from an intermediate base class", () => {
+    abstract class BaseIntermediate<T> extends TyneqOrderedEnumerator<T> {
+      private iter?: Enumerator<T>;
+
+      protected override handleNext(): IteratorResult<T> {
+        this.iter ??= this.orderedSource.getEnumerator();
+        return this.iter.next();
+      }
+    }
+
+    expect(() => {
+      @orderedOperator("f5InheritedOrdered", "streaming")
+      class F5InheritedOrdered<T> extends BaseIntermediate<T> {
+        public constructor(source: OrderedEnumerable<T>) {
+          super(source);
+        }
+      }
+      return F5InheritedOrdered;
+    }).not.toThrow();
+
+    const result = (
+      Tyneq.from([3, 1, 2]).orderBy((x) => x) as unknown as { f5InheritedOrdered(): TyneqSequence<number> }
+    ).f5InheritedOrdered().toArray();
+    expect(result).toEqual([1, 2, 3]);
+  });
+
+  it("@cachedOperator accepts handleNext() inherited from an intermediate base class", () => {
+    abstract class BaseIntermediate<T> extends TyneqCachedEnumerator<T> {
+      private iter?: Enumerator<T>;
+
+      protected override handleNext(): IteratorResult<T> {
+        this.iter ??= this.cachedSource.getEnumerator();
+        return this.iter.next();
+      }
+    }
+
+    expect(() => {
+      @cachedOperator("f5InheritedCached", "streaming")
+      class F5InheritedCached<T> extends BaseIntermediate<T> {
+        public constructor(source: CachedEnumerable<T>) {
+          super(source);
+        }
+      }
+      return F5InheritedCached;
+    }).not.toThrow();
+
+    const result = (
+      Tyneq.from([5, 6, 7]).memoize() as unknown as { f5InheritedCached(): TyneqSequence<number> }
+    ).f5InheritedCached().toArray();
+    expect(result).toEqual([5, 6, 7]);
   });
 });

@@ -44,7 +44,7 @@ export function cachedOperator<TArgs extends unknown[] = never>(
     validate?: (...args: TArgs) => void
 ) {
     return function <TClass extends Constructor<any>>(target: TClass, _context: ClassDecoratorContext<TClass>): TClass {
-        if (!reflect(target.prototype).hasMethod("handleNext")) {
+        if (!reflect(target.prototype, { inherited: true }).hasMethod("handleNext")) {
             throw new PluginError(
                 `@cachedOperator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqCachedEnumerator<T>.",

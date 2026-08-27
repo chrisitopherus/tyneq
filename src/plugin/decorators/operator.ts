@@ -46,7 +46,7 @@ export function operator<TArgs extends unknown[] = never>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (!reflect(target.prototype).hasMethod("handleNext")) {
+        if (!reflect(target.prototype, { inherited: true }).hasMethod("handleNext")) {
             throw new PluginError(
                 `@operator("${name}"): class "${target.name}" must define a protected handleNext(): IteratorResult<T> method. `
                 + "Ensure the class extends TyneqEnumerator<TInput, TOutput>.",

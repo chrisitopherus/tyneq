@@ -39,7 +39,7 @@ export function terminal<TArgs extends unknown[] = never>(
         target: TClass,
         _context: ClassDecoratorContext
     ): TClass {
-        if (!reflect(target.prototype).hasMethod("process")) {
+        if (!reflect(target.prototype, { inherited: true }).hasMethod("process")) {
             throw new PluginError(
                 `@terminal("${name}"): class "${target.name}" must define a public process(): TResult method. `
                 + "Ensure the class extends TyneqTerminalOperator<TSource, TResult>.",
