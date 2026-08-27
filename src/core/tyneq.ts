@@ -209,16 +209,18 @@ export class Tyneq {
      * @throws {ArgumentNullError} When `source` is null or undefined.
      * @throws {ArgumentTypeError} When `source` is not iterable.
      */
+    @source({ source: "internal" })
     public static enumerate<TSource>(source: Iterable<TSource>): TyneqSequence<[number, TSource]> {
         ArgumentUtility.checkNotOptional({ source });
         ArgumentUtility.checkIterable({ source });
-        // A fresh `index` counter is created per enumeration via [Symbol.iterator],
-        // preventing the shared-counter bug that occurs when the result is re-enumerated.
-        return this.from({
-            *[Symbol.iterator]() {
+        // A fresh `index` counter is created per getEnumerator() call, preventing the
+        // shared-counter bug that occurs when the result is re-enumerated.
+        const sourceKind = Tyneq.resolveSourceKind(source);
+        return new TyneqEnumerable<[number, TSource]>({
+            getEnumerator: () => (function* (): Generator<[number, TSource]> {
                 let index = 0;
-                for (const item of source) yield [index++, item] as [number, TSource];
-            }
-        });
+                for (const item of source) yield [index++, item];
+            })()
+        }, new QueryNode("enumerate", [source], null, "source", sourceKind));
     }
 }
