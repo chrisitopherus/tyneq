@@ -21,7 +21,6 @@ export class UnionByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> {
     private currentEnumerator: Enumerator<TSource>;
     private isSourceDone = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

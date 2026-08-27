@@ -43,6 +43,12 @@ export default defineConfig(
             // Spaces inside object literal braces: { key: value }, not {key: value}.
             "object-curly-spacing": ["error", "always"],
 
+            // --- Whitespace hygiene ---
+            // No more than one consecutive blank line, and none at the start/end of a file.
+            "no-multiple-empty-lines": ["error", { "max": 1, "maxBOF": 0, "maxEOF": 0 }],
+            // No trailing whitespace, including on otherwise-blank indented lines.
+            "no-trailing-spaces": "error",
+
             // --- Explicit access modifiers ---
             // All class members must declare public/private/protected explicitly.
             // Constructors are exempt so private constructor() { } stays concise.

@@ -16,7 +16,6 @@ import { Enumerator } from "../../types/core";
 export class DistinctEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly seenValues = new Set<TSource>();
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>) {
         super(sourceEnumerator);
     }

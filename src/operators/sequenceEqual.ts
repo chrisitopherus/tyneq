@@ -18,7 +18,6 @@ export class SequenceEqualOperator<TSource> extends TyneqTerminalOperator<TSourc
     private readonly other: Iterable<TSource>;
     private readonly equalityComparer: EqualityComparer<TSource>;
 
-
     public constructor(source: TyneqSequence<TSource>, other: Iterable<TSource>, equalityComparer?: EqualityComparer<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional({ other });

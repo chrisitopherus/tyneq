@@ -178,7 +178,7 @@ export class Tyneq {
      * ```ts
      * Tyneq.concat([1, 2], [3, 4], [5]).toArray(); // -> [1, 2, 3, 4, 5]
      * ```
-     * 
+     *
      * @throws {ArgumentNullError} When any `source` is null or undefined.
      * @throws {ArgumentTypeError} When any `source` is not iterable.
      */

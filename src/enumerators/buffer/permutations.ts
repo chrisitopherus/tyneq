@@ -44,7 +44,7 @@ export class PermutationsEnumerator<TSource> extends TyneqEnumerator<TSource, TS
                 this.i++; // go deeper
             }
         }
-        
+
         return this.done();
     }
 

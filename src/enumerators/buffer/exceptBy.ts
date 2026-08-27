@@ -17,7 +17,6 @@ export class ExceptByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource> 
     private excludeSet = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, excludedKeys: Iterable<TKey>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.excludedKeys = excludedKeys;

@@ -17,7 +17,6 @@ export class ConcatEnumerator<T> extends TyneqEnumerator<T> {
     private readonly otherEnumerator: Enumerator<T>;
     private isSourceDone = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, other: Iterable<T>) {
         super(sourceEnumerator);
         this.otherEnumerator = other[Symbol.iterator]();

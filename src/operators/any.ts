@@ -17,7 +17,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class AnyOperator<T> extends TyneqTerminalOperator<T, boolean> {
     private readonly predicate: ItemPredicate<T>;
 
-
     public constructor(source: Enumerable<T>, predicate: ItemPredicate<T>) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

@@ -17,7 +17,6 @@ export class IntersectEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private intersectionValues = new Set<TSource>();
     private bufferedValues = new Set<TSource>();
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

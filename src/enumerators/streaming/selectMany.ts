@@ -17,7 +17,6 @@ export class SelectManyEnumerator<T, U> extends TyneqEnumerator<T, U> {
     private readonly selector: (item: T) => Iterable<U>;
     private innerEnumerator: Nullable<Enumerator<U>> = null;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, selector: (item: T) => Iterable<U>) {
         super(sourceEnumerator);
         this.selector = selector;

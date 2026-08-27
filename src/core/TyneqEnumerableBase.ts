@@ -118,7 +118,6 @@ export abstract class TyneqEnumerableBase<TSource> extends TyneqEnumerableCore<T
     }
 
     @builtin({ kind: "terminal" })
-
     public consume(): void {
         new ConsumeOperator(this).process();
     }

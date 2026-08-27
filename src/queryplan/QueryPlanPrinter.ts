@@ -82,7 +82,6 @@ export class QueryPlanPrinter implements QueryPlanVisitor<string> {
         return lines.join("\n");
     }
 
-    
     private collectNodes(node: QueryPlanNode): QueryPlanNode[] {
         const nodes: QueryPlanNode[] = [];
         let current: Nullable<QueryPlanNode> = node;

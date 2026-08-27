@@ -20,7 +20,6 @@ export class OrderByEnumerator<TSource, _TKey> extends TyneqBaseEnumerator<TSour
     private currentIndex = 0;
     private readonly orderedEnumerable: OrderedEnumerable<TSource>;
 
-    
     public constructor(orderedEnumerable: OrderedEnumerable<TSource>) {
         super();
         this.orderedEnumerable = orderedEnumerable;

@@ -16,7 +16,6 @@ export class ElementAtOrDefaultOperator<TSource> extends TyneqTerminalOperator<T
     private readonly index: number;
     private readonly defaultValue: TSource;
 
-    
     public constructor(source: TyneqSequence<TSource>, index: number, defaultValue: TSource) {
         super(source);
         this.index = index;

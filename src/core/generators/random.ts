@@ -6,7 +6,6 @@ export class RandomEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
 
     private yieldedCount: number = 0;
 
-    
     public constructor(count: number, randomizer: () => TSource) {
         super();
         this.count = count;

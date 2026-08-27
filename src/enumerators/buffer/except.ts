@@ -16,7 +16,6 @@ export class ExceptEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private readonly excludedValues: Iterable<TSource>;
     private excludeSet = new Set<TSource>();
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, excludedValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.excludedValues = excludedValues;

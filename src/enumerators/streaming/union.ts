@@ -20,7 +20,6 @@ export class UnionEnumerator<TSource> extends TyneqEnumerator<TSource> {
     private currentEnumerator: Enumerator<TSource>;
     private isSourceDone = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, otherValues: Iterable<TSource>) {
         super(sourceEnumerator);
         this.otherValues = otherValues;

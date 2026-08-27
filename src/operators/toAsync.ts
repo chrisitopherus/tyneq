@@ -13,7 +13,7 @@ import { TyneqSequence } from "../types/core";
  * @internal
  */
 export class ToAsyncOperator<TSource> extends TyneqTerminalOperator<TSource, AsyncIterable<TSource>> {
-    
+
     public constructor(source: TyneqSequence<TSource>) {
         super(source);
     }

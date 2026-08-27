@@ -16,7 +16,6 @@ export class SkipEnumerator<T> extends TyneqEnumerator<T> {
     private readonly count: number;
     private skipped = false;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

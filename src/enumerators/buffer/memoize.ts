@@ -16,7 +16,6 @@ export class MemoizeEnumerator<TSource> extends TyneqBaseEnumerator<TSource> {
     private readonly cachedEnumerable: TyneqCachedEnumerable<TSource>;
     private index = 0;
 
-    
     public constructor(cachedEnumerable: TyneqCachedEnumerable<TSource>) {
         super();
         this.cachedEnumerable = cachedEnumerable;

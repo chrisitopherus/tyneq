@@ -18,7 +18,6 @@ export class LastOrDefaultOperator<TSource> extends TyneqTerminalOperator<TSourc
     private readonly predicate: ItemPredicate<TSource>;
     private readonly defaultValue: TSource;
 
-
     public constructor(source: TyneqSequence<TSource>, predicate: ItemPredicate<TSource>, defaultValue: TSource) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

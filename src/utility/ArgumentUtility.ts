@@ -30,7 +30,6 @@ import type { Enumerable, Enumerator } from "../types/core";
 export class ArgumentUtility {
     private constructor() { }
 
-
     public static checkNotNull<T>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
     public static checkNotNull<T>(param: Nullable<T>, paramName: string): asserts param is T;
     public static checkNotNull<T>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
@@ -38,7 +37,6 @@ export class ArgumentUtility {
         NullGuards.checkNotNull(value, key);
     }
 
-    
     public static checkNotUndefined<T>(param: Record<string, Maybe<T>>): asserts param is Record<string, T>;
     public static checkNotUndefined<T>(param: Maybe<T>, paramName: string): asserts param is T;
     public static checkNotUndefined<T>(param: Record<string, Maybe<T>> | Maybe<T>, paramName?: string): void {
@@ -46,7 +44,6 @@ export class ArgumentUtility {
         NullGuards.checkNotUndefined(value, key);
     }
 
-    
     public static checkNotOptional<T>(param: Record<string, Optional<T>>): asserts param is Record<string, T>;
     public static checkNotOptional<T>(param: Optional<T>, paramName: string): asserts param is T;
     public static checkNotOptional<T>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
@@ -54,7 +51,6 @@ export class ArgumentUtility {
         NullGuards.checkNotOptional(value, key);
     }
 
-    
     public static checkNotNullOrEmpty<T extends HasLength>(param: Record<string, Nullable<T>>): asserts param is Record<string, T>;
     public static checkNotNullOrEmpty<T extends HasLength>(param: Nullable<T>, paramName: string): asserts param is T;
     public static checkNotNullOrEmpty<T extends HasLength>(param: Record<string, Nullable<T>> | Nullable<T>, paramName?: string): void {
@@ -62,14 +58,12 @@ export class ArgumentUtility {
         NullGuards.checkNotNullOrEmpty(value, key);
     }
 
-    
     public static checkNotOptionalOrEmpty<T extends HasLength>(param: Record<string, Optional<T>>): asserts param is Record<string, T>;
     public static checkNotOptionalOrEmpty<T extends HasLength>(param: Optional<T>, paramName: string): asserts param is T;
     public static checkNotOptionalOrEmpty<T extends HasLength>(param: Record<string, Optional<T>> | Optional<T>, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         NullGuards.checkNotOptionalOrEmpty(value, key);
     }
-
 
     public static checkNotNullOrWhiteSpace(param: Record<string, Optional<string>>): asserts param is Record<string, string>;
     public static checkNotNullOrWhiteSpace(param: Optional<string>, paramName: string): asserts param is string;
@@ -78,7 +72,6 @@ export class ArgumentUtility {
         StringGuards.checkNotNullOrWhiteSpace(value, key);
     }
 
-
     public static checkNonNegative(param: Record<string, number>): void;
     public static checkNonNegative(param: number, paramName: string): void;
     public static checkNonNegative(param: Record<string, number> | number, paramName?: string): void {
@@ -86,7 +79,6 @@ export class ArgumentUtility {
         NumericGuards.checkNonNegative(value, key);
     }
 
-    
     public static checkPositive(param: Record<string, number>): void;
     public static checkPositive(param: number, paramName: string): void;
     public static checkPositive(param: Record<string, number> | number, paramName?: string): void {
@@ -94,7 +86,6 @@ export class ArgumentUtility {
         NumericGuards.checkPositive(value, key);
     }
 
-    
     public static checkNegative(param: Record<string, number>): void;
     public static checkNegative(param: number, paramName: string): void;
     public static checkNegative(param: Record<string, number> | number, paramName?: string): void {
@@ -102,7 +93,6 @@ export class ArgumentUtility {
         NumericGuards.checkNegative(value, key);
     }
 
-    
     public static checkNonPositive(param: Record<string, number>): void;
     public static checkNonPositive(param: number, paramName: string): void;
     public static checkNonPositive(param: Record<string, number> | number, paramName?: string): void {
@@ -110,7 +100,6 @@ export class ArgumentUtility {
         NumericGuards.checkNonPositive(value, key);
     }
 
-    
     public static checkInRange(param: Record<string, number>, min: number, max: number): void;
     public static checkInRange(param: number, min: number, max: number, paramName: string): void;
     public static checkInRange(param: Record<string, number> | number, min: number, max: number, paramName?: string): void {
@@ -118,7 +107,6 @@ export class ArgumentUtility {
         NumericGuards.checkInRange(value, min, max, key);
     }
 
-    
     public static checkInteger(param: Record<string, number>): void;
     public static checkInteger(param: number, paramName: string): void;
     public static checkInteger(param: Record<string, number> | number, paramName?: string): void {
@@ -126,7 +114,6 @@ export class ArgumentUtility {
         NumericGuards.checkInteger(value, key);
     }
 
-    
     public static checkFinite(param: Record<string, number>): void;
     public static checkFinite(param: number, paramName: string): void;
     public static checkFinite(param: Record<string, number> | number, paramName?: string): void {
@@ -134,7 +121,6 @@ export class ArgumentUtility {
         NumericGuards.checkFinite(value, key);
     }
 
-    
     public static checkNotNaN(param: Record<string, number>): void;
     public static checkNotNaN(param: number, paramName: string): void;
     public static checkNotNaN(param: Record<string, number> | number, paramName?: string): void {
@@ -142,7 +128,6 @@ export class ArgumentUtility {
         NumericGuards.checkNotNaN(value, key);
     }
 
-    
     public static checkSafeInteger(param: Record<string, number>): void;
     public static checkSafeInteger(param: number, paramName: string): void;
     public static checkSafeInteger(param: Record<string, number> | number, paramName?: string): void {
@@ -150,7 +135,6 @@ export class ArgumentUtility {
         NumericGuards.checkSafeInteger(value, key);
     }
 
-    
     public static checkArrayIndex(param: Record<string, number>, arrayLength?: number): void;
     public static checkArrayIndex(param: number, paramName: string, arrayLength?: number): void;
     public static checkArrayIndex(
@@ -166,17 +150,14 @@ export class ArgumentUtility {
         NumericGuards.checkArrayIndex(value, key, resolvedArrayLength);
     }
 
-
-
     public static checkFunction(param: Record<string, unknown>): asserts param is Record<string, Function>;
-     
+
     public static checkFunction(param: unknown, paramName: string): asserts param is Function;
     public static checkFunction(param: Record<string, unknown> | unknown, paramName?: string): void {
         const { key, value } = this.extractParameter(param, paramName);
         TypeGuards.checkFunction(value, key);
     }
 
-    
     public static checkIterable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterable<T>>;
     public static checkIterable<T = unknown>(param: unknown, paramName: string): asserts param is Iterable<T>;
     public static checkIterable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
@@ -184,7 +165,6 @@ export class ArgumentUtility {
         TypeGuards.checkIterable<T>(value, key);
     }
 
-    
     public static checkIterator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Iterator<T>>;
     public static checkIterator<T = unknown>(param: unknown, paramName: string): asserts param is Iterator<T>;
     public static checkIterator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
@@ -192,7 +172,6 @@ export class ArgumentUtility {
         TypeGuards.checkIterator<T>(value, key);
     }
 
-    
     public static checkEnumerable<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerable<T>>;
     public static checkEnumerable<T = unknown>(param: unknown, paramName: string): asserts param is Enumerable<T>;
     public static checkEnumerable<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
@@ -200,7 +179,6 @@ export class ArgumentUtility {
         TypeGuards.checkEnumerable<T>(value, key);
     }
 
-    
     public static checkEnumerator<T = unknown>(param: Record<string, unknown>): asserts param is Record<string, Enumerator<T>>;
     public static checkEnumerator<T = unknown>(param: unknown, paramName: string): asserts param is Enumerator<T>;
     public static checkEnumerator<T = unknown>(param: Record<string, unknown> | unknown, paramName?: string): void {
@@ -208,7 +186,6 @@ export class ArgumentUtility {
         TypeGuards.checkEnumerator<T>(value, key);
     }
 
-    
     public static checkInstanceOf<T>(
         param: Record<string, unknown>,
         constructor: new (...args: any[]) => T
@@ -227,7 +204,6 @@ export class ArgumentUtility {
         TypeGuards.checkInstanceOf(value, constructor, key);
     }
 
-    
     public static checkHasLength(param: Record<string, unknown>): asserts param is Record<string, HasLength>;
     public static checkHasLength(param: unknown, paramName: string): asserts param is HasLength;
     public static checkHasLength(param: Record<string, unknown> | unknown, paramName?: string): void {
@@ -235,7 +211,6 @@ export class ArgumentUtility {
         TypeGuards.checkHasLength(value, key);
     }
 
-    
     public static check<T>(
         param: Record<string, T>,
         predicate: (v: T) => boolean,

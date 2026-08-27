@@ -21,7 +21,6 @@ export class GroupByEnumerator<TSource, TKey, TValue, TResult> extends TyneqEnum
     private lookupEnumerator?: Enumerator<[TKey, TValue[]]>;
     private lookup = new DefaultingMap<TKey, TValue[]>();
 
-    
     public constructor(
         sourceEnumerator: Enumerator<TSource>,
         keySelector: (item: TSource) => TKey,

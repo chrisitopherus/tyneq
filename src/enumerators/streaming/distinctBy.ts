@@ -17,7 +17,6 @@ export class DistinctByEnumerator<TSource, TKey> extends TyneqEnumerator<TSource
     private readonly seenValues = new Set<TKey>();
     private readonly keySelector: (item: TSource) => TKey;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, keySelector: (item: TSource) => TKey) {
         super(sourceEnumerator);
         this.keySelector = keySelector;

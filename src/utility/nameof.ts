@@ -1,4 +1,3 @@
-
 /**
  * Extracts the first property name and value from a single-property object.
  * Used to infer parameter names for error messages without string literals.

@@ -1,4 +1,3 @@
-
 /**
  * `Map` subclass with convenience helpers for initialise-on-first-access patterns.
  *

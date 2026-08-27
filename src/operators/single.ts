@@ -18,7 +18,6 @@ import { ArgumentUtility } from "../utility/ArgumentUtility";
 export class SingleOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly predicate: ItemPredicate<TSource>;
 
-
     public constructor(source: TyneqSequence<TSource>, predicate: ItemPredicate<TSource>) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

@@ -17,7 +17,6 @@ import { nameof } from "../utility/nameof";
 export class ElementAtOperator<TSource> extends TyneqTerminalOperator<TSource, TSource> {
     private readonly index: number;
 
-    
     public constructor(source: TyneqSequence<TSource>, index: number) {
         super(source);
         this.index = index;

@@ -18,7 +18,6 @@ export class SkipLastEnumerator<T> extends TyneqEnumerator<T> {
     private writeIndex: number = 0;
     private filledCount: number = 0;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>, count: number) {
         super(sourceEnumerator);
         this.count = count;

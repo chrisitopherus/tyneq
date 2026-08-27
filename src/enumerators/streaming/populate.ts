@@ -15,7 +15,6 @@ import { Enumerator } from "../../types/core";
 export class PopulateEnumerator<TSource, TValue> extends TyneqEnumerator<TSource, TValue> {
     private readonly value: TValue;
 
-    
     public constructor(sourceEnumerator: Enumerator<TSource>, value: TValue) {
         super(sourceEnumerator);
         this.value = value;

@@ -1,4 +1,3 @@
-
 /**
  * Abstract base for multi-key stable sorters used by the ordering infrastructure.
  *

@@ -18,7 +18,6 @@ export class AggregateOperator<TSource, UAccumulate, VResult> extends TyneqTermi
     private readonly func: (accumulate: UAccumulate, item: TSource) => UAccumulate;
     private readonly resultSelector: (accumulate: UAccumulate) => VResult;
 
-    
     public constructor(
         source: Enumerable<TSource>,
         seed: UAccumulate,

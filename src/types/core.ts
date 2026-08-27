@@ -1101,7 +1101,6 @@ export type KeyValuePair<TKey, TValue> = {
     value: TValue;
 };
 
-
 /**
  * Structural interface used by registration machinery to call the protected factory methods
  * on sequence classes without exposing them publicly.

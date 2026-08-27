@@ -18,7 +18,6 @@ export class IndexOfOperator<T> extends TyneqTerminalOperator<T, number> {
     private readonly predicate: ItemPredicate<T>;
     private readonly startIndex: number;
 
-
     public constructor(source: Enumerable<T>, predicate: ItemPredicate<T>, startIndex: number = 0) {
         super(source);
         ArgumentUtility.checkNotOptional({ predicate });

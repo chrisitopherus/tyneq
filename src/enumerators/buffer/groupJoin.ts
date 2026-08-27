@@ -21,7 +21,6 @@ export class GroupJoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnu
     private readonly groupFactory: (values: TInner[]) => TyneqSequence<TInner>;
     private innerLookup = new DefaultingMap<TKey, TInner[]>();
 
-    
     public constructor(
         sourceEnumerator: Enumerator<TOuter>,
         innerSource: Iterable<TInner>,

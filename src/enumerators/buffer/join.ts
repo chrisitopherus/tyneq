@@ -24,7 +24,6 @@ export class JoinEnumerator<TOuter, TInner, TKey, TResult> extends TyneqEnumerat
     private pendingMatches: Nullable<TInner[]> = null;
     private pendingIndex = 0;
 
-    
     public constructor(
         sourceEnumerator: Enumerator<TOuter>,
         innerSource: Iterable<TInner>,

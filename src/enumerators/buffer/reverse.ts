@@ -16,7 +16,6 @@ export class ReverseEnumerator<T> extends TyneqEnumerator<T> {
     private buffer: T[] = [];
     private index: number = -1;
 
-    
     public constructor(sourceEnumerator: Enumerator<T>) {
         super(sourceEnumerator);
     }
