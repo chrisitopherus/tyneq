@@ -99,10 +99,58 @@ describe("QueryPlanOptimizer", () => {
         });
     });
 
-    describe("pure-function contract", () => {
-        it("fused where skips second predicate for items that fail the first (short-circuit)", () => {
-            // Documents that fusion changes side-effect behavior for impure predicates.
-            // Second predicate is never called for items that fail the first.
+    describe("fusion is behavior-preserving, including for impure predicates/projections (F7)", () => {
+        // The class-level @remarks used to warn that fusion "changes side-effect behavior for
+        // impure predicates" - this was wrong. In the unfused pull pipeline, where(a).where(b)
+        // already never calls b(x) for an x that fails a(x): the inner where(a) simply never
+        // yields x to the outer where(b). That is exactly the evaluation rule of the fused
+        // predicate a(x) && b(x). These tests prove the fused and unfused pipelines produce
+        // byte-identical call traces, including call counts and skipped calls, for impure
+        // (side-effecting) callbacks - not just that the fused predicate "looks reasonable".
+
+        it("where fusion produces the same call trace as the unfused pipeline for impure predicates", () => {
+            const source = [1, 2, 3, 4, 5];
+
+            const unfusedTrace: string[] = [];
+            const unfusedResult = Tyneq.from(source)
+                .where((x) => { unfusedTrace.push(`a(${x})`); return x > 2; })
+                .where((x) => { unfusedTrace.push(`b(${x})`); return x < 5; })
+                .toArray();
+
+            const fusedTrace: string[] = [];
+            const seq = Tyneq.from(source)
+                .where((x) => { fusedTrace.push(`a(${x})`); return x > 2; })
+                .where((x) => { fusedTrace.push(`b(${x})`); return x < 5; });
+            const optimizedNode = new QueryPlanOptimizer().visit(seq[tyneqQueryNode]!);
+            const fusedPredicate = optimizedNode.args[0] as (x: number) => boolean;
+            const fusedResult = source.filter(fusedPredicate);
+
+            expect(fusedTrace).toEqual(unfusedTrace);
+            expect(fusedResult).toEqual(unfusedResult);
+        });
+
+        it("select fusion produces the same call trace as the unfused pipeline for impure projections", () => {
+            const source = [1, 2, 3];
+
+            const unfusedTrace: string[] = [];
+            const unfusedResult = Tyneq.from(source)
+                .select((x) => { unfusedTrace.push(`a(${x})`); return x * 2; })
+                .select((x) => { unfusedTrace.push(`b(${x})`); return x + 1; })
+                .toArray();
+
+            const fusedTrace: string[] = [];
+            const seq = Tyneq.from(source)
+                .select((x) => { fusedTrace.push(`a(${x})`); return x * 2; })
+                .select((x) => { fusedTrace.push(`b(${x})`); return x + 1; });
+            const optimizedNode = new QueryPlanOptimizer().visit(seq[tyneqQueryNode]!);
+            const fusedProjection = optimizedNode.args[0] as (x: number) => number;
+            const fusedResult = source.map(fusedProjection);
+
+            expect(fusedTrace).toEqual(unfusedTrace);
+            expect(fusedResult).toEqual(unfusedResult);
+        });
+
+        it("fused where does not call the second predicate for an item that fails the first, matching the unfused pipeline", () => {
             const secondCalls: number[] = [];
             const seq = Tyneq.from([1, 2, 3, 4])
                 .where((x) => x > 2)
@@ -111,13 +159,12 @@ describe("QueryPlanOptimizer", () => {
             const optimized = new QueryPlanOptimizer().visit(seq[tyneqQueryNode]!);
             const fused = optimized.args[0] as (x: number) => boolean;
 
-            // Evaluate the fused predicate against each item manually
             [1, 2, 3, 4].forEach((x) => fused(x));
 
-            // Items 1 and 2 fail the first predicate — second is never called for them
+            // Items 1 and 2 fail the first predicate - second is never called for them,
+            // exactly as it never would be in the unfused pipeline either.
             expect(secondCalls).not.toContain(1);
             expect(secondCalls).not.toContain(2);
-            // Items 3 and 4 pass the first predicate — second is called
             expect(secondCalls).toContain(3);
             expect(secondCalls).toContain(4);
         });
